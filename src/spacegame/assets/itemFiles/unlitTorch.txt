@@ -1,0 +1,2 @@
+itemName:UNLIT_TORCH
+canPlaceOnGround:true

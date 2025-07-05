@@ -1,0 +1,7 @@
+durability:#short
+hardness:#float
+renderItemWithBlockModel:#bool
+canPlaceOnGround:#bool
+stackLimit:#byte
+itemName:#string
+toolType:#string

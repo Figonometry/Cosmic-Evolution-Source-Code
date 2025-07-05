@@ -1,0 +1,8 @@
+blockName:FIRE
+blockModel:fireBlockModel
+canBeBroken:false
+isLightBlock:true
+lightColor:16777215
+canGreedyMesh:false
+isSolid:false
+droppedItemID:-1

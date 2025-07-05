@@ -1,0 +1,17 @@
+droppedItemID:#short
+itemMetadata:#short
+isSolid:#bool
+canBeBroken:#bool
+isLightBlock:#bool
+lightBlockValue:#byte
+lightColor:#int
+canGreedyMesh:#bool
+canBurnOut:#bool
+blockModel:#string
+blockName:#string
+stepSound:#string
+breakTimer:#int
+toolType:#string
+hardness:#float
+requiresTool:#bool
+itemDropChance:#float

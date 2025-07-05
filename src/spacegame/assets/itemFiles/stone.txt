@@ -1,0 +1,3 @@
+itemName:RAW_STONE
+stackLimit:1
+canPlaceOnGround:true

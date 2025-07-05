@@ -1,0 +1,15 @@
+package spacegame.celestial;
+
+import spacegame.render.TextureLoader;
+
+public final class Sun extends CelestialObject{
+    public static TextureLoader sunFlare;
+
+    public static void initSunFlare(){
+        sunFlare = new TextureLoader("src/spacegame/assets/textures/gui/guiUniverse/sun/sunHalo.png", 2048,2048);
+    }
+
+    public Sun(CelestialObject parentObject, double semiMajorAxis, double apoapsis, double periapsis, double eccentricity, float incliniation, float argumentofPeriapsis, float longitudeOfAscendingNode, long radius, double meanAnomaly, double surfaceGravity, long rotationPeriod, long sphereOfInfluence, boolean tidallyLocked, double mass, int layer, float axialTiltX, float axialTiltZ) {
+        super(parentObject, semiMajorAxis, apoapsis, periapsis, eccentricity, incliniation, argumentofPeriapsis, longitudeOfAscendingNode, radius, meanAnomaly, surfaceGravity, rotationPeriod, sphereOfInfluence, tidallyLocked, mass, layer, axialTiltX, axialTiltZ);
+    }
+}

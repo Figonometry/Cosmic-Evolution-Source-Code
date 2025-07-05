@@ -1,0 +1,176 @@
+package spacegame.entity;
+
+import org.lwjgl.opengl.GL46;
+import spacegame.core.SpaceGame;
+import spacegame.entity.ai.AIPassive;
+import spacegame.gui.FontRenderer;
+import spacegame.render.Model;
+import spacegame.render.ModelDeer;
+import spacegame.render.TextureLoader;
+import spacegame.world.AxisAlignedBB;
+
+import java.io.File;
+import java.util.Random;
+
+public final class EntityDeer extends EntityLiving {
+    public static TextureLoader texture;
+    public int animationTimer = 0;
+    public boolean animate = true;
+    public boolean isMale;
+    public boolean isChild;
+    public boolean stopFrontLeftLeg;
+    public boolean stopFrontRightLeg;
+    public boolean stopBackLeftLeg;
+    public boolean stopBackRightLeg;
+    public int growthTimer;
+    public Model model = new ModelDeer();
+
+    public EntityDeer(double x, double y, double z, boolean isChild, boolean isMale){
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.isMale = isMale;
+        this.isChild = isChild;
+        this.health = 100f;
+        this.maxHealth = 100f;
+        this.height = 2;
+        this.width = 0.5;
+        this.depth = 0.5;
+        this.rawDeltaX = -0.1f;
+    }
+
+    public EntityDeer(double x, double y, double z, File entityFile){
+        //Load from file
+    }
+
+    public static void loadTexture(){
+        texture = new TextureLoader("src/spacegame/assets/textures/entity/deer.png", 48, 66);
+    }
+
+    @Override
+    public void tick(){
+        this.updateAI();
+        this.updateYawAndPitch();
+        this.setMovementAmount();
+        this.doGravity();
+        this.setEntityState();
+        this.moveAndHandleCollision();
+        this.performStepSound();
+        this.setCanEntityJump();
+
+        this.prevX = this.x;
+        this.prevY = this.y;
+        this.prevZ = this.z;
+
+        this.checkHealth();
+        this.animationTimer++;
+        if(!this.stopFrontLeftLeg && !this.stopFrontRightLeg && !this.stopBackRightLeg && !this.stopBackLeftLeg && !this.animate){
+            this.animationTimer = 0;
+        }
+    }
+
+    private void updateAI(){
+        this.moveTimer--;
+        if(Math.abs(this.x - this.targetX) < 0.5 && Math.abs(this.z - this.targetZ) < 0.5 || this.moveTimer <= 0 && this.shouldMove){
+            this.shouldMove = false;
+            this.waitTimer = new Random().nextInt(180, 600);
+        }
+
+        this.waitTimer--;
+        if(this.waitTimer <= 0 && !this.shouldMove){
+            this.rawDeltaX = -0.1f;
+            AIPassive.chooseNewTargetAndSetAngle(this);
+        }
+    }
+
+    private void setCanEntityJump(){
+        if(this.shouldMove && (this.deltaX == 0.0f || this.deltaZ == 0.0f) && this.isOnGround){
+            this.moveEntityUp = true;
+            this.moveEntityUpDistance = 1.1D;
+            this.isOnGround = false;
+            this.isJumping = true;
+        }
+    }
+
+    private void setEntityState(){
+        if(this.inWater){
+            this.isOnGround = false;
+        }
+
+        if(this.inWater){
+            if(!this.isOnGround && !this.moveEntityUp) {
+                this.deltaY -= 0.05D;
+                this.timeFalling = 0;
+            }
+            this.speed = 0.05D;
+        } else {
+            this.speed = 0.04D;
+        }
+
+        if (this.moveEntityUp) {
+            if(!this.isJumping) {
+                this.speed = 0.05D;
+            }
+            if (this.moveEntityUpDistance <= 0D) {
+                this.moveEntityUp = false;
+                this.moveEntityUpDistance = 0;
+                this.speed = 0.05D;
+                this.isJumping = false;
+            } else {
+                this.deltaY = 0.05D;
+                this.moveEntityUpDistance -= 0.05D;
+            }
+        }
+    }
+
+    private void updateYawAndPitch(){
+        if (this.yaw >= 360) {
+            this.yaw %= 360;
+        }
+
+    }
+
+    private void setMovementAmount(){
+        if(this.shouldMove) {
+            this.rawDeltaX -= 0.1f;
+        } else {
+            this.rawDeltaX = 0.0f;
+        }
+
+        if(this.rawDeltaX < 0.0){
+            this.animate = true;
+            this.stopBackLeftLeg = false;
+            this.stopBackRightLeg = false;
+            this.stopFrontRightLeg = false;
+            this.stopFrontLeftLeg = false;
+        } else {
+            this.animate = false;
+        }
+
+        this.updateGroundPosition(this.rawDeltaX, 0, 0);
+    }
+
+
+
+
+    @Override
+    public void checkHealth() {
+        if(this.health <= 0){
+            this.handleDeath();
+        }
+    }
+
+    @Override
+    public void handleDeath() {
+        //Either disperse item or create a corpse, either way the entity needs to be nulled
+        this.despawn = true;
+    }
+
+    @Override
+    public void render(){
+        this.model = ModelDeer.getBaseModel();
+        this.model.animate(this.animationTimer, this.animate, this);
+        this.model.renderModel(this);
+        this.renderShadow();
+    }
+}
