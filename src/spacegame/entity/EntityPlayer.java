@@ -43,7 +43,6 @@ public final class EntityPlayer extends EntityLiving {
     public final File playerFile;
     public boolean loadedFromFile;
     public double lastYOnGround;
-    public byte damageTimer;
     public int drowningTimer;
     public boolean runDamageTilt;
     public byte swingTimer;
@@ -480,6 +479,11 @@ public final class EntityPlayer extends EntityLiving {
             new SoundPlayer(this.sg).playSound(this.x, this.y - 2 ,this.z, new Sound(Block.list[this.blockUnderPlayer].stepSound, false), new Random().nextFloat(0.4F, 0.7F));
         }
 
+        this.damageTimer--;
+        if(this.damageTimer <= 0){
+            this.canDamage = true;
+        }
+
         this.prevInWater = this.inWater;
         this.prevBlockUnderPlayer = this.blockUnderPlayer;
     }
@@ -574,8 +578,8 @@ public final class EntityPlayer extends EntityLiving {
         SpaceGame.camera.resetViewMatrix();
         this.setPlayerActualPos(x, y, z);
         if(!this.sg.save.activeWorld.activeWorldFace.paused) {
-            double xShift = 0.25 * ((Math.sin(((this.sg.save.thePlayer.viewBobTimer / 60f) + 0.75f) * (Math.PI * 2f)) * 0.5) + 0.5f);
-            double yShift = 0.125 * ((Math.sin(((this.sg.save.thePlayer.viewBobTimer / 60f) - 0.125f) * (Math.PI * 4f)) * 0.5) + 0.5f);
+            double xShift = 0.25 * ((MathUtils.sin((float) (((this.sg.save.thePlayer.viewBobTimer / 60f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
+            double yShift = 0.125 * ((MathUtils.sin((float) (((this.sg.save.thePlayer.viewBobTimer / 60f) - 0.125f) * (Math.PI * 4f))) * 0.5) + 0.5f);
             SpaceGame.camera.viewMatrix.translateLocal(-xShift, -yShift, 0);
         }
         this.setRotation();
@@ -650,10 +654,10 @@ public final class EntityPlayer extends EntityLiving {
             Vector3f chunkOffset = new Vector3f(0,0,0);
             Shader.worldShader2DTexture.uploadVec3f("chunkOffset", chunkOffset);
             Tessellator tessellator = Tessellator.instance;
-            tessellator.addVertex2DTexture(16777215, (float) ((this.x % 32) + (this.width / 1.5)), (float) ((this.y % 32) - (this.height/2) + 0.07F), (float) ((this.z % 32) - (this.width / 1.5)), 3);
-            tessellator.addVertex2DTexture(16777215, (float) ((this.x % 32) - (this.width / 1.5)), (float) ((this.y % 32) - (this.height/2) + 0.07F), (float) ((this.z % 32) + (this.width / 1.5)), 1);
-            tessellator.addVertex2DTexture(16777215, (float) ((this.x % 32) + (this.width / 1.5)), (float) ((this.y % 32) - (this.height/2) + 0.07F), (float) ((this.z % 32) + (this.width / 1.5)), 2);
-            tessellator.addVertex2DTexture(16777215, (float) ((this.x % 32) - (this.width / 1.5)), (float) ((this.y % 32) - (this.height/2) + 0.07F), (float) ((this.z % 32) - (this.width / 1.5)), 0);
+            tessellator.addVertex2DTexture(16777215, (float) ((this.x % 32) + (this.width / 1.5)), (float) ((this.y % 32) - (this.height/2) + 0.01F), (float) ((this.z % 32) - (this.width / 1.5)), 3);
+            tessellator.addVertex2DTexture(16777215, (float) ((this.x % 32) - (this.width / 1.5)), (float) ((this.y % 32) - (this.height/2) + 0.01F), (float) ((this.z % 32) + (this.width / 1.5)), 1);
+            tessellator.addVertex2DTexture(16777215, (float) ((this.x % 32) + (this.width / 1.5)), (float) ((this.y % 32) - (this.height/2) + 0.01F), (float) ((this.z % 32) + (this.width / 1.5)), 2);
+            tessellator.addVertex2DTexture(16777215, (float) ((this.x % 32) - (this.width / 1.5)), (float) ((this.y % 32) - (this.height/2) + 0.01F), (float) ((this.z % 32) - (this.width / 1.5)), 0);
             tessellator.addElements();
             GL46.glEnable(GL46.GL_BLEND);
             GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
@@ -680,9 +684,20 @@ public final class EntityPlayer extends EntityLiving {
     public void damage(float healthReduction){
         this.health -= healthReduction;
         this.runDamageTilt = true;
-        this.damageTimer = 0;
+        this.damageTimer = 30;
         this.roll = 0;
+        this.canDamage = false;
         new SoundPlayer(this.sg).playSound(this.x, this.y, this.z, new Sound(Sound.fallDamage, false), new Random().nextFloat(0.4F, 0.7F));
+    }
+
+    @Override
+    public String getHurtSound() {
+        return Sound.fallDamage;
+    }
+
+    @Override
+    public String getAmbientSound() {
+        return null;
     }
 
     private void clearInventory(){

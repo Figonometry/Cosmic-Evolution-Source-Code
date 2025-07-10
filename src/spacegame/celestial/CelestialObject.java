@@ -2,6 +2,7 @@ package spacegame.celestial;
 
 import org.joml.Matrix3d;
 import org.joml.Vector3d;
+import spacegame.core.MathUtils;
 import spacegame.core.SpaceGame;
 import spacegame.render.RenderCelestialBody;
 
@@ -102,8 +103,8 @@ public abstract class CelestialObject {
 
         // Compute current distance r from parent body
         double r = Math.sqrt(
-                Math.pow((this.semiMajorAxis * Math.cos(currentDegreeInRads)) - this.focalDistance, 2) +
-                        Math.pow(this.semiMinorAxis * Math.sin(currentDegreeInRads), 2)
+                Math.pow((this.semiMajorAxis * MathUtils.cos((float) currentDegreeInRads)) - this.focalDistance, 2) +
+                        Math.pow(this.semiMinorAxis * MathUtils.sin((float) currentDegreeInRads), 2)
         );
 
         // Compute dynamic velocity using vis-viva equation
@@ -125,9 +126,9 @@ public abstract class CelestialObject {
         currentDegreeInRads = currentDegreeInRads % (2 * Math.PI);
 
         // Recalculate position based on updated angle
-        this.position.x = (this.semiMajorAxis * Math.cos(currentDegreeInRads)) - this.focalDistance;
+        this.position.x = (this.semiMajorAxis * MathUtils.cos((float) currentDegreeInRads)) - this.focalDistance;
         this.position.y = 0;
-        this.position.z = this.semiMinorAxis * Math.sin(currentDegreeInRads);
+        this.position.z = this.semiMinorAxis * MathUtils.sin((float) currentDegreeInRads);
 
         // Apply inclination and rotations
         double inclinationInRads = Math.toRadians(this.inclination + 180);
@@ -144,9 +145,9 @@ public abstract class CelestialObject {
 
         double currentDegreeInRads = Math.toRadians(degrees);
 
-        this.position.x = (this.semiMajorAxis * Math.cos(currentDegreeInRads)) - this.focalDistance;
+        this.position.x = (this.semiMajorAxis * MathUtils.cos((float) currentDegreeInRads)) - this.focalDistance;
         this.position.y = 0;
-        this.position.z = this.semiMinorAxis * Math.sin(currentDegreeInRads);
+        this.position.z = this.semiMinorAxis * MathUtils.sin((float) currentDegreeInRads);
 
         double inclinationInRads = Math.toRadians(this.inclination + 180);
 
@@ -166,9 +167,9 @@ public abstract class CelestialObject {
 
         Vector3d oldFramePos = new Vector3d();
 
-        oldFramePos.x = this.semiMajorAxis  * Math.cos(currentDegreeInRads);
+        oldFramePos.x = this.semiMajorAxis  * MathUtils.cos(currentDegreeInRads);
         oldFramePos.y = 0;
-        oldFramePos.z = this.semiMinorAxis * Math.sin(currentDegreeInRads);
+        oldFramePos.z = this.semiMinorAxis * MathUtils.sin(currentDegreeInRads);
 
         double inclinationInRads = Math.toRadians(this.inclination);
 

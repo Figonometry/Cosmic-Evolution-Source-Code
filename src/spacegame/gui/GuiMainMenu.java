@@ -2,6 +2,7 @@ package spacegame.gui;
 
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
+import spacegame.core.MathUtils;
 import spacegame.core.SpaceGame;
 import spacegame.core.Timer;
 import spacegame.render.Shader;
@@ -219,9 +220,9 @@ public final class GuiMainMenu extends Gui {
 
 
 
-        red *= (Math.sin((double) Timer.elapsedTime /starColorTimer[starNumber]) * 0.25F) + 0.75F;
-        green *= (Math.sin((double) Timer.elapsedTime / starColorTimer[starNumber]) * 0.25F) + 0.75F;
-        blue *= (Math.sin((double) Timer.elapsedTime / starColorTimer[starNumber]) * 0.25F) + 0.75F;
+        red *= (MathUtils.sin((float) ((double) Timer.elapsedTime /starColorTimer[starNumber])) * 0.25F) + 0.75F;
+        green *= (MathUtils.sin((float) ((double) Timer.elapsedTime / starColorTimer[starNumber])) * 0.25F) + 0.75F;
+        blue *= (MathUtils.sin((float) ((double) Timer.elapsedTime / starColorTimer[starNumber])) * 0.25F) + 0.75F;
 
         color = new Color(red,green,blue);
         return color.getRGB() * -1;

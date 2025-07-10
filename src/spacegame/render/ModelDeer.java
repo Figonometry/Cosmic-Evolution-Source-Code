@@ -1,9 +1,11 @@
 package spacegame.render;
 
 import org.joml.Vector3f;
+import spacegame.core.MathUtils;
 import spacegame.core.SpaceGame;
 import spacegame.entity.Entity;
 import spacegame.entity.EntityDeer;
+import spacegame.entity.EntityLiving;
 
 import java.awt.*;
 
@@ -74,16 +76,16 @@ public final class ModelDeer extends Model {
         float angleBackLeftLeg = 0;
         float angleFrontRightLeg = 0;
         if(!deer.stopBackRightLeg) {
-            angleBackRightLeg = (float) (Math.sin((stepInCycle / 4.775)) * legAngleMax);
+            angleBackRightLeg = (float) (MathUtils.sin((stepInCycle / 4.775)) * legAngleMax);
         }
         if(!deer.stopFrontLeftLeg) {
-            angleFrontLeftLeg = (float) (Math.sin(((stepInCycle - 7.5) / 4.775)) * legAngleMax);
+            angleFrontLeftLeg = (float) (MathUtils.sin(((stepInCycle - 7.5) / 4.775)) * legAngleMax);
         }
         if(!deer.stopBackLeftLeg) {
-            angleBackLeftLeg = (float) (Math.sin(((stepInCycle - 15) / 4.775)) * legAngleMax);
+            angleBackLeftLeg = (float) (MathUtils.sin(((stepInCycle - 15) / 4.775)) * legAngleMax);
         }
         if(!deer.stopFrontRightLeg) {
-            angleFrontRightLeg = (float) (Math.sin(((stepInCycle - 22.5) / 4.775)) * legAngleMax);
+            angleFrontRightLeg = (float) (MathUtils.sin(((stepInCycle - 22.5) / 4.775)) * legAngleMax);
         }
 
         if(!continueAnimation){
@@ -254,9 +256,9 @@ public final class ModelDeer extends Model {
     public float varyLightReductionAmount(float input, int sineFunction, Entity associatedEntity){
         float angleDeg = (float) Math.toRadians(associatedEntity.yaw);
         float ratio = switch (sineFunction) {
-            case 0 -> (float) ((Math.sin(angleDeg + 0.5 * Math.PI) * 0.5) + 0.5f);
-            case 1 -> (float) ((Math.sin(angleDeg * Math.PI) * 0.5) + 0.5f);
-            case 2 -> (float) ((Math.sin(angleDeg - 0.5 * Math.PI) * 0.5) + 0.5f);
+            case 0 -> (float) ((MathUtils.sin((float) (angleDeg + 0.5 * Math.PI)) * 0.5) + 0.5f);
+            case 1 -> (float) ((MathUtils.sin((float) (angleDeg * Math.PI)) * 0.5) + 0.5f);
+            case 2 -> (float) ((MathUtils.sin((float) (angleDeg - 0.5 * Math.PI)) * 0.5) + 0.5f);
             default -> 0;
         };
         return input * ratio;
@@ -267,7 +269,11 @@ public final class ModelDeer extends Model {
         float x = (float) (Math.abs((associatedEntity.x % 32f) - vertex.x) + associatedEntity.x);
         float y = (float) (Math.abs((associatedEntity.y % 32f) - vertex.y) + associatedEntity.y);
         float z = (float) (Math.abs((associatedEntity.z % 32f) - vertex.z) + associatedEntity.z);
-        this.setVertexLight1Arg(SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockLightValue((int) x, (int) y, (int) z), x, y, z, SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockLightColor((int) x, (int) y, (int) z));
+        int xInt = MathUtils.floorDouble(x);
+        int yInt = MathUtils.floorDouble(y);
+        int zInt = MathUtils.floorDouble(z);
+        float[] lightColor =  !associatedEntity.canDamage ? new float[]{1,0.65f,0.65f}  : SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockLightColor(xInt, yInt, zInt);
+        this.setVertexLight1Arg(SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockLightValue(xInt, yInt, zInt), x, y, z, lightColor);
         this.red -= lightReduction;
         this.green -= lightReduction;
         this.blue -= lightReduction;

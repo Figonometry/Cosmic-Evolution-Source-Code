@@ -81,10 +81,10 @@ public final class Chunk implements Comparable<Chunk> {
     public static int vboID;
     public static int vaoID;
     public static int eboID;
-    public static final int positionsSize = 3;
-    public static final int colorSize = 4;
+    public static final int positionsSize = 1;
+    public static final int colorSize = 1;
     public static final int texIndexSize = 1;
-    public static final int texCoordsSize = 2;
+    public static final int texCoordsSize = 1;
     public static final int vertexSizeBytes = (positionsSize + colorSize + texCoordsSize + texIndexSize) * Float.BYTES;
 
     public static void initBuffers(){
@@ -855,7 +855,7 @@ public final class Chunk implements Comparable<Chunk> {
         this.chunkOffset.x = xOffset;
         this.chunkOffset.y = yOffset;
         this.chunkOffset.z = zOffset;
-        Shader.worldShaderTextureArray.uploadVec3f("chunkOffset", this.chunkOffset);
+        Shader.worldShaderTextureArrayCompressed.uploadVec3f("chunkOffset", this.chunkOffset);
         if (this.updating && this.vertexBufferOpaqueOld != null) {
             GL46.glBufferData(GL46.GL_ARRAY_BUFFER, this.vertexBufferOpaqueOld, GL46.GL_STATIC_DRAW);
             GL46.glBufferData(GL46.GL_ELEMENT_ARRAY_BUFFER, this.elementBufferOpaqueOld, GL46.GL_STATIC_DRAW);
@@ -868,7 +868,7 @@ public final class Chunk implements Comparable<Chunk> {
     }
 
     public void renderTransparent() {
-        Shader.worldShaderTextureArray.uploadVec3f("chunkOffset", chunkOffset);
+        Shader.worldShaderTextureArrayCompressed.uploadVec3f("chunkOffset", chunkOffset);
         if (this.updating && this.vertexBufferTransparentOld != null) {
             GL46.glBufferData(GL46.GL_ARRAY_BUFFER, this.vertexBufferTransparentOld, GL46.GL_STATIC_DRAW);
             GL46.glBufferData(GL46.GL_ELEMENT_ARRAY_BUFFER, this.elementBufferTransparentOld, GL46.GL_STATIC_DRAW);

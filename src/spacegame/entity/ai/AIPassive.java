@@ -4,6 +4,7 @@ import org.joml.Vector2f;
 import org.joml.Vector2i;
 import spacegame.core.MathUtils;
 import spacegame.entity.Entity;
+import spacegame.entity.EntityLiving;
 
 import java.util.Random;
 
@@ -11,7 +12,7 @@ public abstract class AIPassive {
     private static final Random rand = new Random();
 
 
-    public static void chooseNewTargetAndSetAngle(Entity entity){
+    public static void chooseNewTargetAndSetAngle(EntityLiving entity){
         int x = MathUtils.floorDouble(entity.x);
         int z = MathUtils.floorDouble(entity.z);
 
@@ -33,14 +34,15 @@ public abstract class AIPassive {
         entity.moveTimer = (int) (distance/distancePerTick);
     }
 
-    private static double distancePerTick(Entity entity) {
+
+    private static double distancePerTick(EntityLiving entity) {
         double deltaX = 0;
         double deltaZ = 0;
         double distance = entity.rawDeltaX * entity.rawDeltaX; //If distance is ever 0.0 this will result in a NaN return and will cause the moveTimer to become 2^31
         distance = (float) (entity.speed / Math.sqrt(distance));
         entity.rawDeltaX *= distance;
-        double sine = Math.sin(Math.toRadians(entity.yaw));
-        double cosine = Math.cos(Math.toRadians(entity.yaw));
+        double sine = MathUtils.sin((float) Math.toRadians(entity.yaw));
+        double cosine = MathUtils.cos((float) Math.toRadians(entity.yaw));
         deltaX += entity.rawDeltaX * cosine - 0 * sine;
         deltaZ += 0 * cosine + entity.rawDeltaX * sine;
 

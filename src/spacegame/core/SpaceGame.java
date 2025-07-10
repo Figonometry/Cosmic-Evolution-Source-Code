@@ -56,6 +56,7 @@ public final class SpaceGame implements Runnable {
     public MoveableObject currentlySelectedMoveableObject;
     public Universe everything;
 
+
     public static void main(String[] args) {
         if(args.length != 0) {
             startMainThread(new Thread(new SpaceGame(args[0])));

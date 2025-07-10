@@ -1,6 +1,7 @@
 package spacegame.entity;
 
 import org.lwjgl.opengl.GL46;
+import spacegame.core.Sound;
 import spacegame.core.SpaceGame;
 import spacegame.entity.ai.AIPassive;
 import spacegame.gui.FontRenderer;
@@ -56,6 +57,7 @@ public final class EntityDeer extends EntityLiving {
         this.setEntityState();
         this.moveAndHandleCollision();
         this.performStepSound();
+        this.playAmbientSound();
         this.setCanEntityJump();
 
         this.prevX = this.x;
@@ -73,11 +75,15 @@ public final class EntityDeer extends EntityLiving {
         this.moveTimer--;
         if(Math.abs(this.x - this.targetX) < 0.5 && Math.abs(this.z - this.targetZ) < 0.5 || this.moveTimer <= 0 && this.shouldMove){
             this.shouldMove = false;
-            this.waitTimer = new Random().nextInt(180, 600);
+            if(this.alerted){
+                this.waitTimer = new Random().nextInt(15,30);
+            } else {
+                this.waitTimer = new Random().nextInt(180, 600);
+            }
         }
 
         this.waitTimer--;
-        if(this.waitTimer <= 0 && !this.shouldMove){
+        if(this.waitTimer <= 0 && !this.shouldMove) {
             this.rawDeltaX = -0.1f;
             AIPassive.chooseNewTargetAndSetAngle(this);
         }
@@ -121,6 +127,16 @@ public final class EntityDeer extends EntityLiving {
                 this.moveEntityUpDistance -= 0.05D;
             }
         }
+
+        this.damageTimer--;
+        if(this.damageTimer <= 0){
+            this.canDamage = true;
+        }
+
+        this.alertTimer--;
+        if(this.alertTimer <= 0){
+            this.alerted = false;
+        }
     }
 
     private void updateYawAndPitch(){
@@ -148,6 +164,10 @@ public final class EntityDeer extends EntityLiving {
         }
 
         this.updateGroundPosition(this.rawDeltaX, 0, 0);
+
+        if(this.canMoveWithVector){
+            this.moveWithVector();
+        }
     }
 
 
@@ -164,6 +184,16 @@ public final class EntityDeer extends EntityLiving {
     public void handleDeath() {
         //Either disperse item or create a corpse, either way the entity needs to be nulled
         this.despawn = true;
+    }
+
+    @Override
+    public String getHurtSound() {
+        return Sound.deerHurt;
+    }
+
+    @Override
+    public String getAmbientSound() {
+        return Sound.deerAmbient;
     }
 
     @Override

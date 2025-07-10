@@ -5,6 +5,7 @@ import org.lwjgl.opengl.GL46;
 import spacegame.celestial.CelestialObject;
 import spacegame.celestial.Sun;
 import spacegame.core.GameSettings;
+import spacegame.core.MathUtils;
 import spacegame.core.SpaceGame;
 import spacegame.core.Timer;
 import spacegame.gui.GuiInGame;
@@ -55,25 +56,20 @@ public final class RenderWorldScene {
         GL46.glVertexAttribPointer(3, Chunk.texIndexSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes, (Chunk.positionsSize + Chunk.colorSize + Chunk.texCoordsSize) * Float.BYTES);
         GL46.glEnableVertexAttribArray(3);
 
-        GL46.glUseProgram(Shader.worldShaderTextureArray.shaderProgramID);
+        GL46.glUseProgram(Shader.worldShaderTextureArrayCompressed.shaderProgramID);
 
-        Shader.worldShaderTextureArray.uploadMat4d("uProjection", SpaceGame.camera.projectionMatrix);
-        Shader.worldShaderTextureArray.uploadMat4d("uView", SpaceGame.camera.viewMatrix);
-        Shader.worldShaderTextureArray.uploadInt("textureArray", 0);
-        Shader.worldShaderTextureArray.uploadBoolean("useFog", true);
-        Shader.worldShaderTextureArray.uploadFloat("fogDistance", GameSettings.renderDistance << 5);
-        Shader.worldShaderTextureArray.uploadFloat("fogRed", this.controller.parentWorldFace.parentWorld.skyColor[0]);
-        Shader.worldShaderTextureArray.uploadFloat("fogGreen", this.controller.parentWorldFace.parentWorld.skyColor[1]);
-        Shader.worldShaderTextureArray.uploadFloat("fogBlue", this.controller.parentWorldFace.parentWorld.skyColor[2]);
-        Shader.worldShaderTextureArray.uploadDouble("time", (double) Timer.elapsedTime % 8388608);
-        Shader.worldShaderTextureArray.uploadBoolean("blocks", true);
+        Shader.worldShaderTextureArrayCompressed.uploadMat4d("uProjection", SpaceGame.camera.projectionMatrix);
+        Shader.worldShaderTextureArrayCompressed.uploadMat4d("uView", SpaceGame.camera.viewMatrix);
+        Shader.worldShaderTextureArrayCompressed.uploadInt("textureArray", 0);
+        Shader.worldShaderTextureArrayCompressed.uploadBoolean("useFog", true);
+        Shader.worldShaderTextureArrayCompressed.uploadFloat("fogDistance", GameSettings.renderDistance << 5);
+        Shader.worldShaderTextureArrayCompressed.uploadFloat("fogRed", this.controller.parentWorldFace.parentWorld.skyColor[0]);
+        Shader.worldShaderTextureArrayCompressed.uploadFloat("fogGreen", this.controller.parentWorldFace.parentWorld.skyColor[1]);
+        Shader.worldShaderTextureArrayCompressed.uploadFloat("fogBlue", this.controller.parentWorldFace.parentWorld.skyColor[2]);
+        Shader.worldShaderTextureArrayCompressed.uploadDouble("time", (double) Timer.elapsedTime % 8388608);
+        Shader.worldShaderTextureArrayCompressed.uploadBoolean("blocks", true);
 
         GL46.glBindVertexArray(Chunk.vaoID);
-
-        GL46.glEnableVertexAttribArray(0);
-        GL46.glEnableVertexAttribArray(1);
-        GL46.glEnableVertexAttribArray(2);
-        GL46.glEnableVertexAttribArray(3);
 
         Chunk chunk;
         int playerChunkX;
@@ -87,15 +83,15 @@ public final class RenderWorldScene {
             chunk = sortedChunks[i];
             if (!chunk.shouldRender) {continue;}
             if (chunk.empty) {continue;}
-            playerChunkX = (int) (this.controller.parentWorldFace.sg.save.thePlayer.x / 32);
-            playerChunkY = (int) (this.controller.parentWorldFace.sg.save.thePlayer.y / 32);
-            playerChunkZ = (int) (this.controller.parentWorldFace.sg.save.thePlayer.z / 32);
+            playerChunkX = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.x) >> 5;
+            playerChunkY = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.y) >> 5;
+            playerChunkZ = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.z) >> 5;
             xOffset = chunk.x - playerChunkX;
             yOffset = chunk.y - playerChunkY;
             zOffset = chunk.z - playerChunkZ;
-            xOffset *= 32;
-            yOffset *= 32;
-            zOffset *= 32;
+            xOffset <<= 5;
+            yOffset <<= 5;
+            zOffset <<= 5;
 
             if (chunk.queryID != -10) {
                 if (GL46.glGetQueryObjecti(chunk.queryID, GL46.GL_QUERY_RESULT_AVAILABLE) == GL46.GL_TRUE) {
@@ -221,7 +217,7 @@ public final class RenderWorldScene {
 
                 Vector3f celestialObjectPosition = new Vector3f((float) positionDifference.y, (float) positionDifference.z, (float) positionDifference.x);
                 celestialObjectPosition.rotateX((float) (Math.toRadians(playerLon) + Math.toRadians((360 * ((double) SpaceGame.instance.save.time / currentCelestialObject.rotationPeriod)) % 360)));
-                celestialObjectPosition.rotateZ((float) ((float)  Math.toRadians(playerLat) + Math.toRadians((currentCelestialObject.axialTiltX * Math.sin(((double) (SpaceGame.instance.save.time % currentCelestialObject.orbitalPeriod) / currentCelestialObject.orbitalPeriod) * 2 * Math.PI)))));
+                celestialObjectPosition.rotateZ((float) ((float)  Math.toRadians(playerLat) + Math.toRadians((currentCelestialObject.axialTiltX * MathUtils.sin(((double) (SpaceGame.instance.save.time % currentCelestialObject.orbitalPeriod) / currentCelestialObject.orbitalPeriod) * 2 * Math.PI)))));
 
                 if(renderingObject instanceof Sun){
                     starPositions.add(new Vector3f(celestialObjectPosition));
@@ -321,7 +317,7 @@ public final class RenderWorldScene {
             Vector3f vertex4;
             Matrix4f modelMatrix = new Matrix4f();
             modelMatrix.rotateX((float) -(Math.toRadians(playerLon) + Math.toRadians((360 * ((double) SpaceGame.instance.save.time / currentCelestialObject.rotationPeriod)) % 360)));
-            modelMatrix.rotateZ((float) ((float)  Math.toRadians(playerLat) + Math.toRadians((-currentCelestialObject.axialTiltX * Math.sin(((double) (SpaceGame.instance.save.time % currentCelestialObject.orbitalPeriod) / currentCelestialObject.orbitalPeriod) * 2 * Math.PI)))));
+            modelMatrix.rotateZ((float) ((float)  Math.toRadians(playerLat) + Math.toRadians((-currentCelestialObject.axialTiltX * MathUtils.sin(((double) (SpaceGame.instance.save.time % currentCelestialObject.orbitalPeriod) / currentCelestialObject.orbitalPeriod) * 2 * Math.PI)))));
             for (int latitude = -90; latitude < 90; latitude += 45) {
                 for (int longitude = 0; longitude < 360; longitude += 45) {
                     vertex1 = this.getPositionOnSphere(latitude + 45, longitude, 400000);
@@ -524,9 +520,9 @@ public final class RenderWorldScene {
         Vector3f position = new Vector3f();
         float latRad = (float) Math.toRadians(latitude);
         float lonRad = (float) Math.toRadians(longitude);
-        position.x = (float) (R * Math.cos(latRad) * Math.cos(lonRad));
-        position.y = (float) (R * Math.sin(latRad));
-        position.z = (float) (R * Math.cos(latRad) * Math.sin(lonRad));
+        position.x = (float) (R * MathUtils.cos(latRad) * MathUtils.cos(lonRad));
+        position.y = (float) (R * MathUtils.sin(latRad));
+        position.z = (float) (R * MathUtils.cos(latRad) * MathUtils.sin(lonRad));
         return position;
     }
 
@@ -535,9 +531,9 @@ public final class RenderWorldScene {
         Vector3f position = new Vector3f();
         float latRad = (float) Math.toRadians(latitude);
         float lonRad = (float) Math.toRadians(longitude);
-        position.x = (float) (R * Math.cos(latRad) * Math.cos(lonRad));
-        position.y = (float) (R * Math.sin(latRad));
-        position.z = (float) (R * Math.cos(latRad) * Math.sin(lonRad));
+        position.x = (float) (R * MathUtils.cos(latRad) * MathUtils.cos(lonRad));
+        position.y = (float) (R * MathUtils.sin(latRad));
+        position.z = (float) (R * MathUtils.cos(latRad) * MathUtils.sin(lonRad));
         return position;
     }
 
@@ -545,9 +541,9 @@ public final class RenderWorldScene {
         Vector3f position = new Vector3f();
         float latRad = (float) Math.toRadians(latitude);
         float lonRad = (float) Math.toRadians(longitude);
-        position.x = (float) (R * Math.cos(latRad) * Math.cos(lonRad));
-        position.y = (float) (R * Math.sin(latRad));
-        position.z = (float) (R * Math.cos(latRad) * Math.sin(lonRad));
+        position.x = (float) (R * MathUtils.cos(latRad) * MathUtils.cos(lonRad));
+        position.y = (float) (R * MathUtils.sin(latRad));
+        position.z = (float) (R * MathUtils.cos(latRad) * MathUtils.sin(lonRad));
         return position;
     }
 
@@ -575,7 +571,7 @@ public final class RenderWorldScene {
         float angle = (float) Math.toDegrees(Math.acos(dotProduct));
 
 
-        float intensity = Math.max(0, (float) Math.cos(Math.toRadians(angle)));
+        float intensity = Math.max(0, (float) MathUtils.cos(Math.toRadians(angle)));
 
         int red = (baseColor >> 16) & 0xFF;
         int green = (baseColor >> 8) & 0xFF;

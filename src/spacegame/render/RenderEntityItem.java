@@ -4,6 +4,7 @@ import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL46;
 import spacegame.core.GameSettings;
+import spacegame.core.MathUtils;
 import spacegame.core.SpaceGame;
 import spacegame.item.Item;
 import spacegame.world.WorldFace;
@@ -84,7 +85,7 @@ public final class RenderEntityItem {
         WorldFace worldFace = SpaceGame.instance.save.activeWorld.activeWorldFace;
         this.currentTime = SpaceGame.instance.save.time;
         float x = (float) (this.x % 32);
-        float y = (float) ((float) (this.y % 32) + 0.05F + (0.05F * ((Math.sin((((double) this.currentTime / 120) * Math.PI * 2) - (0.5 * Math.PI)) * 0.5) + 0.5f)));
+        float y = (float) ((float) (this.y % 32) + 0.05F + (0.05F * ((MathUtils.sin((((double) this.currentTime / 120) * Math.PI * 2) - (0.5 * Math.PI)) * 0.5) + 0.5f)));
         float z = (float) (this.z % 32);
 
         if(x < 0){
@@ -198,7 +199,7 @@ public final class RenderEntityItem {
 
     private void renderOpaqueFace(Tessellator tessellator, WorldFace worldFace, short block, int face, ModelFace blockFace, float xSample1, float ySample1, float xSample2, float ySample2, float xSample3, float ySample3, float xSample4, float ySample4, int corner1, int corner2, int corner3, int corner4) {
         float x = (float) (this.x % 32);
-        float y = (float) ((float) (this.y % 32) + 0.05F + (0.05F * ((Math.sin((((double) this.currentTime / 120) * Math.PI * 2) - (0.5 * Math.PI)) * 0.5) + 0.5f)));
+        float y = (float) ((float) (this.y % 32) + 0.05F + (0.05F * ((MathUtils.sin((((double) this.currentTime / 120) * Math.PI * 2) - (0.5 * Math.PI)) * 0.5) + 0.5f)));
         float z = (float) (this.z % 32);
 
         if(x < 0){

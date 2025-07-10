@@ -29,6 +29,7 @@ public final class Shader {
     public static final Shader screen2DTexture = new Shader("src/spacegame/assets/shader/screen2DTexture.glsl");
     public static final Shader screen2DTextureAtlas = new Shader("src/spacegame/assets/shader/screen2DTextureAtlas.glsl");
     public static final Shader screenTextureArray = new Shader("src/spacegame/assets/shader/screenTextureArray.glsl");
+    public static final Shader worldShaderTextureArrayCompressed = new Shader("src/spacegame/assets/shader/worldTextureArrayCompressed.glsl");
 
 
     public Shader(String filepath) {

@@ -1,8 +1,8 @@
 #type vertex
 #version 460 core
-layout (location=0) in vec3 aPos;
-layout (location=1) in vec4 aColor;
-layout (location=2) in vec2 aTexCoords;
+layout (location=0) in float aPos;
+layout (location=1) in float aColor;
+layout (location=2) in float aTexCoords;
 layout (location=3) in float aTexId;
 
 uniform dmat4 uProjection;
@@ -39,13 +39,57 @@ float sinZ(float x, float y, float z){
     return z;
 }
 
+float halfToFloat(int f16) {
+    int sign = (f16 >> 15) & 0x1;
+    int exponent = (f16 >> 10) & 0x1F;
+    int mantissa = f16 & 0x3FF;
+
+    if (exponent == 0) {
+        return sign == 0? 0 : -0.0f;
+    } else if (exponent == 31) {
+        return sign == 0 ? 0x7f800000 : 0xff800000;
+    } else {
+        exponent += 112;
+        mantissa <<= 13;
+        return intBitsToFloat((sign << 31) | (exponent << 23) | mantissa);
+    }
+}
+
+//first 8 bits are unused, bit order in increments of 6 (x less than 1, x greater than 1, y less than 1, y greater than 1)
+vec2 decompressTextureCoordinates(float texCoord){
+    int combinedInt = floatBitsToInt(texCoord);
+    return vec2(((combinedInt >> 18) & 63) != 0 ? ((combinedInt >> 18) & 63) / 32f : float((combinedInt >> 12) & 63), ((combinedInt >> 6) & 63) != 0 ? ((combinedInt >> 6) & 63) / 32f : float(combinedInt & 63));
+}
+
+//encoded in increments of 8 bits as alpha, red, green, blue
+vec4 decompressColor(float color) {
+    int combinedInt = floatBitsToInt(color);
+    return vec4((combinedInt >> 16) & 255, (combinedInt >> 8)  & 255, combinedInt & 255, (combinedInt >> 24) & 255) / 255.0;
+}
+
+vec3 decompressPosition(float posXY, float posZAndTexID){
+    int combinedIntXY = floatBitsToInt(posXY);
+    int combinedIntZ = floatBitsToInt(posZAndTexID);
+
+    int x = (combinedIntXY >> 16) & 65535;
+    int y = combinedIntXY & 65535;
+    int z = (combinedIntZ >> 16) & 65535;
+
+    return vec3(halfToFloat(x), halfToFloat(y), halfToFloat(z));
+}
+
+float decompressTexID(float posZAndTexID){
+    int combinedInt = floatBitsToInt(posZAndTexID);
+    return float(combinedInt & 65535);
+}
+
 void main()
 {
-    fColor = aColor;
-    fTexCoords = aTexCoords;
-    fTexId = aTexId;
+    fColor = decompressColor(aColor);
+    fTexCoords = decompressTextureCoordinates(aTexCoords);
+    fTexId = decompressTexID(aTexId);
 
-    vec3 correctPos = vec3(chunkOffset + aPos);
+    vec3 correctPos = vec3(chunkOffset + decompressPosition(aPos, aTexId));
     if(blocks){
         switch(int(fTexId)){
             case 4: //water

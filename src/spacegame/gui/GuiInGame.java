@@ -325,18 +325,18 @@ public final class GuiInGame extends Gui {
                 float x = 2f;
                 float y = -2.5f;
                 float z = -3f;
-                x -= 0.5f * ((Math.sin(((this.sg.save.thePlayer.viewBobTimer / 60f) + 0.75f) * (Math.PI * 2f)) * 0.5) + 0.5f);
-                y -= 0.25f * ((Math.sin(((this.sg.save.thePlayer.viewBobTimer / 60f) - 0.125f) * (Math.PI * 4f)) * 0.5) + 0.5f);
-                z -= 1f * ((Math.sin(((SpaceGame.instance.save.thePlayer.swingTimer / 15f) + 0.75f) * (Math.PI * 2f)) * 0.5) + 0.5f);
+                x -= 0.5f * ((MathUtils.sin((float) (((this.sg.save.thePlayer.viewBobTimer / 60f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
+                y -= 0.25f * ((MathUtils.sin((float) (((this.sg.save.thePlayer.viewBobTimer / 60f) - 0.125f) * (Math.PI * 4f))) * 0.5) + 0.5f);
+                z -= 1f * ((MathUtils.sin((float) (((SpaceGame.instance.save.thePlayer.swingTimer / 15f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
                 Vector3f position = new Vector3f(x,y,z);
                 Matrix3f rotationMatrix = new Matrix3f();
                 rotationMatrix.rotateY((float) (0.25 * Math.PI));
-                double sine = (Math.sin((((double) SpaceGame.instance.save.thePlayer.swingTimer / 15) * Math.PI * 2) - (0.5 * Math.PI)) * 0.5) + 0.5f;
+                double sine = (MathUtils.sin((float) ((((double) SpaceGame.instance.save.thePlayer.swingTimer / 15) * Math.PI * 2) - (0.5 * Math.PI))) * 0.5) + 0.5f;
                 rotationMatrix.rotateLocalX((float) ((float) -(0.25 * Math.PI) * sine));
                 Quaternionf rotation = rotationMatrix.getUnnormalizedRotation(new Quaternionf());
                 float lightLevelFloat = getLightValueFromMap(SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockLightValue((int) SpaceGame.instance.save.thePlayer.x, (int) SpaceGame.instance.save.thePlayer.y, (int) SpaceGame.instance.save.thePlayer.z));
-                lightLevelFloat -=  0.1 * (Math.sin(SpaceGame.instance.save.thePlayer.yaw / 45) + 1);
-                lightLevelFloat -=  0.1 * (Math.sin(SpaceGame.instance.save.thePlayer.pitch / 45) + 1);
+                lightLevelFloat -=  0.1 * (MathUtils.sin(SpaceGame.instance.save.thePlayer.yaw / 45) + 1);
+                lightLevelFloat -=  0.1 * (MathUtils.sin(SpaceGame.instance.save.thePlayer.pitch / 45) + 1);
                 if(lightLevelFloat < 0.1){
                     lightLevelFloat = 0.1f;
                 }
@@ -436,18 +436,18 @@ public final class GuiInGame extends Gui {
                 float x = 2f;
                 float y = -1f;
                 float z = -3f;
-                x -= 0.125f * ((Math.sin(((this.sg.save.thePlayer.viewBobTimer / 60f) + 0.75f) * (Math.PI * 2f)) * 0.5) + 0.5f);
-                y -= 0.0625f * ((Math.sin(((this.sg.save.thePlayer.viewBobTimer / 60f) - 0.125f) * (Math.PI * 4f)) * 0.5) + 0.5f);
-                z -= 1f * ((Math.sin(((SpaceGame.instance.save.thePlayer.swingTimer / 15f) + 0.75f) * (Math.PI * 2f)) * 0.5) + 0.5f);
+                x -= 0.125f * ((MathUtils.sin((float) (((this.sg.save.thePlayer.viewBobTimer / 60f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
+                y -= 0.0625f * ((MathUtils.sin((float) (((this.sg.save.thePlayer.viewBobTimer / 60f) - 0.125f) * (Math.PI * 4f))) * 0.5) + 0.5f);
+                z -= 1f * ((MathUtils.sin((float) (((SpaceGame.instance.save.thePlayer.swingTimer / 15f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
                 Vector3f position = new Vector3f(x,y,z);
                 Matrix3f rotationMatrix = new Matrix3f();
                 rotationMatrix.rotateY((float) -(0.35 * Math.PI));
-                double sine = (Math.sin((((double) SpaceGame.instance.save.thePlayer.swingTimer / 15) * Math.PI * 2) - (0.5 * Math.PI)) * 0.5) + 0.5f;
+                double sine = (MathUtils.sin((float) ((((double) SpaceGame.instance.save.thePlayer.swingTimer / 15) * Math.PI * 2) - (0.5 * Math.PI))) * 0.5) + 0.5f;
                 rotationMatrix.rotateLocalX((float) ((float) -(0.25 * Math.PI) * sine));
                 Quaternionf rotation = rotationMatrix.getUnnormalizedRotation(new Quaternionf());
                 float lightLevelFloat = getLightValueFromMap(SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockLightValue((int) SpaceGame.instance.save.thePlayer.x, (int) SpaceGame.instance.save.thePlayer.y, (int) SpaceGame.instance.save.thePlayer.z));
-                lightLevelFloat -=  0.1 * (Math.sin(SpaceGame.instance.save.thePlayer.yaw / 45) + 1);
-                lightLevelFloat -=  0.1 * (Math.sin(SpaceGame.instance.save.thePlayer.pitch / 45) + 1);
+                lightLevelFloat -=  0.1 * (MathUtils.sin(SpaceGame.instance.save.thePlayer.yaw / 45) + 1);
+                lightLevelFloat -=  0.1 * (MathUtils.sin(SpaceGame.instance.save.thePlayer.pitch / 45) + 1);
                 if(lightLevelFloat < 0.1f){
                     lightLevelFloat = 0.1f;
                 }

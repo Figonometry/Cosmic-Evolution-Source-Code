@@ -8,6 +8,7 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
 import spacegame.celestial.CelestialObject;
 import spacegame.core.GameSettings;
+import spacegame.core.MathUtils;
 import spacegame.core.MouseListener;
 import spacegame.core.SpaceGame;
 import spacegame.render.*;
@@ -107,9 +108,9 @@ public final class GuiUniverseMap extends Gui {
         Vector3f position = new Vector3f();
         float latRad = (float) Math.toRadians(latitude);
         float lonRad = (float) Math.toRadians(longitude);
-        position.x = (float) (R * Math.cos(latRad) * Math.cos(lonRad));
-        position.y = (float) (R * Math.sin(latRad));
-        position.z = (float) (R * Math.cos(latRad) * Math.sin(lonRad));
+        position.x = (float) (R * MathUtils.cos(latRad) * MathUtils.cos(lonRad));
+        position.y = (float) (R * MathUtils.sin(latRad));
+        position.z = (float) (R * MathUtils.cos(latRad) * MathUtils.sin(lonRad));
         return position;
     }
 

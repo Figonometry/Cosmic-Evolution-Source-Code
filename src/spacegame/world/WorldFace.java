@@ -162,8 +162,7 @@ public final class WorldFace {
 
     }
 
-    public ArrayList<AxisAlignedBB> getBlockBoundingBoxes(AxisAlignedBB boundingBox){
-        ArrayList<AxisAlignedBB> blockBoundingBoxes = new ArrayList<>();
+    public ArrayList<AxisAlignedBB> getBlockBoundingBoxes(AxisAlignedBB boundingBox, ArrayList<AxisAlignedBB> blockBoundingBoxes){
 
         int minX = MathUtils.floorDouble(boundingBox.minX);
         int minY = MathUtils.floorDouble(boundingBox.minY);
@@ -1007,7 +1006,8 @@ public final class WorldFace {
         int chunkY = MathUtils.floorDouble(y) >> 5;
         int chunkZ = MathUtils.floorDouble(z) >> 5;
 
-        Vector3f movementVector = new Vector3f((float) (x - this.sg.save.thePlayer.x), (float) (y - (this.sg.save.thePlayer.y + this.sg.save.thePlayer.height/2)), (float) (z - this.sg.save.thePlayer.z)).normalize();
+        Vector3f movementVector = new Vector3f((float) (x - this.sg.save.thePlayer.x), 1f, (float) (z - this.sg.save.thePlayer.z)).normalize();
+        movementVector.mul(0.1f);
         ArrayList<Entity> entities = this.getEntitiesInChunks(this.getSurroundingChunksAndCurrentChunk(chunkX, chunkY, chunkZ));
 
         for(int i = 0; i < entities.size(); i++){
@@ -1016,7 +1016,6 @@ public final class WorldFace {
                 return true;
             }
         }
-
         return false;
     }
 

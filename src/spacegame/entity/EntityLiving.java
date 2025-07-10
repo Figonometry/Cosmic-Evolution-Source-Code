@@ -5,6 +5,7 @@ import spacegame.core.MathUtils;
 import spacegame.core.Sound;
 import spacegame.core.SoundPlayer;
 import spacegame.core.SpaceGame;
+import spacegame.entity.ai.AIPassive;
 import spacegame.gui.GuiWorldLoadingScreen;
 import spacegame.world.AxisAlignedBB;
 
@@ -19,7 +20,9 @@ public abstract class EntityLiving extends Entity {
     public int stepTimer = 180;
     public float health;
     public float maxHealth;
-    public byte damageTimer;
+    public int damageTimer;
+    public boolean alerted;
+    public int alertTimer;
     public AxisAlignedBB lowerBlock = new AxisAlignedBB();
     public AxisAlignedBB upperBlock = new AxisAlignedBB();
     public AxisAlignedBB northBlock = new AxisAlignedBB();
@@ -31,11 +34,24 @@ public abstract class EntityLiving extends Entity {
 
     public abstract void handleDeath();
 
+    public abstract String getHurtSound();
+
+    public abstract String getAmbientSound();
+
     public void damage(float healthReduction){
         this.health -= healthReduction;
-        this.damageTimer = 0;
-        this.roll = 0;
-        new SoundPlayer(SpaceGame.instance).playSound(this.x, this.y, this.z, new Sound(Sound.fallDamage, false), new Random().nextFloat(0.4F, 0.7F));
+        this.damageTimer = 30;
+        this.canDamage = false;
+        this.alerted = true;
+        this.alertTimer = new Random().nextInt(300, 600);
+        AIPassive.chooseNewTargetAndSetAngle(this);
+        new SoundPlayer(SpaceGame.instance).playSound(this.x, this.y, this.z, new Sound(this.getHurtSound(), false), new Random().nextFloat(0.9F, 1));
+    }
+
+    public void playAmbientSound(){
+        if(Block.rand.nextInt(1200) == 0){
+            new SoundPlayer(SpaceGame.instance).playSound(this.x, this.y, this.z, new Sound(this.getAmbientSound(), false), new Random().nextFloat(0.9F, 1));
+        }
     }
 
 
@@ -53,5 +69,6 @@ public abstract class EntityLiving extends Entity {
                 this.stepTimer--;
             }
     }
+
 
 }

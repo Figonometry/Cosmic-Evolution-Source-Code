@@ -7,6 +7,7 @@ import org.joml.Vector3f;
 import org.lwjgl.opengl.GL46;
 import spacegame.celestial.CelestialObject;
 import spacegame.celestial.Sun;
+import spacegame.core.MathUtils;
 import spacegame.core.SpaceGame;
 import spacegame.gui.GuiUniverseMap;
 
@@ -69,8 +70,8 @@ public final class RenderCelestialBody {
 
             if(this.doesOrbitLineNeedToRender(celestialObject)) {
                 double inclinationInRads = Math.toRadians(celestialObject.inclination);
-                double cosInclination = Math.cos(inclinationInRads);
-                double sinInclination = Math.sin(inclinationInRads);
+                double cosInclination = MathUtils.cos(inclinationInRads);
+                double sinInclination = MathUtils.sin(inclinationInRads);
 
                 float y1 = (float) (0 * cosInclination - (z - sizeZ) * sinInclination);
                 float z1 = (float) (0 * sinInclination + (z - sizeZ) * cosInclination);
@@ -193,7 +194,7 @@ public final class RenderCelestialBody {
         float dotProduct = vertexDir.dot(lightDir);
         float angle = (float) Math.toDegrees(Math.acos(dotProduct));
 
-        float intensity = Math.max(0, (float) Math.cos(Math.toRadians(angle)));
+        float intensity = Math.max(0, (float) MathUtils.cos(Math.toRadians(angle)));
 
         int red = (baseColor >> 16) & 0xFF;
         int green = (baseColor >> 8) & 0xFF;
@@ -213,9 +214,9 @@ public final class RenderCelestialBody {
         Vector3f position = new Vector3f();
         float latRad = (float) Math.toRadians(latitude);
         float lonRad = (float) Math.toRadians(longitude);
-        position.x = (float) (R * Math.cos(latRad) * Math.cos(lonRad));
-        position.y = (float) (R * Math.sin(latRad));
-        position.z = (float) (R * Math.cos(latRad) * Math.sin(lonRad));
+        position.x = (float) (R * MathUtils.cos(latRad) * MathUtils.cos(lonRad));
+        position.y = (float) (R * MathUtils.sin(latRad));
+        position.z = (float) (R * MathUtils.cos(latRad) * MathUtils.sin(lonRad));
         return position;
     }
 

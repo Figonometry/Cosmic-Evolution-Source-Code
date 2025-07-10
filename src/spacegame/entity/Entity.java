@@ -54,6 +54,7 @@ public abstract class Entity {
     public boolean canMoveWithVector = false;
     public Vector3f movementVector = new Vector3f();
     public static TextureLoader shadow;
+    public static ArrayList<AxisAlignedBB> surroundingBlocks = new ArrayList<>();
 
     public void tick() {
         return;
@@ -77,9 +78,9 @@ public abstract class Entity {
     }
 
     protected void moveWithVector(){
-        this.deltaX = ((this.speed) * this.movementVector.x);
-        this.deltaY = ((this.speed) * this.movementVector.y);
-        this.deltaZ = ((this.speed) * this.movementVector.z);
+        this.deltaX = this.movementVector.x;
+        this.deltaY = this.movementVector.y;
+        this.deltaZ = this.movementVector.z;
     }
 
     protected void updateAxisAlignedBB() {
@@ -137,13 +138,21 @@ public abstract class Entity {
         this.deltaX = 0.0F;
         this.deltaY = 0.0F;
 
+        double speed = this.speed;
+
+        if(this instanceof EntityLiving){
+           if(((EntityLiving) this).alerted){
+               speed *= 4;
+           }
+        }
+
         float distance = rawDeltaX * rawDeltaX + rawDeltaZ * rawDeltaZ;
         if (distance >= 0.01F) {
-            distance = (float) (this.speed / Math.sqrt(distance));
+            distance = (float) (speed / Math.sqrt(distance));
             rawDeltaX *= distance;
             rawDeltaZ *= distance;
-            float sine = (float) Math.sin(Math.toRadians(this.yaw));
-            float cosine = (float) Math.cos(Math.toRadians(this.yaw));
+            float sine = (float) MathUtils.sin((float) Math.toRadians(this.yaw));
+            float cosine = (float) MathUtils.cos((float) Math.toRadians(this.yaw));
             this.deltaX += rawDeltaX * cosine - rawDeltaZ * sine;
             this.deltaZ += rawDeltaZ * cosine + rawDeltaX * sine;
         }
@@ -163,18 +172,19 @@ public abstract class Entity {
 
     protected void moveAndHandleCollision(){
         this.boundingBox.adjustEntityBoundingBox(this.x, this.y, this.z, this.width, this.height, this.depth);
-        ArrayList<AxisAlignedBB> blockBoundingBoxes = SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockBoundingBoxes(this.boundingBox.expand(this.deltaX, this.deltaY, this.deltaZ));
+        surroundingBlocks.clear();
+        surroundingBlocks = SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockBoundingBoxes(this.boundingBox.expand(this.deltaX, this.deltaY, this.deltaZ), surroundingBlocks);
 
         AxisAlignedBB block;
-        for(int i = 0; i < blockBoundingBoxes.size(); i++) {
-            block = blockBoundingBoxes.get(i);
+        for(int i = 0; i < surroundingBlocks.size(); i++) {
+            block = surroundingBlocks.get(i);
             this.deltaX = block.clipXCollide(this.boundingBox, this.deltaX);
         }
 
         this.boundingBox.move(this.deltaX, 0, 0);
 
-        for(int i = 0; i < blockBoundingBoxes.size(); i++) {
-            block = blockBoundingBoxes.get(i);
+        for(int i = 0; i < surroundingBlocks.size(); i++) {
+            block = surroundingBlocks.get(i);
             this.deltaY = block.clipYCollide(this.boundingBox, this.deltaY);
             if(block.maxY == this.boundingBox.minY) {
                 this.isOnGround = true;
@@ -185,21 +195,20 @@ public abstract class Entity {
 
         this.boundingBox.move(0, this.deltaY, 0);
 
-        for(int i = 0; i < blockBoundingBoxes.size(); i++) {
-            block = blockBoundingBoxes.get(i);
+        for(int i = 0; i < surroundingBlocks.size(); i++) {
+            block = surroundingBlocks.get(i);
             this.deltaZ = block.clipZCollide(this.boundingBox, this.deltaZ);
         }
 
         this.boundingBox.move(0, 0, this.deltaZ);
 
-        if(this.deltaY == 0){
-            if(this instanceof EntityBlock || this instanceof EntityItem){
-                this.canMoveWithVector = false;
-                this.deltaX = 0;
-                this.deltaY = 0;
-                this.deltaZ = 0;
-            }
+        if(this.deltaY == 0 && this.canMoveWithVector) {
+            this.canMoveWithVector = false;
+            this.deltaX = 0;
+            this.deltaY = 0;
+            this.deltaZ = 0;
         }
+
 
         this.x += this.deltaX;
         this.y += this.deltaY;
