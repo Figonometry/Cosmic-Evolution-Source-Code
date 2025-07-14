@@ -144,6 +144,13 @@ public final class GuiMainMenu extends Gui {
             y -= 30;
             fontRenderer.drawString("Heavily modified the block collision system", x, y, yellow);
             y -= 30;
+            fontRenderer.drawString("Added Deer entities, spawnable by pressing G", x, y, green);
+            y -= 30;
+            fontRenderer.drawString("Fixed a bug where horizontal render distance would be initially set to 20", x, y, yellow);
+            y -= 30;
+            fontRenderer.drawString("Improved rendering efficiency", x, y, yellow);
+            y -= 30;
+            fontRenderer.drawString("Updates to the FPS count no longer are tied to the framerate", x, y, yellow);
 
 
 

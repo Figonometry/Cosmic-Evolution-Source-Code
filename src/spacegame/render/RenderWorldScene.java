@@ -29,63 +29,46 @@ public final class RenderWorldScene {
     }
 
     public void renderWorld(Chunk[] sortedChunks) {
+
         if (this.controller.parentWorldFace.sg.currentGui instanceof GuiInGame) {
             GuiInGame.renderBlockOutline();
             GuiInGame.renderBlockBreakingOutline();
         }
-        this.controller.drawCalls = 0;
 
-        GL46.glBindVertexArray(Chunk.vaoID);
-        GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, Chunk.vboID);
+        this.controller.drawCalls = 0;
 
         GL46.glEnable(GL46.GL_CULL_FACE);
         GL46.glCullFace(GL46.GL_FRONT);
 
-        GL46.glBindBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, Chunk.eboID);
         GL46.glBindTexture(GL46.GL_TEXTURE_2D_ARRAY, Assets.blockTextureArray.arrayID);
 
-        GL46.glVertexAttribPointer(0, Chunk.positionsSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes, 0);
-        GL46.glEnableVertexAttribArray(0);
+        GL46.glUseProgram(Shader.terrainShader.shaderProgramID);
 
-        GL46.glVertexAttribPointer(1, Chunk.colorSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes, Chunk.positionsSize * Float.BYTES);
-        GL46.glEnableVertexAttribArray(1);
-
-        GL46.glVertexAttribPointer(2, Chunk.texCoordsSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes, (Chunk.positionsSize + Chunk.colorSize) * Float.BYTES);
-        GL46.glEnableVertexAttribArray(2);
-
-        GL46.glVertexAttribPointer(3, Chunk.texIndexSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes, (Chunk.positionsSize + Chunk.colorSize + Chunk.texCoordsSize) * Float.BYTES);
-        GL46.glEnableVertexAttribArray(3);
-
-        GL46.glUseProgram(Shader.worldShaderTextureArrayCompressed.shaderProgramID);
-
-        Shader.worldShaderTextureArrayCompressed.uploadMat4d("uProjection", SpaceGame.camera.projectionMatrix);
-        Shader.worldShaderTextureArrayCompressed.uploadMat4d("uView", SpaceGame.camera.viewMatrix);
-        Shader.worldShaderTextureArrayCompressed.uploadInt("textureArray", 0);
-        Shader.worldShaderTextureArrayCompressed.uploadBoolean("useFog", true);
-        Shader.worldShaderTextureArrayCompressed.uploadFloat("fogDistance", GameSettings.renderDistance << 5);
-        Shader.worldShaderTextureArrayCompressed.uploadFloat("fogRed", this.controller.parentWorldFace.parentWorld.skyColor[0]);
-        Shader.worldShaderTextureArrayCompressed.uploadFloat("fogGreen", this.controller.parentWorldFace.parentWorld.skyColor[1]);
-        Shader.worldShaderTextureArrayCompressed.uploadFloat("fogBlue", this.controller.parentWorldFace.parentWorld.skyColor[2]);
-        Shader.worldShaderTextureArrayCompressed.uploadDouble("time", (double) Timer.elapsedTime % 8388608);
-        Shader.worldShaderTextureArrayCompressed.uploadBoolean("blocks", true);
-
-        GL46.glBindVertexArray(Chunk.vaoID);
+        Shader.terrainShader.uploadMat4d("uProjection", SpaceGame.camera.projectionMatrix);
+        Shader.terrainShader.uploadMat4d("uView", SpaceGame.camera.viewMatrix);
+        Shader.terrainShader.uploadInt("textureArray", 0);
+        Shader.terrainShader.uploadBoolean("useFog", true);
+        Shader.terrainShader.uploadFloat("fogDistance", GameSettings.renderDistance << 5);
+        Shader.terrainShader.uploadFloat("fogRed", this.controller.parentWorldFace.parentWorld.skyColor[0]);
+        Shader.terrainShader.uploadFloat("fogGreen", this.controller.parentWorldFace.parentWorld.skyColor[1]);
+        Shader.terrainShader.uploadFloat("fogBlue", this.controller.parentWorldFace.parentWorld.skyColor[2]);
+        Shader.terrainShader.uploadDouble("time", (double) Timer.elapsedTime % 8388608);
 
         Chunk chunk;
-        int playerChunkX;
-        int playerChunkY;
-        int playerChunkZ;
         int xOffset;
         int yOffset;
         int zOffset;
+        int playerChunkX = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.x) >> 5;
+        int playerChunkY = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.y) >> 5;
+        int playerChunkZ = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.z) >> 5;
 
         for (int i = 0; i < sortedChunks.length; i++) {
             chunk = sortedChunks[i];
-            if (!chunk.shouldRender) {continue;}
-            if (chunk.empty) {continue;}
-            playerChunkX = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.x) >> 5;
-            playerChunkY = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.y) >> 5;
-            playerChunkZ = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.z) >> 5;
+
+            if (!chunk.shouldRender)continue;
+            if (chunk.empty)continue;
+            if(!chunk.hasRenderData)continue;
+
             xOffset = chunk.x - playerChunkX;
             yOffset = chunk.y - playerChunkY;
             zOffset = chunk.z - playerChunkZ;
@@ -410,7 +393,6 @@ public final class RenderWorldScene {
     }
 
     public void setClearColor(float yVecComponent){
-
         if(yVecComponent >= -0.2 && yVecComponent <= 0.15) {
             float correctedValue = yVecComponent + 0.2f;
             float normalizedValue = correctedValue / 0.35f;
@@ -428,6 +410,8 @@ public final class RenderWorldScene {
             this.controller.parentWorldFace.parentWorld.skyColor[1] = 0;
             this.controller.parentWorldFace.parentWorld.skyColor[2] = 0;
         }
+
+        SpaceGame.seGLClearColor(this.controller.parentWorldFace.parentWorld.skyColor[0], this.controller.parentWorldFace.parentWorld.skyColor[1],this.controller.parentWorldFace.parentWorld.skyColor[2],0);
     }
 
     private void renderSunrise(float yVecComponent, Vector3f starPosition){

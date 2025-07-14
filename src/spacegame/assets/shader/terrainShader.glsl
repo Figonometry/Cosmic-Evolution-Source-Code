@@ -9,7 +9,6 @@ uniform dmat4 uProjection;
 uniform dmat4 uView;
 uniform vec3 chunkOffset;
 uniform double time;
-uniform bool blocks = false;
 
 out vec4 fColor;
 out vec2 fTexCoords;
@@ -58,7 +57,7 @@ float halfToFloat(int f16) {
 //first 8 bits are unused, bit order in increments of 6 (x less than 1, x greater than 1, y less than 1, y greater than 1)
 vec2 decompressTextureCoordinates(float texCoord){
     int combinedInt = floatBitsToInt(texCoord);
-    return vec2(((combinedInt >> 18) & 63) != 0 ? ((combinedInt >> 18) & 63) / 32f : float((combinedInt >> 12) & 63), ((combinedInt >> 6) & 63) != 0 ? ((combinedInt >> 6) & 63) / 32f : float(combinedInt & 63));
+    return vec2(((combinedInt >> 18) & 63) != 0 ? ((combinedInt >> 18) & 63) * 0.03125f : float((combinedInt >> 12) & 63), ((combinedInt >> 6) & 63) != 0 ? ((combinedInt >> 6) & 63) * 0.03125f : float(combinedInt & 63));
 }
 
 //encoded in increments of 8 bits as alpha, red, green, blue
@@ -70,12 +69,7 @@ vec4 decompressColor(float color) {
 vec3 decompressPosition(float posXY, float posZAndTexID){
     int combinedIntXY = floatBitsToInt(posXY);
     int combinedIntZ = floatBitsToInt(posZAndTexID);
-
-    int x = (combinedIntXY >> 16) & 65535;
-    int y = combinedIntXY & 65535;
-    int z = (combinedIntZ >> 16) & 65535;
-
-    return vec3(halfToFloat(x), halfToFloat(y), halfToFloat(z));
+    return vec3(halfToFloat((combinedIntXY >> 16) & 65535), halfToFloat(combinedIntXY & 65535), halfToFloat((combinedIntZ >> 16) & 65535));
 }
 
 float decompressTexID(float posZAndTexID){
@@ -90,25 +84,23 @@ void main()
     fTexId = decompressTexID(aTexId);
 
     vec3 correctPos = vec3(chunkOffset + decompressPosition(aPos, aTexId));
-    if(blocks){
         switch(int(fTexId)){
-            case 4: //water
-                correctPos.y -= 0.1F;
-                correctPos.y = sinY(correctPos.x, correctPos.y, correctPos.z);
-                fColor.xyz -= 0.5F;
-                fColor.w = max(fColor.w, 0.5f);
-                fTexCoords.xy += sin(float(time/150));
-                 break;
-            case 10: //leaves
-                 correctPos.x = sinX(correctPos.x, correctPos.y, correctPos.z);
-                    break;
-            case 18: //fire
-                 fTexCoords.xy += vec2(sin(correctPos.x * 2.0 + float(time) * 0.1) * 0.05, cos(correctPos.y * 3.0 + float(time) * 0.15)  * 0.20);
-                 fTexCoords.y = clamp(fTexCoords.y, 0.0, 1.0);
-                 break;
+            case 4://water
+            correctPos.y -= 0.1F;
+            correctPos.y = sinY(correctPos.x, correctPos.y, correctPos.z);
+            fColor.xyz -= 0.5F;
+            fColor.w = max(fColor.w, 0.5f);
+            fTexCoords.xy += sin(float(time/150));
+            break;
+            case 10://leaves
+            correctPos.x = sinX(correctPos.x, correctPos.y, correctPos.z);
+            break;
+            case 18://fire
+            fTexCoords.xy += vec2(sin(correctPos.x * 2.0 + float(time) * 0.1) * 0.05, cos(correctPos.y * 3.0 + float(time) * 0.15)  * 0.20);
+            fTexCoords.y = clamp(fTexCoords.y, 0.0, 1.0);
+            break;
 
         }
-    }
     gl_Position = vec4(uProjection * uView * vec4(correctPos, 1.0));
 }
 

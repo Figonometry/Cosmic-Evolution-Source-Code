@@ -11,7 +11,6 @@ uniform vec3 chunkOffset;
 out vec4 fColor;
 out vec2 fTexCoords;
 
-
 void main()
 {
     fColor = aColor;

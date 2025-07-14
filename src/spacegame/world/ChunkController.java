@@ -32,6 +32,8 @@ public final class ChunkController {
     public ChunkRegion[] regions = new ChunkRegion[128];
     public ArrayList<Chunk> dirtyChunks = new ArrayList<>();
     public ArrayList<Chunk> nonPopulatedChunks = new ArrayList<>();
+    public ArrayList<Chunk> bindingChunks = new ArrayList<>();
+    public ArrayList<Chunk> removeChunks = new ArrayList<>();
     public ArrayList<Thread> threadQueue = new ArrayList<>();
     public ChunkColumnSkylightMap[] columnLightMaps = new ChunkColumnSkylightMap[1024];
     public int playerChunkX;
@@ -88,6 +90,25 @@ public final class ChunkController {
             this.timer = 2400;
         } else {
             this.timer--;
+        }
+
+        synchronized (this.bindingChunks) {
+            if (this.bindingChunks.size() > 0) {
+                this.bindingChunks.get(0).bindRenderData();
+                this.bindingChunks.remove(0);
+                this.bindingChunks.trimToSize();
+            }
+        }
+
+        synchronized (this.removeChunks) {
+            if (this.removeChunks.size() > 0) {
+                Chunk chunk;
+                chunk = this.removeChunks.get(0);
+                chunk.deleteGLObjects();
+                this.getChunkRegionFromChunkCoordinates(chunk.x, chunk.y, chunk.z).removeChunk(chunk);
+                this.removeChunks.remove(0);
+                this.removeChunks.trimToSize();
+            }
         }
     }
 

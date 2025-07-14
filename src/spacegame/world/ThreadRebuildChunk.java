@@ -3,6 +3,7 @@ package spacegame.world;
 import org.lwjgl.BufferUtils;
 import spacegame.block.Block;
 import spacegame.block.ITickable;
+import spacegame.core.SpaceGame;
 import spacegame.render.RenderBlocks;
 
 public final class ThreadRebuildChunk implements Runnable {
@@ -176,6 +177,9 @@ public final class ThreadRebuildChunk implements Runnable {
         this.workingChunk.excludeEastFace = null;
         this.workingChunk.excludeWestFace = null;
         this.workingChunk.needsToUpdate = false;
+        synchronized (SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.bindingChunks) {
+            SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.bindingChunks.add(this.workingChunk);
+        }
         this.workingChunk.updating = false;
     }
 

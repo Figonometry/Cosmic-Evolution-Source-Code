@@ -203,6 +203,7 @@ public class Button {
                 }
                 this.sg.save = null;
                 this.sg.setNewGui(new GuiMainMenu(this.sg));
+                SpaceGame.seGLClearColor(0,0,0,0);
             }
             case SAVE_1 -> {
                 if(this.clicked) {

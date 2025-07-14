@@ -117,7 +117,10 @@ public final class SpaceGame implements Runnable {
     private void startGame() {
         this.title = "Cosmic Evolution Alpha v0.17 WIP";
         this.initLWJGL();
-        this.startMainLoop();
+        this.initAllBufferObjects();
+        this.initAllGlobalAssets();
+        this.initAllGlobalObjects();
+        this.mainLoop();
     }
 
     private void initLWJGL() {
@@ -170,6 +173,8 @@ public final class SpaceGame implements Runnable {
         GL46.glEnable(GL46.GL_DEPTH_TEST);
         GL46.glDepthFunc(GL46.GL_LESS);
 
+        GL46.glClearColor(0,0,0,0);
+
         long device = ALC11.alcOpenDevice((ByteBuffer) null);
 
         if (device != MemoryUtil.NULL) {
@@ -181,9 +186,7 @@ public final class SpaceGame implements Runnable {
         }
 
         GLFW.glfwSetWindowSizeCallback(this.window, null);
-
-        this.initAllBufferObjects();
-        this.initAllGlobalAssets();
+        this.setWindowIcon();
     }
 
 
@@ -206,26 +209,28 @@ public final class SpaceGame implements Runnable {
         icon.free();
     }
 
-    private void startMainLoop() {
+    private void initAllGlobalObjects(){
         this.everything = new Universe();
         camera = new Camera(new Vector3d(), this, 0.1D);
         GuiUniverseMap.universeCamera = new Camera(new Vector3d(), this, 0.0000000000000000001D);
         GuiUniverseMap.universeCamera.setFarPlaneDistance(512);
         GuiUniverseMap.universeCamera.viewMatrix.translate(-0.000000000000000001, 0, 0);
-        this.setWindowIcon();
         this.setNewGui(new GuiMainMenu(this));
+    }
+
+    private void mainLoop() {
         long lastTime = System.nanoTime();
         byte fpsTimer = 30;
         try {
-            while (running) {
+            while (this.running) {
                 this.timer.advanceTime();
                 for (int i = 0; i < this.timer.ticks; i++) {
                     this.tick();
-                }
-                fpsTimer--;
-                if (fpsTimer <= 0) {
-                    this.fps = (int) (1000000000.0 / (lastTime - System.nanoTime()));
-                    fpsTimer = 30;
+                    fpsTimer--;
+                    if (fpsTimer <= 0) {
+                        this.fps = (int) (1000000000.0 / (lastTime - System.nanoTime()));
+                        fpsTimer = 30;
+                    }
                 }
                 lastTime = System.nanoTime();
                 this.framePulse();
@@ -233,10 +238,10 @@ public final class SpaceGame implements Runnable {
             }
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            this.shutdown();
-            System.exit(0);
         }
+
+        this.shutdown();
+        System.exit(0);
     }
 
     public void startSave(int saveSlotNumber, String saveName, long seed) {
@@ -328,7 +333,6 @@ public final class SpaceGame implements Runnable {
             if(this.save != null){
                 if(this.save.thePlayer != null && this.save.activeWorld != null){
                     EntityDeer deer =  new EntityDeer(this.save.thePlayer.x,this.save.thePlayer.y - 0.5, this.save.thePlayer.z, false, false);
-                   // deer.yaw = new Random().nextInt(360);
                     this.save.activeWorld.activeWorldFace.addEntity(deer);
                 }
             }
@@ -352,6 +356,7 @@ public final class SpaceGame implements Runnable {
         if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_TAB) && KeyListener.tabReleased){
             if(this.currentGui instanceof GuiInGame){
                 this.setNewGui(new GuiUniverseMap(this));
+                seGLClearColor(0,0,0,0);
             } else if(this.currentGui instanceof GuiUniverseMap){
                 this.setNewGui(new GuiInGame(this));
             }
@@ -607,14 +612,13 @@ public final class SpaceGame implements Runnable {
         }
     }
 
+    public static void seGLClearColor(float red, float green, float blue, float alpha){
+        GL46.glClearColor(red, green, blue, alpha);
+    }
+
     private void render() {
         camera.setFrustum();
         GuiUniverseMap.universeCamera.setFrustum();
-        if(this.save != null && !(this.currentGui instanceof GuiWorldLoadingScreen || this.currentGui instanceof GuiUniverseMap)) {
-            GL46.glClearColor(this.save.activeWorld.skyColor[0], this.save.activeWorld.skyColor[1], this.save.activeWorld.skyColor[2], 0);
-        } else {
-            GL46.glClearColor(0,0,0,0);
-        }
         GL46.glClear(GL46.GL_COLOR_BUFFER_BIT);
         GL46.glClear(GL46.GL_DEPTH_BUFFER_BIT);
         if(this.save != null && !(this.currentGui instanceof GuiWorldLoadingScreen || this.currentGui instanceof GuiUniverseMap)) {
@@ -654,11 +658,7 @@ public final class SpaceGame implements Runnable {
         return GLFW.glfwCreateWindow(width, height, this.title, MemoryUtil.NULL, MemoryUtil.NULL);
     }
 
-
-
     private void initAllBufferObjects(){
-        Chunk.initBuffers();
-        Tessellator.initBuffers();
         Entity.initShadow();
         Sun.initSunFlare();
         GuiUniverseMap.initSkyboxTexture();

@@ -10,8 +10,6 @@ uniform dmat4 uView;
 out vec4 fColor;
 out vec2 fTexCoords;
 
-
-
 void main()
 {
     fColor = aColor;

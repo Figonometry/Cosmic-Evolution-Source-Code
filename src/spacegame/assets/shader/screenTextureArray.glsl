@@ -12,7 +12,6 @@ out vec4 fColor;
 out vec2 fTexCoords;
 out float fTexId;
 
-
 void main()
 {
     fColor = aColor;

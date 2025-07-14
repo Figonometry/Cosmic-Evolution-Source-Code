@@ -3,6 +3,7 @@ package spacegame.render;
 import org.joml.Matrix4d;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL46;
+import spacegame.core.MathUtils;
 import spacegame.core.SpaceGame;
 
 import java.awt.*;
@@ -15,19 +16,23 @@ public final class Tessellator {
     public FloatBuffer vertexBuffer = BufferUtils.createFloatBuffer(524288);
     public IntBuffer elementBuffer = BufferUtils.createIntBuffer(524288);
     private int elementOffset = 0;
-    private static int vaoID;
-    private static int vboID;
-    private static int eboID;
+    private int vaoID;
+    private int vboID;
+    private int eboID;
     private int[] texSlots = new int[256];
     public boolean isOrtho;
     private int boundTexture;
+    private boolean compressPosition;
+    private boolean compressColor;
+    private boolean compressTexCoords;
+    private boolean compressTexID;
 
     //top, bottom, north, south, east, west
 
-    public static void initBuffers(){
-        vaoID = GL46.glGenVertexArrays();
-        vboID = GL46.glGenBuffers();
-        eboID = GL46.glGenBuffers();
+    private Tessellator(){
+        this.vaoID = GL46.glGenVertexArrays();
+        this.vboID = GL46.glGenBuffers();
+        this.eboID = GL46.glGenBuffers();
     }
 
 
@@ -281,7 +286,6 @@ public final class Tessellator {
         return new float[2];
     }
 
-
     public void drawTexture2DWithAtlas(int texID, Shader shader, Camera camera){
         this.boundTexture = texID;
 
@@ -316,10 +320,8 @@ public final class Tessellator {
 
         GL46.glBindTexture(GL46.GL_TEXTURE_2D, this.boundTexture);
 
-        //bind shader program
         GL46.glUseProgram(shader.shaderProgramID);
 
-        //upload texture to shader
         if(this.isOrtho) {
             shader.uploadMat4d("uProjection", camera.guiProjectionMatrix);
             shader.uploadMat4d("uView", new Matrix4d());
@@ -331,12 +333,6 @@ public final class Tessellator {
         GL46.glEnable(GL46.GL_ALPHA_TEST);
         GL46.glAlphaFunc(GL46.GL_GREATER, 0.1F);
         //bind the VAO being used
-
-        //enable the vertex attribute pointers
-        GL46.glEnableVertexAttribArray(0);
-        GL46.glEnableVertexAttribArray(1);
-        GL46.glEnableVertexAttribArray(2);
-        GL46.glEnableVertexAttribArray(3);
 
 
         GL46.glDrawElements(GL46.GL_TRIANGLES, this.elementBuffer.limit(), GL46.GL_UNSIGNED_INT, 0);
@@ -406,10 +402,6 @@ public final class Tessellator {
         GL46.glAlphaFunc(GL46.GL_GREATER, 0.1F);
         //bind the VAO being used
 
-        //enable the vertex attribute pointers
-        GL46.glEnableVertexAttribArray(0);
-        GL46.glEnableVertexAttribArray(1);
-        GL46.glEnableVertexAttribArray(2);
 
 
         GL46.glDrawElements(GL46.GL_TRIANGLES, this.elementBuffer.limit(), GL46.GL_UNSIGNED_INT, 0);
@@ -479,10 +471,6 @@ public final class Tessellator {
         shader.uploadInt("textureArray", 0);
 
         //enable the vertex attribute pointers
-        GL46.glEnableVertexAttribArray(0);
-        GL46.glEnableVertexAttribArray(1);
-        GL46.glEnableVertexAttribArray(2);
-        GL46.glEnableVertexAttribArray(3);
 
 
         GL46.glDrawElements(GL46.GL_TRIANGLES, this.elementBuffer.limit(), GL46.GL_UNSIGNED_INT, 0);
@@ -551,9 +539,6 @@ public final class Tessellator {
         GL46.glAlphaFunc(GL46.GL_GREATER, 0.1F);
         //bind the VAO being used
 
-        //enable the vertex attribute pointers
-        GL46.glEnableVertexAttribArray(0);
-        GL46.glEnableVertexAttribArray(1);
 
 
         GL46.glDrawElements(GL46.GL_TRIANGLES, this.elementBuffer.limit(), GL46.GL_UNSIGNED_INT, 0);
@@ -588,6 +573,22 @@ public final class Tessellator {
 
     public void toggleOrtho(){
         this.isOrtho = !this.isOrtho;
+    }
+
+    public void toggleCompressPosition(){
+        this.compressPosition = !this.compressPosition;
+    }
+
+    public void toggleCompressColor(){
+        this.compressColor = !this.compressColor;
+    }
+
+    public void toggleCompressTexCoords(){
+        this.compressTexCoords = !this.compressTexCoords;
+    }
+
+    public void toggleCompressTexID(){
+        this.compressTexID = !this.compressTexID;
     }
 
 

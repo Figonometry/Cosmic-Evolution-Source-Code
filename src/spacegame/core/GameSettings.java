@@ -5,7 +5,7 @@ import org.lwjgl.glfw.GLFW;
 import java.io.*;
 
 public abstract class GameSettings {
-    public static int renderDistance = 20;
+    public static int renderDistance = 8;
     public static int chunkColumnHeight = 9;
     private static File options;
     public static float volume = 1F;
