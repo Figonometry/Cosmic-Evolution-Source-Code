@@ -592,23 +592,27 @@ public final class SpaceGame implements Runnable {
     }
 
     private void incrementPlayerDamageTilt() {
-        if(this.save == null){return;}
-        if (this.save.thePlayer == null) {return;}
-        if (!this.save.thePlayer.runDamageTilt) {return;}
-
-        if (this.save.thePlayer.damageTimer % 3 == 0) {
-            if (this.save.thePlayer.damageTimer < 30) {
-                this.save.thePlayer.roll++;
-            } else {
-                this.save.thePlayer.roll--;
-            }
+        if (this.save == null) {
+            return;
+        }
+        if (this.save.thePlayer == null) {
+            return;
+        }
+        if (!this.save.thePlayer.runDamageTilt) {
+            return;
         }
 
-        this.save.thePlayer.damageTimer++;
-        if (this.save.thePlayer.damageTimer >= 60) {
+        if (this.save.thePlayer.damageTiltTimer < 30) {
+            this.save.thePlayer.roll += 0.1666f;
+        } else {
+            this.save.thePlayer.roll -= 0.1666f;
+        }
+
+        this.save.thePlayer.damageTiltTimer++;
+        if (this.save.thePlayer.damageTiltTimer >= 60) {
             this.save.thePlayer.runDamageTilt = false;
             this.save.thePlayer.roll = 0;
-            this.save.thePlayer.damageTimer = 0;
+            this.save.thePlayer.damageTiltTimer = 0;
         }
     }
 

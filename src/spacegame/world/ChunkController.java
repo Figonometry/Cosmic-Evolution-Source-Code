@@ -3,6 +3,7 @@ package spacegame.world;
 import spacegame.block.Block;
 import spacegame.block.ITickable;
 import spacegame.core.GameSettings;
+import spacegame.core.MathUtils;
 import spacegame.core.SpaceGame;
 import spacegame.entity.Entity;
 import spacegame.entity.EntityBlock;
@@ -99,17 +100,6 @@ public final class ChunkController {
                 this.bindingChunks.trimToSize();
             }
         }
-
-        synchronized (this.removeChunks) {
-            if (this.removeChunks.size() > 0) {
-                Chunk chunk;
-                chunk = this.removeChunks.get(0);
-                chunk.deleteGLObjects();
-                this.getChunkRegionFromChunkCoordinates(chunk.x, chunk.y, chunk.z).removeChunk(chunk);
-                this.removeChunks.remove(0);
-                this.removeChunks.trimToSize();
-            }
-        }
     }
 
     public void tick(){
@@ -138,6 +128,17 @@ public final class ChunkController {
             this.threadQueue.trimToSize();
         }
 
+        synchronized (this.removeChunks) {
+            if (this.removeChunks.size() > 0) {
+                Chunk chunk;
+                chunk = this.removeChunks.get(0);
+                chunk.deleteGLObjects();
+                this.getChunkRegionFromChunkCoordinates(chunk.x, chunk.y, chunk.z).removeChunk(chunk);
+                this.removeChunks.remove(0);
+                this.removeChunks.trimToSize();
+            }
+        }
+
     }
 
     public void renderWorld(){
@@ -146,9 +147,9 @@ public final class ChunkController {
 
             ChunkRegion region;
             Chunk chunk;
-            int playerChunkX;
-            int playerChunkY;
-            int playerChunkZ;
+            int playerChunkX = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.x) >> 5;
+            int playerChunkY = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.y) >> 5;
+            int playerChunkZ = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.z) >> 5;
             int xOffset;
             int yOffset;
             int zOffset;
@@ -160,19 +161,16 @@ public final class ChunkController {
                         chunk = region.chunks[k];
                         if (chunk != null) {
                             if (chunk.shouldRender && !chunk.empty) {
-                                playerChunkX = (int) (this.parentWorldFace.sg.save.thePlayer.x / 32);
-                                playerChunkY = (int) (this.parentWorldFace.sg.save.thePlayer.y / 32);
-                                playerChunkZ = (int) (this.parentWorldFace.sg.save.thePlayer.z / 32);
                                 xOffset = chunk.x - playerChunkX;
                                 yOffset = chunk.y - playerChunkY;
                                 zOffset = chunk.z - playerChunkZ;
-                                xOffset *= 32;
-                                yOffset *= 32;
-                                zOffset *= 32;
+                                xOffset <<= 5;
+                                yOffset <<= 5;
+                                zOffset <<= 5;
                                 if (SpaceGame.camera.doesBoundingBoxIntersectFrustum(xOffset, yOffset, zOffset, ((xOffset + 31)), ((yOffset + 31)), ((zOffset + 31)))) {
-                                    xOffset /= 32;
-                                    yOffset /= 32;
-                                    zOffset /= 32;
+                                    xOffset >>= 5;
+                                    yOffset >>= 5;
+                                    zOffset >>= 5;
                                     chunk.distanceFromPlayer = (float) Math.sqrt(xOffset * xOffset + yOffset * yOffset + zOffset * zOffset);
                                     renderableChunks[index] = chunk;
                                     index++;
@@ -201,24 +199,26 @@ public final class ChunkController {
     }
 
     public void populateChunks() {
-        Chunk chunk;
-        this.numberOfChunksToPopulate = this.nonPopulatedChunks.size();
-        for(int i = 0; i < this.nonPopulatedChunks.size(); i++){
-            chunk = this.nonPopulatedChunks.get(i);
-            if(chunk != null) {
-                if (this.parentWorldFace.chunkFullySurrounded(chunk.x, chunk.y, chunk.z) && !chunk.populated) {
-                    this.chunkTerrainHandler.populateChunk(chunk);
-                    this.nonPopulatedChunks.remove(chunk);
+        synchronized (this.nonPopulatedChunks) {
+            Chunk chunk;
+            this.numberOfChunksToPopulate = this.nonPopulatedChunks.size();
+            for (int i = 0; i < this.nonPopulatedChunks.size(); i++) {
+                chunk = this.nonPopulatedChunks.get(i);
+                if (chunk != null) {
+                    if (this.parentWorldFace.chunkFullySurrounded(chunk.x, chunk.y, chunk.z) && !chunk.populated) {
+                        this.chunkTerrainHandler.populateChunk(chunk);
+                        this.nonPopulatedChunks.remove(chunk);
+                    }
                 }
             }
-        }
 
-        if(this.numberOfChunksToPopulate == this.prevNumberOfChunksToPopulate){
-            this.nonPopulatedChunks.trimToSize();
-            WorldGen.markAllChunksInRebuildQueueDirty();
-        }
+            if (this.numberOfChunksToPopulate == this.prevNumberOfChunksToPopulate) {
+                this.nonPopulatedChunks.trimToSize();
+                WorldGen.markAllChunksInRebuildQueueDirty();
+            }
 
-        this.prevNumberOfChunksToPopulate = this.numberOfChunksToPopulate;
+            this.prevNumberOfChunksToPopulate = this.numberOfChunksToPopulate;
+        }
     }
 
     public void checkForMissedChunks(){
@@ -250,19 +250,21 @@ public final class ChunkController {
 
 
     private void rebuildDirtyChunks() {
-        Chunk chunk;
-        boolean surrounded = false;
-        for (int i = 0; i < this.dirtyChunks.size(); i++) {
-            chunk = this.dirtyChunks.get(i);
-            if (chunk == null) {continue;}
+        synchronized (this.dirtyChunks) {
+            Chunk chunk;
+            boolean surrounded = false;
+            for (int i = 0; i < this.dirtyChunks.size(); i++) {
+                chunk = this.dirtyChunks.get(i);
+                if (chunk == null) {
+                    continue;
+                }
                 surrounded = this.parentWorldFace.chunkFullySurrounded(chunk.x, chunk.y, chunk.z);
-                if(surrounded && !chunk.populated){
+                if (surrounded && !chunk.populated) {
                     chunk.populated = true;
                 }
                 if (chunk.populated && !chunk.empty && !chunk.updating && surrounded) {
                     chunk.vertexIndexOpaque = 0;
                     chunk.vertexIndexTransparent = 0;
-                    chunk.copyBuffers();
                     chunk.needsToUpdate = false;
                     chunk.updating = true;
                     Thread thread = new Thread(new ThreadRebuildChunk(chunk, this.parentWorldFace));
@@ -274,10 +276,12 @@ public final class ChunkController {
                 }
             }
 
-        int subtract = 0;
-        for (int i = 0; i < this.dirtyChunks.size() - subtract; i++) {
-            chunk = this.dirtyChunks.get(i);
-            if (chunk == null) {continue;}
+            int subtract = 0;
+            for (int i = 0; i < this.dirtyChunks.size() - subtract; i++) {
+                chunk = this.dirtyChunks.get(i);
+                if (chunk == null) {
+                    continue;
+                }
                 if (!chunk.needsToUpdate) {
                     this.dirtyChunks.remove(i);
                     i--;
@@ -285,45 +289,52 @@ public final class ChunkController {
                 }
             }
 
-        this.numberOfLoadedChunks = this.numberOfLoadedChunks();
-        if ((!this.loadChunks && this.numberOfLoadedChunks >= ((GameSettings.renderDistance * 2 + 1) * (GameSettings.renderDistance * 2 + 1) * (GameSettings.chunkColumnHeight * 2))) || (this.numberOfLoadedChunks == this.prevNumberOfLoadedChunks)) {
-            this.dirtyChunks.clear();
+            this.numberOfLoadedChunks = this.numberOfLoadedChunks();
+            if ((!this.loadChunks && this.numberOfLoadedChunks >= ((GameSettings.renderDistance * 2 + 1) * (GameSettings.renderDistance * 2 + 1) * (GameSettings.chunkColumnHeight * 2))) || (this.numberOfLoadedChunks == this.prevNumberOfLoadedChunks)) {
+                this.dirtyChunks.clear();
+            }
+            this.prevNumberOfLoadedChunks = this.numberOfLoadedChunks;
         }
-        this.prevNumberOfLoadedChunks = this.numberOfLoadedChunks;
     }
 
     public void addChunkToRebuildQueue(Chunk addedChunk) {
         if (addedChunk == null) {return;}
-        Chunk chunk;
-        boolean canAdd = true;
-        for (int i = 0; i < this.dirtyChunks.size(); i++) {
-            chunk = this.dirtyChunks.get(i);
-            if (chunk == null) {continue;}
+        synchronized (this.dirtyChunks) {
+            Chunk chunk;
+            boolean canAdd = true;
+            for (int i = 0; i < this.dirtyChunks.size(); i++) {
+                chunk = this.dirtyChunks.get(i);
+                if (chunk == null) {
+                    continue;
+                }
 
-            if (chunk.equals(addedChunk)) {
-                canAdd = false;
-                break;
+                if (chunk.equals(addedChunk)) {
+                    canAdd = false;
+                    break;
+                }
             }
-        }
-        if (canAdd) {
-            this.dirtyChunks.add(addedChunk);
+            if (canAdd) {
+                this.dirtyChunks.add(addedChunk);
+            }
         }
     }
 
     public void addChunkToPopulationQueue(Chunk addedChunk) {
         if (addedChunk == null) {return;}
-        Chunk chunk;
-        boolean canAdd = true;
-        for (int i = 0; i < this.nonPopulatedChunks.size(); i++) {
-            chunk = this.nonPopulatedChunks.get(i);
-            if (chunk != null) {
-                if (chunk.equals(addedChunk)) {
-                    canAdd = false;
-                    return;
+        synchronized (this.nonPopulatedChunks) {
+            Chunk chunk;
+            boolean canAdd = true;
+            for (int i = 0; i < this.nonPopulatedChunks.size(); i++) {
+                chunk = this.nonPopulatedChunks.get(i);
+                if (chunk != null) {
+                    if (chunk.equals(addedChunk)) {
+                        canAdd = false;
+                        return;
+                    }
                 }
             }
+            this.nonPopulatedChunks.add(addedChunk);
         }
-        this.nonPopulatedChunks.add(addedChunk);
     }
 
 

@@ -31,6 +31,10 @@ public abstract class MathUtils {
         return (int) (comp * 255);
     }
 
+    public static float intToFloatRGBA(int comp){
+        return comp / 255f;
+    }
+
     public static short floatToHalf(float value) {
         int floatBits = Float.floatToIntBits(value);
         int sign = (floatBits >> 16) & 0x8000;
@@ -60,10 +64,6 @@ public abstract class MathUtils {
             mantissa <<= 13;
             return Float.intBitsToFloat((sign << 31) | (exponent << 23) | mantissa);
         }
-    }
-
-    public static float intToFloatRGBA(int comp){
-        return comp / 255f;
     }
 
     public static double sin(double a) {

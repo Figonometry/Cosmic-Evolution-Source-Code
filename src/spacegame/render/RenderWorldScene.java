@@ -67,7 +67,6 @@ public final class RenderWorldScene {
 
             if (!chunk.shouldRender)continue;
             if (chunk.empty)continue;
-            if(!chunk.hasRenderData)continue;
 
             xOffset = chunk.x - playerChunkX;
             yOffset = chunk.y - playerChunkY;
@@ -121,11 +120,6 @@ public final class RenderWorldScene {
 
         GL46.glDisable(GL46.GL_BLEND);
         GL46.glDisable(GL46.GL_ALPHA_TEST);
-
-        GL46.glDisableVertexAttribArray(0);
-        GL46.glDisableVertexAttribArray(1);
-        GL46.glDisableVertexAttribArray(2);
-        GL46.glDisableVertexAttribArray(3);
 
         GL46.glBindVertexArray(0);
         GL46.glBindTexture(GL46.GL_TEXTURE_2D_ARRAY, 0);

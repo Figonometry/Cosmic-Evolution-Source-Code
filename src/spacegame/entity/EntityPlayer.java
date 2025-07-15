@@ -44,6 +44,7 @@ public final class EntityPlayer extends EntityLiving {
     public boolean loadedFromFile;
     public double lastYOnGround;
     public int drowningTimer;
+    public int damageTiltTimer;
     public boolean runDamageTilt;
     public byte swingTimer;
     public boolean isSwinging;
@@ -532,9 +533,9 @@ public final class EntityPlayer extends EntityLiving {
             }
         }
 
-        this.chunkX = (int) (this.x / 32);
-        this.chunkY = (int) (this.y / 32);
-        this.chunkZ = (int) (this.z / 32);
+        this.chunkX = MathUtils.floorDouble(this.x) >> 5;
+        this.chunkY = MathUtils.floorDouble(this.y) >> 5;
+        this.chunkZ = MathUtils.floorDouble(this.z) >> 5;
 
         if (this.chunkX != this.prevChunkX) {
             SpaceGame.camera.viewMatrix.translate((this.chunkX - this.prevChunkX) * 32, 0, 0);
