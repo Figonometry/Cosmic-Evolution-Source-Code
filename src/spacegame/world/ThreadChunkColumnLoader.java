@@ -1,5 +1,6 @@
 package spacegame.world;
 
+import spacegame.core.CrashLogger;
 import spacegame.core.GameSettings;
 import spacegame.core.SpaceGame;
 import spacegame.entity.Entity;
@@ -91,7 +92,7 @@ public final class ThreadChunkColumnLoader implements Runnable {
                         inputStream.close();
                     }
                 } catch (IOException e){
-                    e.printStackTrace();
+                    new CrashLogger(e);
                 }
                 if(chunk != null){
                     this.controller.addChunkFromFile(chunk);

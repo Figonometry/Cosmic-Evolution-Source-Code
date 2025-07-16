@@ -66,7 +66,7 @@ public final class SpaceGame implements Runnable {
     }
 
     private static void startMainThread(Thread mainThread) {
-        mainThread.setName("SpaceTime Main Thread");
+        mainThread.setName("Cosmic Evolution Main Thread");
         mainThread.setPriority(10);
         mainThread.start();
     }
@@ -87,24 +87,7 @@ public final class SpaceGame implements Runnable {
         try {
             this.startGame();
         } catch(Exception exception){
-            Calendar calendar = new GregorianCalendar();
-            File crashFile = new File(this.launcherDirectory + "/crashReports/crashReport" + "-" + calendar.get(Calendar.YEAR) + "-" + (calendar.get(Calendar.MONTH)+1) + "-" + calendar.get(Calendar.DAY_OF_MONTH) + "-" + calendar.get(Calendar.HOUR_OF_DAY)  + calendar.get(Calendar.MINUTE)  + calendar.get(Calendar.SECOND) +  ".txt");
-            PrintStream ps;
-            try {
-                ps = new PrintStream(crashFile);
-            } catch (FileNotFoundException e) {
-                throw new RuntimeException(e);
-            }
-            exception.printStackTrace(ps);
-            exception.printStackTrace();
-            ps.println("WARNING: FATAL EXCEPTION OCCURRED SHUTTING DOWN GAME");
-            ps.println("Please forward the stacktrace to Fig, please include a description of what exactly you did to cause the crash");
-
-
-            ps.println("Elapsed Time: " + Timer.elapsedTime + " Ticks");
-            ps.println();
-
-            ps.close();
+            new CrashLogger(exception);
             if(this.save != null){
                 this.save.saveDataToFile();
                 this.save.activeWorld.saveWorld();
@@ -115,12 +98,22 @@ public final class SpaceGame implements Runnable {
     }
 
     private void startGame() {
-        this.title = "Cosmic Evolution Alpha v0.17 WIP";
+        this.title = "Cosmic Evolution Alpha v0.18 WIP";
+        this.clearLogFiles(new File(this.launcherDirectory + "/crashReports"));
         this.initLWJGL();
         this.initAllBufferObjects();
         this.initAllGlobalAssets();
         this.initAllGlobalObjects();
         this.mainLoop();
+    }
+
+    private void clearLogFiles(File directoryToBeDeleted) {
+        File[] allContents = directoryToBeDeleted.listFiles();
+        if (allContents != null) {
+            for (int i = 0; i < allContents.length; i++) {
+                allContents[i].delete();
+            }
+        }
     }
 
     private void initLWJGL() {

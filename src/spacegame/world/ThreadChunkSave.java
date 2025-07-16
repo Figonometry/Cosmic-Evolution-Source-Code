@@ -1,5 +1,6 @@
 package spacegame.world;
 
+import spacegame.core.CrashLogger;
 import spacegame.core.SpaceGame;
 import spacegame.entity.Entity;
 import spacegame.entity.EntityBlock;
@@ -95,7 +96,7 @@ public final class ThreadChunkSave implements Runnable {
             NBTIO.writeCompressed(chunkTag, outputStream);
             outputStream.close();
         } catch (IOException e){
-            e.printStackTrace();
+            new CrashLogger(e);
         }
     }
 }

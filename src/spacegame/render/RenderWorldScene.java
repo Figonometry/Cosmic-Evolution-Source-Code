@@ -29,6 +29,7 @@ public final class RenderWorldScene {
     }
 
     public void renderWorld(Chunk[] sortedChunks) {
+        this.renderNearbyCelestialObjects(); //This must be first in order to set the directional vector for the sun
 
         if (this.controller.parentWorldFace.sg.currentGui instanceof GuiInGame) {
             GuiInGame.renderBlockOutline();
@@ -137,7 +138,14 @@ public final class RenderWorldScene {
         this.chunksThatContainItems.clear();
         this.chunksThatContainEntities.clear();
         this.chunksToRender.clear();
-        this.renderNearbyCelestialObjects();
+    }
+
+    private void setShadowMap(Chunk[] sortedChunks){
+        // this method will need to take an array of chunks sorted to the Frustum of the sun's POV.
+        //The sun will use an orthographic projection matrix, the rotation and translation for the view matrix can be calculated using the direction vector as calculated in renderNearbyCelestialObjects
+        //Switch the framebuffer to the shadowmap and alter the viewport to the shadow width/height.
+        //draw each chunk from the sun's perspective and write to the shadowmap in this framebuffer using a lightweight shader to write
+        //rebind to the default framebuffer and reset the viewport based on the screen width and height
     }
 
     public void renderNearbyCelestialObjects(){

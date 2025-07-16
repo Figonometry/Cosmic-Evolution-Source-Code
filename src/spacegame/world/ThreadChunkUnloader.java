@@ -1,5 +1,6 @@
 package spacegame.world;
 
+import spacegame.core.CrashLogger;
 import spacegame.core.SpaceGame;
 import spacegame.entity.Entity;
 import spacegame.entity.EntityBlock;
@@ -97,7 +98,7 @@ public final class ThreadChunkUnloader implements Runnable {
             NBTIO.writeCompressed(chunkTag, outputStream);
             outputStream.close();
         } catch (IOException e){
-            e.printStackTrace();
+            new CrashLogger(e);
         }
         synchronized (SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.removeChunks) {
             SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.removeChunks.add(this.chunk);

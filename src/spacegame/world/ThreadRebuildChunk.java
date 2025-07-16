@@ -3,6 +3,7 @@ package spacegame.world;
 import org.lwjgl.BufferUtils;
 import spacegame.block.Block;
 import spacegame.block.ITickable;
+import spacegame.core.CrashLogger;
 import spacegame.core.SpaceGame;
 import spacegame.render.RenderBlocks;
 
@@ -17,7 +18,11 @@ public final class ThreadRebuildChunk implements Runnable {
 
     @Override
     public void run() {
-        this.rebuildChunk();
+        try {
+            this.rebuildChunk();
+        } catch (Exception e){
+            new CrashLogger(e);
+        }
     }
 
     public void rebuildChunk() {
