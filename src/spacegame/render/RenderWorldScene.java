@@ -22,6 +22,8 @@ public final class RenderWorldScene {
     public ArrayList<Chunk> chunksToRender = new ArrayList<>();
     public ArrayList<Chunk> chunksThatContainEntities = new ArrayList<>();
     public ArrayList<Chunk> chunksThatContainItems = new ArrayList<>();
+    public ArrayList<Sun> nearbyStars = new ArrayList<>();
+    public ArrayList<Vector3f> nearbyStarPos = new ArrayList<>();
     public boolean recalculateQueries = true;
 
     public RenderWorldScene(ChunkController controller){
@@ -30,6 +32,10 @@ public final class RenderWorldScene {
 
     public void renderWorld(Chunk[] sortedChunks) {
         this.renderNearbyCelestialObjects(); //This must be first in order to set the directional vector for the sun
+
+        for(int i = 0; i < this.nearbyStars.size(); i++){
+            this.setShadowMap(this.nearbyStars.get(i),this.nearbyStarPos.get(i));
+        }
 
         if (this.controller.parentWorldFace.sg.currentGui instanceof GuiInGame) {
             GuiInGame.renderBlockOutline();
@@ -45,6 +51,16 @@ public final class RenderWorldScene {
 
         GL46.glUseProgram(Shader.terrainShader.shaderProgramID);
 
+        GL46.glActiveTexture(GL46.GL_TEXTURE1);
+        GL46.glBindTexture(GL46.GL_TEXTURE_2D, this.nearbyStars.get(0).shadowMap.depthMap);
+
+        Vector3f sunPosition = this.nearbyStarPos.get(0).mul(3000f);
+
+        int sunX = MathUtils.floorFloat(sunPosition.x) >> 5;
+        int sunY = MathUtils.floorFloat(sunPosition.y) >> 5;
+        int sunZ = MathUtils.floorFloat(sunPosition.z) >> 5;
+
+        Shader.terrainShader.uploadInt("shadowMap", 1);
         Shader.terrainShader.uploadMat4d("uProjection", SpaceGame.camera.projectionMatrix);
         Shader.terrainShader.uploadMat4d("uView", SpaceGame.camera.viewMatrix);
         Shader.terrainShader.uploadInt("textureArray", 0);
@@ -69,12 +85,11 @@ public final class RenderWorldScene {
             if (!chunk.shouldRender)continue;
             if (chunk.empty)continue;
 
-            xOffset = chunk.x - playerChunkX;
-            yOffset = chunk.y - playerChunkY;
-            zOffset = chunk.z - playerChunkZ;
-            xOffset <<= 5;
-            yOffset <<= 5;
-            zOffset <<= 5;
+            Shader.terrainShader.uploadVec3f("sunChunkOffset", new Vector3f((chunk.x - sunX) << 5, (chunk.y - sunY) << 5, (chunk.z - sunZ) << 5));
+
+            xOffset = (chunk.x - playerChunkX) << 5;
+            yOffset = (chunk.y - playerChunkY) << 5;
+            zOffset = (chunk.z - playerChunkZ) << 5;
 
             if (chunk.queryID != -10) {
                 if (GL46.glGetQueryObjecti(chunk.queryID, GL46.GL_QUERY_RESULT_AVAILABLE) == GL46.GL_TRUE) {
@@ -122,6 +137,8 @@ public final class RenderWorldScene {
         GL46.glDisable(GL46.GL_BLEND);
         GL46.glDisable(GL46.GL_ALPHA_TEST);
 
+        GL46.glBindTexture(GL46.GL_TEXTURE_2D, 0);
+        GL46.glActiveTexture(GL46.GL_TEXTURE0);
         GL46.glBindVertexArray(0);
         GL46.glBindTexture(GL46.GL_TEXTURE_2D_ARRAY, 0);
         GL46.glDisable(GL46.GL_CULL_FACE);
@@ -138,14 +155,53 @@ public final class RenderWorldScene {
         this.chunksThatContainItems.clear();
         this.chunksThatContainEntities.clear();
         this.chunksToRender.clear();
+        this.nearbyStars.clear();
+        this.nearbyStarPos.clear();
     }
 
-    private void setShadowMap(Chunk[] sortedChunks){
-        // this method will need to take an array of chunks sorted to the Frustum of the sun's POV.
-        //The sun will use an orthographic projection matrix, the rotation and translation for the view matrix can be calculated using the direction vector as calculated in renderNearbyCelestialObjects
-        //Switch the framebuffer to the shadowmap and alter the viewport to the shadow width/height.
-        //draw each chunk from the sun's perspective and write to the shadowmap in this framebuffer using a lightweight shader to write
-        //rebind to the default framebuffer and reset the viewport based on the screen width and height
+    private void setShadowMap(Sun sun, Vector3f dir){
+        Matrix4f sunProjectionMatrix = new Matrix4f().setOrtho((float) -sun.shadowMap.width /2, (float) sun.shadowMap.width /2, (float) -sun.shadowMap.height /2, (float) sun.shadowMap.height /2, 0.1f, 100000);
+        Matrix4f sunViewMatrix = new Matrix4f();
+        Vector3f sunPosition = dir.mul(3000f);
+        Vector3f cameraFront = new Vector3f(-1.0f, 0.0f, 0.0f);
+        Vector3f cameraUp = new Vector3f(0.0f, 1.0f, 0.0f);
+        sunViewMatrix.identity();
+        sunViewMatrix = sunViewMatrix.lookAt(new Vector3f(sunPosition.x, sunPosition.y, sunPosition.z),
+                cameraFront.add(sunPosition.x, sunPosition.y, sunPosition.z), cameraUp);
+
+        Vector3f angleInverted = new Vector3f(-dir.x, -dir.y, -dir.z);
+
+        sunViewMatrix.rotateXYZ(angleInverted);
+
+        Shader.shadowMapShader.uploadMat4f("uProjection", sunProjectionMatrix);
+        Shader.shadowMapShader.uploadMat4f("uView", sunViewMatrix);
+
+        Shader.terrainShader.uploadMat4f("lightViewProjectionMatrix", sunProjectionMatrix.mul(sunViewMatrix));
+
+        GL46.glBindFramebuffer(GL46.GL_FRAMEBUFFER, sun.shadowMap.fboID);
+        GL46.glClear(GL46.GL_DEPTH_BUFFER_BIT);
+        GL46.glViewport(0,0, sun.shadowMap.width, sun.shadowMap.height);
+        GL46.glUseProgram(Shader.shadowMapShader.shaderProgramID);
+
+        int sunX = MathUtils.floorFloat(sunPosition.x) >> 5;
+        int sunY = MathUtils.floorFloat(sunPosition.y) >> 5;
+        int sunZ = MathUtils.floorFloat(sunPosition.z) >> 5;
+
+        for(int i = 0; i < this.controller.regions.length; i++){
+            if(this.controller.regions[i] == null)continue;
+            for(int j = 0; j < this.controller.regions[i].chunks.length; j++){
+                if(this.controller.regions[i].chunks[j] == null)continue;
+                if(!this.controller.regions[i].chunks[j].shouldRender)continue;
+
+                this.controller.regions[i].chunks[j].renderShadowMap(sunX, sunY, sunZ);
+            }
+        }
+
+        GL46.glUseProgram(0);
+        GL46.glBindVertexArray(0);
+
+        GL46.glBindFramebuffer(GL46.GL_FRAMEBUFFER, 0);
+        GL46.glViewport(0, 0, SpaceGame.width, SpaceGame.height);
     }
 
     public void renderNearbyCelestialObjects(){
@@ -206,6 +262,8 @@ public final class RenderWorldScene {
 
                 if(renderingObject instanceof Sun){
                     starPositions.add(new Vector3f(celestialObjectPosition));
+                    this.nearbyStarPos.add(new Vector3f(celestialObjectPosition.normalize()));
+                    this.nearbyStars.add((Sun) renderingObject);
                 }
 
 

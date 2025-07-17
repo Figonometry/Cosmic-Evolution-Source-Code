@@ -30,6 +30,7 @@ public final class Shader {
     public static final Shader screen2DTextureAtlas = new Shader("src/spacegame/assets/shader/screen2DTextureAtlas.glsl");
     public static final Shader screenTextureArray = new Shader("src/spacegame/assets/shader/screenTextureArray.glsl");
     public static final Shader terrainShader = new Shader("src/spacegame/assets/shader/terrainShader.glsl"); //This is split from the other shaders to have a very specialized shader for the terrain itself since this is the most time consuming part of rendering a frame
+    public static final Shader shadowMapShader = new Shader("src/spacegame/assets/shader/shadowMap.glsl");
 
 
     public Shader(String filepath) {

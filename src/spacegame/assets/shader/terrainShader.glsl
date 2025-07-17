@@ -8,11 +8,13 @@ layout (location=3) in float aTexId;
 uniform dmat4 uProjection;
 uniform dmat4 uView;
 uniform vec3 chunkOffset;
+uniform vec3 sunChunkOffset;
 uniform double time;
 
 out vec4 fColor;
 out vec2 fTexCoords;
 out float fTexId;
+out vec3 fragPosInWorldSpace;
 
 float sinX(float x, float y, float z){
     float actualTime = float(time);
@@ -84,6 +86,7 @@ void main()
     fTexId = decompressTexID(aTexId);
 
     vec3 correctPos = vec3(chunkOffset + decompressPosition(aPos, aTexId));
+    fragPosInWorldSpace = vec3(sunChunkOffset + decompressPosition(aPos, aTexId));
         switch(int(fTexId)){
             case 4://water
             correctPos.y -= 0.1F;
@@ -111,8 +114,11 @@ void main()
 in vec4 fColor;
 in vec2 fTexCoords;
 in float fTexId;
+in vec3 fragPosInWorldSpace;
 
 uniform sampler2DArray textureArray;
+uniform sampler2D shadowMap;
+uniform mat4 lightViewProjectionMatrix;
 uniform bool useFog;
 uniform float fogDistance;
 uniform bool underwater;
@@ -155,12 +161,30 @@ vec4 setFogUnderwater(vec4 color){
     return color;
 }
 
+float getShadowFactor(vec3 fragPosInWorldSpace){
+    vec4 fragPosInLightSpace = lightViewProjectionMatrix * vec4(fragPosInWorldSpace, 1.0);
+    vec3 projCoords = fragPosInLightSpace.xyz / fragPosInLightSpace.w;
+    projCoords = projCoords * 0.5 + 0.5;
+    projCoords.xy = clamp(projCoords.xy, 0.0, 1.0);
+    if(projCoords.z > 1.0)return 1.0;
+
+    float closestDepth = texture(shadowMap, projCoords.xy).r;
+    float currentDepth = projCoords.z;
+
+    return currentDepth > closestDepth ? 0.3 : 1.0;
+}
+
 
 void main()
 {
     float id = fTexId;
     color = fColor * texture(textureArray, vec3(fTexCoords, id));
     if (color.w > 0){
+
+        float shadow = getShadowFactor(fragPosInWorldSpace);
+        color = vec4(vec3(shadow), 1.0);
+        //color.xyz *= shadow;
+
         if (useFog){
             if (underwater){
                 color = setFogUnderwater(color);

@@ -161,12 +161,9 @@ public final class ChunkController {
                         chunk = region.chunks[k];
                         if (chunk != null) {
                             if (chunk.shouldRender && !chunk.empty) {
-                                xOffset = chunk.x - playerChunkX;
-                                yOffset = chunk.y - playerChunkY;
-                                zOffset = chunk.z - playerChunkZ;
-                                xOffset <<= 5;
-                                yOffset <<= 5;
-                                zOffset <<= 5;
+                                xOffset = (chunk.x - playerChunkX) << 5;
+                                yOffset = (chunk.y - playerChunkY) << 5;
+                                zOffset = (chunk.z - playerChunkZ) << 5;
                                 if (SpaceGame.camera.doesBoundingBoxIntersectFrustum(xOffset, yOffset, zOffset, ((xOffset + 31)), ((yOffset + 31)), ((zOffset + 31)))) {
                                     xOffset >>= 5;
                                     yOffset >>= 5;
