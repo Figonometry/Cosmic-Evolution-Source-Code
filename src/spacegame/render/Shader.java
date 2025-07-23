@@ -194,6 +194,7 @@ public final class Shader {
         int varLocation = GL46.glGetUniformLocation(this.shaderProgramID, varName);
         FloatBuffer matBuffer = BufferUtils.createFloatBuffer(16);
         mat4.get(matBuffer);
+        this.use();
         GL46.glUniformMatrix4fv(varLocation, false, matBuffer);
     }
 
@@ -201,6 +202,7 @@ public final class Shader {
         int varLocation = GL46.glGetUniformLocation(this.shaderProgramID, varName);
         DoubleBuffer matBuffer = BufferUtils.createDoubleBuffer(16);
         mat4.get(matBuffer);
+        this.use();
         GL46.glUniformMatrix4dv(varLocation, false, matBuffer);
     }
 
@@ -237,13 +239,13 @@ public final class Shader {
 
     public void uploadVec4f(String varName, Vector4f vec) {
         int varLocation = GL46.glGetUniformLocation(shaderProgramID, varName);
-        use();
+        this.use();
         GL46.glUniform4f(varLocation, vec.x, vec.y, vec.z, vec.w);
     }
 
     public void uploadVec3f(String varName, Vector3f vec) {
         int varLocation = GL46.glGetUniformLocation(shaderProgramID, varName);
-        use();
+        this.use();
         GL46.glUniform3f(varLocation, vec.x, vec.y, vec.z);
     }
 

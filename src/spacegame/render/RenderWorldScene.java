@@ -25,17 +25,23 @@ public final class RenderWorldScene {
     public ArrayList<Sun> nearbyStars = new ArrayList<>();
     public ArrayList<Vector3f> nearbyStarPos = new ArrayList<>();
     public boolean recalculateQueries = true;
+    public int sunX;
+    public int sunY;
+    public int sunZ;
 
     public RenderWorldScene(ChunkController controller){
         this.controller = controller;
     }
 
     public void renderWorld(Chunk[] sortedChunks) {
-        this.renderNearbyCelestialObjects(); //This must be first in order to set the directional vector for the sun
-
         for(int i = 0; i < this.nearbyStars.size(); i++){
             this.setShadowMap(this.nearbyStars.get(i),this.nearbyStarPos.get(i));
         }
+
+        this.nearbyStars.clear();
+        this.nearbyStarPos.clear();
+
+        this.renderNearbyCelestialObjects();
 
         if (this.controller.parentWorldFace.sg.currentGui instanceof GuiInGame) {
             GuiInGame.renderBlockOutline();
@@ -51,14 +57,10 @@ public final class RenderWorldScene {
 
         GL46.glUseProgram(Shader.terrainShader.shaderProgramID);
 
-        GL46.glActiveTexture(GL46.GL_TEXTURE1);
-        GL46.glBindTexture(GL46.GL_TEXTURE_2D, this.nearbyStars.get(0).shadowMap.depthMap);
-
-        Vector3f sunPosition = this.nearbyStarPos.get(0).mul(3000f);
-
-        int sunX = MathUtils.floorFloat(sunPosition.x) >> 5;
-        int sunY = MathUtils.floorFloat(sunPosition.y) >> 5;
-        int sunZ = MathUtils.floorFloat(sunPosition.z) >> 5;
+        if(this.nearbyStars.size() > 0) {
+            GL46.glActiveTexture(GL46.GL_TEXTURE1);
+            GL46.glBindTexture(GL46.GL_TEXTURE_2D, this.nearbyStars.get(0).shadowMap.depthMap);
+        }
 
         Shader.terrainShader.uploadInt("shadowMap", 1);
         Shader.terrainShader.uploadMat4d("uProjection", SpaceGame.camera.projectionMatrix);
@@ -85,8 +87,6 @@ public final class RenderWorldScene {
             if (!chunk.shouldRender)continue;
             if (chunk.empty)continue;
 
-            Shader.terrainShader.uploadVec3f("sunChunkOffset", new Vector3f((chunk.x - sunX) << 5, (chunk.y - sunY) << 5, (chunk.z - sunZ) << 5));
-
             xOffset = (chunk.x - playerChunkX) << 5;
             yOffset = (chunk.y - playerChunkY) << 5;
             zOffset = (chunk.z - playerChunkZ) << 5;
@@ -106,7 +106,7 @@ public final class RenderWorldScene {
                 chunk.queryID = GL46.glGenQueries();
 
                 GL46.glBeginQuery(GL46.GL_ANY_SAMPLES_PASSED, chunk.queryID);
-                chunk.renderOpaque(xOffset, yOffset, zOffset);
+                chunk.renderOpaque(xOffset, yOffset, zOffset,this.sunX,this.sunY,this.sunZ);
                 GL46.glEndQuery(GL46.GL_ANY_SAMPLES_PASSED);
 
                 if (chunk.doesChunkContainEntities()) {
@@ -131,7 +131,7 @@ public final class RenderWorldScene {
 
         for (Chunk transparentChunk : chunksToRender) {
             this.controller.drawCalls++;
-            transparentChunk.renderTransparent();
+            transparentChunk.renderTransparent(this.sunX,this.sunY,this.sunZ);
         }
 
         GL46.glDisable(GL46.GL_BLEND);
@@ -155,37 +155,48 @@ public final class RenderWorldScene {
         this.chunksThatContainItems.clear();
         this.chunksThatContainEntities.clear();
         this.chunksToRender.clear();
-        this.nearbyStars.clear();
-        this.nearbyStarPos.clear();
     }
 
     private void setShadowMap(Sun sun, Vector3f dir){
-        Matrix4f sunProjectionMatrix = new Matrix4f().setOrtho((float) -sun.shadowMap.width /2, (float) sun.shadowMap.width /2, (float) -sun.shadowMap.height /2, (float) sun.shadowMap.height /2, 0.1f, 100000);
+        dir.normalize();
+        float lightDist = 3000f;
+        float orthoSize = 256;
+        Matrix4f sunProjectionMatrix = new Matrix4f().setOrtho(-orthoSize,orthoSize,-orthoSize,orthoSize, 1, 10000);
         Matrix4f sunViewMatrix = new Matrix4f();
-        Vector3f sunPosition = dir.mul(3000f);
-        Vector3f cameraFront = new Vector3f(-1.0f, 0.0f, 0.0f);
+        Vector3d sunPosition = new Vector3d(dir.x, dir.y, dir.z);
+        sunPosition.mul(lightDist);
+        sunPosition.add(new Vector3d(SpaceGame.instance.save.thePlayer.x, SpaceGame.instance.save.thePlayer.y, SpaceGame.instance.save.thePlayer.z));
+
+        int sunX = MathUtils.floorDouble(sunPosition.x) >> 5;
+        int sunY = MathUtils.floorDouble(sunPosition.y) >> 5;
+        int sunZ = MathUtils.floorDouble(sunPosition.z) >> 5;
+
+        sunPosition = new Vector3d(dir.x, dir.y, dir.z).mul(lightDist);
+        //Make texel size dynamic with distance from the player, it should be much smaller closer to the player and much larger when further away
+        float texelSize = ((orthoSize * 2)) / (float)sun.shadowMap.width; //This is the orthoSize divided by the shadow map width
+        sunPosition.x = MathUtils.floorDouble(sunPosition.x / texelSize) * texelSize;
+        sunPosition.y = MathUtils.floorDouble(sunPosition.y / texelSize) * texelSize;
+        sunPosition.z = MathUtils.floorDouble(sunPosition.z / texelSize) * texelSize;
+
+
         Vector3f cameraUp = new Vector3f(0.0f, 1.0f, 0.0f);
         sunViewMatrix.identity();
-        sunViewMatrix = sunViewMatrix.lookAt(new Vector3f(sunPosition.x, sunPosition.y, sunPosition.z),
-                cameraFront.add(sunPosition.x, sunPosition.y, sunPosition.z), cameraUp);
+        sunViewMatrix = sunViewMatrix.lookAt(new Vector3f((float) sunPosition.x, (float) sunPosition.y, (float) sunPosition.z), new Vector3f() ,cameraUp);
 
-        Vector3f angleInverted = new Vector3f(-dir.x, -dir.y, -dir.z);
+        Shader.terrainShader.uploadMat4f("lightViewMatrix", sunViewMatrix);
+        Shader.terrainShader.uploadMat4f("lightProjectionMatrix", sunProjectionMatrix);
 
-        sunViewMatrix.rotateXYZ(angleInverted);
+        GL46.glBindFramebuffer(GL46.GL_FRAMEBUFFER, sun.shadowMap.fboID);
+        GL46.glViewport(0,0, sun.shadowMap.width, sun.shadowMap.height);
+        GL46.glClear(GL46.GL_DEPTH_BUFFER_BIT);
+        GL46.glUseProgram(Shader.shadowMapShader.shaderProgramID);
 
         Shader.shadowMapShader.uploadMat4f("uProjection", sunProjectionMatrix);
         Shader.shadowMapShader.uploadMat4f("uView", sunViewMatrix);
 
-        Shader.terrainShader.uploadMat4f("lightViewProjectionMatrix", sunProjectionMatrix.mul(sunViewMatrix));
-
-        GL46.glBindFramebuffer(GL46.GL_FRAMEBUFFER, sun.shadowMap.fboID);
-        GL46.glClear(GL46.GL_DEPTH_BUFFER_BIT);
-        GL46.glViewport(0,0, sun.shadowMap.width, sun.shadowMap.height);
-        GL46.glUseProgram(Shader.shadowMapShader.shaderProgramID);
-
-        int sunX = MathUtils.floorFloat(sunPosition.x) >> 5;
-        int sunY = MathUtils.floorFloat(sunPosition.y) >> 5;
-        int sunZ = MathUtils.floorFloat(sunPosition.z) >> 5;
+        this.sunX = sunX;
+        this.sunY = sunY;
+        this.sunZ = sunZ;
 
         for(int i = 0; i < this.controller.regions.length; i++){
             if(this.controller.regions[i] == null)continue;
@@ -262,7 +273,7 @@ public final class RenderWorldScene {
 
                 if(renderingObject instanceof Sun){
                     starPositions.add(new Vector3f(celestialObjectPosition));
-                    this.nearbyStarPos.add(new Vector3f(celestialObjectPosition.normalize()));
+                    this.nearbyStarPos.add(new Vector3f(celestialObjectPosition));
                     this.nearbyStars.add((Sun) renderingObject);
                 }
 

@@ -3,7 +3,7 @@ package spacegame.world;
 import org.lwjgl.BufferUtils;
 import spacegame.block.Block;
 import spacegame.block.ITickable;
-import spacegame.core.CrashLogger;
+import spacegame.core.Logger;
 import spacegame.core.SpaceGame;
 import spacegame.render.RenderBlocks;
 
@@ -21,7 +21,7 @@ public final class ThreadRebuildChunk implements Runnable {
         try {
             this.rebuildChunk();
         } catch (Exception e){
-            new CrashLogger(e);
+            new Logger(e);
         }
     }
 
@@ -37,7 +37,7 @@ public final class ThreadRebuildChunk implements Runnable {
             this.workingChunk.setLightValueUnderWater();
         }
         if (this.workingChunk.updateSkylight) {
-            this.workingChunk.setSkyLight();
+           // this.workingChunk.setSkyLight();
             this.workingChunk.updateSkylight = false;
             //  this.worldFace.updateSkyLightMapChunks(this.x, this.y, this.z);
         }

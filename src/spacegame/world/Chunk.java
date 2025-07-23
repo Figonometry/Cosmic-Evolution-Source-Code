@@ -885,21 +885,23 @@ public final class Chunk implements Comparable<Chunk> {
     }
 
 
-    public void renderOpaque(int xOffset, int yOffset, int zOffset) {
+    public void renderOpaque(int xOffset, int yOffset, int zOffset, int sunX, int sunY, int sunZ) {
         if(this.elementBufferOpaque == null)return;
         this.chunkOffset.x = xOffset;
         this.chunkOffset.y = yOffset;
         this.chunkOffset.z = zOffset;
         Shader.terrainShader.uploadVec3f("chunkOffset", this.chunkOffset);
+        Shader.terrainShader.uploadVec3f("sunChunkOffset", new Vector3f((this.x - sunX) << 5, (this.y - sunY) << 5, (this.z - sunZ) << 5));
         GL46.glBindVertexArray(this.opaqueVAOID);
         GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, this.opaqueVBOID);
         GL46.glBindBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, this.opaqueEBOID);
         GL46.glDrawElements(GL46.GL_TRIANGLES, this.elementBufferOpaque.limit(), GL46.GL_UNSIGNED_INT, 0);
     }
 
-    public void renderTransparent() {
+    public void renderTransparent(int sunX, int sunY, int sunZ) {
         if(this.elementBufferTransparent == null)return;
         Shader.terrainShader.uploadVec3f("chunkOffset", chunkOffset);
+        Shader.terrainShader.uploadVec3f("sunChunkOffset", new Vector3f((this.x - sunX) << 5, (this.y - sunY) << 5, (this.z - sunZ) << 5));
         GL46.glBindVertexArray(this.transparentVAOID);
         GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, this.transparentVBOID);
         GL46.glBindBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, this.transparentEBOID);
@@ -908,6 +910,7 @@ public final class Chunk implements Comparable<Chunk> {
 
     public void renderShadowMap(int sunX, int sunY, int sunZ){
         if(this.elementBufferOpaque == null)return;
+        if(this.elementBufferOpaque.limit() == 0)return;
         Shader.shadowMapShader.uploadVec3f("chunkOffset", new Vector3f((this.x - sunX) << 5, (this.y - sunY) << 5, (this.z - sunZ) << 5));
         GL46.glBindVertexArray(this.opaqueVAOID);
         GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, this.opaqueVBOID);

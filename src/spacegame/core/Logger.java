@@ -6,8 +6,8 @@ import java.io.PrintStream;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
-public final class CrashLogger {
-    public CrashLogger(Exception exception){
+public final class Logger {
+    public Logger(Exception exception){
         Calendar calendar = new GregorianCalendar();
         File crashFile = new File(SpaceGame.instance.launcherDirectory + "/crashReports/crashReport" + "-" + calendar.get(Calendar.YEAR) + "-" + (calendar.get(Calendar.MONTH)+1) + "-" + calendar.get(Calendar.DAY_OF_MONTH) + "-" + calendar.get(Calendar.HOUR_OF_DAY)  + calendar.get(Calendar.MINUTE)  + calendar.get(Calendar.SECOND) +  ".txt");
         PrintStream ps;
@@ -21,5 +21,9 @@ public final class CrashLogger {
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static void printOpenGLState(){
+
     }
 }

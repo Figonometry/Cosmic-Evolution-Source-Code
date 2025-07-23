@@ -17,6 +17,6 @@ public final class Sun extends CelestialObject{
     }
 
     public void createShadowMap(){
-        this.shadowMap = new ShadowMap(2048, 2048);
+        this.shadowMap = new ShadowMap(32768, 32768);
     }
 }

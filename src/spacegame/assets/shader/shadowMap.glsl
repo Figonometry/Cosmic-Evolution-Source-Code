@@ -8,6 +8,7 @@ layout (location=3) in float aTexId; //Unused, the terrain has this assigned in 
 uniform mat4 uProjection;
 uniform mat4 uView;
 uniform vec3 chunkOffset;
+uniform vec3 sunPosition;
 
 float halfToFloat(int f16) {
     int sign = (f16 >> 15) & 0x1;

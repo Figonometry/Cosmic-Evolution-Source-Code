@@ -23,8 +23,6 @@ import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.render.Assets;
 import spacegame.render.Camera;
-import spacegame.render.Tessellator;
-import spacegame.world.Chunk;
 import spacegame.world.Save;
 import spacegame.world.World;
 import spacegame.world.WorldEarth;
@@ -32,8 +30,6 @@ import spacegame.world.WorldEarth;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.Random;
 
 public final class SpaceGame implements Runnable {
@@ -87,7 +83,7 @@ public final class SpaceGame implements Runnable {
         try {
             this.startGame();
         } catch(Exception exception){
-            new CrashLogger(exception);
+            new Logger(exception);
             if(this.save != null){
                 this.save.saveDataToFile();
                 this.save.activeWorld.saveWorld();
