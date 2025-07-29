@@ -5,10 +5,10 @@ layout (location=1) in float aColor; //Unused, the terrain has this assigned in 
 layout (location=2) in float aTexCoords; //Unused, the terrain has this assigned in the VAO/VBO
 layout (location=3) in float aTexId; //Unused, the terrain has this assigned in the VAO/VBO
 
-uniform mat4 uProjection;
-uniform mat4 uView;
+uniform mat4 combinedViewProjectionMatrix;
 uniform vec3 chunkOffset;
 uniform vec3 sunPosition;
+uniform double time;
 
 float halfToFloat(int f16) {
     int sign = (f16 >> 15) & 0x1;
@@ -32,9 +32,25 @@ vec3 decompressPosition(float posXY, float posZAndTexID){
     return vec3(halfToFloat((combinedIntXY >> 16) & 65535), halfToFloat(combinedIntXY & 65535), halfToFloat((combinedIntZ >> 16) & 65535));
 }
 
+float decompressTexID(float posZAndTexID){
+    int combinedInt = floatBitsToInt(posZAndTexID);
+    return float(combinedInt & 65535);
+}
+
+float sinX(float x, float y, float z){
+    float actualTime = float(time);
+    int realY = int(y);
+    int realZ = int(z);
+    x += sin(actualTime/30 + (realY | realZ)) / 10;
+    return x;
+}
+
 void main() {
     vec3 correctPos = vec3(chunkOffset + decompressPosition(aPos, aTexId));
-    gl_Position = vec4(uProjection * uView * vec4(correctPos, 1.0));
+    if(int(decompressTexID(aTexId)) == 10){
+        correctPos.x = sinX(correctPos.x, correctPos.y, correctPos.z);
+    }
+    gl_Position = vec4(combinedViewProjectionMatrix * vec4(correctPos, 1.0));
 }
 
 #type fragment

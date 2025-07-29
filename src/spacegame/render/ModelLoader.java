@@ -55,7 +55,6 @@ public final class ModelLoader{
                         case "o westFaceUnsorted" -> this.sortType = RenderBlocks.WEST_FACE_UNSORTED;
                     }
 
-
                     if (line.charAt(0) == 'v' && line.charAt(1) == ' ') {
                         String[] vertexString = line.split(" ");
                         String[] rawVertices = new String[3];
@@ -317,10 +316,32 @@ public final class ModelLoader{
                                     this.modelFaces[modelFaceIndex].setFloatValue(3, 2, this.westFaceUnsortedTemplate[3][2]);
                                 }
                             }
-
-                            modelFaceIndex++;
                             index = 0;
                         }
+                    }
+
+                    if(line.charAt(0) == 'v' && line.charAt(1) == 'n'){
+                        String[] normalString = line.split(" ");
+                        String[] rawNormal = new String[3];
+
+                        rawNormal[0] = normalString[1];
+                        rawNormal[1] = normalString[2];
+                        rawNormal[2] = normalString[3];
+
+                        float[] normal = new float[3];
+                        normal[0] = Float.parseFloat(rawNormal[0]);
+                        normal[1] = Float.parseFloat(rawNormal[1]);
+                        normal[2] = Float.parseFloat(rawNormal[2]);
+
+                        normal[0] = this.clampFloat(normal[0]);
+                        normal[1] = this.clampFloat(normal[1]);
+                        normal[2] = this.clampFloat(normal[2]);
+
+                        this.modelFaces[modelFaceIndex].setFloatValue(4, 0, normal[0]);
+                        this.modelFaces[modelFaceIndex].setFloatValue(4, 1, normal[1]);
+                        this.modelFaces[modelFaceIndex].setFloatValue(4, 2, normal[2]);
+
+                        modelFaceIndex++;
                     }
                 }
             }

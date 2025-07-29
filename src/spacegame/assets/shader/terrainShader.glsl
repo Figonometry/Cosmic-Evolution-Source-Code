@@ -9,9 +9,9 @@ uniform dmat4 uProjection;
 uniform dmat4 uView;
 uniform vec3 chunkOffset;
 uniform double time;
-uniform mat4 lightViewMatrix;
-uniform mat4 lightProjectionMatrix;
+uniform mat4 lightViewProjectionMatrix;
 uniform vec3 sunChunkOffset;
+uniform vec3 normalizedLightVector;
 
 out vec4 fColor;
 out vec2 fTexCoords;
@@ -58,6 +58,21 @@ float halfToFloat(int f16) {
     }
 }
 
+vec3 decodeOctahedralNormal(float x, float y) {
+    vec3 n = vec3(x, y, 1.0 - abs(x) - abs(y));
+
+    if (n.z < 0.0) {
+        float oldX = n.x;
+        float oldY = n.y;
+        n.x = (1.0 - abs(oldY)) * sign(oldX);
+        n.y = (1.0 - abs(oldX)) * sign(oldY);
+        n.z = -n.z;
+    }
+
+    return normalize(n);
+}
+
+
 //first 8 bits are unused, bit order in increments of 6 (x less than 1, x greater than 1, y less than 1, y greater than 1)
 vec2 decompressTextureCoordinates(float texCoord){
     int combinedInt = floatBitsToInt(texCoord);
@@ -67,7 +82,7 @@ vec2 decompressTextureCoordinates(float texCoord){
 //encoded in increments of 8 bits as alpha, red, green, blue
 vec4 decompressColor(float color) {
     int combinedInt = floatBitsToInt(color);
-    return vec4((combinedInt >> 16) & 255, (combinedInt >> 8)  & 255, combinedInt & 255, (combinedInt >> 24) & 255) / 255.0;
+    return vec4((combinedInt >> 16) & 255, (combinedInt >> 8)  & 255, combinedInt & 255, 255.0) / 255.0; //Alpha is a constant hardcoded value of 1
 }
 
 vec3 decompressPosition(float posXY, float posZAndTexID){
@@ -81,9 +96,52 @@ float decompressTexID(float posZAndTexID){
     return float(combinedInt & 65535);
 }
 
+float distanceFromCamera(vec3 correctPos){
+    float a = abs(correctPos.x);
+    float b = abs(correctPos.y);
+    float c = abs(correctPos.z);
+
+    if(a > b && a > c){
+        return a;
+    } else if(b > a && b > c){
+        return b;
+    } else {
+        return c;
+    }
+}
+
+vec3 decompressVertexNormal(float color, float texCoords){
+    int colorAsInt = floatBitsToInt(color);
+    int texCoordsAsInt = floatBitsToInt(texCoords);
+
+    int octahedralX = (colorAsInt >> 24) & 255;
+    int octahedralY = (texCoordsAsInt >> 24) & 255;
+
+    return vec3(decodeOctahedralNormal(octahedralX, octahedralY));
+}
+
+vec4 performLightingNormals(vec4 color, vec3 vertexNormal){
+    float angleCos = dot(vertexNormal, normalizedLightVector);
+    float angle = acos(angleCos);
+    angle = abs(angle);
+
+    float baseLight = 1;
+    float shaded = 0.5;
+    float halfPI = 3.14159 / 2.0;
+
+    if(angle > halfPI){
+        color *= shaded;
+    } else {
+        baseLight -= (shaded * (angle / halfPI));
+        color *= baseLight;
+    }
+
+    return color;
+}
+
 void main()
 {
-    fColor = decompressColor(aColor);
+    vec4 color = decompressColor(aColor);
     fTexCoords = decompressTextureCoordinates(aTexCoords);
     fTexId = decompressTexID(aTexId);
 
@@ -106,7 +164,12 @@ void main()
             break;
 
         }
-    fragPosInLightSpace = vec4(lightProjectionMatrix * lightViewMatrix * vec4(correctPosRelativeToSun, 1.0));
+   // float maxCameraDifference = distanceFromCamera(correctPos);
+
+    color = performLightingNormals(color, decompressVertexNormal(aColor, aTexCoords));
+    fColor = color;
+
+    fragPosInLightSpace = vec4(lightViewProjectionMatrix * vec4(correctPosRelativeToSun, 1.0));
     gl_Position = vec4(uProjection * uView * vec4(correctPos, 1.0));
 }
 
@@ -174,7 +237,7 @@ float getShadowFactor(vec4 fragPosInLightSpace){
 
 
     float bias = 0.0005;
-    return currentDepth - bias > closestDepth ? 0.3 : 1.0;
+    return currentDepth - bias > closestDepth ? 0.7 : 1.0;
 
 }
 
@@ -185,7 +248,7 @@ void main()
     color = fColor * texture(textureArray, vec3(fTexCoords, id));
     if (color.w > 0){
         float shadow = getShadowFactor(fragPosInLightSpace);
-        color.xyz *= shadow;
+       // color.xyz *= shadow;
 
         if (useFog){
             if (underwater){

@@ -1,7 +1,7 @@
 package spacegame.render;
 
 public final class ModelFace {
-    public float[][] vertices = new float[4][3];
+    public float[][] vertices = new float[5][3]; //4 vertices plus the face normal
     public final int faceType;
 
     public ModelFace(int faceType) {
