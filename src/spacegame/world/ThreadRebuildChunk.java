@@ -43,11 +43,11 @@ public final class ThreadRebuildChunk implements Runnable {
         }
         int faceNumber = this.workingChunk.calculateFaceNumber();
         int size = (int) (faceNumber * 1.2F);
-        this.workingChunk.vertexArrayOpaque = new float[size * 16];
-        this.workingChunk.vertexArrayTransparent = new float[size * 16];
-        this.workingChunk.vertexBufferOpaque = BufferUtils.createFloatBuffer(size * 16);
+        this.workingChunk.vertexArrayOpaque = new float[size * 28];
+        this.workingChunk.vertexArrayTransparent = new float[size * 28];
+        this.workingChunk.vertexBufferOpaque = BufferUtils.createFloatBuffer(size * 28);
         this.workingChunk.elementBufferOpaque = BufferUtils.createIntBuffer(size * 6);
-        this.workingChunk.vertexBufferTransparent = BufferUtils.createFloatBuffer(size * 16);
+        this.workingChunk.vertexBufferTransparent = BufferUtils.createFloatBuffer(size * 28);
         this.workingChunk.elementBufferTransparent = BufferUtils.createIntBuffer(size * 6);
         this.workingChunk.excludeTopFace = new int[1024];
         this.workingChunk.excludeBottomFace = new int[1024];
@@ -133,7 +133,7 @@ public final class ThreadRebuildChunk implements Runnable {
             truncatedVertexArrayOpaque[i] = this.workingChunk.vertexArrayOpaque[i];
         }
         this.workingChunk.vertexArrayOpaque = truncatedVertexArrayOpaque;
-        this.workingChunk.elementArrayOpaque = new int[(this.workingChunk.vertexArrayOpaque.length / 16) * 6];
+        this.workingChunk.elementArrayOpaque = new int[(this.workingChunk.vertexArrayOpaque.length / 28) * 6];
         int elementOffset = 0;
         int index = 0;
         for (int i = 0; i < this.workingChunk.elementArrayOpaque.length / 6; i++) {
@@ -156,7 +156,7 @@ public final class ThreadRebuildChunk implements Runnable {
             truncatedVertexArrayTransparent[i] = this.workingChunk.vertexArrayTransparent[i];
         }
         this.workingChunk.vertexArrayTransparent = truncatedVertexArrayTransparent;
-        this.workingChunk.elementArrayTransparent = new int[(this.workingChunk.vertexArrayTransparent.length / 16) * 6];
+        this.workingChunk.elementArrayTransparent = new int[(this.workingChunk.vertexArrayTransparent.length / 28) * 6];
         elementOffset = 0;
         index = 0;
         for (int i = 0; i < this.workingChunk.elementArrayTransparent.length / 6; i++) {

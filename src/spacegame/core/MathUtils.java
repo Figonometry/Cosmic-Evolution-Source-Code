@@ -68,29 +68,6 @@ public abstract class MathUtils {
         }
     }
 
-    public static byte[] encodeNormalOctahedral(Vector3f normal) {
-        Vector3f n = new Vector3f(normal).normalize();
-
-        float x = n.x / (Math.abs(n.x) + Math.abs(n.y) + Math.abs(n.z));
-        float y = n.y / (Math.abs(n.x) + Math.abs(n.y) + Math.abs(n.z));
-
-        if (n.z < 0.0f) {
-            float oldX = x;
-            float oldY = y;
-            x = (1.0f - Math.abs(oldY)) * Math.signum(oldX);
-            y = (1.0f - Math.abs(oldX)) * Math.signum(oldY);
-        }
-
-        int encodedX = Math.round((x * 0.5f + 0.5f) * 255.0f);
-        int encodedY = Math.round((y * 0.5f + 0.5f) * 255.0f);
-
-        encodedX = Math.max(0, Math.min(255, encodedX));
-        encodedY = Math.max(0, Math.min(255, encodedY));
-
-        return new byte[] {(byte) encodedX, (byte) encodedY};
-    }
-
-
     public static double sin(double a) {
         return SIN_TABLE[(int)(a * 10430.378F) & 65535];
     }

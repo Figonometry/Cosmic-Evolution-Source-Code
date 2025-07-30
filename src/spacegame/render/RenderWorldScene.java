@@ -188,7 +188,6 @@ public final class RenderWorldScene {
         Shader.terrainShader.uploadMat4f("lightViewProjectionMatrix", lightViewProjectionMatrix);
         Shader.terrainShader.uploadVec3f("normalizedLightVector", dir);
 
-       // System.out.println(Math.abs(Math.acos(dir.dot(new Vector3f(0,1,0)))));
 
         this.sunX = sunX;
         this.sunY = sunY;
@@ -237,7 +236,7 @@ public final class RenderWorldScene {
             playerLat = -(xAbs / xThreshold);
         }
 
-        playerLon =  (worldSizeRadius + SpaceGame.instance.save.thePlayer.z) / zThreshold;
+        playerLon = (worldSizeRadius + SpaceGame.instance.save.thePlayer.z) / zThreshold;
 
         ArrayList<Vector3f> starPositions = new ArrayList<>();
         CelestialObject currentCelestialObject = SpaceGame.instance.everything.getObjectAssociatedWithWorld(this.controller.parentWorldFace.parentWorld);
@@ -420,12 +419,12 @@ public final class RenderWorldScene {
 
         closestStar.normalize();
 
-        byte calculatedSkyLightLevel = this.calculateSkyLightLevel(closestStar.y);
+      //  byte calculatedSkyLightLevel = this.calculateSkyLightLevel(closestStar.y);
         this.setClearColor(closestStar.y);
-        if(calculatedSkyLightLevel != this.controller.parentWorldFace.parentWorld.skyLightLevel){
-            this.controller.parentWorldFace.parentWorld.skyLightLevel = calculatedSkyLightLevel;
-            this.controller.markAllChunksDirty();
-        }
+       // if(calculatedSkyLightLevel != this.controller.parentWorldFace.parentWorld.skyLightLevel){
+       //     this.controller.parentWorldFace.parentWorld.skyLightLevel = calculatedSkyLightLevel;
+       //     this.controller.markAllChunksDirty();
+       // }
     }
 
     private byte calculateSkyLightLevel(float yVecComponent){

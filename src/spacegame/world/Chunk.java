@@ -85,7 +85,8 @@ public final class Chunk implements Comparable<Chunk> {
     public static final int colorSize = 1;
     public static final int texIndexSize = 1;
     public static final int texCoordsSize = 1;
-    public static final int vertexSizeBytes = (positionsSize + colorSize + texCoordsSize + texIndexSize) * Float.BYTES;
+    public static final int normalSize = 3;
+    public static final int vertexSizeBytes = (positionsSize + colorSize + texCoordsSize + texIndexSize + normalSize) * Float.BYTES;
 
     public Chunk(int x, int y, int z, WorldFace worldFace) {
         this.x = x;
@@ -862,6 +863,9 @@ public final class Chunk implements Comparable<Chunk> {
         GL46.glVertexAttribPointer(3, Chunk.texIndexSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes, (Chunk.positionsSize + Chunk.colorSize + Chunk.texCoordsSize) * Float.BYTES);
         GL46.glEnableVertexAttribArray(3);
 
+        GL46.glVertexAttribPointer(4, Chunk.normalSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes, (Chunk.positionsSize + Chunk.colorSize + Chunk.texCoordsSize + Chunk.texIndexSize) * Float.BYTES);
+        GL46.glEnableVertexAttribArray(4);
+
         GL46.glBindBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, this.opaqueEBOID);
         GL46.glBufferData(GL46.GL_ARRAY_BUFFER, this.vertexBufferOpaque, GL46.GL_STATIC_DRAW);
         GL46.glBufferData(GL46.GL_ELEMENT_ARRAY_BUFFER, this.elementBufferOpaque, GL46.GL_STATIC_DRAW);
@@ -879,6 +883,9 @@ public final class Chunk implements Comparable<Chunk> {
 
         GL46.glVertexAttribPointer(3, Chunk.texIndexSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes, (Chunk.positionsSize + Chunk.colorSize + Chunk.texCoordsSize) * Float.BYTES);
         GL46.glEnableVertexAttribArray(3);
+
+        GL46.glVertexAttribPointer(4, Chunk.normalSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes, (Chunk.positionsSize + Chunk.colorSize + Chunk.texCoordsSize + Chunk.texIndexSize) * Float.BYTES);
+        GL46.glEnableVertexAttribArray(4);
 
         GL46.glBindBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, this.transparentEBOID);
         GL46.glBufferData(GL46.GL_ARRAY_BUFFER, this.vertexBufferTransparent, GL46.GL_STATIC_DRAW);

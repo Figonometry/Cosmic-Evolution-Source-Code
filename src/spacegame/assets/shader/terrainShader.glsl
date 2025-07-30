@@ -4,6 +4,7 @@ layout (location=0) in float aPos;
 layout (location=1) in float aColor;
 layout (location=2) in float aTexCoords;
 layout (location=3) in float aTexId;
+layout (location=4) in vec3 normal;
 
 uniform dmat4 uProjection;
 uniform dmat4 uView;
@@ -58,19 +59,8 @@ float halfToFloat(int f16) {
     }
 }
 
-vec3 decodeOctahedralNormal(float x, float y) {
-    vec3 n = vec3(x, y, 1.0 - abs(x) - abs(y));
 
-    if (n.z < 0.0) {
-        float oldX = n.x;
-        float oldY = n.y;
-        n.x = (1.0 - abs(oldY)) * sign(oldX);
-        n.y = (1.0 - abs(oldX)) * sign(oldY);
-        n.z = -n.z;
-    }
 
-    return normalize(n);
-}
 
 
 //first 8 bits are unused, bit order in increments of 6 (x less than 1, x greater than 1, y less than 1, y greater than 1)
@@ -110,29 +100,18 @@ float distanceFromCamera(vec3 correctPos){
     }
 }
 
-vec3 decompressVertexNormal(float color, float texCoords){
-    int colorAsInt = floatBitsToInt(color);
-    int texCoordsAsInt = floatBitsToInt(texCoords);
-
-    int octahedralX = (colorAsInt >> 24) & 255;
-    int octahedralY = (texCoordsAsInt >> 24) & 255;
-
-    return vec3(decodeOctahedralNormal(octahedralX, octahedralY));
-}
-
 vec4 performLightingNormals(vec4 color, vec3 vertexNormal){
     float angleCos = dot(vertexNormal, normalizedLightVector);
-    float angle = acos(angleCos);
-    angle = abs(angle);
 
     float baseLight = 1;
-    float shaded = 0.5;
-    float halfPI = 3.14159 / 2.0;
+    float shadeFactor = 0.7;
+    float shaded = 0.3;
+    float perpendicular = 0;
 
-    if(angle > halfPI){
+    if(angleCos < perpendicular){
         color *= shaded;
     } else {
-        baseLight -= (shaded * (angle / halfPI));
+        baseLight -= (shadeFactor * (1.0 - angleCos));
         color *= baseLight;
     }
 
@@ -166,7 +145,7 @@ void main()
         }
    // float maxCameraDifference = distanceFromCamera(correctPos);
 
-    color = performLightingNormals(color, decompressVertexNormal(aColor, aTexCoords));
+    color = performLightingNormals(color, normal);
     fColor = color;
 
     fragPosInLightSpace = vec4(lightViewProjectionMatrix * vec4(correctPosRelativeToSun, 1.0));
@@ -248,7 +227,7 @@ void main()
     color = fColor * texture(textureArray, vec3(fTexCoords, id));
     if (color.w > 0){
         float shadow = getShadowFactor(fragPosInLightSpace);
-       // color.xyz *= shadow;
+        color.xyz *= shadow;
 
         if (useFog){
             if (underwater){

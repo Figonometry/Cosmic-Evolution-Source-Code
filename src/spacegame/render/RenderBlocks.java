@@ -1249,7 +1249,7 @@ public class RenderBlocks {
         blue *= finalLight;
     }
 
-    private float compressTextureCoordinates(float x, float y, byte vertexNormalInOctahedralY){
+    private float compressTextureCoordinates(float x, float y){
         int xAsIntLessThanOne = 0;
         int yAsIntLessThanOne = 0;
         int xAsIntGreaterThanOne = 0;
@@ -1271,12 +1271,12 @@ public class RenderBlocks {
             yAsIntGreaterThanOne = (int)y;
         }
 
-        int combinedInt = ((vertexNormalInOctahedralY << 24) | (xAsIntLessThanOne << 18) | (xAsIntGreaterThanOne << 12) | (yAsIntLessThanOne << 6) | yAsIntGreaterThanOne);
+        int combinedInt = ((xAsIntLessThanOne << 18) | (xAsIntGreaterThanOne << 12) | (yAsIntLessThanOne << 6) | yAsIntGreaterThanOne);
         return Float.intBitsToFloat(combinedInt);
     }
 
-    private float compressColor(float red, float green, float blue, byte vertexNormalInOctahedralX){
-        return Float.intBitsToFloat(((vertexNormalInOctahedralX << 24) |(MathUtils.floatToIntRGBA(red) << 16) | (MathUtils.floatToIntRGBA(green) << 8) | MathUtils.floatToIntRGBA(blue)));
+    private float compressColor(float red, float green, float blue){
+        return Float.intBitsToFloat(((MathUtils.floatToIntRGBA(red) << 16) | (MathUtils.floatToIntRGBA(green) << 8) | MathUtils.floatToIntRGBA(blue)));
     }
 
     private float compressPosXY(float x, float y){
@@ -1379,193 +1379,271 @@ public class RenderBlocks {
         Vector3f vertex2 = new Vector3f(blockFace.vertices[1][0], blockFace.vertices[1][1], blockFace.vertices[1][2]).add(blockPosition);
         Vector3f vertex3 = new Vector3f(blockFace.vertices[2][0], blockFace.vertices[2][1], blockFace.vertices[2][2]).add(blockPosition);
         Vector3f vertex4 = new Vector3f(blockFace.vertices[3][0], blockFace.vertices[3][1], blockFace.vertices[3][2]).add(blockPosition);
+        Vector3f normal = new Vector3f(blockFace.vertices[4][0], blockFace.vertices[4][1], blockFace.vertices[4][2]);
 
-        byte[] vertexNormalsInOctahedral = MathUtils.encodeNormalOctahedral(new Vector3f(blockFace.vertices[4][0], blockFace.vertices[4][1], blockFace.vertices[4][2]));
 
         switch (blockFace.faceType) {
             case TOP_FACE, TOP_FACE_UNSORTED -> {
                 resetLight();
                 setLight(vertex1.x, vertex1.y, vertex1.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, worldFace, greedyMeshSize);
                 chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 0] = (this.compressPosXY(vertex1.x + greedyMeshSize[0], vertex1.y));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 1] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 2] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample1, 0 + ySample1, vertexNormalsInOctahedral[1]));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 1] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 2] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample1, 0 + ySample1));
                 chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 3] = (this.compressPosZAndTexId(vertex1.z, blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 4] = normal.x;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 5] = normal.y;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 6] = normal.z;
 
                 resetLight();
                 setLight(vertex2.x, vertex2.y, vertex2.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 4] = (this.compressPosXY(vertex2.x, vertex2.y));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 5] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 6] = (this.compressTextureCoordinates(0 + xSample2, 1 + greedyMeshSize[1] + ySample2, vertexNormalsInOctahedral[1]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 7] = (this.compressPosZAndTexId(vertex2.z + greedyMeshSize[1], blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 7] = (this.compressPosXY(vertex2.x, vertex2.y));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 8] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 9] = (this.compressTextureCoordinates(0 + xSample2, 1 + greedyMeshSize[1] + ySample2));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 10] = (this.compressPosZAndTexId(vertex2.z + greedyMeshSize[1], blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 11] = normal.x;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 12] = normal.y;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 13] = normal.z;
 
                 resetLight();
                 setLight(vertex3.x, vertex3.y, vertex3.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 8] = (this.compressPosXY(vertex3.x + greedyMeshSize[0], vertex3.y));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 9] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 10] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample3, 1 + greedyMeshSize[1] + ySample3, vertexNormalsInOctahedral[1]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 11] = (this.compressPosZAndTexId(vertex3.z + greedyMeshSize[1], blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 14] = (this.compressPosXY(vertex3.x + greedyMeshSize[0], vertex3.y));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 15] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 16] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample3, 1 + greedyMeshSize[1] + ySample3));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 17] = (this.compressPosZAndTexId(vertex3.z + greedyMeshSize[1], blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 18] = normal.x;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 19] = normal.y;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 20] = normal.z;
 
                 resetLight();
                 setLight(vertex4.x, vertex4.y, vertex4.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 12] = (this.compressPosXY(vertex4.x, vertex4.y));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 13] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 14] = (this.compressTextureCoordinates(0 + xSample4, 0 + ySample4, vertexNormalsInOctahedral[1]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 15] = (this.compressPosZAndTexId(vertex4.z, blockID));
-                chunk.vertexIndexOpaque += 16;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 21] = (this.compressPosXY(vertex4.x, vertex4.y));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 22] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 23] = (this.compressTextureCoordinates(0 + xSample4, 0 + ySample4));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 24] = (this.compressPosZAndTexId(vertex4.z, blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 25] = normal.x;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 26] = normal.y;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 27] = normal.z;
+
+                chunk.vertexIndexOpaque += 28;
             }
 
             case BOTTOM_FACE, BOTTOM_FACE_UNSORTED -> {
                 resetLight();
                 setLight(vertex1.x, vertex1.y, vertex1.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, worldFace, greedyMeshSize);
                 chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 0] = (this.compressPosXY(vertex1.x, vertex1.y));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 1] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 2] = (this.compressTextureCoordinates(0 + xSample1, 0 + ySample1, vertexNormalsInOctahedral[1]));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 1] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 2] = (this.compressTextureCoordinates(0 + xSample1, 0 + ySample1));
                 chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 3] = (this.compressPosZAndTexId(vertex1.z, blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 4] = normal.x;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 5] = normal.y;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 6] = normal.z;
 
                 resetLight();
                 setLight(vertex2.x, vertex2.y, vertex2.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 4] = (this.compressPosXY(vertex2.x + greedyMeshSize[0], vertex2.y));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 5] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 6] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 1 + greedyMeshSize[1] + ySample2, vertexNormalsInOctahedral[1]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 7] = (this.compressPosZAndTexId(vertex2.z, blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 7] = (this.compressPosXY(vertex2.x + greedyMeshSize[0], vertex2.y));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 8] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 9] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 1 + greedyMeshSize[1] + ySample2));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 10] = (this.compressPosZAndTexId(vertex2.z, blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 11] = normal.x;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 12] = normal.y;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 13] = normal.z;
 
                 resetLight();
                 setLight(vertex3.x, vertex3.y, vertex3.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 8] = (this.compressPosXY(vertex3.x, vertex3.y));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 9] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 10] = (this.compressTextureCoordinates(0 + xSample3, 1 + greedyMeshSize[1] + ySample3, vertexNormalsInOctahedral[1]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 11] = (this.compressPosZAndTexId(vertex3.z + greedyMeshSize[1], blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 14] = (this.compressPosXY(vertex3.x, vertex3.y));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 15] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 16] = (this.compressTextureCoordinates(0 + xSample3, 1 + greedyMeshSize[1] + ySample3));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 17] = (this.compressPosZAndTexId(vertex3.z + greedyMeshSize[1], blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 18] = normal.x;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 19] = normal.y;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 20] = normal.z;
 
                 resetLight();
                 setLight(vertex4.x, vertex4.y, vertex4.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 12] = (this.compressPosXY(vertex4.x + greedyMeshSize[0], vertex4.y));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 13] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 14] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 0 + ySample4, vertexNormalsInOctahedral[1]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 15] = (this.compressPosZAndTexId(vertex4.z, blockID));
-                chunk.vertexIndexOpaque += 16;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 21] = (this.compressPosXY(vertex4.x + greedyMeshSize[0], vertex4.y));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 22] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 23] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 0 + ySample4));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 24] = (this.compressPosZAndTexId(vertex4.z, blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 25] = normal.x;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 26] = normal.y;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 27] = normal.z;
+
+                chunk.vertexIndexOpaque += 28;
             }
             case NORTH_FACE, NORTH_FACE_UNSORTED -> {
                 resetLight();
                 setLight(vertex1.x, vertex1.y, vertex1.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, worldFace, greedyMeshSize);
                 chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 0] = (this.compressPosXY(vertex1.x, vertex1.y));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 1] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 2] = (this.compressTextureCoordinates(0 + xSample1, 1 + greedyMeshSize[1] + ySample1, vertexNormalsInOctahedral[1]));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 1] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 2] = (this.compressTextureCoordinates(0 + xSample1, 1 + greedyMeshSize[1] + ySample1));
                 chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 3] = (this.compressPosZAndTexId(vertex1.z, blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 4] = normal.x;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 5] = normal.y;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 6] = normal.z;
 
                 resetLight();
                 setLight(vertex2.x, vertex2.y, vertex2.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 4] = (this.compressPosXY(vertex2.x, vertex2.y + greedyMeshSize[1]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 5] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 6] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 0 + ySample2, vertexNormalsInOctahedral[1]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 7] = (this.compressPosZAndTexId(vertex2.z + greedyMeshSize[0], blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 7] = (this.compressPosXY(vertex2.x, vertex2.y + greedyMeshSize[1]));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 8] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 9] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 0 + ySample2));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 10] = (this.compressPosZAndTexId(vertex2.z + greedyMeshSize[0], blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 11] = normal.x;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 12] = normal.y;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 13] = normal.z;
 
                 resetLight();
                 setLight(vertex3.x, vertex3.y, vertex3.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 8] = (this.compressPosXY(vertex3.x, vertex3.y + greedyMeshSize[1]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 9] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 10] = (this.compressTextureCoordinates(0 + xSample3, 0 + ySample3, vertexNormalsInOctahedral[1]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 11] = (this.compressPosZAndTexId(vertex3.z, blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 14] = (this.compressPosXY(vertex3.x, vertex3.y + greedyMeshSize[1]));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 15] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 16] = (this.compressTextureCoordinates(0 + xSample3, 0 + ySample3));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 17] = (this.compressPosZAndTexId(vertex3.z, blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 18] = normal.x;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 19] = normal.y;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 20] = normal.z;
 
                 resetLight();
                 setLight(vertex4.x, vertex4.y, vertex4.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 12] = (this.compressPosXY(vertex4.x, vertex4.y));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 13] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 14] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 1 + greedyMeshSize[1] + ySample4, vertexNormalsInOctahedral[1]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 15] = (this.compressPosZAndTexId(vertex4.z + greedyMeshSize[0], blockID));
-                chunk.vertexIndexOpaque += 16;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 21] = (this.compressPosXY(vertex4.x, vertex4.y));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 22] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 23] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 1 + greedyMeshSize[1] + ySample4));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 24] = (this.compressPosZAndTexId(vertex4.z + greedyMeshSize[0], blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 25] = normal.x;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 26] = normal.y;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 27] = normal.z;
+
+                chunk.vertexIndexOpaque += 28;
             }
 
             case SOUTH_FACE, SOUTH_FACE_UNSORTED -> {
                 resetLight();
                 setLight(vertex1.x, vertex1.y, vertex1.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, worldFace, greedyMeshSize);
                 chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 0] = (this.compressPosXY(vertex1.x, vertex1.y));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 1] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 2] = (this.compressTextureCoordinates(0 + xSample1, 1 + greedyMeshSize[1] + ySample1, vertexNormalsInOctahedral[1]));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 1] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 2] = (this.compressTextureCoordinates(0 + xSample1, 1 + greedyMeshSize[1] + ySample1));
                 chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 3] = (this.compressPosZAndTexId(vertex1.z + greedyMeshSize[0], blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 4] = normal.x;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 5] = normal.y;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 6] = normal.z;
 
                 resetLight();
                 setLight(vertex2.x, vertex2.y, vertex2.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 4] = (this.compressPosXY(vertex2.x, vertex2.y + greedyMeshSize[1]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 5] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 6] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 0 + ySample2, vertexNormalsInOctahedral[1]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 7] = (this.compressPosZAndTexId(vertex2.z, blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 7] = (this.compressPosXY(vertex2.x, vertex2.y + greedyMeshSize[1]));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 8] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 9] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 0 + ySample2));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 10] = (this.compressPosZAndTexId(vertex2.z, blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 11] = normal.x;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 12] = normal.y;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 13] = normal.z;
 
                 resetLight();
                 setLight(vertex3.x, vertex3.y, vertex3.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 8] = (this.compressPosXY(vertex3.x, vertex3.y + greedyMeshSize[1]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 9] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 10] = (this.compressTextureCoordinates(0 + xSample3, 0 + ySample3, vertexNormalsInOctahedral[1]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 11] = (this.compressPosZAndTexId(vertex3.z + greedyMeshSize[0], blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 14] = (this.compressPosXY(vertex3.x, vertex3.y + greedyMeshSize[1]));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 15] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 16] = (this.compressTextureCoordinates(0 + xSample3, 0 + ySample3));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 17] = (this.compressPosZAndTexId(vertex3.z + greedyMeshSize[0], blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 18] = normal.x;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 19] = normal.y;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 20] = normal.z;
 
                 resetLight();
                 setLight(vertex4.x, vertex4.y, vertex4.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 12] = (this.compressPosXY(vertex4.x, vertex4.y));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 13] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 14] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 1 + greedyMeshSize[1] + ySample4, vertexNormalsInOctahedral[1]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 15] = (this.compressPosZAndTexId(vertex4.z, blockID));
-                chunk.vertexIndexOpaque += 16;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 21] = (this.compressPosXY(vertex4.x, vertex4.y));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 22] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 23] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 1 + greedyMeshSize[1] + ySample4));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 24] = (this.compressPosZAndTexId(vertex4.z, blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 25] = normal.x;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 26] = normal.y;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 27] = normal.z;
+
+                chunk.vertexIndexOpaque += 28;
             }
 
             case EAST_FACE, EAST_FACE_UNSORTED -> {
                 resetLight();
                 setLight(vertex1.x, vertex1.y, vertex1.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, worldFace, greedyMeshSize);
                 chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 0] = (this.compressPosXY(vertex1.x + greedyMeshSize[0], vertex1.y));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 1] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 2] = (this.compressTextureCoordinates(0 + xSample1, 1 + greedyMeshSize[1] + ySample1, vertexNormalsInOctahedral[1]));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 1] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 2] = (this.compressTextureCoordinates(0 + xSample1, 1 + greedyMeshSize[1] + ySample1));
                 chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 3] = (this.compressPosZAndTexId(vertex1.z, blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 4] = normal.x;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 5] = normal.y;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 6] = normal.z;
 
                 resetLight();
                 setLight(vertex2.x, vertex2.y, vertex2.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 4] = (this.compressPosXY(vertex2.x, vertex2.y + greedyMeshSize[1]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 5] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 6] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 0 + ySample2, vertexNormalsInOctahedral[1]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 7] = (this.compressPosZAndTexId(vertex2.z, blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 7] = (this.compressPosXY(vertex2.x, vertex2.y + greedyMeshSize[1]));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 8] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 9] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 0 + ySample2));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 10] = (this.compressPosZAndTexId(vertex2.z, blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 11] = normal.x;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 12] = normal.y;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 13] = normal.z;
 
                 resetLight();
                 setLight(vertex3.x, vertex3.y, vertex3.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 8] = (this.compressPosXY(vertex3.x + greedyMeshSize[0], vertex3.y + greedyMeshSize[1]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 9] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 10] = (this.compressTextureCoordinates(0 + xSample3, 0 + ySample3, vertexNormalsInOctahedral[1]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 11] = (this.compressPosZAndTexId(vertex3.z, blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 14] = (this.compressPosXY(vertex3.x + greedyMeshSize[0], vertex3.y + greedyMeshSize[1]));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 15] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 16] = (this.compressTextureCoordinates(0 + xSample3, 0 + ySample3));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 17] = (this.compressPosZAndTexId(vertex3.z, blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 18] = normal.x;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 19] = normal.y;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 20] = normal.z;
 
                 resetLight();
                 setLight(vertex4.x, vertex4.y, vertex4.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 12] = (this.compressPosXY(vertex4.x, vertex4.y));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 13] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 14] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 1 + greedyMeshSize[1] + ySample4, vertexNormalsInOctahedral[1]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 15] = (this.compressPosZAndTexId(vertex4.z, blockID));
-                chunk.vertexIndexOpaque += 16;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 21] = (this.compressPosXY(vertex4.x, vertex4.y));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 22] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 23] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 1 + greedyMeshSize[1] + ySample4));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 24] = (this.compressPosZAndTexId(vertex4.z, blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 25] = normal.x;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 26] = normal.y;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 27] = normal.z;
+
+                chunk.vertexIndexOpaque += 28;
             }
 
             case WEST_FACE, WEST_FACE_UNSORTED -> {
                 resetLight();
                 setLight(vertex1.x, vertex1.y, vertex1.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, worldFace, greedyMeshSize);
                 chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 0] = (this.compressPosXY(vertex1.x, vertex1.y));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 1] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 2] = (this.compressTextureCoordinates(0 + xSample1, 1 + greedyMeshSize[1] + ySample1, vertexNormalsInOctahedral[1]));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 1] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 2] = (this.compressTextureCoordinates(0 + xSample1, 1 + greedyMeshSize[1] + ySample1));
                 chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 3] = (this.compressPosZAndTexId(vertex1.z, blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 4] = normal.x;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 5] = normal.y;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 6] = normal.z;
 
                 resetLight();
                 setLight(vertex2.x, vertex2.y, vertex2.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 4] = (this.compressPosXY(vertex2.x + greedyMeshSize[0], vertex2.y + greedyMeshSize[1]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 5] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 6] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 0 + ySample2, vertexNormalsInOctahedral[1]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 7] = (this.compressPosZAndTexId(vertex2.z, blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 7] = (this.compressPosXY(vertex2.x + greedyMeshSize[0], vertex2.y + greedyMeshSize[1]));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 8] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 9] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 0 + ySample2));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 10] = (this.compressPosZAndTexId(vertex2.z, blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 11] = normal.x;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 12] = normal.y;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 13] = normal.z;
 
                 resetLight();
                 setLight(vertex3.x, vertex3.y, vertex3.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 8] = (this.compressPosXY(vertex3.x, vertex3.y + greedyMeshSize[1]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 9] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 10] = (this.compressTextureCoordinates(0 + xSample3, 0 + ySample3, vertexNormalsInOctahedral[1]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 11] = (this.compressPosZAndTexId(vertex3.z, blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 14] = (this.compressPosXY(vertex3.x, vertex3.y + greedyMeshSize[1]));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 15] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 16] = (this.compressTextureCoordinates(0 + xSample3, 0 + ySample3));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 17] = (this.compressPosZAndTexId(vertex3.z, blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 18] = normal.x;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 19] = normal.y;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 20] = normal.z;
 
                 resetLight();
                 setLight(vertex4.x, vertex4.y, vertex4.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 12] = (this.compressPosXY(vertex4.x + greedyMeshSize[0], vertex4.y));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 13] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 14] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 1 + greedyMeshSize[1] + ySample4, vertexNormalsInOctahedral[1]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 15] = (this.compressPosZAndTexId(vertex4.z, blockID));
-                chunk.vertexIndexOpaque += 16;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 21] = (this.compressPosXY(vertex4.x + greedyMeshSize[0], vertex4.y));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 22] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 23] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 1 + greedyMeshSize[1] + ySample4));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 24] = (this.compressPosZAndTexId(vertex4.z, blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 25] = normal.x;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 26] = normal.y;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 27] = normal.z;
+
+                chunk.vertexIndexOpaque += 28;
             }
         }
         resetLight();
@@ -1583,193 +1661,270 @@ public class RenderBlocks {
         Vector3f vertex2 = new Vector3f(blockFace.vertices[1][0], blockFace.vertices[1][1], blockFace.vertices[1][2]).add(blockPosition);
         Vector3f vertex3 = new Vector3f(blockFace.vertices[2][0], blockFace.vertices[2][1], blockFace.vertices[2][2]).add(blockPosition);
         Vector3f vertex4 = new Vector3f(blockFace.vertices[3][0], blockFace.vertices[3][1], blockFace.vertices[3][2]).add(blockPosition);
-
-        byte[] vertexNormalsInOctahedral = MathUtils.encodeNormalOctahedral(new Vector3f(blockFace.vertices[4][0], blockFace.vertices[4][1], blockFace.vertices[4][2]));
+        Vector3f normal = new Vector3f(blockFace.vertices[4][0], blockFace.vertices[4][1], blockFace.vertices[4][2]);
 
         switch (blockFace.faceType) {
             case TOP_FACE, TOP_FACE_UNSORTED -> {
                 resetLight();
                 setLight(vertex1.x, vertex1.y, vertex1.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, worldFace, greedyMeshSize);
                 chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 0] = (this.compressPosXY(vertex1.x + greedyMeshSize[0], vertex1.y));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 1] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 2] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample1, 0 + ySample1, vertexNormalsInOctahedral[1]));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 1] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 2] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample1, 0 + ySample1));
                 chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 3] = (this.compressPosZAndTexId(vertex1.z, blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 4] = normal.x;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 5] = normal.y;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 6] = normal.z;
 
                 resetLight();
                 setLight(vertex2.x, vertex2.y, vertex2.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 4] = (this.compressPosXY(vertex2.x, vertex2.y));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 5] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 6] = (this.compressTextureCoordinates(0 + xSample2, 1 + greedyMeshSize[1] + ySample2, vertexNormalsInOctahedral[1]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 7] = (this.compressPosZAndTexId(vertex2.z + greedyMeshSize[1], blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 7] = (this.compressPosXY(vertex2.x, vertex2.y));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 8] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 9] = (this.compressTextureCoordinates(0 + xSample2, 1 + greedyMeshSize[1] + ySample2));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 10] = (this.compressPosZAndTexId(vertex2.z + greedyMeshSize[1], blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 11] = normal.x;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 12] = normal.y;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 13] = normal.z;
 
                 resetLight();
                 setLight(vertex3.x, vertex3.y, vertex3.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 8] = (this.compressPosXY(vertex3.x + greedyMeshSize[0], vertex3.y));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 9] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 10] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample3, 1 + greedyMeshSize[1] + ySample3, vertexNormalsInOctahedral[1]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 11] = (this.compressPosZAndTexId(vertex3.z + greedyMeshSize[1], blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 14] = (this.compressPosXY(vertex3.x + greedyMeshSize[0], vertex3.y));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 15] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 16] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample3, 1 + greedyMeshSize[1] + ySample3));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 17] = (this.compressPosZAndTexId(vertex3.z + greedyMeshSize[1], blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 18] = normal.x;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 19] = normal.y;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 20] = normal.z;
 
                 resetLight();
                 setLight(vertex4.x, vertex4.y, vertex4.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 12] = (this.compressPosXY(vertex4.x, vertex4.y));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 13] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 14] = (this.compressTextureCoordinates(0 + xSample4, 0 + ySample4, vertexNormalsInOctahedral[1]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 15] = (this.compressPosZAndTexId(vertex4.z, blockID));
-                chunk.vertexIndexTransparent += 16;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 21] = (this.compressPosXY(vertex4.x, vertex4.y));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 22] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 23] = (this.compressTextureCoordinates(0 + xSample4, 0 + ySample4));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 24] = (this.compressPosZAndTexId(vertex4.z, blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 25] = normal.x;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 26] = normal.y;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 27] = normal.z;
+
+                chunk.vertexIndexTransparent += 28;
             }
 
             case BOTTOM_FACE, BOTTOM_FACE_UNSORTED -> {
                 resetLight();
                 setLight(vertex1.x, vertex1.y, vertex1.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, worldFace, greedyMeshSize);
                 chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 0] = (this.compressPosXY(vertex1.x, vertex1.y));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 1] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 2] = (this.compressTextureCoordinates(0 + xSample1, 0 + ySample1, vertexNormalsInOctahedral[1]));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 1] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 2] = (this.compressTextureCoordinates(0 + xSample1, 0 + ySample1));
                 chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 3] = (this.compressPosZAndTexId(vertex1.z, blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 4] = normal.x;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 5] = normal.y;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 6] = normal.z;
 
                 resetLight();
                 setLight(vertex2.x, vertex2.y, vertex2.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 4] = (this.compressPosXY(vertex2.x + greedyMeshSize[0], vertex2.y));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 5] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 6] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 1 + greedyMeshSize[1] + ySample2, vertexNormalsInOctahedral[1]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 7] = (this.compressPosZAndTexId(vertex2.z + greedyMeshSize[1], blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 7] = (this.compressPosXY(vertex2.x + greedyMeshSize[0], vertex2.y));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 8] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 9] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 1 + greedyMeshSize[1] + ySample2));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 10] = (this.compressPosZAndTexId(vertex2.z + greedyMeshSize[1], blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 11] = normal.x;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 12] = normal.y;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 13] = normal.z;
 
                 resetLight();
                 setLight(vertex3.x, vertex3.y, vertex3.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 8] = (this.compressPosXY(vertex3.x, vertex3.y));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 9] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 10] = (this.compressTextureCoordinates(0 + xSample3, 1 + greedyMeshSize[1] + ySample3, vertexNormalsInOctahedral[1]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 11] = (this.compressPosZAndTexId(vertex3.z + greedyMeshSize[1], blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 14] = (this.compressPosXY(vertex3.x, vertex3.y));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 15] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 16] = (this.compressTextureCoordinates(0 + xSample3, 1 + greedyMeshSize[1] + ySample3));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 17] = (this.compressPosZAndTexId(vertex3.z + greedyMeshSize[1], blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 18] = normal.x;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 19] = normal.y;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 20] = normal.z;
 
                 resetLight();
                 setLight(vertex4.x, vertex4.y, vertex4.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 12] = (this.compressPosXY(vertex4.x + greedyMeshSize[0], vertex4.y));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 13] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 14] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 0 + ySample4, vertexNormalsInOctahedral[1]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 15] = (this.compressPosZAndTexId(vertex4.z, blockID));
-                chunk.vertexIndexTransparent += 16;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 21] = (this.compressPosXY(vertex4.x + greedyMeshSize[0], vertex4.y));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 22] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 23] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 0 + ySample4));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 24] = (this.compressPosZAndTexId(vertex4.z, blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 25] = normal.x;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 26] = normal.y;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 27] = normal.z;
+
+                chunk.vertexIndexTransparent += 28;
             }
             case NORTH_FACE, NORTH_FACE_UNSORTED -> {
                 resetLight();
                 setLight(vertex1.x, vertex1.y, vertex1.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, worldFace, greedyMeshSize);
                 chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 0] = (this.compressPosXY(vertex1.x, vertex1.y));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 1] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 2] = (this.compressTextureCoordinates(0 + xSample1, 1 + greedyMeshSize[1] + ySample1, vertexNormalsInOctahedral[1]));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 1] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 2] = (this.compressTextureCoordinates(0 + xSample1, 1 + greedyMeshSize[1] + ySample1));
                 chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 3] = (this.compressPosZAndTexId(vertex1.z, blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 4] = normal.x;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 5] = normal.y;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 6] = normal.z;
 
                 resetLight();
                 setLight(vertex2.x, vertex2.y, vertex2.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 4] = (this.compressPosXY(vertex2.x, vertex2.y + greedyMeshSize[1]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 5] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 6] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 0 + ySample2, vertexNormalsInOctahedral[1]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 7] = (this.compressPosZAndTexId(vertex2.z + greedyMeshSize[0], blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 7] = (this.compressPosXY(vertex2.x, vertex2.y + greedyMeshSize[1]));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 8] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 9] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 0 + ySample2));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 10] = (this.compressPosZAndTexId(vertex2.z + greedyMeshSize[0], blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 11] = normal.x;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 12] = normal.y;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 13] = normal.z;
 
                 resetLight();
                 setLight(vertex3.x, vertex3.y, vertex3.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 8] = (this.compressPosXY(vertex3.x, vertex3.y + greedyMeshSize[1]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 9] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 10] = (this.compressTextureCoordinates(0 + xSample3, 0 + ySample3, vertexNormalsInOctahedral[1]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 11] = (this.compressPosZAndTexId(vertex3.z, blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 14] = (this.compressPosXY(vertex3.x, vertex3.y + greedyMeshSize[1]));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 15] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 16] = (this.compressTextureCoordinates(0 + xSample3, 0 + ySample3));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 17] = (this.compressPosZAndTexId(vertex3.z, blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 18] = normal.x;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 19] = normal.y;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 20] = normal.z;
 
                 resetLight();
                 setLight(vertex4.x, vertex4.y, vertex4.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 12] = (this.compressPosXY(vertex4.x, vertex4.y));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 13] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 14] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 1 + greedyMeshSize[1] + ySample4, vertexNormalsInOctahedral[1]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 15] = (this.compressPosZAndTexId(vertex4.z + greedyMeshSize[0], blockID));
-                chunk.vertexIndexTransparent += 16;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 21] = (this.compressPosXY(vertex4.x, vertex4.y));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 22] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 23] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 1 + greedyMeshSize[1] + ySample4));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 24] = (this.compressPosZAndTexId(vertex4.z + greedyMeshSize[0], blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 25] = normal.x;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 26] = normal.y;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 27] = normal.z;
+
+                chunk.vertexIndexTransparent += 28;
             }
 
             case SOUTH_FACE, SOUTH_FACE_UNSORTED -> {
                 resetLight();
                 setLight(vertex1.x, vertex1.y, vertex1.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, worldFace, greedyMeshSize);
                 chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 0] = (this.compressPosXY(vertex1.x, vertex1.y));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 1] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 2] = (this.compressTextureCoordinates(0 + xSample1, 1 + greedyMeshSize[1] + ySample1, vertexNormalsInOctahedral[1]));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 1] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 2] = (this.compressTextureCoordinates(0 + xSample1, 1 + greedyMeshSize[1] + ySample1));
                 chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 3] = (this.compressPosZAndTexId(vertex1.z + greedyMeshSize[0], blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 4] = normal.x;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 5] = normal.y;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 6] = normal.z;
 
                 resetLight();
                 setLight(vertex2.x, vertex2.y, vertex2.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 4] = (this.compressPosXY(vertex2.x, vertex2.y + greedyMeshSize[1]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 5] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 6] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 0 + ySample2, vertexNormalsInOctahedral[1]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 7] = (this.compressPosZAndTexId(vertex2.z, blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 7] = (this.compressPosXY(vertex2.x, vertex2.y + greedyMeshSize[1]));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 8] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 9] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 0 + ySample2));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 10] = (this.compressPosZAndTexId(vertex2.z, blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 11] = normal.x;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 12] = normal.y;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 13] = normal.z;
 
                 resetLight();
                 setLight(vertex3.x, vertex3.y, vertex3.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 8] = (this.compressPosXY(vertex3.x, vertex3.y + greedyMeshSize[1]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 9] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 10] = (this.compressTextureCoordinates(0 + xSample3, 0 + ySample3, vertexNormalsInOctahedral[1]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 11] = (this.compressPosZAndTexId(vertex3.z + greedyMeshSize[0], blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 14] = (this.compressPosXY(vertex3.x, vertex3.y + greedyMeshSize[1]));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 15] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 16] = (this.compressTextureCoordinates(0 + xSample3, 0 + ySample3));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 17] = (this.compressPosZAndTexId(vertex3.z + greedyMeshSize[0], blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 18] = normal.x;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 19] = normal.y;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 20] = normal.z;
 
                 resetLight();
                 setLight(vertex4.x, vertex4.y, vertex4.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 12] = (this.compressPosXY(vertex4.x, vertex4.y));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 13] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 14] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 1 + greedyMeshSize[1] + ySample4, vertexNormalsInOctahedral[1]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 15] = (this.compressPosZAndTexId(vertex4.z, blockID));
-                chunk.vertexIndexTransparent += 16;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 21] = (this.compressPosXY(vertex4.x, vertex4.y));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 22] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 23] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 1 + greedyMeshSize[1] + ySample4));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 24] = (this.compressPosZAndTexId(vertex4.z, blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 25] = normal.x;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 26] = normal.y;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 27] = normal.z;
+
+                chunk.vertexIndexTransparent += 28;
             }
 
             case EAST_FACE, EAST_FACE_UNSORTED -> {
                 resetLight();
                 setLight(vertex1.x, vertex1.y, vertex1.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, worldFace, greedyMeshSize);
                 chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 0] = (this.compressPosXY(vertex1.x + greedyMeshSize[0], vertex1.y));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 1] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 2] = (this.compressTextureCoordinates(0 + xSample1, 1 + greedyMeshSize[1] + ySample1, vertexNormalsInOctahedral[1]));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 1] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 2] = (this.compressTextureCoordinates(0 + xSample1, 1 + greedyMeshSize[1] + ySample1));
                 chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 3] = (this.compressPosZAndTexId(vertex1.z, blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 4] = normal.x;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 5] = normal.y;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 6] = normal.z;
 
                 resetLight();
                 setLight(vertex2.x, vertex2.y, vertex2.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 4] = (this.compressPosXY(vertex2.x, vertex2.y + greedyMeshSize[1]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 5] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 6] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 0 + ySample2, vertexNormalsInOctahedral[1]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 7] = (this.compressPosZAndTexId(vertex2.z, blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 7] = (this.compressPosXY(vertex2.x, vertex2.y + greedyMeshSize[1]));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 8] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 9] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 0 + ySample2));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 10] = (this.compressPosZAndTexId(vertex2.z, blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 11] = normal.x;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 12] = normal.y;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 13] = normal.z;
 
                 resetLight();
                 setLight(vertex3.x, vertex3.y, vertex3.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 8] = (this.compressPosXY(vertex3.x + greedyMeshSize[0], vertex3.y + greedyMeshSize[1]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 9] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 10] = (this.compressTextureCoordinates(0 + xSample3, 0 + ySample3, vertexNormalsInOctahedral[1]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 11] = (this.compressPosZAndTexId(vertex3.z, blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 14] = (this.compressPosXY(vertex3.x + greedyMeshSize[0], vertex3.y + greedyMeshSize[1]));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 15] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 16] = (this.compressTextureCoordinates(0 + xSample3, 0 + ySample3));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 17] = (this.compressPosZAndTexId(vertex3.z, blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 18] = normal.x;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 19] = normal.y;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 20] = normal.z;
 
                 resetLight();
                 setLight(vertex4.x, vertex4.y, vertex4.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 12] = (this.compressPosXY(vertex4.x, vertex4.y));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 13] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 14] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 1 + greedyMeshSize[1] + ySample4, vertexNormalsInOctahedral[1]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 15] = (this.compressPosZAndTexId(vertex4.z, blockID));
-                chunk.vertexIndexTransparent += 16;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 21] = (this.compressPosXY(vertex4.x, vertex4.y));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 22] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 23] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 1 + greedyMeshSize[1] + ySample4));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 24] = (this.compressPosZAndTexId(vertex4.z, blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 25] = normal.x;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 26] = normal.y;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 27] = normal.z;
+
+                chunk.vertexIndexTransparent += 28;
             }
 
             case WEST_FACE, WEST_FACE_UNSORTED -> {
                 resetLight();
                 setLight(vertex1.x, vertex1.y, vertex1.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, worldFace, greedyMeshSize);
                 chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 0] = (this.compressPosXY(vertex1.x, vertex1.y));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 1] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 2] = (this.compressTextureCoordinates(0 + xSample1, 1 + greedyMeshSize[1] + ySample1, vertexNormalsInOctahedral[1]));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 1] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 2] = (this.compressTextureCoordinates(0 + xSample1, 1 + greedyMeshSize[1] + ySample1));
                 chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 3] = (this.compressPosZAndTexId(vertex1.z, blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 4] = normal.x;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 5] = normal.y;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 6] = normal.z;
 
                 resetLight();
                 setLight(vertex2.x, vertex2.y, vertex2.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 4] = (this.compressPosXY(vertex2.x + greedyMeshSize[0], vertex2.y + greedyMeshSize[1]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 5] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 6] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 0 + ySample2, vertexNormalsInOctahedral[1]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 7] = (this.compressPosZAndTexId(vertex2.z, blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 7] = (this.compressPosXY(vertex2.x + greedyMeshSize[0], vertex2.y + greedyMeshSize[1]));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 8] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 9] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 0 + ySample2));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 10] = (this.compressPosZAndTexId(vertex2.z, blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 11] = normal.x;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 12] = normal.y;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 13] = normal.z;
 
                 resetLight();
                 setLight(vertex3.x, vertex3.y, vertex3.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 8] = (this.compressPosXY(vertex3.x, vertex3.y + greedyMeshSize[1]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 9] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 10] = (this.compressTextureCoordinates(0 + xSample3, 0 + ySample3, vertexNormalsInOctahedral[1]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 11] = (this.compressPosZAndTexId(vertex3.z, blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 14] = (this.compressPosXY(vertex3.x, vertex3.y + greedyMeshSize[1]));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 15] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 16] = (this.compressTextureCoordinates(0 + xSample3, 0 + ySample3));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 17] = (this.compressPosZAndTexId(vertex3.z, blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 18] = normal.x;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 19] = normal.y;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 20] = normal.z;
 
                 resetLight();
                 setLight(vertex4.x, vertex4.y, vertex4.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 12] = (this.compressPosXY(vertex4.x + greedyMeshSize[0], vertex4.y));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 13] = (this.compressColor(red, green, blue, vertexNormalsInOctahedral[0]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 14] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 1 + greedyMeshSize[1] + ySample4, vertexNormalsInOctahedral[1]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 15] = (this.compressPosZAndTexId(vertex4.z, blockID));
-                chunk.vertexIndexTransparent += 16;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 21] = (this.compressPosXY(vertex4.x + greedyMeshSize[0], vertex4.y));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 22] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 23] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 1 + greedyMeshSize[1] + ySample4));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 24] = (this.compressPosZAndTexId(vertex4.z, blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 25] = normal.x;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 26] = normal.y;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 27] = normal.z;
+
+                chunk.vertexIndexTransparent += 28;
             }
         }
         resetLight();
