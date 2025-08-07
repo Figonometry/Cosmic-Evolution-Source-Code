@@ -30,7 +30,6 @@ public final class GuiVideoSettingsInGame extends Gui {
         this.mouseSensitivity = new Button(EnumButtonEffects.MOUSE_SENSITIVITY.name(), 512, 64, 587, 150, this, this.sg);
         this.showFPS = new Button(EnumButtonEffects.SHOW_FPS.name(), 512, 64, -587, 0, this, this.sg);
         this.fullscreen = new Button(EnumButtonEffects.FULLSCREEN.name(), 512, 64, 0,0, this, this.sg);
-        this.fullscreen.active = false;
         this.fov = new Button(EnumButtonEffects.FOV.name(), 512, 64, 587, 0, this, this.sg);
         this.vsync = new Button(EnumButtonEffects.VSYNC.name(), 512, 64, -587, -150,  this, this.sg);
         this.chunkViewDistanceHorizontal = new Button(EnumButtonEffects.CHUNK_VIEW_HORIZONTAL.name(), 512,64, 0, -150, this, this.sg);
@@ -73,8 +72,8 @@ public final class GuiVideoSettingsInGame extends Gui {
         tessellator.addElements();
         tessellator.drawTexture2D(this.title.texID, Shader.screen2DTexture, SpaceGame.camera);
 
-        int backgroundWidth = SpaceGame.width;
-        int backgroundHeight = SpaceGame.height;
+        int backgroundWidth = 1920;
+        int backgroundHeight = 1017;
         int backgroundX = 0;
         int backgroundY = 0;
         int backgroundZ = -100;

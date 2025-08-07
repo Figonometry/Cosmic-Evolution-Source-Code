@@ -67,8 +67,8 @@ public final class GuiLightFire extends GuiAction {
         float x = 0;
         float y = 0;
         float z = -100;
-        float backgroundWidth = SpaceGame.width;
-        float backgroundHeight = SpaceGame.height;
+        float backgroundWidth = 1920;
+        float backgroundHeight = 1017;
         tessellator.addVertex2DTexture(0, x - backgroundWidth/2, y - backgroundHeight/2, z, 3);
         tessellator.addVertex2DTexture(0, x + backgroundWidth/2, y + backgroundHeight/2, z, 1);
         tessellator.addVertex2DTexture(0, x - backgroundWidth/2, y + backgroundHeight/2, z, 2);

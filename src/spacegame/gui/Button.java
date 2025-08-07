@@ -3,6 +3,7 @@ package spacegame.gui;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
 import spacegame.core.GameSettings;
+import spacegame.core.MathUtils;
 import spacegame.core.MouseListener;
 import spacegame.core.SpaceGame;
 import spacegame.entity.EntityPlayer;
@@ -114,6 +115,7 @@ public class Button {
             }
             case FULLSCREEN -> {
                 GameSettings.fullscreen = !GameSettings.fullscreen;
+                this.sg.toggleFullscreen();
             }
             case MOUSE_SENSITIVITY -> {
                 if(this.sideOfButtonBeingClicked() == 0){
@@ -203,7 +205,7 @@ public class Button {
                 }
                 this.sg.save = null;
                 this.sg.setNewGui(new GuiMainMenu(this.sg));
-                SpaceGame.seGLClearColor(0,0,0,0);
+                SpaceGame.setGLClearColor(0,0,0,0);
             }
             case SAVE_1 -> {
                 if(this.clicked) {
@@ -491,7 +493,6 @@ public class Button {
 
         if(this.name.equals(EnumButtonEffects.INFORMATION.name())){
             TextureLoader info = new TextureLoader("src/spacegame/assets/textures/gui/guiMainMenu/info.png", 64,  64);
-            TextureAtlas infoAtlas = new TextureAtlas(info, 64,64,1,0);
             tessellator.toggleOrtho();
             tessellator.addVertex2DTexture(16711680,this.x - 30, this.y - 30, -9,3);
             tessellator.addVertex2DTexture(16711680,this.x + 30, this.y + 30, -9,1);
@@ -507,7 +508,11 @@ public class Button {
     public boolean isMouseHoveredOver(){
         double x = MouseListener.instance.xPos - SpaceGame.width/2D;
         double y = (MouseListener.instance.yPos - SpaceGame.height/2D) * -1;
-        return x > this.x - (double) this.width /2 && x < this.x + (double) this.width /2 && y > this.y - (double) this.height /2 && y < this.y + (double) this.height /2;
+        float adjustedButtonX = MathUtils.adjustXPosBasedOnScreenWidth(this.x);
+        float adjustedButtonY = MathUtils.adjustYPosBasedOnScreenHeight(this.y);
+        float adjustedButtonWidth = MathUtils.adjustWidthBasedOnScreenWidth(this.width);
+        float adjustedButtonHeight = MathUtils.adjustHeightBasedOnScreenHeight(this.height);
+        return x > adjustedButtonX - (double) adjustedButtonWidth / 2 && x < adjustedButtonX + (double) adjustedButtonWidth / 2 && y > adjustedButtonY - (double) adjustedButtonHeight / 2 && y < adjustedButtonY + (double) adjustedButtonHeight / 2;
     }
 
     public int sideOfButtonBeingClicked(){

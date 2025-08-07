@@ -58,7 +58,7 @@ public final class GuiUniverseMap extends Gui {
         GL46.glEnable(GL46.GL_DEPTH_BUFFER_BIT);
         GL46.glEnable(GL46.GL_DEPTH_TEST);
         FontRenderer fontRenderer = FontRenderer.instance;
-        int leftSide = -SpaceGame.width / 2 - 10;
+        int leftSide = -970;
         fontRenderer.drawString(SpaceGame.instance.title + " (" + SpaceGame.instance.fps * -1 + " FPS)", leftSide, 460, 16777215);
         fontRenderer.drawString("Current Selected Object: " + this.selectedObject, leftSide, 430, 16777215);
 

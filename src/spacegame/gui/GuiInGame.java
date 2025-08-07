@@ -72,7 +72,7 @@ public final class GuiInGame extends Gui {
     }
 
     public static void renderText(){
-        int leftSide = -SpaceGame.width / 2 - 10;
+        int leftSide = -970;
         FontRenderer fontRenderer = FontRenderer.instance;
         if(GameSettings.showFPS) {
             fontRenderer.drawString(SpaceGame.instance.title + " (" + SpaceGame.instance.fps * -1 + " FPS)", leftSide, 460, 16777215);
@@ -86,11 +86,12 @@ public final class GuiInGame extends Gui {
             fontRenderer.drawString("Pitch: " + SpaceGame.instance.save.thePlayer.pitch, leftSide, 340, 16777215);
             fontRenderer.drawString("Yaw: " + SpaceGame.instance.save.thePlayer.yaw, leftSide, 310, 16777215);
             fontRenderer.drawString("Chunks Loaded " + SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.numberOfLoadedChunks(), leftSide, 280, 16777215);
-            fontRenderer.drawString("Light Level: " + SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockLightValue((int) SpaceGame.instance.save.thePlayer.x, (int) SpaceGame.instance.save.thePlayer.y, (int) SpaceGame.instance.save.thePlayer.z), leftSide, 250, 16777215);
+            fontRenderer.drawString("Block Light Level: " + SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockLightValue((int) SpaceGame.instance.save.thePlayer.x, (int) SpaceGame.instance.save.thePlayer.y, (int) SpaceGame.instance.save.thePlayer.z), leftSide, 250, 16777215);
             fontRenderer.drawString("Regions Loaded: " + SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.numberOfLoadedRegions(), leftSide, 220, 16777215);
             fontRenderer.drawString("Draw Calls: " +  SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.drawCalls, leftSide, 190, 16777215);
             fontRenderer.drawString("Thread Count: " + Thread.activeCount(), leftSide, 160, 16777215);
             fontRenderer.drawString("Thread Queue Size: " + SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.threadQueue.size(), leftSide, 130, 16777215);
+            fontRenderer.drawString("Sky Light LevelL: " + SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockSkyLightValue((int) SpaceGame.instance.save.thePlayer.x, (int) SpaceGame.instance.save.thePlayer.y, (int) SpaceGame.instance.save.thePlayer.z), leftSide, 100, 16777215);
         }
     }
 
@@ -131,10 +132,10 @@ public final class GuiInGame extends Gui {
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ZERO, GL46.GL_ONE_MINUS_SRC_COLOR);
         tessellator.toggleOrtho();
-        tessellator.addVertex2DTexture(16777215, (float) -SpaceGame.width /2, (float) -SpaceGame.height /2, -100, 3);
-        tessellator.addVertex2DTexture(16777215, (float) SpaceGame.width /2, (float) SpaceGame.height /2, -100, 1);
-        tessellator.addVertex2DTexture(16777215, (float) -SpaceGame.width /2, (float) SpaceGame.height /2, -100, 2);
-        tessellator.addVertex2DTexture(16777215, (float) SpaceGame.width /2, (float) -SpaceGame.height /2, -100, 0);
+        tessellator.addVertex2DTexture(16777215, (float) -970, (float) -970, -100, 3);
+        tessellator.addVertex2DTexture(16777215, (float) 970, (float) 970, -100, 1);
+        tessellator.addVertex2DTexture(16777215, (float) -970, (float) 970, -100, 2);
+        tessellator.addVertex2DTexture(16777215, (float) 970, (float) -970, -100, 0);
         tessellator.addElements();
         GL46.glDepthMask(false);
         tessellator.drawTexture2D(this.vignette.texID, Shader.screen2DTexture, SpaceGame.camera);
@@ -334,7 +335,11 @@ public final class GuiInGame extends Gui {
                 double sine = (MathUtils.sin((float) ((((double) SpaceGame.instance.save.thePlayer.swingTimer / 15) * Math.PI * 2) - (0.5 * Math.PI))) * 0.5) + 0.5f;
                 rotationMatrix.rotateLocalX((float) ((float) -(0.25 * Math.PI) * sine));
                 Quaternionf rotation = rotationMatrix.getUnnormalizedRotation(new Quaternionf());
-                float lightLevelFloat = getLightValueFromMap(SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockLightValue((int) SpaceGame.instance.save.thePlayer.x, (int) SpaceGame.instance.save.thePlayer.y, (int) SpaceGame.instance.save.thePlayer.z));
+                int playerX = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.x);
+                int playerY = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.y);
+                int playerZ = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.z);
+                float blockLight = getLightValueFromMap(SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockLightValue(playerX, playerY, playerZ));
+                float lightLevelFloat = SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.renderWorldScene.baseLight > blockLight ? SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.renderWorldScene.baseLight : blockLight;
                 lightLevelFloat -=  0.1 * (MathUtils.sin(SpaceGame.instance.save.thePlayer.yaw / 45) + 1);
                 lightLevelFloat -=  0.1 * (MathUtils.sin(SpaceGame.instance.save.thePlayer.pitch / 45) + 1);
                 if(lightLevelFloat < 0.1){
@@ -445,7 +450,11 @@ public final class GuiInGame extends Gui {
                 double sine = (MathUtils.sin((float) ((((double) SpaceGame.instance.save.thePlayer.swingTimer / 15) * Math.PI * 2) - (0.5 * Math.PI))) * 0.5) + 0.5f;
                 rotationMatrix.rotateLocalX((float) ((float) -(0.25 * Math.PI) * sine));
                 Quaternionf rotation = rotationMatrix.getUnnormalizedRotation(new Quaternionf());
-                float lightLevelFloat = getLightValueFromMap(SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockLightValue((int) SpaceGame.instance.save.thePlayer.x, (int) SpaceGame.instance.save.thePlayer.y, (int) SpaceGame.instance.save.thePlayer.z));
+                int playerX = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.x);
+                int playerY = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.y);
+                int playerZ = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.z);
+                float blockLight = getLightValueFromMap(SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockLightValue(playerX, playerY, playerZ));
+                float lightLevelFloat = SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.renderWorldScene.baseLight > blockLight ? SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.renderWorldScene.baseLight : blockLight;
                 lightLevelFloat -=  0.1 * (MathUtils.sin(SpaceGame.instance.save.thePlayer.yaw / 45) + 1);
                 lightLevelFloat -=  0.1 * (MathUtils.sin(SpaceGame.instance.save.thePlayer.pitch / 45) + 1);
                 if(lightLevelFloat < 0.1f){
@@ -664,7 +673,7 @@ public final class GuiInGame extends Gui {
         }
     }
 
-    private static float getLightValueFromMap(byte lightValue) {
+    public static float getLightValueFromMap(byte lightValue) {
         return switch (lightValue) {
             case 0, 1 -> 0.1F;
             case 2 -> 0.11F;

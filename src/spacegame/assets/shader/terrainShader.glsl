@@ -4,7 +4,7 @@ layout (location=0) in float aPos;
 layout (location=1) in float aColor;
 layout (location=2) in float aTexCoords;
 layout (location=3) in float aTexId;
-layout (location=4) in vec3 normal;
+layout (location=4) in vec2 normalAndSkyLightValue;
 
 uniform dmat4 uProjection;
 uniform dmat4 uView;
@@ -13,11 +13,18 @@ uniform double time;
 uniform mat4 lightViewProjectionMatrix;
 uniform vec3 sunChunkOffset;
 uniform vec3 normalizedLightVector;
+uniform float baseLight;
+uniform vec3 playerPositionInChunk;
+uniform vec4 lightColor;
+uniform bool performNormals;
 
 out vec4 fColor;
 out vec2 fTexCoords;
 out float fTexId;
 out vec4 fragPosInLightSpace;
+out vec3 fragPosInWorldSpace;
+flat out int isInShadowRange;
+out vec3 fPlayerPositionInChunk;
 
 float sinX(float x, float y, float z){
     float actualTime = float(time);
@@ -69,7 +76,7 @@ vec2 decompressTextureCoordinates(float texCoord){
     return vec2(((combinedInt >> 18) & 63) != 0 ? ((combinedInt >> 18) & 63) * 0.03125f : float((combinedInt >> 12) & 63), ((combinedInt >> 6) & 63) != 0 ? ((combinedInt >> 6) & 63) * 0.03125f : float(combinedInt & 63));
 }
 
-//encoded in increments of 8 bits as alpha, red, green, blue
+//encoded in increments of 8 bits as red, green, blue, the most significant byte is unused as alpha is hard coded to 1
 vec4 decompressColor(float color) {
     int combinedInt = floatBitsToInt(color);
     return vec4((combinedInt >> 16) & 255, (combinedInt >> 8)  & 255, combinedInt & 255, 255.0) / 255.0; //Alpha is a constant hardcoded value of 1
@@ -100,22 +107,73 @@ float distanceFromCamera(vec3 correctPos){
     }
 }
 
-vec4 performLightingNormals(vec4 color, vec3 vertexNormal){
+vec4 performLightingNormals(vec4 skyLightColor, vec3 vertexNormal){
+    vertexNormal = normalize(vertexNormal);
     float angleCos = dot(vertexNormal, normalizedLightVector);
 
-    float baseLight = 1;
-    float shadeFactor = 0.7;
-    float shaded = 0.3;
+    float baseLight = baseLight;
+    float shadeFactor = 0.5 * baseLight;//50% of the baseLight
+    float shaded = 0.5 * baseLight;//Fully shaded is a reduction of 50% of the baseLight
     float perpendicular = 0;
 
-    if(angleCos < perpendicular){
-        color *= shaded;
+    shadeFactor= clamp(shadeFactor, 0.1, 1.0);
+    shaded = clamp(shaded, 0.1, 1.0);
+
+    if (performNormals){
+        if (angleCos < perpendicular){
+            skyLightColor *= shaded;
+        } else {
+            baseLight -= (shadeFactor * (1.0 - angleCos));
+            baseLight = clamp(baseLight, 0.1, 1.0);
+            skyLightColor *= baseLight;
+        }
     } else {
-        baseLight -= (shadeFactor * (1.0 - angleCos));
-        color *= baseLight;
+        skyLightColor *= shaded;
     }
 
-    return color;
+    skyLightColor *= lightColor;
+
+    return skyLightColor;
+}
+
+vec3 decompressNormal(vec2 normalAndSkyLightValue){
+    int normalXY = floatBitsToInt(normalAndSkyLightValue.x);
+    int normalZAndSkyLightValue = floatBitsToInt(normalAndSkyLightValue.y);
+
+    int normalX = (normalXY >> 16) & 65535;
+    int normalY = normalXY & 65535;
+    int normalZ = (normalZAndSkyLightValue >> 16) & 65535;
+
+    return vec3(halfToFloat(normalX), halfToFloat(normalY), halfToFloat(normalZ));
+}
+
+vec4 decompressSkyLightValue(vec2 normalAndSkyLightValue){
+    int normalZAndSkyLightValue = floatBitsToInt(normalAndSkyLightValue.y);
+    float skyLightValue = halfToFloat(normalZAndSkyLightValue & 65535);
+    return vec4(skyLightValue, skyLightValue, skyLightValue, 1.0);
+}
+
+vec4 setFinalColor(vec4 skyLightColor, vec4 vertexColor){
+    vec4 finalColor = vec4(1.0, 1.0, 1.0, 1.0);
+    if(skyLightColor.x > vertexColor.x){
+        finalColor.x = skyLightColor.x;
+    } else {
+        finalColor.x = vertexColor.x;
+    }
+
+    if(skyLightColor.y > vertexColor.y){
+        finalColor.y = skyLightColor.y;
+    } else {
+        finalColor.y = vertexColor.y;
+    }
+
+    if(skyLightColor.z > vertexColor.z){
+        finalColor.z = skyLightColor.z;
+    } else {
+        finalColor.z = vertexColor.z;
+    }
+
+    return finalColor;
 }
 
 void main()
@@ -145,8 +203,16 @@ void main()
         }
    // float maxCameraDifference = distanceFromCamera(correctPos);
 
-    color = performLightingNormals(color, normal);
-    fColor = color;
+    vec3 normal = decompressNormal(normalAndSkyLightValue);
+
+    vec4 skyLightColor = performLightingNormals(decompressSkyLightValue(normalAndSkyLightValue), normal);
+
+    fColor = setFinalColor(skyLightColor, color);
+
+    isInShadowRange = distance(correctPos, playerPositionInChunk) < 256.0 ? 1 : 0; //This value should be the size of the shadowmap's orthographic projection
+
+    fPlayerPositionInChunk = playerPositionInChunk;
+    fragPosInWorldSpace = correctPos;
 
     fragPosInLightSpace = vec4(lightViewProjectionMatrix * vec4(correctPosRelativeToSun, 1.0));
     gl_Position = vec4(uProjection * uView * vec4(correctPos, 1.0));
@@ -160,12 +226,16 @@ in vec4 fColor;
 in vec2 fTexCoords;
 in float fTexId;
 in vec4 fragPosInLightSpace;
+flat in int isInShadowRange;
+in vec3 fragPosInWorldSpace;
+in vec3 fPlayerPositionInChunk;
 
 uniform sampler2DArray textureArray;
 uniform sampler2D shadowMap;
 uniform bool useFog;
 uniform float fogDistance;
 uniform bool underwater;
+uniform bool renderShadows;
 
 uniform float fogRed;
 uniform float fogGreen;
@@ -226,8 +296,10 @@ void main()
     float id = fTexId;
     color = fColor * texture(textureArray, vec3(fTexCoords, id));
     if (color.w > 0){
-        float shadow = getShadowFactor(fragPosInLightSpace);
-        color.xyz *= shadow;
+        if (renderShadows && isInShadowRange == 1){
+            float shadow = getShadowFactor(fragPosInLightSpace);
+            color.xyz *= shadow;
+        }
 
         if (useFog){
             if (underwater){
@@ -237,4 +309,11 @@ void main()
             }
         }
     }
+   // float maxDynamicLightDistance = 16.0;
+   // float distanceFromPlayer = distance(fragPosInWorldSpace, fPlayerPositionInChunk);
+   // if(distanceFromPlayer < maxDynamicLightDistance){
+   //     color.x *= 10.0 * ((maxDynamicLightDistance - distanceFromPlayer) / maxDynamicLightDistance);
+   //     color.y *= 10.0 * ((maxDynamicLightDistance - distanceFromPlayer) / maxDynamicLightDistance);
+   //     color.z *= 10.0 * ((maxDynamicLightDistance - distanceFromPlayer) / maxDynamicLightDistance);
+   // }
 }

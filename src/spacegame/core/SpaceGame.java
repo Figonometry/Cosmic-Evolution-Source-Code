@@ -2,6 +2,7 @@ package spacegame.core;
 
 import org.joml.Vector3d;
 import org.lwjgl.BufferUtils;
+import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWImage;
@@ -174,7 +175,7 @@ public final class SpaceGame implements Runnable {
             }
         }
 
-        GLFW.glfwSetWindowSizeCallback(this.window, null);
+        GLFW.glfwSetWindowSizeCallback(this.window, WindowResizeListener::resizeCallback);
         this.setWindowIcon();
     }
 
@@ -328,6 +329,22 @@ public final class SpaceGame implements Runnable {
             KeyListener.gKeyReleased = false;
         }
 
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_MINUS)){
+            this.save.time = 98000;
+        }
+
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_SLASH)){
+            this.save.time = 109000;
+        }
+
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_EQUAL)){
+            this.save.time = 116000;
+        }
+
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_BACKSLASH)){
+            this.save.time = 55000;
+        }
+
 
         if (MouseListener.mouseButtonDown(GLFW.GLFW_MOUSE_BUTTON_LEFT)) {
             this.leftClick();
@@ -345,7 +362,7 @@ public final class SpaceGame implements Runnable {
         if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_TAB) && KeyListener.tabReleased){
             if(this.currentGui instanceof GuiInGame){
                 this.setNewGui(new GuiUniverseMap(this));
-                seGLClearColor(0,0,0,0);
+                setGLClearColor(0,0,0,0);
             } else if(this.currentGui instanceof GuiUniverseMap){
                 this.setNewGui(new GuiInGame(this));
             }
@@ -605,7 +622,7 @@ public final class SpaceGame implements Runnable {
         }
     }
 
-    public static void seGLClearColor(float red, float green, float blue, float alpha){
+    public static void setGLClearColor(float red, float green, float blue, float alpha){
         GL46.glClearColor(red, green, blue, alpha);
     }
 
@@ -648,7 +665,15 @@ public final class SpaceGame implements Runnable {
     }
 
     private long createWindow() {
-        return GLFW.glfwCreateWindow(width, height, this.title, MemoryUtil.NULL, MemoryUtil.NULL);
+        return GameSettings.fullscreen ? GLFW.glfwCreateWindow(width, height, this.title, GLFW.glfwGetPrimaryMonitor(), MemoryUtil.NULL) :  GLFW.glfwCreateWindow(width, height, this.title, MemoryUtil.NULL, MemoryUtil.NULL);
+    }
+
+    public void toggleFullscreen(){
+        if(GameSettings.fullscreen) {
+            GLFW.glfwSetWindowMonitor(this.window, GLFW.glfwGetPrimaryMonitor(), 0, 0, width, height, GLFW.GLFW_REFRESH_RATE);
+        } else {
+            GLFW.glfwSetWindowMonitor(this.window, MemoryUtil.NULL, 0, 0, width, height, GLFW.GLFW_REFRESH_RATE);
+        }
     }
 
     private void initAllBufferObjects(){

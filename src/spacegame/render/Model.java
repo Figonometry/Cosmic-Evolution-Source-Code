@@ -6,6 +6,7 @@ public abstract class Model {
     public float red;
     public float green;
     public float blue;
+    public float skyLightValue;
 
     public abstract void renderModel(Entity associatedEntity);
 

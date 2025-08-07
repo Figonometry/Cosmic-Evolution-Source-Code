@@ -154,6 +154,7 @@ public final class Save {
     public void tick() {
         this.activeWorld.tick();
         this.thePlayer.tick();
+        this.activeWorld.activeWorldFace.chunkController.renderWorldScene.hasTickPassed = true;
     }
 
     public void setActiveWorld(World world) {

@@ -63,9 +63,9 @@ public final class GuiMainMenu extends Gui {
         this.multiPlayer.active = false;
         this.settings = new Button(EnumButtonEffects.SETTINGS.name(), 512, 64, 0, -200, this, this.sg);
         this.quitGame = new Button(EnumButtonEffects.QUIT_GAME.name(), 512, 64, 0, - 300, this, this.sg);
-        this.bugReport = new Button(EnumButtonEffects.BUG_REPORT.name(), 64,64, SpaceGame.width/2 - 50, -SpaceGame.height/2 + 50, this, this.sg);
+        this.bugReport = new Button(EnumButtonEffects.BUG_REPORT.name(), 64,64, 910, -458, this, this.sg);
         this.bugReport.active = false;
-        this.information = new Button(EnumButtonEffects.INFORMATION.name(), 64,64, -SpaceGame.width/2 + 50, -SpaceGame.height/2 + 50, this, this.sg);
+        this.information = new Button(EnumButtonEffects.INFORMATION.name(), 64,64, -910, -458, this, this.sg);
     }
 
     @Override
@@ -177,7 +177,7 @@ public final class GuiMainMenu extends Gui {
         this.bugReport.renderButton();
         this.information.renderButton();
 
-        fontRenderer.drawString(this.sg.title, -SpaceGame.width / 2 - 10, 460, Color.magenta.getRGB() * -1);
+        fontRenderer.drawString(this.sg.title, -970, 460, Color.magenta.getRGB() * -1);
     }
 
     @Override

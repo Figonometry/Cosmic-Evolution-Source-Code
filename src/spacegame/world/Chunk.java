@@ -11,10 +11,7 @@ import spacegame.core.SpaceGame;
 import spacegame.entity.Entity;
 import spacegame.entity.EntityParticle;
 import spacegame.item.Item;
-import spacegame.render.Assets;
-import spacegame.render.RenderBlocks;
-import spacegame.render.Shader;
-import spacegame.render.Tessellator;
+import spacegame.render.*;
 
 import java.awt.*;
 import java.nio.FloatBuffer;
@@ -85,7 +82,7 @@ public final class Chunk implements Comparable<Chunk> {
     public static final int colorSize = 1;
     public static final int texIndexSize = 1;
     public static final int texCoordsSize = 1;
-    public static final int normalSize = 3;
+    public static final int normalSize = 2;
     public static final int vertexSizeBytes = (positionsSize + colorSize + texCoordsSize + texIndexSize + normalSize) * Float.BYTES;
 
     public Chunk(int x, int y, int z, WorldFace worldFace) {
@@ -353,10 +350,6 @@ public final class Chunk implements Comparable<Chunk> {
         return this.lighting[getBlockIndexFromCoordinates(x, y, z)];
     }
 
-    public byte getLight(int x, int y, int z){
-        return this.lighting[getBlockIndexFromCoordinates(x,y,z)] > this.skyLight[getBlockIndexFromCoordinates(x,y,z)] - (15 - this.worldFace.parentWorld.skyLightLevel) ? this.lighting[getBlockIndexFromCoordinates(x,y,z)] : (byte) (this.skyLight[getBlockIndexFromCoordinates(x, y, z)] - (15 - this.worldFace.parentWorld.skyLightLevel));
-    }
-
     public byte getSkyLightValue(int x, int y, int z){
         return this.skyLight[getBlockIndexFromCoordinates(x,y,z)];
     }
@@ -391,7 +384,7 @@ public final class Chunk implements Comparable<Chunk> {
 
 
     public synchronized void setBlockLightValue(int x, int y, int z, byte lightLevel) {
-        this.lighting[getBlockIndexFromCoordinates(x, y, z)] = lightLevel;
+        this.lighting[getBlockIndexFromCoordinates(x,y,z)] = lightLevel;
     }
 
     public synchronized void setBlockSkyLightValue(int x, int y, int z, byte lightLevel){
@@ -926,9 +919,9 @@ public final class Chunk implements Comparable<Chunk> {
         GL46.glDrawElements(GL46.GL_TRIANGLES, this.elementBufferOpaque.limit(), GL46.GL_UNSIGNED_INT, 0);
     }
 
-    public void renderItems(){
+    public void renderItems(int sunX, int sunY, int sunZ){
         if(this.renderableItemID == null || this.distanceFromPlayer >= 3){return;}
-        Tessellator tessellator = Tessellator.instance;
+        WorldTessellator worldTessellator = WorldTessellator.instance;
         int x;
         int y;
         int z;
@@ -943,6 +936,7 @@ public final class Chunk implements Comparable<Chunk> {
             z = this.getBlockZFromIndex(index);
             byte light = this.worldFace.getBlockLightValue(x,y + 1,z);
             float lightValueFromMap = this.getLightValueFromMap(light);
+            float skyLightValue = this.getLightValueFromMap(this.worldFace.getBlockSkyLightValue(x, y + 1, z));
             Color color = new Color(lightValueFromMap, lightValueFromMap, lightValueFromMap, 0);
             int colorInt = color.getRGB();
             x %= 32;
@@ -955,17 +949,17 @@ public final class Chunk implements Comparable<Chunk> {
                 x += rand.nextFloat(1);
                 z += rand.nextFloat(1);
             }
-            tessellator.addVertexTextureArray(colorInt, x + size, y + 1.02f, z, 3, itemID, RenderBlocks.TOP_FACE);
-            tessellator.addVertexTextureArray(colorInt, x, y + 1.02f, z + size, 1, itemID, RenderBlocks.TOP_FACE);
-            tessellator.addVertexTextureArray(colorInt, x + size, y + 1.02f, z + size, 2, itemID, RenderBlocks.TOP_FACE);
-            tessellator.addVertexTextureArray(colorInt, x, y + 1.02f, z, 0, itemID, RenderBlocks.TOP_FACE);
-            tessellator.addElements();
+            worldTessellator.addVertexTextureArray(colorInt, x + size, y + 1.02f, z, 3, itemID, RenderBlocks.TOP_FACE, 0, 1, 0, skyLightValue);
+            worldTessellator.addVertexTextureArray(colorInt, x, y + 1.02f, z + size, 1, itemID, RenderBlocks.TOP_FACE, 0, 1, 0, skyLightValue);
+            worldTessellator.addVertexTextureArray(colorInt, x + size, y + 1.02f, z + size, 2, itemID, RenderBlocks.TOP_FACE, 0, 1, 0, skyLightValue);
+            worldTessellator.addVertexTextureArray(colorInt, x, y + 1.02f, z, 0, itemID, RenderBlocks.TOP_FACE, 0, 1, 0, skyLightValue);
+            worldTessellator.addElements();
         }
+        Shader.worldShaderTextureArray.uploadVec3f("sunChunkOffset", new Vector3f((this.x - sunX) << 5, (this.y - sunY) << 5, (this.z - sunZ) << 5));
         Shader.worldShaderTextureArray.uploadVec3f("chunkOffset", chunkOffset);
-        Shader.worldShaderTextureArray.uploadBoolean("blocks", false);
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-        tessellator.drawVertexArray(Assets.itemTextureArray.arrayID, Shader.worldShaderTextureArray, SpaceGame.camera);
+        worldTessellator.drawTextureArray(Assets.itemTextureArray.arrayID, Shader.worldShaderTextureArray, SpaceGame.camera);
         GL46.glDisable(GL46.GL_BLEND);
     }
 
@@ -1083,7 +1077,8 @@ public final class Chunk implements Comparable<Chunk> {
         }
     }
 
-    public void renderEntities(){
+    public void renderEntities(int sunX, int sunY, int sunZ){
+        Shader.worldShader2DTexture.uploadVec3f("sunChunkOffset", new Vector3f((this.x - sunX) << 5, (this.y - sunY) << 5, (this.z - sunZ) << 5));
         Entity entity;
         for(int i = 0; i < this.entities.size(); i++){
             entity = this.entities.get(i);

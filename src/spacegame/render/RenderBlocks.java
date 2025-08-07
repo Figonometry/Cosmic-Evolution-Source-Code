@@ -11,6 +11,7 @@ public class RenderBlocks {
     public float red = 1.0F;
     public float green = 1.0F;
     public float blue = 1.0F;
+    public float skyLightValue = 1.0f;
     public static final int TOP_FACE = 0;
     public static final int BOTTOM_FACE = 1;
     public static final int NORTH_FACE = 2;
@@ -328,6 +329,11 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(xBlock - 1, yBlock - 1, zBlock),
                                 worldFace.getBlockLightColor(xBlock, yBlock - 1, zBlock)
                         );
+                        this.setVertexSkylightValue3Args(
+                                worldFace.getBlockSkyLightValue(xBlock, yBlock - 1, zBlock - 1),
+                                worldFace.getBlockSkyLightValue(xBlock - 1, yBlock - 1, zBlock),
+                                worldFace.getBlockSkyLightValue(xBlock, yBlock - 1, zBlock)
+                        );
                     } else {
                         setVertexLight4Args(
                                 worldFace.getBlockLightValue(xBlock - 1, yBlock - 1, zBlock - 1),
@@ -338,6 +344,12 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(xBlock, yBlock - 1, zBlock - 1),
                                 worldFace.getBlockLightColor(xBlock - 1, yBlock - 1, zBlock),
                                 worldFace.getBlockLightColor(xBlock, yBlock - 1, zBlock)
+                        );
+                        this.setVertexSkylightValue4Args(
+                                worldFace.getBlockSkyLightValue(xBlock - 1, yBlock - 1, zBlock - 1),
+                                worldFace.getBlockSkyLightValue(xBlock, yBlock - 1, zBlock - 1),
+                                worldFace.getBlockSkyLightValue(xBlock - 1, yBlock - 1, zBlock),
+                                worldFace.getBlockSkyLightValue(xBlock, yBlock - 1, zBlock)
                         );
                     }
                 }
@@ -358,6 +370,11 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(xBlock - 1, yBlock, zBlock),
                                 worldFace.getBlockLightColor(xBlock - 1, yBlock - 1, zBlock)
                         );
+                        this.setVertexSkylightValue3Args(
+                                worldFace.getBlockSkyLightValue(xBlock - 1, yBlock, zBlock - 1),
+                                worldFace.getBlockSkyLightValue(xBlock - 1, yBlock, zBlock),
+                                worldFace.getBlockSkyLightValue(xBlock - 1, yBlock - 1, zBlock)
+                        );
                     } else {
                         setVertexLight4Args(
                                 worldFace.getBlockLightValue(xBlock - 1, yBlock, zBlock - 1),
@@ -368,6 +385,12 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(xBlock - 1, yBlock, zBlock),
                                 worldFace.getBlockLightColor(xBlock - 1, yBlock - 1, zBlock - 1),
                                 worldFace.getBlockLightColor(xBlock - 1, yBlock - 1, zBlock)
+                        );
+                        this.setVertexSkylightValue4Args(
+                                worldFace.getBlockSkyLightValue(xBlock - 1, yBlock, zBlock - 1),
+                                worldFace.getBlockSkyLightValue(xBlock - 1, yBlock, zBlock),
+                                worldFace.getBlockSkyLightValue(xBlock - 1, yBlock - 1, zBlock - 1),
+                                worldFace.getBlockSkyLightValue(xBlock - 1, yBlock - 1, zBlock)
                         );
                     }
                 }
@@ -388,6 +411,11 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(xBlock, yBlock, zBlock - 1),
                                 worldFace.getBlockLightColor(xBlock, yBlock - 1, zBlock - 1)
                         );
+                        this.setVertexSkylightValue3Args(
+                                worldFace.getBlockSkyLightValue(xBlock - 1, yBlock, zBlock - 1),
+                                worldFace.getBlockSkyLightValue(xBlock, yBlock, zBlock - 1),
+                                worldFace.getBlockSkyLightValue(xBlock, yBlock - 1, zBlock - 1)
+                        );
                     } else {
                         setVertexLight4Args(
                                 worldFace.getBlockLightValue(xBlock - 1, yBlock, zBlock - 1),
@@ -398,6 +426,12 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(xBlock, yBlock, zBlock - 1),
                                 worldFace.getBlockLightColor(xBlock - 1, yBlock - 1, zBlock - 1),
                                 worldFace.getBlockLightColor(xBlock, yBlock - 1, zBlock - 1)
+                        );
+                        this.setVertexSkylightValue4Args(
+                                worldFace.getBlockSkyLightValue(xBlock - 1, yBlock, zBlock - 1),
+                                worldFace.getBlockSkyLightValue(xBlock, yBlock, zBlock - 1),
+                                worldFace.getBlockSkyLightValue(xBlock - 1, yBlock - 1, zBlock - 1),
+                                worldFace.getBlockSkyLightValue(xBlock, yBlock - 1, zBlock - 1)
                         );
                     }
                 }
@@ -424,6 +458,11 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(lx + 1, ly, lz),
                                 worldFace.getBlockLightColor(lx, ly, lz)
                         );
+                        this.setVertexSkylightValue3Args(
+                                worldFace.getBlockSkyLightValue(lx, ly, lz - 1),
+                                worldFace.getBlockSkyLightValue(lx + 1, ly, lz),
+                                worldFace.getBlockSkyLightValue(lx, ly, lz)
+                        );
                     } else {
                         int lx = xBlock + meshX, ly = yBlock - 1, lz = zBlock;
                         setVertexLight4Args(
@@ -435,6 +474,12 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(lx, ly, lz - 1),
                                 worldFace.getBlockLightColor(lx + 1, ly, lz),
                                 worldFace.getBlockLightColor(lx, ly, lz)
+                        );
+                        this.setVertexSkylightValue4Args(
+                                worldFace.getBlockSkyLightValue(lx + 1, ly, lz - 1),
+                                worldFace.getBlockSkyLightValue(lx, ly, lz - 1),
+                                worldFace.getBlockSkyLightValue(lx + 1, ly, lz),
+                                worldFace.getBlockSkyLightValue(lx, ly, lz)
                         );
                     }
                 }
@@ -456,6 +501,11 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(lx, yBlock, lz),
                                 worldFace.getBlockLightColor(lx, yBlock - 1, lz)
                         );
+                        this.setVertexSkylightValue3Args(
+                                worldFace.getBlockSkyLightValue(lx, yBlock, lz - 1),
+                                worldFace.getBlockSkyLightValue(lx, yBlock, lz),
+                                worldFace.getBlockSkyLightValue(lx, yBlock - 1, lz)
+                        );
                     } else {
                         setVertexLight4Args(
                                 worldFace.getBlockLightValue(lx, yBlock, lz - 1),
@@ -466,6 +516,12 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(lx, yBlock, lz),
                                 worldFace.getBlockLightColor(lx, yBlock - 1, lz - 1),
                                 worldFace.getBlockLightColor(lx, yBlock - 1, lz)
+                        );
+                        this.setVertexSkylightValue4Args(
+                                worldFace.getBlockSkyLightValue(lx, yBlock, lz - 1),
+                                worldFace.getBlockSkyLightValue(lx, yBlock, lz),
+                                worldFace.getBlockSkyLightValue(lx, yBlock - 1, lz - 1),
+                                worldFace.getBlockSkyLightValue(lx, yBlock - 1, lz)
                         );
                     }
                 }
@@ -488,6 +544,11 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(lx, yBlock, lz),
                                 worldFace.getBlockLightColor(lx, yBlock - 1, lz)
                         );
+                        this.setVertexSkylightValue3Args(
+                                worldFace.getBlockSkyLightValue(lx + 1, yBlock, lz),
+                                worldFace.getBlockSkyLightValue(lx, yBlock, lz),
+                                worldFace.getBlockSkyLightValue(lx, yBlock - 1, lz)
+                        );
                     } else {
                         setVertexLight4Args(
                                 worldFace.getBlockLightValue(lx + 1, yBlock, lz),
@@ -498,6 +559,12 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(lx, yBlock, lz),
                                 worldFace.getBlockLightColor(lx + 1, yBlock - 1, lz),
                                 worldFace.getBlockLightColor(lx, yBlock - 1, lz)
+                        );
+                        this.setVertexSkylightValue4Args(
+                                worldFace.getBlockSkyLightValue(lx + 1, yBlock, lz),
+                                worldFace.getBlockSkyLightValue(lx, yBlock, lz),
+                                worldFace.getBlockSkyLightValue(lx + 1, yBlock - 1, lz),
+                                worldFace.getBlockSkyLightValue(lx, yBlock - 1, lz)
                         );
                     }
                 }
@@ -523,6 +590,11 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(lx1, ly1, lz),
                                 worldFace.getBlockLightColor(lx2, ly2, lz)
                         );
+                        this.setVertexSkylightValue3Args(
+                                worldFace.getBlockSkyLightValue(lx2, ly2, lz1),
+                                worldFace.getBlockSkyLightValue(lx1, ly1, lz),
+                                worldFace.getBlockSkyLightValue(lx2, ly2, lz)
+                        );
                     } else {
                         setVertexLight4Args(
                                 worldFace.getBlockLightValue(lx1, ly1, lz1),
@@ -533,6 +605,12 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(lx2, ly2, lz1),
                                 worldFace.getBlockLightColor(lx1, ly1, lz),
                                 worldFace.getBlockLightColor(lx2, ly2, lz)
+                        );
+                        this.setVertexSkylightValue4Args(
+                                worldFace.getBlockSkyLightValue(lx1, ly1, lz1),
+                                worldFace.getBlockSkyLightValue(lx2, ly2, lz1),
+                                worldFace.getBlockSkyLightValue(lx1, ly1, lz),
+                                worldFace.getBlockSkyLightValue(lx2, ly2, lz)
                         );
                     }
                 }
@@ -551,6 +629,11 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(lx, ly, lz),
                                 worldFace.getBlockLightColor(lx, ly1, lz)
                         );
+                        this.setVertexSkylightValue3Args(
+                                worldFace.getBlockSkyLightValue(lx, ly, lz - 1),
+                                worldFace.getBlockSkyLightValue(lx, ly, lz),
+                                worldFace.getBlockSkyLightValue(lx, ly1, lz)
+                        );
                     } else {
                         setVertexLight4Args(
                                 worldFace.getBlockLightValue(lx, ly, lz - 1),
@@ -561,6 +644,12 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(lx, ly, lz),
                                 worldFace.getBlockLightColor(lx, ly1, lz - 1),
                                 worldFace.getBlockLightColor(lx, ly1, lz)
+                        );
+                        this.setVertexSkylightValue4Args(
+                                worldFace.getBlockSkyLightValue(lx, ly, lz - 1),
+                                worldFace.getBlockSkyLightValue(lx, ly, lz),
+                                worldFace.getBlockSkyLightValue(lx, ly1, lz - 1),
+                                worldFace.getBlockSkyLightValue(lx, ly1, lz)
                         );
                     }
                 }
@@ -581,6 +670,11 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(lx, ly, lz),
                                 worldFace.getBlockLightColor(lx, ly1, lz)
                         );
+                        this.setVertexSkylightValue3Args(
+                                worldFace.getBlockSkyLightValue(lx1, ly, lz),
+                                worldFace.getBlockSkyLightValue(lx, ly, lz),
+                                worldFace.getBlockSkyLightValue(lx, ly1, lz)
+                        );
                     } else {
                         setVertexLight4Args(
                                 worldFace.getBlockLightValue(lx1, ly, lz),
@@ -591,6 +685,12 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(lx, ly, lz),
                                 worldFace.getBlockLightColor(lx1, ly1, lz),
                                 worldFace.getBlockLightColor(lx, ly1, lz)
+                        );
+                        this.setVertexSkylightValue4Args(
+                                worldFace.getBlockSkyLightValue(lx1, ly, lz),
+                                worldFace.getBlockSkyLightValue(lx, ly, lz),
+                                worldFace.getBlockSkyLightValue(lx1, ly1, lz),
+                                worldFace.getBlockSkyLightValue(lx, ly1, lz)
                         );
                     }
                 }
@@ -615,6 +715,11 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(xBlock - 1, ly, lz),
                                 worldFace.getBlockLightColor(lx, ly, lz)
                         );
+                        this.setVertexSkylightValue3Args(
+                                worldFace.getBlockSkyLightValue(lx, ly, lz + 1),
+                                worldFace.getBlockSkyLightValue(xBlock - 1, ly, lz),
+                                worldFace.getBlockSkyLightValue(lx, ly, lz)
+                        );
                     } else {
                         setVertexLight4Args(
                                 worldFace.getBlockLightValue(xBlock - 1, ly, lz + 1),
@@ -625,6 +730,12 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(lx, ly, lz + 1),
                                 worldFace.getBlockLightColor(xBlock - 1, ly, lz),
                                 worldFace.getBlockLightColor(lx, ly, lz)
+                        );
+                        this.setVertexSkylightValue4Args(
+                                worldFace.getBlockSkyLightValue(xBlock - 1, ly, lz + 1),
+                                worldFace.getBlockSkyLightValue(lx, ly, lz + 1),
+                                worldFace.getBlockSkyLightValue(xBlock - 1, ly, lz),
+                                worldFace.getBlockSkyLightValue(lx, ly, lz)
                         );
                     }
                 }
@@ -644,6 +755,11 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(lx, ly, lz),
                                 worldFace.getBlockLightColor(lx, yBlock - 1, lz)
                         );
+                        this.setVertexSkylightValue3Args(
+                                worldFace.getBlockSkyLightValue(lx, ly, lz + 1),
+                                worldFace.getBlockSkyLightValue(lx, ly, lz),
+                                worldFace.getBlockSkyLightValue(lx, yBlock - 1, lz)
+                        );
                     } else {
                         setVertexLight4Args(
                                 worldFace.getBlockLightValue(lx, ly, lz + 1),
@@ -654,6 +770,12 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(lx, ly, lz),
                                 worldFace.getBlockLightColor(lx, yBlock - 1, lz + 1),
                                 worldFace.getBlockLightColor(lx, yBlock - 1, lz)
+                        );
+                        this.setVertexSkylightValue4Args(
+                                worldFace.getBlockSkyLightValue(lx, ly, lz + 1),
+                                worldFace.getBlockSkyLightValue(lx, ly, lz),
+                                worldFace.getBlockSkyLightValue(lx, yBlock - 1, lz + 1),
+                                worldFace.getBlockSkyLightValue(lx, yBlock - 1, lz)
                         );
                     }
                 }
@@ -672,6 +794,11 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(xBlock, yBlock, lz),
                                 worldFace.getBlockLightColor(xBlock, yBlock - 1, lz)
                         );
+                        this.setVertexSkylightValue3Args(
+                                worldFace.getBlockSkyLightValue(lx, yBlock, lz),
+                                worldFace.getBlockSkyLightValue(xBlock, yBlock, lz),
+                                worldFace.getBlockSkyLightValue(xBlock, yBlock - 1, lz)
+                        );
                     } else {
                         setVertexLight4Args(
                                 worldFace.getBlockLightValue(lx, yBlock, lz),
@@ -682,6 +809,12 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(xBlock, yBlock, lz),
                                 worldFace.getBlockLightColor(lx, yBlock - 1, lz),
                                 worldFace.getBlockLightColor(xBlock, yBlock - 1, lz)
+                        );
+                        this.setVertexSkylightValue4Args(
+                                worldFace.getBlockSkyLightValue(lx, yBlock, lz),
+                                worldFace.getBlockSkyLightValue(xBlock, yBlock, lz),
+                                worldFace.getBlockSkyLightValue(lx, yBlock - 1, lz),
+                                worldFace.getBlockSkyLightValue(xBlock, yBlock - 1, lz)
                         );
                     }
                 }
@@ -707,6 +840,11 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(lx + 1, ly, lz),
                                 worldFace.getBlockLightColor(lx, ly, lz)
                         );
+                        this.setVertexSkylightValue3Args(
+                                worldFace.getBlockSkyLightValue(lx, ly, lz - 1),
+                                worldFace.getBlockSkyLightValue(lx + 1, ly, lz),
+                                worldFace.getBlockSkyLightValue(lx, ly, lz)
+                        );
                     } else {
                         setVertexLight4Args(
                                 worldFace.getBlockLightValue(lx + 1, ly, lz - 1),
@@ -717,6 +855,12 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(lx, ly, lz - 1),
                                 worldFace.getBlockLightColor(lx + 1, ly, lz),
                                 worldFace.getBlockLightColor(lx, ly, lz)
+                        );
+                        this.setVertexSkylightValue4Args(
+                                worldFace.getBlockSkyLightValue(lx + 1, ly, lz - 1),
+                                worldFace.getBlockSkyLightValue(lx, ly, lz - 1),
+                                worldFace.getBlockSkyLightValue(lx + 1, ly, lz),
+                                worldFace.getBlockSkyLightValue(lx, ly, lz)
                         );
                     }
                 }
@@ -737,6 +881,11 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(lx, baseY, lz),
                                 worldFace.getBlockLightColor(lx, ly1, lz)
                         );
+                        this.setVertexSkylightValue3Args(
+                                worldFace.getBlockSkyLightValue(lx, baseY, lz - 1),
+                                worldFace.getBlockSkyLightValue(lx, baseY, lz),
+                                worldFace.getBlockSkyLightValue(lx, ly1, lz)
+                        );
                     } else {
                         setVertexLight4Args(
                                 worldFace.getBlockLightValue(lx, baseY, lz - 1),
@@ -747,6 +896,12 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(lx, baseY, lz),
                                 worldFace.getBlockLightColor(lx, ly1, lz - 1),
                                 worldFace.getBlockLightColor(lx, ly1, lz)
+                        );
+                        this.setVertexSkylightValue4Args(
+                                worldFace.getBlockSkyLightValue(lx, baseY, lz - 1),
+                                worldFace.getBlockSkyLightValue(lx, baseY, lz),
+                                worldFace.getBlockSkyLightValue(lx, ly1, lz - 1),
+                                worldFace.getBlockSkyLightValue(lx, ly1, lz)
                         );
                     }
                 }
@@ -766,6 +921,11 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(baseX, baseY, lz),
                                 worldFace.getBlockLightColor(baseX, ly1, lz)
                         );
+                        this.setVertexSkylightValue3Args(
+                                worldFace.getBlockSkyLightValue(baseX + 1, baseY, lz),
+                                worldFace.getBlockSkyLightValue(baseX, baseY, lz),
+                                worldFace.getBlockSkyLightValue(baseX, ly1, lz)
+                        );
                     } else {
                         setVertexLight4Args(
                                 worldFace.getBlockLightValue(baseX + 1, baseY, lz),
@@ -776,6 +936,12 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(baseX, baseY, lz),
                                 worldFace.getBlockLightColor(baseX + 1, ly1, lz),
                                 worldFace.getBlockLightColor(baseX, ly1, lz)
+                        );
+                        this.setVertexSkylightValue4Args(
+                                worldFace.getBlockSkyLightValue(baseX + 1, baseY, lz),
+                                worldFace.getBlockSkyLightValue(baseX, baseY, lz),
+                                worldFace.getBlockSkyLightValue(baseX + 1, ly1, lz),
+                                worldFace.getBlockSkyLightValue(baseX, ly1, lz)
                         );
                     }
                 }
@@ -803,6 +969,11 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(lx1, ly, lzBase),
                                 worldFace.getBlockLightColor(lx2, ly, lzBase)
                         );
+                        this.setVertexSkylightValue3Args(
+                                worldFace.getBlockSkyLightValue(lx2, ly, lzNext),
+                                worldFace.getBlockSkyLightValue(lx1, ly, lzBase),
+                                worldFace.getBlockSkyLightValue(lx2, ly, lzBase)
+                        );
                     } else {
                         setVertexLight4Args(
                                 worldFace.getBlockLightValue(lx1, ly, lzNext),
@@ -813,6 +984,12 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(lx2, ly, lzNext),
                                 worldFace.getBlockLightColor(lx1, ly, lzBase),
                                 worldFace.getBlockLightColor(lx2, ly, lzBase)
+                        );
+                        this.setVertexSkylightValue4Args(
+                                worldFace.getBlockSkyLightValue(lx1, ly, lzNext),
+                                worldFace.getBlockSkyLightValue(lx2, ly, lzNext),
+                                worldFace.getBlockSkyLightValue(lx1, ly, lzBase),
+                                worldFace.getBlockSkyLightValue(lx2, ly, lzBase)
                         );
                     }
                 }
@@ -834,6 +1011,11 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(lx, lyBase, lzBase),
                                 worldFace.getBlockLightColor(lx, lyNext, lzBase)
                         );
+                        this.setVertexSkylightValue3Args(
+                                worldFace.getBlockSkyLightValue(lx, lyBase, lzNext),
+                                worldFace.getBlockSkyLightValue(lx, lyBase, lzBase),
+                                worldFace.getBlockSkyLightValue(lx, lyNext, lzBase)
+                        );
                     } else {
                         setVertexLight4Args(
                                 worldFace.getBlockLightValue(lx, lyBase, lzNext),
@@ -844,6 +1026,12 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(lx, lyBase, lzBase),
                                 worldFace.getBlockLightColor(lx, lyNext, lzNext),
                                 worldFace.getBlockLightColor(lx, lyNext, lzBase)
+                        );
+                        this.setVertexSkylightValue4Args(
+                                worldFace.getBlockSkyLightValue(lx, lyBase, lzNext),
+                                worldFace.getBlockSkyLightValue(lx, lyBase, lzBase),
+                                worldFace.getBlockSkyLightValue(lx, lyNext, lzNext),
+                                worldFace.getBlockSkyLightValue(lx, lyNext, lzBase)
                         );
                     }
                 }
@@ -864,6 +1052,11 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(lx2, lyBase, lz),
                                 worldFace.getBlockLightColor(lx2, lyNext, lz)
                         );
+                        this.setVertexSkylightValue3Args(
+                                worldFace.getBlockSkyLightValue(lx1, lyBase, lz),
+                                worldFace.getBlockSkyLightValue(lx2, lyBase, lz),
+                                worldFace.getBlockSkyLightValue(lx2, lyNext, lz)
+                        );
                     } else {
                         setVertexLight4Args(
                                 worldFace.getBlockLightValue(lx1, lyBase, lz),
@@ -874,6 +1067,12 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(lx2, lyBase, lz),
                                 worldFace.getBlockLightColor(lx1, lyNext, lz),
                                 worldFace.getBlockLightColor(lx2, lyNext, lz)
+                        );
+                        this.setVertexSkylightValue4Args(
+                                worldFace.getBlockSkyLightValue(lx1, lyBase, lz),
+                                worldFace.getBlockSkyLightValue(lx2, lyBase, lz),
+                                worldFace.getBlockSkyLightValue(lx1, lyNext, lz),
+                                worldFace.getBlockSkyLightValue(lx2, lyNext, lz)
                         );
                     }
                 }
@@ -902,6 +1101,11 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(lxNext, ly, lzBase),
                                 worldFace.getBlockLightColor(lxBase, ly, lzBase)
                         );
+                        this.setVertexSkylightValue3Args(
+                                worldFace.getBlockSkyLightValue(lxBase, ly, lzNext),
+                                worldFace.getBlockSkyLightValue(lxNext, ly, lzBase),
+                                worldFace.getBlockSkyLightValue(lxBase, ly, lzBase)
+                        );
                     } else {
                         setVertexLight4Args(
                                 worldFace.getBlockLightValue(lxNext, ly, lzNext),
@@ -912,6 +1116,12 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(lxBase, ly, lzNext),
                                 worldFace.getBlockLightColor(lxNext, ly, lzBase),
                                 worldFace.getBlockLightColor(lxBase, ly, lzBase)
+                        );
+                        this.setVertexSkylightValue4Args(
+                                worldFace.getBlockSkyLightValue(lxNext, ly, lzNext),
+                                worldFace.getBlockSkyLightValue(lxBase, ly, lzNext),
+                                worldFace.getBlockSkyLightValue(lxNext, ly, lzBase),
+                                worldFace.getBlockSkyLightValue(lxBase, ly, lzBase)
                         );
                     }
                 }
@@ -930,6 +1140,11 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(lx, yBlock, lz),
                                 worldFace.getBlockLightColor(lx, yBlock - 1, lz)
                         );
+                        this.setVertexSkylightValue3Args(
+                                worldFace.getBlockSkyLightValue(lx, yBlock, lz + 1),
+                                worldFace.getBlockSkyLightValue(lx, yBlock, lz),
+                                worldFace.getBlockSkyLightValue(lx, yBlock - 1, lz)
+                        );
                     } else {
                         setVertexLight4Args(
                                 worldFace.getBlockLightValue(lx, yBlock, lz + 1),
@@ -940,6 +1155,12 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(lx, yBlock, lz),
                                 worldFace.getBlockLightColor(lx, yBlock - 1, lz + 1),
                                 worldFace.getBlockLightColor(lx, yBlock - 1, lz)
+                        );
+                        this.setVertexSkylightValue4Args(
+                                worldFace.getBlockSkyLightValue(lx, yBlock, lz + 1),
+                                worldFace.getBlockSkyLightValue(lx, yBlock, lz),
+                                worldFace.getBlockSkyLightValue(lx, yBlock - 1, lz + 1),
+                                worldFace.getBlockSkyLightValue(lx, yBlock - 1, lz)
                         );
                     }
                 }
@@ -959,6 +1180,11 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(lxBase, lyBase, lz),
                                 worldFace.getBlockLightColor(lxBase, lyNext, lz)
                         );
+                        this.setVertexSkylightValue3Args(
+                                worldFace.getBlockSkyLightValue(lxNext, lyBase, lz),
+                                worldFace.getBlockSkyLightValue(lxBase, lyBase, lz),
+                                worldFace.getBlockSkyLightValue(lxBase, lyNext, lz)
+                        );
                     } else {
                         setVertexLight4Args(
                                 worldFace.getBlockLightValue(lxNext, lyBase, lz),
@@ -969,6 +1195,12 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(lxBase, lyBase, lz),
                                 worldFace.getBlockLightColor(lxNext, lyNext, lz),
                                 worldFace.getBlockLightColor(lxBase, lyNext, lz)
+                        );
+                        this.setVertexSkylightValue4Args(
+                                worldFace.getBlockSkyLightValue(lxNext, lyBase, lz),
+                                worldFace.getBlockSkyLightValue(lxBase, lyBase, lz),
+                                worldFace.getBlockSkyLightValue(lxNext, lyNext, lz),
+                                worldFace.getBlockSkyLightValue(lxBase, lyNext, lz)
                         );
                     }
                 }
@@ -1002,6 +1234,11 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(xMeshNext, yUp, zMesh),
                                 worldFace.getBlockLightColor(xMesh, yUp, zMesh)
                         );
+                        this.setVertexSkylightValue3Args(
+                                worldFace.getBlockSkyLightValue(xMesh, yUp, zMeshNext),
+                                worldFace.getBlockSkyLightValue(xMeshNext, yUp, zMesh),
+                                worldFace.getBlockSkyLightValue(xMesh, yUp, zMesh)
+                        );
                     } else {
                         setVertexLight4Args(
                                 worldFace.getBlockLightValue(xMeshNext, yUp, zMeshNext),
@@ -1013,6 +1250,11 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(xMeshNext, yUp, zMesh),
                                 worldFace.getBlockLightColor(xMesh, yUp, zMesh)
                         );
+                        this.setVertexSkylightValue4Args(
+                                worldFace.getBlockSkyLightValue(xMeshNext, yUp, zMeshNext),
+                                worldFace.getBlockSkyLightValue(xMesh, yUp, zMeshNext),
+                                worldFace.getBlockSkyLightValue(xMeshNext, yUp, zMesh),
+                                worldFace.getBlockSkyLightValue(xMesh, yUp, zMesh));
                     }
                 }
 
@@ -1029,6 +1271,11 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(xBlock + 1, yMesh, zMeshX),
                                 worldFace.getBlockLightColor(xBlock + 1, yMeshNext, zMeshX)
                         );
+                        this.setVertexSkylightValue3Args(
+                                worldFace.getBlockSkyLightValue(xBlock + 1, yMesh, zMeshXNext),
+                                worldFace.getBlockSkyLightValue(xBlock + 1, yMesh, zMeshX),
+                                worldFace.getBlockSkyLightValue(xBlock + 1, yMeshNext, zMeshX)
+                        );
                     } else {
                         setVertexLight4Args(
                                 worldFace.getBlockLightValue(xBlock + 1, yMesh, zMeshXNext),
@@ -1039,6 +1286,12 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(xBlock + 1, yMesh, zMeshX),
                                 worldFace.getBlockLightColor(xBlock + 1, yMeshNext, zMeshXNext),
                                 worldFace.getBlockLightColor(xBlock + 1, yMeshNext, zMeshX)
+                        );
+                        this.setVertexSkylightValue4Args(
+                                worldFace.getBlockSkyLightValue(xBlock + 1, yMesh, zMeshXNext),
+                                worldFace.getBlockSkyLightValue(xBlock + 1, yMesh, zMeshX),
+                                worldFace.getBlockSkyLightValue(xBlock + 1, yMeshNext, zMeshXNext),
+                                worldFace.getBlockSkyLightValue(xBlock + 1, yMeshNext, zMeshX)
                         );
                     }
                 }
@@ -1056,6 +1309,10 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(xMesh, yMesh, zBlock + 1),
                                 worldFace.getBlockLightColor(xMesh, yMeshNext, zBlock + 1)
                         );
+                        this.setVertexSkylightValue3Args(
+                                worldFace.getBlockSkyLightValue(xMeshNext, yMesh, zBlock + 1),
+                                worldFace.getBlockSkyLightValue(xMesh, yMesh, zBlock + 1),
+                                worldFace.getBlockSkyLightValue(xMesh, yMeshNext, zBlock + 1));
                     } else {
                         setVertexLight4Args(
                                 worldFace.getBlockLightValue(xMeshNext, yMesh, zBlock + 1),
@@ -1067,6 +1324,11 @@ public class RenderBlocks {
                                 worldFace.getBlockLightColor(xMeshNext, yMeshNext, zBlock + 1),
                                 worldFace.getBlockLightColor(xMesh, yMeshNext, zBlock + 1)
                         );
+                        this.setVertexSkylightValue4Args(
+                                worldFace.getBlockSkyLightValue(xMeshNext, yMesh, zBlock + 1),
+                                worldFace.getBlockSkyLightValue(xMesh, yMesh, zBlock + 1),
+                                worldFace.getBlockSkyLightValue(xMeshNext, yMeshNext, zBlock + 1),
+                                worldFace.getBlockSkyLightValue(xMesh, yMeshNext, zBlock + 1));
                     }
                 }
             }
@@ -1114,9 +1376,10 @@ public class RenderBlocks {
     }
 
     private  void resetLight() {
-        red = 1F;
-        green = 1F;
-        blue = 1F;
+        this.red = 1F;
+        this.green = 1F;
+        this.blue = 1F;
+        this.skyLightValue = 1f;
     }
 
     private void setVertexLight1Arg(byte light,
@@ -1228,6 +1491,21 @@ public class RenderBlocks {
         blue  = (bCount > 0 ? bSum / bCount : 0F) * finalLight;
     }
 
+    private void setVertexSkylightValue3Args(byte light1, byte light2, byte light3){
+        float light1Float = this.getLightValueFromMap(light1);
+        float light2Float = this.getLightValueFromMap(light2);
+        float light3Float = this.getLightValueFromMap(light3);
+        this.skyLightValue = (light1Float + light2Float + light3Float) * 0.33f;
+    }
+
+    private void setVertexSkylightValue4Args(byte light1, byte light2, byte light3, byte light4){
+        float light1Float = this.getLightValueFromMap(light1);
+        float light2Float = this.getLightValueFromMap(light2);
+        float light3Float = this.getLightValueFromMap(light3);
+        float light4Float = this.getLightValueFromMap(light4);
+        this.skyLightValue = (light1Float + light2Float + light3Float + light4Float) * 0.25f;
+    }
+
     private  void setVertexLight7Args(byte light1, byte light2, byte light3, byte light4, byte light5, byte light6, byte light7, float x, float y, float z, float[] lightColor) {
         float light1Float = getLightValueFromMap(light1);
         float light2Float = getLightValueFromMap(light2);
@@ -1285,6 +1563,14 @@ public class RenderBlocks {
 
     private float compressPosZAndTexId(float z, float texID){
         return Float.intBitsToFloat(MathUtils.floatToHalf(z) << 16 | (int)texID);
+    }
+
+    private float compressNormalXY(float normalX, float normalY){
+        return Float.intBitsToFloat(MathUtils.floatToHalf(normalX) << 16 | MathUtils.floatToHalf(normalY));
+    }
+
+    private float compressNormalZAndSkyLightValue(float normalZ, float skyLightValue){
+        return Float.intBitsToFloat(MathUtils.floatToHalf(normalZ) << 16 | MathUtils.floatToHalf(skyLightValue));
     }
 
 
@@ -1390,41 +1676,37 @@ public class RenderBlocks {
                 chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 1] = (this.compressColor(red, green, blue));
                 chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 2] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample1, 0 + ySample1));
                 chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 3] = (this.compressPosZAndTexId(vertex1.z, blockID));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 4] = normal.x;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 5] = normal.y;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 6] = normal.z;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 4] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 5] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
                 resetLight();
                 setLight(vertex2.x, vertex2.y, vertex2.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 7] = (this.compressPosXY(vertex2.x, vertex2.y));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 8] = (this.compressColor(red, green, blue));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 9] = (this.compressTextureCoordinates(0 + xSample2, 1 + greedyMeshSize[1] + ySample2));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 10] = (this.compressPosZAndTexId(vertex2.z + greedyMeshSize[1], blockID));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 11] = normal.x;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 12] = normal.y;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 13] = normal.z;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 6] = (this.compressPosXY(vertex2.x, vertex2.y));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 7] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 8] = (this.compressTextureCoordinates(0 + xSample2, 1 + greedyMeshSize[1] + ySample2));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 9] = (this.compressPosZAndTexId(vertex2.z + greedyMeshSize[1], blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 10] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 11] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
                 resetLight();
                 setLight(vertex3.x, vertex3.y, vertex3.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 14] = (this.compressPosXY(vertex3.x + greedyMeshSize[0], vertex3.y));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 15] = (this.compressColor(red, green, blue));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 16] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample3, 1 + greedyMeshSize[1] + ySample3));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 17] = (this.compressPosZAndTexId(vertex3.z + greedyMeshSize[1], blockID));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 18] = normal.x;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 19] = normal.y;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 20] = normal.z;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 12] = (this.compressPosXY(vertex3.x + greedyMeshSize[0], vertex3.y));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 13] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 14] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample3, 1 + greedyMeshSize[1] + ySample3));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 15] = (this.compressPosZAndTexId(vertex3.z + greedyMeshSize[1], blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 16] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 17] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
                 resetLight();
                 setLight(vertex4.x, vertex4.y, vertex4.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 21] = (this.compressPosXY(vertex4.x, vertex4.y));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 22] = (this.compressColor(red, green, blue));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 23] = (this.compressTextureCoordinates(0 + xSample4, 0 + ySample4));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 24] = (this.compressPosZAndTexId(vertex4.z, blockID));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 25] = normal.x;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 26] = normal.y;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 27] = normal.z;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 18] = (this.compressPosXY(vertex4.x, vertex4.y));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 19] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 20] = (this.compressTextureCoordinates(0 + xSample4, 0 + ySample4));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 21] = (this.compressPosZAndTexId(vertex4.z, blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 22] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 23] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
-                chunk.vertexIndexOpaque += 28;
+                chunk.vertexIndexOpaque += 24;
             }
 
             case BOTTOM_FACE, BOTTOM_FACE_UNSORTED -> {
@@ -1434,41 +1716,37 @@ public class RenderBlocks {
                 chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 1] = (this.compressColor(red, green, blue));
                 chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 2] = (this.compressTextureCoordinates(0 + xSample1, 0 + ySample1));
                 chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 3] = (this.compressPosZAndTexId(vertex1.z, blockID));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 4] = normal.x;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 5] = normal.y;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 6] = normal.z;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 4] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 5] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
                 resetLight();
                 setLight(vertex2.x, vertex2.y, vertex2.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 7] = (this.compressPosXY(vertex2.x + greedyMeshSize[0], vertex2.y));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 8] = (this.compressColor(red, green, blue));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 9] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 1 + greedyMeshSize[1] + ySample2));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 10] = (this.compressPosZAndTexId(vertex2.z, blockID));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 11] = normal.x;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 12] = normal.y;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 13] = normal.z;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 6] = (this.compressPosXY(vertex2.x + greedyMeshSize[0], vertex2.y));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 7] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 8] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 1 + greedyMeshSize[1] + ySample2));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 9] = (this.compressPosZAndTexId(vertex2.z, blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 10] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 11] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
                 resetLight();
                 setLight(vertex3.x, vertex3.y, vertex3.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 14] = (this.compressPosXY(vertex3.x, vertex3.y));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 15] = (this.compressColor(red, green, blue));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 16] = (this.compressTextureCoordinates(0 + xSample3, 1 + greedyMeshSize[1] + ySample3));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 17] = (this.compressPosZAndTexId(vertex3.z + greedyMeshSize[1], blockID));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 18] = normal.x;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 19] = normal.y;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 20] = normal.z;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 12] = (this.compressPosXY(vertex3.x, vertex3.y));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 13] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 14] = (this.compressTextureCoordinates(0 + xSample3, 1 + greedyMeshSize[1] + ySample3));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 15] = (this.compressPosZAndTexId(vertex3.z + greedyMeshSize[1], blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 16] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 17] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
                 resetLight();
                 setLight(vertex4.x, vertex4.y, vertex4.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 21] = (this.compressPosXY(vertex4.x + greedyMeshSize[0], vertex4.y));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 22] = (this.compressColor(red, green, blue));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 23] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 0 + ySample4));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 24] = (this.compressPosZAndTexId(vertex4.z, blockID));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 25] = normal.x;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 26] = normal.y;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 27] = normal.z;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 18] = (this.compressPosXY(vertex4.x + greedyMeshSize[0], vertex4.y));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 19] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 20] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 0 + ySample4));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 21] = (this.compressPosZAndTexId(vertex4.z, blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 22] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 23] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
-                chunk.vertexIndexOpaque += 28;
+                chunk.vertexIndexOpaque += 24;
             }
             case NORTH_FACE, NORTH_FACE_UNSORTED -> {
                 resetLight();
@@ -1477,41 +1755,37 @@ public class RenderBlocks {
                 chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 1] = (this.compressColor(red, green, blue));
                 chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 2] = (this.compressTextureCoordinates(0 + xSample1, 1 + greedyMeshSize[1] + ySample1));
                 chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 3] = (this.compressPosZAndTexId(vertex1.z, blockID));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 4] = normal.x;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 5] = normal.y;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 6] = normal.z;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 4] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 5] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
                 resetLight();
                 setLight(vertex2.x, vertex2.y, vertex2.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 7] = (this.compressPosXY(vertex2.x, vertex2.y + greedyMeshSize[1]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 8] = (this.compressColor(red, green, blue));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 9] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 0 + ySample2));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 10] = (this.compressPosZAndTexId(vertex2.z + greedyMeshSize[0], blockID));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 11] = normal.x;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 12] = normal.y;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 13] = normal.z;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 6] = (this.compressPosXY(vertex2.x, vertex2.y + greedyMeshSize[1]));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 7] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 8] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 0 + ySample2));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 9] = (this.compressPosZAndTexId(vertex2.z + greedyMeshSize[0], blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 10] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 11] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
                 resetLight();
                 setLight(vertex3.x, vertex3.y, vertex3.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 14] = (this.compressPosXY(vertex3.x, vertex3.y + greedyMeshSize[1]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 15] = (this.compressColor(red, green, blue));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 16] = (this.compressTextureCoordinates(0 + xSample3, 0 + ySample3));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 17] = (this.compressPosZAndTexId(vertex3.z, blockID));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 18] = normal.x;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 19] = normal.y;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 20] = normal.z;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 12] = (this.compressPosXY(vertex3.x, vertex3.y + greedyMeshSize[1]));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 13] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 14] = (this.compressTextureCoordinates(0 + xSample3, 0 + ySample3));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 15] = (this.compressPosZAndTexId(vertex3.z, blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 16] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 17] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
                 resetLight();
                 setLight(vertex4.x, vertex4.y, vertex4.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 21] = (this.compressPosXY(vertex4.x, vertex4.y));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 22] = (this.compressColor(red, green, blue));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 23] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 1 + greedyMeshSize[1] + ySample4));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 24] = (this.compressPosZAndTexId(vertex4.z + greedyMeshSize[0], blockID));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 25] = normal.x;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 26] = normal.y;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 27] = normal.z;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 18] = (this.compressPosXY(vertex4.x, vertex4.y));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 19] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 20] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 1 + greedyMeshSize[1] + ySample4));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 21] = (this.compressPosZAndTexId(vertex4.z + greedyMeshSize[0], blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 22] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 23] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
-                chunk.vertexIndexOpaque += 28;
+                chunk.vertexIndexOpaque += 24;
             }
 
             case SOUTH_FACE, SOUTH_FACE_UNSORTED -> {
@@ -1521,41 +1795,37 @@ public class RenderBlocks {
                 chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 1] = (this.compressColor(red, green, blue));
                 chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 2] = (this.compressTextureCoordinates(0 + xSample1, 1 + greedyMeshSize[1] + ySample1));
                 chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 3] = (this.compressPosZAndTexId(vertex1.z + greedyMeshSize[0], blockID));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 4] = normal.x;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 5] = normal.y;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 6] = normal.z;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 4] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 5] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
                 resetLight();
                 setLight(vertex2.x, vertex2.y, vertex2.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 7] = (this.compressPosXY(vertex2.x, vertex2.y + greedyMeshSize[1]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 8] = (this.compressColor(red, green, blue));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 9] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 0 + ySample2));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 10] = (this.compressPosZAndTexId(vertex2.z, blockID));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 11] = normal.x;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 12] = normal.y;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 13] = normal.z;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 6] = (this.compressPosXY(vertex2.x, vertex2.y + greedyMeshSize[1]));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 7] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 8] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 0 + ySample2));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 9] = (this.compressPosZAndTexId(vertex2.z, blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 10] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 11] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
                 resetLight();
                 setLight(vertex3.x, vertex3.y, vertex3.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 14] = (this.compressPosXY(vertex3.x, vertex3.y + greedyMeshSize[1]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 15] = (this.compressColor(red, green, blue));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 16] = (this.compressTextureCoordinates(0 + xSample3, 0 + ySample3));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 17] = (this.compressPosZAndTexId(vertex3.z + greedyMeshSize[0], blockID));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 18] = normal.x;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 19] = normal.y;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 20] = normal.z;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 12] = (this.compressPosXY(vertex3.x, vertex3.y + greedyMeshSize[1]));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 13] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 14] = (this.compressTextureCoordinates(0 + xSample3, 0 + ySample3));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 15] = (this.compressPosZAndTexId(vertex3.z + greedyMeshSize[0], blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 16] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 17] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
                 resetLight();
                 setLight(vertex4.x, vertex4.y, vertex4.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 21] = (this.compressPosXY(vertex4.x, vertex4.y));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 22] = (this.compressColor(red, green, blue));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 23] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 1 + greedyMeshSize[1] + ySample4));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 24] = (this.compressPosZAndTexId(vertex4.z, blockID));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 25] = normal.x;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 26] = normal.y;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 27] = normal.z;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 18] = (this.compressPosXY(vertex4.x, vertex4.y));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 19] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 20] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 1 + greedyMeshSize[1] + ySample4));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 21] = (this.compressPosZAndTexId(vertex4.z, blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 22] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 23] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
-                chunk.vertexIndexOpaque += 28;
+                chunk.vertexIndexOpaque += 24;
             }
 
             case EAST_FACE, EAST_FACE_UNSORTED -> {
@@ -1565,41 +1835,37 @@ public class RenderBlocks {
                 chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 1] = (this.compressColor(red, green, blue));
                 chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 2] = (this.compressTextureCoordinates(0 + xSample1, 1 + greedyMeshSize[1] + ySample1));
                 chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 3] = (this.compressPosZAndTexId(vertex1.z, blockID));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 4] = normal.x;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 5] = normal.y;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 6] = normal.z;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 4] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 5] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
                 resetLight();
                 setLight(vertex2.x, vertex2.y, vertex2.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 7] = (this.compressPosXY(vertex2.x, vertex2.y + greedyMeshSize[1]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 8] = (this.compressColor(red, green, blue));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 9] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 0 + ySample2));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 10] = (this.compressPosZAndTexId(vertex2.z, blockID));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 11] = normal.x;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 12] = normal.y;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 13] = normal.z;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 6] = (this.compressPosXY(vertex2.x, vertex2.y + greedyMeshSize[1]));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 7] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 8] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 0 + ySample2));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 9] = (this.compressPosZAndTexId(vertex2.z, blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 10] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 11] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
                 resetLight();
                 setLight(vertex3.x, vertex3.y, vertex3.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 14] = (this.compressPosXY(vertex3.x + greedyMeshSize[0], vertex3.y + greedyMeshSize[1]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 15] = (this.compressColor(red, green, blue));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 16] = (this.compressTextureCoordinates(0 + xSample3, 0 + ySample3));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 17] = (this.compressPosZAndTexId(vertex3.z, blockID));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 18] = normal.x;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 19] = normal.y;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 20] = normal.z;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 12] = (this.compressPosXY(vertex3.x + greedyMeshSize[0], vertex3.y + greedyMeshSize[1]));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 13] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 14] = (this.compressTextureCoordinates(0 + xSample3, 0 + ySample3));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 15] = (this.compressPosZAndTexId(vertex3.z, blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 16] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 17] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
                 resetLight();
                 setLight(vertex4.x, vertex4.y, vertex4.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 21] = (this.compressPosXY(vertex4.x, vertex4.y));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 22] = (this.compressColor(red, green, blue));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 23] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 1 + greedyMeshSize[1] + ySample4));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 24] = (this.compressPosZAndTexId(vertex4.z, blockID));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 25] = normal.x;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 26] = normal.y;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 27] = normal.z;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 18] = (this.compressPosXY(vertex4.x, vertex4.y));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 19] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 20] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 1 + greedyMeshSize[1] + ySample4));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 21] = (this.compressPosZAndTexId(vertex4.z, blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 22] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 23] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
-                chunk.vertexIndexOpaque += 28;
+                chunk.vertexIndexOpaque += 24;
             }
 
             case WEST_FACE, WEST_FACE_UNSORTED -> {
@@ -1609,41 +1875,37 @@ public class RenderBlocks {
                 chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 1] = (this.compressColor(red, green, blue));
                 chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 2] = (this.compressTextureCoordinates(0 + xSample1, 1 + greedyMeshSize[1] + ySample1));
                 chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 3] = (this.compressPosZAndTexId(vertex1.z, blockID));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 4] = normal.x;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 5] = normal.y;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 6] = normal.z;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 4] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 5] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
                 resetLight();
                 setLight(vertex2.x, vertex2.y, vertex2.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 7] = (this.compressPosXY(vertex2.x + greedyMeshSize[0], vertex2.y + greedyMeshSize[1]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 8] = (this.compressColor(red, green, blue));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 9] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 0 + ySample2));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 10] = (this.compressPosZAndTexId(vertex2.z, blockID));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 11] = normal.x;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 12] = normal.y;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 13] = normal.z;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 6] = (this.compressPosXY(vertex2.x + greedyMeshSize[0], vertex2.y + greedyMeshSize[1]));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 7] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 8] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 0 + ySample2));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 9] = (this.compressPosZAndTexId(vertex2.z, blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 10] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 11] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
                 resetLight();
                 setLight(vertex3.x, vertex3.y, vertex3.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 14] = (this.compressPosXY(vertex3.x, vertex3.y + greedyMeshSize[1]));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 15] = (this.compressColor(red, green, blue));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 16] = (this.compressTextureCoordinates(0 + xSample3, 0 + ySample3));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 17] = (this.compressPosZAndTexId(vertex3.z, blockID));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 18] = normal.x;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 19] = normal.y;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 20] = normal.z;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 12] = (this.compressPosXY(vertex3.x, vertex3.y + greedyMeshSize[1]));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 13] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 14] = (this.compressTextureCoordinates(0 + xSample3, 0 + ySample3));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 15] = (this.compressPosZAndTexId(vertex3.z, blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 16] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 17] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
                 resetLight();
                 setLight(vertex4.x, vertex4.y, vertex4.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 21] = (this.compressPosXY(vertex4.x + greedyMeshSize[0], vertex4.y));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 22] = (this.compressColor(red, green, blue));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 23] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 1 + greedyMeshSize[1] + ySample4));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 24] = (this.compressPosZAndTexId(vertex4.z, blockID));
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 25] = normal.x;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 26] = normal.y;
-                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 27] = normal.z;
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 18] = (this.compressPosXY(vertex4.x + greedyMeshSize[0], vertex4.y));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 19] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 20] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 1 + greedyMeshSize[1] + ySample4));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 21] = (this.compressPosZAndTexId(vertex4.z, blockID));
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 22] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayOpaque[chunk.vertexIndexOpaque + 23] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
-                chunk.vertexIndexOpaque += 28;
+                chunk.vertexIndexOpaque += 24;
             }
         }
         resetLight();
@@ -1671,41 +1933,37 @@ public class RenderBlocks {
                 chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 1] = (this.compressColor(red, green, blue));
                 chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 2] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample1, 0 + ySample1));
                 chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 3] = (this.compressPosZAndTexId(vertex1.z, blockID));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 4] = normal.x;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 5] = normal.y;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 6] = normal.z;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 4] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 5] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
                 resetLight();
                 setLight(vertex2.x, vertex2.y, vertex2.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 7] = (this.compressPosXY(vertex2.x, vertex2.y));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 8] = (this.compressColor(red, green, blue));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 9] = (this.compressTextureCoordinates(0 + xSample2, 1 + greedyMeshSize[1] + ySample2));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 10] = (this.compressPosZAndTexId(vertex2.z + greedyMeshSize[1], blockID));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 11] = normal.x;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 12] = normal.y;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 13] = normal.z;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 6] = (this.compressPosXY(vertex2.x, vertex2.y));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 7] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 8] = (this.compressTextureCoordinates(0 + xSample2, 1 + greedyMeshSize[1] + ySample2));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 9] = (this.compressPosZAndTexId(vertex2.z + greedyMeshSize[1], blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 10] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 11] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
                 resetLight();
                 setLight(vertex3.x, vertex3.y, vertex3.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 14] = (this.compressPosXY(vertex3.x + greedyMeshSize[0], vertex3.y));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 15] = (this.compressColor(red, green, blue));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 16] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample3, 1 + greedyMeshSize[1] + ySample3));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 17] = (this.compressPosZAndTexId(vertex3.z + greedyMeshSize[1], blockID));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 18] = normal.x;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 19] = normal.y;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 20] = normal.z;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 12] = (this.compressPosXY(vertex3.x + greedyMeshSize[0], vertex3.y));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 13] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 14] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample3, 1 + greedyMeshSize[1] + ySample3));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 15] = (this.compressPosZAndTexId(vertex3.z + greedyMeshSize[1], blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 16] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 17] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
                 resetLight();
                 setLight(vertex4.x, vertex4.y, vertex4.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 21] = (this.compressPosXY(vertex4.x, vertex4.y));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 22] = (this.compressColor(red, green, blue));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 23] = (this.compressTextureCoordinates(0 + xSample4, 0 + ySample4));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 24] = (this.compressPosZAndTexId(vertex4.z, blockID));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 25] = normal.x;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 26] = normal.y;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 27] = normal.z;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 18] = (this.compressPosXY(vertex4.x, vertex4.y));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 19] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 20] = (this.compressTextureCoordinates(0 + xSample4, 0 + ySample4));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 21] = (this.compressPosZAndTexId(vertex4.z, blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 22] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 23] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
-                chunk.vertexIndexTransparent += 28;
+                chunk.vertexIndexTransparent += 24;
             }
 
             case BOTTOM_FACE, BOTTOM_FACE_UNSORTED -> {
@@ -1715,41 +1973,37 @@ public class RenderBlocks {
                 chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 1] = (this.compressColor(red, green, blue));
                 chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 2] = (this.compressTextureCoordinates(0 + xSample1, 0 + ySample1));
                 chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 3] = (this.compressPosZAndTexId(vertex1.z, blockID));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 4] = normal.x;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 5] = normal.y;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 6] = normal.z;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 4] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 5] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
                 resetLight();
                 setLight(vertex2.x, vertex2.y, vertex2.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 7] = (this.compressPosXY(vertex2.x + greedyMeshSize[0], vertex2.y));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 8] = (this.compressColor(red, green, blue));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 9] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 1 + greedyMeshSize[1] + ySample2));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 10] = (this.compressPosZAndTexId(vertex2.z + greedyMeshSize[1], blockID));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 11] = normal.x;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 12] = normal.y;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 13] = normal.z;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 6] = (this.compressPosXY(vertex2.x + greedyMeshSize[0], vertex2.y));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 7] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 8] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 1 + greedyMeshSize[1] + ySample2));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 9] = (this.compressPosZAndTexId(vertex2.z + greedyMeshSize[1], blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 10] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 11] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
                 resetLight();
                 setLight(vertex3.x, vertex3.y, vertex3.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 14] = (this.compressPosXY(vertex3.x, vertex3.y));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 15] = (this.compressColor(red, green, blue));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 16] = (this.compressTextureCoordinates(0 + xSample3, 1 + greedyMeshSize[1] + ySample3));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 17] = (this.compressPosZAndTexId(vertex3.z + greedyMeshSize[1], blockID));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 18] = normal.x;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 19] = normal.y;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 20] = normal.z;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 12] = (this.compressPosXY(vertex3.x, vertex3.y));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 13] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 14] = (this.compressTextureCoordinates(0 + xSample3, 1 + greedyMeshSize[1] + ySample3));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 15] = (this.compressPosZAndTexId(vertex3.z + greedyMeshSize[1], blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 16] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 17] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
                 resetLight();
                 setLight(vertex4.x, vertex4.y, vertex4.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 21] = (this.compressPosXY(vertex4.x + greedyMeshSize[0], vertex4.y));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 22] = (this.compressColor(red, green, blue));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 23] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 0 + ySample4));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 24] = (this.compressPosZAndTexId(vertex4.z, blockID));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 25] = normal.x;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 26] = normal.y;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 27] = normal.z;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 18] = (this.compressPosXY(vertex4.x + greedyMeshSize[0], vertex4.y));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 19] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 20] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 0 + ySample4));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 21] = (this.compressPosZAndTexId(vertex4.z, blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 22] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 23] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
-                chunk.vertexIndexTransparent += 28;
+                chunk.vertexIndexTransparent += 24;
             }
             case NORTH_FACE, NORTH_FACE_UNSORTED -> {
                 resetLight();
@@ -1758,41 +2012,37 @@ public class RenderBlocks {
                 chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 1] = (this.compressColor(red, green, blue));
                 chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 2] = (this.compressTextureCoordinates(0 + xSample1, 1 + greedyMeshSize[1] + ySample1));
                 chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 3] = (this.compressPosZAndTexId(vertex1.z, blockID));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 4] = normal.x;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 5] = normal.y;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 6] = normal.z;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 4] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 5] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
                 resetLight();
                 setLight(vertex2.x, vertex2.y, vertex2.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 7] = (this.compressPosXY(vertex2.x, vertex2.y + greedyMeshSize[1]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 8] = (this.compressColor(red, green, blue));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 9] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 0 + ySample2));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 10] = (this.compressPosZAndTexId(vertex2.z + greedyMeshSize[0], blockID));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 11] = normal.x;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 12] = normal.y;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 13] = normal.z;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 6] = (this.compressPosXY(vertex2.x, vertex2.y + greedyMeshSize[1]));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 7] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 8] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 0 + ySample2));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 9] = (this.compressPosZAndTexId(vertex2.z + greedyMeshSize[0], blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 10] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 11] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
                 resetLight();
                 setLight(vertex3.x, vertex3.y, vertex3.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 14] = (this.compressPosXY(vertex3.x, vertex3.y + greedyMeshSize[1]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 15] = (this.compressColor(red, green, blue));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 16] = (this.compressTextureCoordinates(0 + xSample3, 0 + ySample3));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 17] = (this.compressPosZAndTexId(vertex3.z, blockID));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 18] = normal.x;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 19] = normal.y;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 20] = normal.z;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 12] = (this.compressPosXY(vertex3.x, vertex3.y + greedyMeshSize[1]));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 13] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 14] = (this.compressTextureCoordinates(0 + xSample3, 0 + ySample3));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 15] = (this.compressPosZAndTexId(vertex3.z, blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 16] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 17] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
                 resetLight();
                 setLight(vertex4.x, vertex4.y, vertex4.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 21] = (this.compressPosXY(vertex4.x, vertex4.y));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 22] = (this.compressColor(red, green, blue));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 23] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 1 + greedyMeshSize[1] + ySample4));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 24] = (this.compressPosZAndTexId(vertex4.z + greedyMeshSize[0], blockID));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 25] = normal.x;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 26] = normal.y;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 27] = normal.z;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 18] = (this.compressPosXY(vertex4.x, vertex4.y));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 19] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 20] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 1 + greedyMeshSize[1] + ySample4));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 21] = (this.compressPosZAndTexId(vertex4.z + greedyMeshSize[0], blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 22] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 23] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
-                chunk.vertexIndexTransparent += 28;
+                chunk.vertexIndexTransparent += 24;
             }
 
             case SOUTH_FACE, SOUTH_FACE_UNSORTED -> {
@@ -1802,41 +2052,37 @@ public class RenderBlocks {
                 chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 1] = (this.compressColor(red, green, blue));
                 chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 2] = (this.compressTextureCoordinates(0 + xSample1, 1 + greedyMeshSize[1] + ySample1));
                 chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 3] = (this.compressPosZAndTexId(vertex1.z + greedyMeshSize[0], blockID));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 4] = normal.x;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 5] = normal.y;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 6] = normal.z;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 4] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 5] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
                 resetLight();
                 setLight(vertex2.x, vertex2.y, vertex2.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 7] = (this.compressPosXY(vertex2.x, vertex2.y + greedyMeshSize[1]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 8] = (this.compressColor(red, green, blue));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 9] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 0 + ySample2));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 10] = (this.compressPosZAndTexId(vertex2.z, blockID));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 11] = normal.x;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 12] = normal.y;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 13] = normal.z;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 6] = (this.compressPosXY(vertex2.x, vertex2.y + greedyMeshSize[1]));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 7] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 8] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 0 + ySample2));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 9] = (this.compressPosZAndTexId(vertex2.z, blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 10] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 11] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
                 resetLight();
                 setLight(vertex3.x, vertex3.y, vertex3.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 14] = (this.compressPosXY(vertex3.x, vertex3.y + greedyMeshSize[1]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 15] = (this.compressColor(red, green, blue));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 16] = (this.compressTextureCoordinates(0 + xSample3, 0 + ySample3));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 17] = (this.compressPosZAndTexId(vertex3.z + greedyMeshSize[0], blockID));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 18] = normal.x;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 19] = normal.y;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 20] = normal.z;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 12] = (this.compressPosXY(vertex3.x, vertex3.y + greedyMeshSize[1]));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 13] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 14] = (this.compressTextureCoordinates(0 + xSample3, 0 + ySample3));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 15] = (this.compressPosZAndTexId(vertex3.z + greedyMeshSize[0], blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 16] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 17] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
                 resetLight();
                 setLight(vertex4.x, vertex4.y, vertex4.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 21] = (this.compressPosXY(vertex4.x, vertex4.y));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 22] = (this.compressColor(red, green, blue));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 23] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 1 + greedyMeshSize[1] + ySample4));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 24] = (this.compressPosZAndTexId(vertex4.z, blockID));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 25] = normal.x;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 26] = normal.y;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 27] = normal.z;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 18] = (this.compressPosXY(vertex4.x, vertex4.y));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 19] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 20] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 1 + greedyMeshSize[1] + ySample4));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 21] = (this.compressPosZAndTexId(vertex4.z, blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 22] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 23] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
-                chunk.vertexIndexTransparent += 28;
+                chunk.vertexIndexTransparent += 24;
             }
 
             case EAST_FACE, EAST_FACE_UNSORTED -> {
@@ -1846,41 +2092,37 @@ public class RenderBlocks {
                 chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 1] = (this.compressColor(red, green, blue));
                 chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 2] = (this.compressTextureCoordinates(0 + xSample1, 1 + greedyMeshSize[1] + ySample1));
                 chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 3] = (this.compressPosZAndTexId(vertex1.z, blockID));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 4] = normal.x;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 5] = normal.y;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 6] = normal.z;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 4] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 5] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
                 resetLight();
                 setLight(vertex2.x, vertex2.y, vertex2.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 7] = (this.compressPosXY(vertex2.x, vertex2.y + greedyMeshSize[1]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 8] = (this.compressColor(red, green, blue));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 9] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 0 + ySample2));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 10] = (this.compressPosZAndTexId(vertex2.z, blockID));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 11] = normal.x;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 12] = normal.y;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 13] = normal.z;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 6] = (this.compressPosXY(vertex2.x, vertex2.y + greedyMeshSize[1]));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 7] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 8] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 0 + ySample2));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 9] = (this.compressPosZAndTexId(vertex2.z, blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 10] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 11] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
                 resetLight();
                 setLight(vertex3.x, vertex3.y, vertex3.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 14] = (this.compressPosXY(vertex3.x + greedyMeshSize[0], vertex3.y + greedyMeshSize[1]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 15] = (this.compressColor(red, green, blue));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 16] = (this.compressTextureCoordinates(0 + xSample3, 0 + ySample3));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 17] = (this.compressPosZAndTexId(vertex3.z, blockID));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 18] = normal.x;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 19] = normal.y;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 20] = normal.z;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 12] = (this.compressPosXY(vertex3.x + greedyMeshSize[0], vertex3.y + greedyMeshSize[1]));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 13] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 14] = (this.compressTextureCoordinates(0 + xSample3, 0 + ySample3));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 15] = (this.compressPosZAndTexId(vertex3.z, blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 16] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 17] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
                 resetLight();
                 setLight(vertex4.x, vertex4.y, vertex4.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 21] = (this.compressPosXY(vertex4.x, vertex4.y));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 22] = (this.compressColor(red, green, blue));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 23] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 1 + greedyMeshSize[1] + ySample4));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 24] = (this.compressPosZAndTexId(vertex4.z, blockID));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 25] = normal.x;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 26] = normal.y;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 27] = normal.z;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 18] = (this.compressPosXY(vertex4.x, vertex4.y));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 19] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 20] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 1 + greedyMeshSize[1] + ySample4));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 21] = (this.compressPosZAndTexId(vertex4.z, blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 22] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 23] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
-                chunk.vertexIndexTransparent += 28;
+                chunk.vertexIndexTransparent += 24;
             }
 
             case WEST_FACE, WEST_FACE_UNSORTED -> {
@@ -1890,41 +2132,37 @@ public class RenderBlocks {
                 chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 1] = (this.compressColor(red, green, blue));
                 chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 2] = (this.compressTextureCoordinates(0 + xSample1, 1 + greedyMeshSize[1] + ySample1));
                 chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 3] = (this.compressPosZAndTexId(vertex1.z, blockID));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 4] = normal.x;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 5] = normal.y;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 6] = normal.z;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 4] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 5] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
                 resetLight();
                 setLight(vertex2.x, vertex2.y, vertex2.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 7] = (this.compressPosXY(vertex2.x + greedyMeshSize[0], vertex2.y + greedyMeshSize[1]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 8] = (this.compressColor(red, green, blue));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 9] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 0 + ySample2));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 10] = (this.compressPosZAndTexId(vertex2.z, blockID));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 11] = normal.x;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 12] = normal.y;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 13] = normal.z;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 6] = (this.compressPosXY(vertex2.x + greedyMeshSize[0], vertex2.y + greedyMeshSize[1]));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 7] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 8] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 0 + ySample2));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 9] = (this.compressPosZAndTexId(vertex2.z, blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 10] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 11] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
                 resetLight();
                 setLight(vertex3.x, vertex3.y, vertex3.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 14] = (this.compressPosXY(vertex3.x, vertex3.y + greedyMeshSize[1]));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 15] = (this.compressColor(red, green, blue));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 16] = (this.compressTextureCoordinates(0 + xSample3, 0 + ySample3));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 17] = (this.compressPosZAndTexId(vertex3.z, blockID));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 18] = normal.x;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 19] = normal.y;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 20] = normal.z;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 12] = (this.compressPosXY(vertex3.x, vertex3.y + greedyMeshSize[1]));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 13] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 14] = (this.compressTextureCoordinates(0 + xSample3, 0 + ySample3));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 15] = (this.compressPosZAndTexId(vertex3.z, blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 16] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 17] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
                 resetLight();
                 setLight(vertex4.x, vertex4.y, vertex4.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, worldFace, greedyMeshSize);
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 21] = (this.compressPosXY(vertex4.x + greedyMeshSize[0], vertex4.y));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 22] = (this.compressColor(red, green, blue));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 23] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 1 + greedyMeshSize[1] + ySample4));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 24] = (this.compressPosZAndTexId(vertex4.z, blockID));
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 25] = normal.x;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 26] = normal.y;
-                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 27] = normal.z;
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 18] = (this.compressPosXY(vertex4.x + greedyMeshSize[0], vertex4.y));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 19] = (this.compressColor(red, green, blue));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 20] = (this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 1 + greedyMeshSize[1] + ySample4));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 21] = (this.compressPosZAndTexId(vertex4.z, blockID));
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 22] = this.compressNormalXY(normal.x, normal.y);
+                chunk.vertexArrayTransparent[chunk.vertexIndexTransparent + 23] = this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue);
 
-                chunk.vertexIndexTransparent += 28;
+                chunk.vertexIndexTransparent += 24;
             }
         }
         resetLight();

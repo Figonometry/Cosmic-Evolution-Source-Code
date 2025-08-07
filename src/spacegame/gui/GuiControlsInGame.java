@@ -66,8 +66,8 @@ public final class GuiControlsInGame extends Gui {
         tessellator.addElements();
         tessellator.drawTexture2D(this.title.texID, Shader.screen2DTexture, SpaceGame.camera);
 
-        int backgroundWidth = SpaceGame.width;
-        int backgroundHeight = SpaceGame.height;
+        int backgroundWidth = 1920;
+        int backgroundHeight = 1017;
         int backgroundX = 0;
         int backgroundY = 0;
         int backgroundZ = -100;

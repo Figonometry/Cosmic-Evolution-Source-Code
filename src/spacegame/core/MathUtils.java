@@ -37,6 +37,13 @@ public abstract class MathUtils {
         return comp / 255f;
     }
 
+    public static int RGBToInt(float red, float green, float blue){
+        int r = (int) (red * 255);
+        int g = (int) (green * 255);
+        int b = (int) (blue * 255);
+        return ((r << 16) | (g << 8) | b);
+    }
+
     public static short floatToHalf(float value) {
         int floatBits = Float.floatToIntBits(value);
         int sign = (floatBits >> 16) & 0x8000;
@@ -66,6 +73,24 @@ public abstract class MathUtils {
             mantissa <<= 13;
             return Float.intBitsToFloat((sign << 31) | (exponent << 23) | mantissa);
         }
+    }
+
+    //These methods recalculate width and height of screen UI elements based on the screen size, this is programmed on a windowed monitor with a 1920x1017 resolution.
+    // This allows me to write the code easier and just have it adjusted based on the screen size dynamically
+    public static float adjustWidthBasedOnScreenWidth(float width){
+        return width * (SpaceGame.width / 1920f);
+    }
+
+    public static float adjustHeightBasedOnScreenHeight(float height){
+        return height * (SpaceGame.height / 1017f);
+    }
+
+    public static float adjustXPosBasedOnScreenWidth(float x){
+        return x * (SpaceGame.width / 1920f);
+    }
+
+    public static float adjustYPosBasedOnScreenHeight(float y){
+        return y * (SpaceGame.height/ 1017f);
     }
 
     public static double sin(double a) {

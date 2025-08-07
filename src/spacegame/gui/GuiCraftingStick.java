@@ -123,8 +123,8 @@ public final class GuiCraftingStick extends GuiCrafting {
         GLFW.glfwSetInputMode(this.sg.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
         Tessellator tessellator = Tessellator.instance;
         tessellator.toggleOrtho();
-        int backgroundWidth = SpaceGame.width;
-        int backgroundHeight = SpaceGame.height;
+        int backgroundWidth = 1920;
+        int backgroundHeight = 1017;
         int backgroundX = 0;
         int backgroundY = 0;
         int backgroundZ = -110;

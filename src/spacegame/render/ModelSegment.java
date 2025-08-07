@@ -12,12 +12,12 @@ public final class ModelSegment {
     public ModelSegment[] childrenSegments;
     public Vector3f rotationPoint;
     public Vector3f position;
-    public Vector3f[] topFace = new Vector3f[4];
-    public Vector3f[] bottomFace = new Vector3f[4];
-    public Vector3f[] northFace = new Vector3f[4];
-    public Vector3f[] southFace = new Vector3f[4];
-    public Vector3f[] eastFace = new Vector3f[4];
-    public Vector3f[] westFace = new Vector3f[4];
+    public Vector3f[] topFace = new Vector3f[5];
+    public Vector3f[] bottomFace = new Vector3f[5];
+    public Vector3f[] northFace = new Vector3f[5];
+    public Vector3f[] southFace = new Vector3f[5];
+    public Vector3f[] eastFace = new Vector3f[5];
+    public Vector3f[] westFace = new Vector3f[5];
 
     public ModelSegment(float width, float height, float depth, boolean isRoot, ModelSegment parentSegment, Vector3f rotationPoint, Vector3f position){
         this.width = width;
@@ -32,31 +32,37 @@ public final class ModelSegment {
         this.topFace[1] = new Vector3f(-width/2, height/2, depth/2);
         this.topFace[2] = new Vector3f(width/2, height/2, depth/2);
         this.topFace[3] = new Vector3f(-width/2, height/2, -depth/2);
+        this.topFace[4] = new Vector3f(0,1,0);
 
         this.bottomFace[0] = new Vector3f(-width/2, -height/2, -depth/2);
         this.bottomFace[1] = new Vector3f(width/2, -height/2, depth/2);
         this.bottomFace[2] = new Vector3f(-width/2, -height/2, depth/2);
         this.bottomFace[3] = new Vector3f(width/2, -height/2, -depth/2);
+        this.bottomFace[4] = new Vector3f(0, -1, 0);
 
         this.northFace[0] = new Vector3f(-width/2, -height/2, -depth/2);
         this.northFace[1] = new Vector3f(-width/2, height/2, depth/2);
         this.northFace[2] = new Vector3f(-width/2, height/2, -depth/2);
         this.northFace[3] = new Vector3f(-width/2, -height/2, depth/2);
+        this.northFace[4] = new Vector3f(-1, 0, 0);
 
         this.southFace[0] = new Vector3f(width/2, -height/2, depth/2);
         this.southFace[1] = new Vector3f(width/2, height/2, -depth/2);
         this.southFace[2] = new Vector3f(width/2, height/2, depth/2);
         this.southFace[3] = new Vector3f(width/2, -height/2, -depth/2);
+        this.southFace[4] = new Vector3f(1, 0, 0);
 
         this.eastFace[0] = new Vector3f(width/2, -height/2, -depth/2);
         this.eastFace[1] = new Vector3f(-width/2, height/2, -depth/2);
         this.eastFace[2] = new Vector3f(width/2, height/2, -depth/2);
         this.eastFace[3] = new Vector3f(-width/2, -height/2, -depth/2);
+        this.eastFace[4] = new Vector3f(0, 0, -1);
 
         this.westFace[0] = new Vector3f(-width/2, -height/2, depth/2);
         this.westFace[1] = new Vector3f(width/2, height/2, depth/2);
         this.westFace[2] = new Vector3f(-width/2, height/2, depth/2);
         this.westFace[3] = new Vector3f(width/2, -height/2, depth/2);
+        this.westFace[4] = new Vector3f(0, 0, 1);
    }
 
    public void setChildSegments(ModelSegment[] segments){
@@ -182,7 +188,7 @@ public final class ModelSegment {
     public void rotateSegmentX(float angleDeg){
         float angleRad = (float) Math.toRadians(angleDeg);
         this.translatePreRotation();
-        for(int i = 0; i < 4; i++){
+        for(int i = 0; i < 5; i++){
             this.topFace[i].rotateX(angleRad);
             this.bottomFace[i].rotateX(angleRad);
             this.northFace[i].rotateX(angleRad);
@@ -201,7 +207,7 @@ public final class ModelSegment {
     public void rotateSegmentY(float angleDeg){
         float angleRad = (float) Math.toRadians(angleDeg);
         this.translatePreRotation();
-        for(int i = 0; i < 4; i++){
+        for(int i = 0; i < 5; i++){
             this.topFace[i].rotateY(angleRad);
             this.bottomFace[i].rotateY(angleRad);
             this.northFace[i].rotateY(angleRad);
@@ -220,7 +226,7 @@ public final class ModelSegment {
     public void rotateSegmentZ(float angleDeg){
         float angleRad = (float) Math.toRadians(angleDeg);
         this.translatePreRotation();
-        for(int i = 0; i < 4; i++){
+        for(int i = 0; i < 5; i++){
             this.topFace[i].rotateZ(angleRad);
             this.bottomFace[i].rotateZ(angleRad);
             this.northFace[i].rotateZ(angleRad);
@@ -237,50 +243,56 @@ public final class ModelSegment {
     }
 
     public Vector3f[] getFaceClone(int face){
-        Vector3f[] returnValue = new Vector3f[4];
+        Vector3f[] returnValue = new Vector3f[5];
         returnValue[0] = new Vector3f();
         returnValue[1] = new Vector3f();
         returnValue[2] = new Vector3f();
         returnValue[3] = new Vector3f();
+        returnValue[4] = new Vector3f();
         switch (face) {
             case 0 -> {
                 returnValue[0] = new Vector3f(this.topFace[0]);
                 returnValue[1] = new Vector3f(this.topFace[1]);
                 returnValue[2] = new Vector3f(this.topFace[2]);
                 returnValue[3] = new Vector3f(this.topFace[3]);
+                returnValue[4] = new Vector3f(this.topFace[4]);
             }
             case 1 -> {
                 returnValue[0] = new Vector3f(this.bottomFace[0]);
                 returnValue[1] = new Vector3f(this.bottomFace[1]);
                 returnValue[2] = new Vector3f(this.bottomFace[2]);
                 returnValue[3] = new Vector3f(this.bottomFace[3]);
+                returnValue[4] = new Vector3f(this.bottomFace[4]);
             }
             case 2 -> {
                 returnValue[0]  = new Vector3f(this.northFace[0]);
                 returnValue[1]  = new Vector3f(this.northFace[1]);
                 returnValue[2]  = new Vector3f(this.northFace[2]);
                 returnValue[3]  = new Vector3f(this.northFace[3]);
+                returnValue[4]  = new Vector3f(this.northFace[4]);
             }
             case 3 -> {
                 returnValue[0]  = new Vector3f(this.southFace[0]);
                 returnValue[1]  = new Vector3f(this.southFace[1]);
                 returnValue[2]  = new Vector3f(this.southFace[2]);
                 returnValue[3]  = new Vector3f(this.southFace[3]);
+                returnValue[4]  = new Vector3f(this.southFace[4]);
             }
             case 4 -> {
                 returnValue[0]  = new Vector3f(this.eastFace[0]);
                 returnValue[1]  = new Vector3f(this.eastFace[1]);
                 returnValue[2]  = new Vector3f(this.eastFace[2]);
                 returnValue[3]  = new Vector3f(this.eastFace[3]);
+                returnValue[4]  = new Vector3f(this.eastFace[4]);
             }
             case 5 -> {
                 returnValue[0]  = new Vector3f(this.westFace[0]);
                 returnValue[1]  = new Vector3f(this.westFace[1]);
                 returnValue[2]  = new Vector3f(this.westFace[2]);
                 returnValue[3]  = new Vector3f(this.westFace[3]);
+                returnValue[4]  = new Vector3f(this.westFace[4]);
             }
         }
-
         return returnValue;
     }
 

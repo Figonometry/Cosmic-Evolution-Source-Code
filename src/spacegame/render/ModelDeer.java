@@ -5,7 +5,7 @@ import spacegame.core.MathUtils;
 import spacegame.core.SpaceGame;
 import spacegame.entity.Entity;
 import spacegame.entity.EntityDeer;
-import spacegame.entity.EntityLiving;
+import spacegame.gui.GuiInGame;
 
 import java.awt.*;
 
@@ -117,7 +117,7 @@ public final class ModelDeer extends Model {
     }
 
     public void renderModel(Entity associatedEntity){
-        Tessellator tessellator = Tessellator.instance;
+        WorldTessellator worldTessellator = WorldTessellator.instance;
         Vector3f position;
         Vector3f[] topFace;
         Vector3f[] bottomFace;
@@ -176,21 +176,21 @@ public final class ModelDeer extends Model {
 
             switch (i) {
                 case 0 ->
-                        this.bodySegmentUV(tessellator, topFace, bottomFace, northFace, southFace, eastFace, westFace, associatedEntity);
+                        this.bodySegmentUV(worldTessellator, topFace, bottomFace, northFace, southFace, eastFace, westFace, associatedEntity);
                 case 1, 2, 3, 4 ->
-                        this.legSegmentUV(tessellator, topFace, bottomFace, northFace, southFace, eastFace, westFace, associatedEntity);
+                        this.legSegmentUV(worldTessellator, topFace, bottomFace, northFace, southFace, eastFace, westFace, associatedEntity);
                 case 5 ->
-                        this.neckSegmentUV(tessellator, topFace, bottomFace, northFace, southFace, eastFace, westFace, associatedEntity);
+                        this.neckSegmentUV(worldTessellator, topFace, bottomFace, northFace, southFace, eastFace, westFace, associatedEntity);
                 case 6 ->
-                        this.head1SegmentUV(tessellator, topFace, bottomFace, northFace, southFace, eastFace, westFace, associatedEntity);
+                        this.head1SegmentUV(worldTessellator, topFace, bottomFace, northFace, southFace, eastFace, westFace, associatedEntity);
                 case 7 ->
-                        this.head2SegmentUV(tessellator, topFace, bottomFace, northFace, southFace, eastFace, westFace, associatedEntity);
+                        this.head2SegmentUV(worldTessellator, topFace, bottomFace, northFace, southFace, eastFace, westFace, associatedEntity);
                 case 8 ->
-                        this.head3SegmentUV(tessellator, topFace, bottomFace, northFace, southFace, eastFace, westFace, associatedEntity);
+                        this.head3SegmentUV(worldTessellator, topFace, bottomFace, northFace, southFace, eastFace, westFace, associatedEntity);
                 case 9 ->
-                        this.tailSegmentUV(tessellator, topFace, bottomFace, northFace, southFace, eastFace, westFace, associatedEntity);
+                        this.tailSegmentUV(worldTessellator, topFace, bottomFace, northFace, southFace, eastFace, westFace, associatedEntity);
                 case 10, 11 ->
-                        this.earSegmentUV(tessellator, topFace, bottomFace, northFace, southFace, eastFace, westFace, associatedEntity);
+                        this.earSegmentUV(worldTessellator, topFace, bottomFace, northFace, southFace, eastFace, westFace, associatedEntity);
             }
 
         }
@@ -213,7 +213,7 @@ public final class ModelDeer extends Model {
 
         Shader.worldShader2DTexture.uploadVec3f("chunkOffset", new Vector3f(offsetX, offsetY, offsetZ));
         Shader.worldShader2DTexture.uploadBoolean("useFog", true);
-        tessellator.drawTexture2D(EntityDeer.texture.texID, Shader.worldShader2DTexture, SpaceGame.camera);
+        worldTessellator.drawTexture2D(EntityDeer.texture.texID, Shader.worldShader2DTexture, SpaceGame.camera);
     }
 
     public void rotateModelSegment(int segmentInArray, float x, float y, float z, float angleDeg){
@@ -253,18 +253,7 @@ public final class ModelDeer extends Model {
         }
     }
 
-    public float varyLightReductionAmount(float input, int sineFunction, Entity associatedEntity){
-        float angleDeg = (float) Math.toRadians(associatedEntity.yaw);
-        float ratio = switch (sineFunction) {
-            case 0 -> (float) ((MathUtils.sin((float) (angleDeg + 0.5 * Math.PI)) * 0.5) + 0.5f);
-            case 1 -> (float) ((MathUtils.sin((float) (angleDeg * Math.PI)) * 0.5) + 0.5f);
-            case 2 -> (float) ((MathUtils.sin((float) (angleDeg - 0.5 * Math.PI)) * 0.5) + 0.5f);
-            default -> 0;
-        };
-        return input * ratio;
-    }
-
-    private int calculateVertexLightColor(Vector3f vertex, Entity associatedEntity, float lightReduction){
+    private int calculateVertexLightColor(Vector3f vertex, Entity associatedEntity){
         this.resetLight();
         float x = (float) (Math.abs((associatedEntity.x % 32f) - vertex.x) + associatedEntity.x);
         float y = (float) (Math.abs((associatedEntity.y % 32f) - vertex.y) + associatedEntity.y);
@@ -274,317 +263,312 @@ public final class ModelDeer extends Model {
         int zInt = MathUtils.floorDouble(z);
         float[] lightColor =  !associatedEntity.canDamage ? new float[]{1,0.65f,0.65f}  : SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockLightColor(xInt, yInt, zInt);
         this.setVertexLight1Arg(SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockLightValue(xInt, yInt, zInt), x, y, z, lightColor);
-        this.red -= lightReduction;
-        this.green -= lightReduction;
-        this.blue -= lightReduction;
-        this.red = this.red <= 0 ? 0.1f : this.red;
-        this.green = this.green <= 0 ? 0.1f : this.green;
-        this.blue = this.blue <= 0 ? 0.1f : this.blue;
+        this.skyLightValue = GuiInGame.getLightValueFromMap(SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockSkyLightValue(xInt, yInt, zInt));
         Color color = new Color(this.red, this.green, this.blue, 0);
         return color.getRGB();
     }
 
-    private void bodySegmentUV(Tessellator tessellator, Vector3f[] topFace, Vector3f[] bottomFace, Vector3f[] northFace, Vector3f[] southFace, Vector3f[] eastFace, Vector3f[] westFace, Entity associatedEntity){
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[0], associatedEntity, 0), topFace[0].x, topFace[0].y, topFace[0].z, 2,0,0);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[1], associatedEntity, 0), topFace[1].x, topFace[1].y, topFace[1].z, 0,0,-0.75757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[2], associatedEntity, 0), topFace[2].x, topFace[2].y, topFace[2].z, 1,0,0);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[3], associatedEntity, 0), topFace[3].x, topFace[3].y, topFace[3].z, 3,0,-0.75757575757575757575757575757576f);
-        tessellator.addElements();
+    private void bodySegmentUV(WorldTessellator worldTessellator, Vector3f[] topFace, Vector3f[] bottomFace, Vector3f[] northFace, Vector3f[] southFace, Vector3f[] eastFace, Vector3f[] westFace, Entity associatedEntity){
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[0], associatedEntity), topFace[0].x, topFace[0].y, topFace[0].z, 2,0,0, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[1], associatedEntity), topFace[1].x, topFace[1].y, topFace[1].z, 0,0,-0.75757575757575757575757575757576f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[2], associatedEntity), topFace[2].x, topFace[2].y, topFace[2].z, 1,0,0, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[3], associatedEntity), topFace[3].x, topFace[3].y, topFace[3].z, 3,0,-0.75757575757575757575757575757576f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
 
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[0], associatedEntity, 0.2f), bottomFace[0].x, bottomFace[0].y, bottomFace[0].z, 2,0,0.75757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[1], associatedEntity, 0.2f), bottomFace[1].x, bottomFace[1].y, bottomFace[1].z, 0,0,0);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[2], associatedEntity, 0.2f), bottomFace[2].x, bottomFace[2].y, bottomFace[2].z, 1,0,0.75757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[3], associatedEntity, 0.2f), bottomFace[3].x, bottomFace[3].y, bottomFace[3].z, 3,0,0);
-        tessellator.addElements();
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[0], associatedEntity), bottomFace[0].x, bottomFace[0].y, bottomFace[0].z, 2,0,0.75757575757575757575757575757576f, bottomFace[4].x, bottomFace[4].y, bottomFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[1], associatedEntity), bottomFace[1].x, bottomFace[1].y, bottomFace[1].z, 0,0,0, bottomFace[4].x, bottomFace[4].y, bottomFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[2], associatedEntity), bottomFace[2].x, bottomFace[2].y, bottomFace[2].z, 1,0,0.75757575757575757575757575757576f, bottomFace[4].x, bottomFace[4].y, bottomFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[3], associatedEntity), bottomFace[3].x, bottomFace[3].y, bottomFace[3].z, 3,0,0, bottomFace[4].x, bottomFace[4].y, bottomFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
 
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[0], associatedEntity, this.varyLightReductionAmount(0.2f, 0, associatedEntity)), northFace[0].x, northFace[0].y, northFace[0].z, 3,0,-0.75757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[1], associatedEntity, this.varyLightReductionAmount(0.2f, 0, associatedEntity)), northFace[1].x, northFace[1].y, northFace[1].z, 1,0,0);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[2], associatedEntity, this.varyLightReductionAmount(0.2f, 0, associatedEntity)), northFace[2].x, northFace[2].y, northFace[2].z, 2,0,0);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[3], associatedEntity, this.varyLightReductionAmount(0.2f, 0, associatedEntity)), northFace[3].x, northFace[3].y, northFace[3].z, 0,0,-0.75757575757575757575757575757576f);
-        tessellator.addElements();
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[0], associatedEntity), northFace[0].x, northFace[0].y, northFace[0].z, 3,0,-0.75757575757575757575757575757576f, northFace[4].x, northFace[4].y, northFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[1], associatedEntity), northFace[1].x, northFace[1].y, northFace[1].z, 1,0,0, northFace[4].x, northFace[4].y, northFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[2], associatedEntity), northFace[2].x, northFace[2].y, northFace[2].z, 2,0,0, northFace[4].x, northFace[4].y, northFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[3], associatedEntity), northFace[3].x, northFace[3].y, northFace[3].z, 0,0,-0.75757575757575757575757575757576f, northFace[4].x, northFace[4].y, northFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
 
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[0], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), southFace[0].x, southFace[0].y, southFace[0].z, 3,0,-0.75757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[1], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), southFace[1].x, southFace[1].y, southFace[1].z, 1,0,0);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[2], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), southFace[2].x, southFace[2].y, southFace[2].z, 2,0,0);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[3], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), southFace[3].x, southFace[3].y, southFace[3].z, 0,0,-0.75757575757575757575757575757576f);
-        tessellator.addElements();
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[0], associatedEntity), southFace[0].x, southFace[0].y, southFace[0].z, 3,0,-0.75757575757575757575757575757576f, southFace[4].x, southFace[4].y, southFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[1], associatedEntity), southFace[1].x, southFace[1].y, southFace[1].z, 1,0,0, southFace[4].x, southFace[4].y, southFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[2], associatedEntity), southFace[2].x, southFace[2].y, southFace[2].z, 2,0,0, southFace[4].x, southFace[4].y, southFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[3], associatedEntity), southFace[3].x, southFace[3].y, southFace[3].z, 0,0,-0.75757575757575757575757575757576f, southFace[4].x, southFace[4].y, southFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
 
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[0], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), eastFace[0].x, eastFace[0].y, eastFace[0].z, 3,0.66666666666666666666666666666667f,-0.75757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[1], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), eastFace[1].x, eastFace[1].y, eastFace[1].z, 1,0,0);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[2], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), eastFace[2].x, eastFace[2].y, eastFace[2].z, 2,0.66666666666666666666666666666667f,0);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[3], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), eastFace[3].x, eastFace[3].y, eastFace[3].z, 0,0,-0.75757575757575757575757575757576f);
-        tessellator.addElements();
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[0], associatedEntity), eastFace[0].x, eastFace[0].y, eastFace[0].z, 3,0.66666666666666666666666666666667f,-0.75757575757575757575757575757576f, eastFace[4].x, eastFace[4].y, eastFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[1], associatedEntity), eastFace[1].x, eastFace[1].y, eastFace[1].z, 1,0,0, eastFace[4].x, eastFace[4].y, eastFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[2], associatedEntity), eastFace[2].x, eastFace[2].y, eastFace[2].z, 2,0.66666666666666666666666666666667f,0, eastFace[4].x, eastFace[4].y, eastFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[3], associatedEntity), eastFace[3].x, eastFace[3].y, eastFace[3].z, 0,0,-0.75757575757575757575757575757576f, eastFace[4].x, eastFace[4].y, eastFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
 
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[0], associatedEntity, this.varyLightReductionAmount(0.2f, 2, associatedEntity)), westFace[0].x, westFace[0].y, westFace[0].z, 3,0,-0.75757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[1], associatedEntity, this.varyLightReductionAmount(0.2f, 2, associatedEntity)), westFace[1].x, westFace[1].y, westFace[1].z, 1,-0.66666666666666666666666666666667f,0);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[2], associatedEntity, this.varyLightReductionAmount(0.2f, 2, associatedEntity)), westFace[2].x, westFace[2].y, westFace[2].z, 2,0,0);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[3], associatedEntity, this.varyLightReductionAmount(0.2f, 2, associatedEntity)), westFace[3].x, westFace[3].y, westFace[3].z, 0,-0.66666666666666666666666666666667f,-0.75757575757575757575757575757576f);
-        tessellator.addElements();
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[0], associatedEntity), westFace[0].x, westFace[0].y, westFace[0].z, 3,0,-0.75757575757575757575757575757576f, westFace[4].x, westFace[4].y, westFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[1], associatedEntity), westFace[1].x, westFace[1].y, westFace[1].z, 1,-0.66666666666666666666666666666667f,0, westFace[4].x, westFace[4].y, westFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[2], associatedEntity), westFace[2].x, westFace[2].y, westFace[2].z, 2,0,0, westFace[4].x, westFace[4].y, westFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[3], associatedEntity), westFace[3].x, westFace[3].y, westFace[3].z, 0,-0.66666666666666666666666666666667f,-0.75757575757575757575757575757576f, westFace[4].x, westFace[4].y, westFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
     }
 
-    private void legSegmentUV(Tessellator tessellator, Vector3f[] topFace, Vector3f[] bottomFace, Vector3f[] northFace, Vector3f[] southFace, Vector3f[] eastFace, Vector3f[] westFace, Entity associatedEntity){
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[0], associatedEntity, 0), topFace[0].x, topFace[0].y, topFace[0].z, 2,0.10416666666666666666666666666667f,0.68181818181818181818181818181818f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[1], associatedEntity, 0), topFace[1].x, topFace[1].y, topFace[1].z, 0,-0.8125f,-0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[2], associatedEntity, 0), topFace[2].x, topFace[2].y, topFace[2].z, 1,-0.8125f,0.68181818181818181818181818181818f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[3], associatedEntity, 0), topFace[3].x, topFace[3].y, topFace[3].z, 3,0.10416666666666666666666666666667f,-0.25757575757575757575757575757576f);
-        tessellator.addElements();
+    private void legSegmentUV(WorldTessellator worldTessellator, Vector3f[] topFace, Vector3f[] bottomFace, Vector3f[] northFace, Vector3f[] southFace, Vector3f[] eastFace, Vector3f[] westFace, Entity associatedEntity){
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[0], associatedEntity), topFace[0].x, topFace[0].y, topFace[0].z, 2,0.10416666666666666666666666666667f,0.68181818181818181818181818181818f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[1], associatedEntity), topFace[1].x, topFace[1].y, topFace[1].z, 0,-0.8125f,-0.25757575757575757575757575757576f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[2], associatedEntity), topFace[2].x, topFace[2].y, topFace[2].z, 1,-0.8125f,0.68181818181818181818181818181818f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[3], associatedEntity), topFace[3].x, topFace[3].y, topFace[3].z, 3,0.10416666666666666666666666666667f,-0.25757575757575757575757575757576f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
 
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[0], associatedEntity, 0.2f), bottomFace[0].x, bottomFace[0].y, bottomFace[0].z, 2,0.10416666666666666666666666666667f,0.68181818181818181818181818181818f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[1], associatedEntity, 0.2f), bottomFace[1].x, bottomFace[1].y, bottomFace[1].z, 0,-0.8125f,-0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[2], associatedEntity, 0.2f), bottomFace[2].x, bottomFace[2].y, bottomFace[2].z, 1,-0.8125f,0.68181818181818181818181818181818f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[3], associatedEntity, 0.2f), bottomFace[3].x, bottomFace[3].y, bottomFace[3].z, 3,0.10416666666666666666666666666667f,-0.25757575757575757575757575757576f);
-        tessellator.addElements();
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[0], associatedEntity), bottomFace[0].x, bottomFace[0].y, bottomFace[0].z, 2,0.10416666666666666666666666666667f,0.68181818181818181818181818181818f, bottomFace[4].x, bottomFace[4].y, bottomFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[1], associatedEntity), bottomFace[1].x, bottomFace[1].y, bottomFace[1].z, 0,-0.8125f,-0.25757575757575757575757575757576f, bottomFace[4].x, bottomFace[4].y, bottomFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[2], associatedEntity), bottomFace[2].x, bottomFace[2].y, bottomFace[2].z, 1,-0.8125f,0.68181818181818181818181818181818f, bottomFace[4].x, bottomFace[4].y, bottomFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[3], associatedEntity), bottomFace[3].x, bottomFace[3].y, bottomFace[3].z, 3,0.10416666666666666666666666666667f,-0.25757575757575757575757575757576f, bottomFace[4].x, bottomFace[4].y, bottomFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
 
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[0], associatedEntity, this.varyLightReductionAmount(0.2f, 0, associatedEntity)), northFace[0].x, northFace[0].y, northFace[0].z, 3,0,-0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[1], associatedEntity, this.varyLightReductionAmount(0.2f, 0, associatedEntity)), northFace[1].x, northFace[1].y, northFace[1].z, 1,-0.91666666666666666666666666666667f,0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[2], associatedEntity, this.varyLightReductionAmount(0.2f, 0, associatedEntity)), northFace[2].x, northFace[2].y, northFace[2].z, 2,0,0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[3], associatedEntity, this.varyLightReductionAmount(0.2f, 0, associatedEntity)), northFace[3].x, northFace[3].y, northFace[3].z, 0,-0.91666666666666666666666666666667f,-0.25757575757575757575757575757576f);
-        tessellator.addElements();
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[0], associatedEntity), northFace[0].x, northFace[0].y, northFace[0].z, 3,0,-0.25757575757575757575757575757576f, northFace[4].x, northFace[4].y, northFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[1], associatedEntity), northFace[1].x, northFace[1].y, northFace[1].z, 1,-0.91666666666666666666666666666667f,0.25757575757575757575757575757576f, northFace[4].x, northFace[4].y, northFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[2], associatedEntity), northFace[2].x, northFace[2].y, northFace[2].z, 2,0,0.25757575757575757575757575757576f, northFace[4].x, northFace[4].y, northFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[3], associatedEntity), northFace[3].x, northFace[3].y, northFace[3].z, 0,-0.91666666666666666666666666666667f,-0.25757575757575757575757575757576f, northFace[4].x, northFace[4].y, northFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
 
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[0], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), southFace[0].x, southFace[0].y, southFace[0].z, 3,0,-0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[1], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), southFace[1].x, southFace[1].y, southFace[1].z, 1,-0.91666666666666666666666666666667f,0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[2], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), southFace[2].x, southFace[2].y, southFace[2].z, 2,0,0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[3], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), southFace[3].x, southFace[3].y, southFace[3].z, 0,-0.91666666666666666666666666666667f,-0.25757575757575757575757575757576f);
-        tessellator.addElements();
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[0], associatedEntity), southFace[0].x, southFace[0].y, southFace[0].z, 3,0,-0.25757575757575757575757575757576f, southFace[4].x, southFace[4].y, southFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[1], associatedEntity), southFace[1].x, southFace[1].y, southFace[1].z, 1,-0.91666666666666666666666666666667f,0.25757575757575757575757575757576f, southFace[4].x, southFace[4].y, southFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[2], associatedEntity), southFace[2].x, southFace[2].y, southFace[2].z, 2,0,0.25757575757575757575757575757576f, southFace[4].x, southFace[4].y, southFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[3], associatedEntity), southFace[3].x, southFace[3].y, southFace[3].z, 0,-0.91666666666666666666666666666667f,-0.25757575757575757575757575757576f, southFace[4].x, southFace[4].y, southFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
 
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[0], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), eastFace[0].x, eastFace[0].y, eastFace[0].z, 3,0,-0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[1], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), eastFace[1].x, eastFace[1].y, eastFace[1].z, 1,-0.91666666666666666666666666666667f,0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[2], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), eastFace[2].x, eastFace[2].y, eastFace[2].z, 2,0,0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[3], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), eastFace[3].x, eastFace[3].y, eastFace[3].z, 0,-0.91666666666666666666666666666667f,-0.25757575757575757575757575757576f);
-        tessellator.addElements();
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[0], associatedEntity), eastFace[0].x, eastFace[0].y, eastFace[0].z, 3,0,-0.25757575757575757575757575757576f, eastFace[4].x, eastFace[4].y, eastFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[1], associatedEntity), eastFace[1].x, eastFace[1].y, eastFace[1].z, 1,-0.91666666666666666666666666666667f,0.25757575757575757575757575757576f, eastFace[4].x, eastFace[4].y, eastFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[2], associatedEntity), eastFace[2].x, eastFace[2].y, eastFace[2].z, 2,0,0.25757575757575757575757575757576f, eastFace[4].x, eastFace[4].y, eastFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[3], associatedEntity), eastFace[3].x, eastFace[3].y, eastFace[3].z, 0,-0.91666666666666666666666666666667f,-0.25757575757575757575757575757576f, eastFace[4].x, eastFace[4].y, eastFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
 
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[0], associatedEntity, this.varyLightReductionAmount(0.2f, 2, associatedEntity)), westFace[0].x, westFace[0].y, westFace[0].z, 3,0,-0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[1], associatedEntity, this.varyLightReductionAmount(0.2f, 2, associatedEntity)), westFace[1].x, westFace[1].y, westFace[1].z, 1,-0.91666666666666666666666666666667f,0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[2], associatedEntity, this.varyLightReductionAmount(0.2f, 2, associatedEntity)), westFace[2].x, westFace[2].y, westFace[2].z, 2,0,0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[3], associatedEntity, this.varyLightReductionAmount(0.2f, 2, associatedEntity)), westFace[3].x, westFace[3].y, westFace[3].z, 0,-0.91666666666666666666666666666667f,-0.25757575757575757575757575757576f);
-        tessellator.addElements();
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[0], associatedEntity), westFace[0].x, westFace[0].y, westFace[0].z, 3,0,-0.25757575757575757575757575757576f, westFace[4].x, westFace[4].y, westFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[1], associatedEntity), westFace[1].x, westFace[1].y, westFace[1].z, 1,-0.91666666666666666666666666666667f,0.25757575757575757575757575757576f, westFace[4].x, westFace[4].y, westFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[2], associatedEntity), westFace[2].x, westFace[2].y, westFace[2].z, 2,0,0.25757575757575757575757575757576f, westFace[4].x, westFace[4].y, westFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[3], associatedEntity), westFace[3].x, westFace[3].y, westFace[3].z, 0,-0.91666666666666666666666666666667f,-0.25757575757575757575757575757576f, westFace[4].x, westFace[4].y, westFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
     }
 
-    private void neckSegmentUV(Tessellator tessellator, Vector3f[] topFace, Vector3f[] bottomFace, Vector3f[] northFace, Vector3f[] southFace, Vector3f[] eastFace, Vector3f[] westFace, Entity associatedEntity){
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[0], associatedEntity, 0), topFace[0].x, topFace[0].y, topFace[0].z, 2,0.66666666666666666666666666666667f,0.51515151515151515151515151515152f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[1], associatedEntity, 0), topFace[1].x, topFace[1].y, topFace[1].z, 0,0,-0.36363636363636363636363636363636f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[2], associatedEntity, 0), topFace[2].x, topFace[2].y, topFace[2].z, 1,0,0.51515151515151515151515151515152f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[3], associatedEntity, 0), topFace[3].x, topFace[3].y, topFace[3].z, 3,0.66666666666666666666666666666667f,-0.36363636363636363636363636363636f);
-        tessellator.addElements();
+    private void neckSegmentUV(WorldTessellator worldTessellator, Vector3f[] topFace, Vector3f[] bottomFace, Vector3f[] northFace, Vector3f[] southFace, Vector3f[] eastFace, Vector3f[] westFace, Entity associatedEntity){
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[0], associatedEntity), topFace[0].x, topFace[0].y, topFace[0].z, 2,0.66666666666666666666666666666667f,0.51515151515151515151515151515152f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[1], associatedEntity), topFace[1].x, topFace[1].y, topFace[1].z, 0,0,-0.36363636363636363636363636363636f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[2], associatedEntity), topFace[2].x, topFace[2].y, topFace[2].z, 1,0,0.51515151515151515151515151515152f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[3], associatedEntity), topFace[3].x, topFace[3].y, topFace[3].z, 3,0.66666666666666666666666666666667f,-0.36363636363636363636363636363636f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
 
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[0], associatedEntity, 0.2f), bottomFace[0].x, bottomFace[0].y, bottomFace[0].z, 2,0.66666666666666666666666666666667f,0.51515151515151515151515151515152f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[1], associatedEntity, 0.2f), bottomFace[1].x, bottomFace[1].y, bottomFace[1].z, 0,0,-0.36363636363636363636363636363636f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[2], associatedEntity, 0.2f), bottomFace[2].x, bottomFace[2].y, bottomFace[2].z, 1,0,0.51515151515151515151515151515152f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[3], associatedEntity, 0.2f), bottomFace[3].x, bottomFace[3].y, bottomFace[3].z, 3,0.66666666666666666666666666666667f,-0.36363636363636363636363636363636f);
-        tessellator.addElements();
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[0], associatedEntity), bottomFace[0].x, bottomFace[0].y, bottomFace[0].z, 2,0.66666666666666666666666666666667f,0.51515151515151515151515151515152f, bottomFace[4].x, bottomFace[4].y, bottomFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[1], associatedEntity), bottomFace[1].x, bottomFace[1].y, bottomFace[1].z, 0,0,-0.36363636363636363636363636363636f, bottomFace[4].x, bottomFace[4].y, bottomFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[2], associatedEntity), bottomFace[2].x, bottomFace[2].y, bottomFace[2].z, 1,0,0.51515151515151515151515151515152f, bottomFace[4].x, bottomFace[4].y, bottomFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[3], associatedEntity), bottomFace[3].x, bottomFace[3].y, bottomFace[3].z, 3,0.66666666666666666666666666666667f,-0.36363636363636363636363636363636f, bottomFace[4].x, bottomFace[4].y, bottomFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
 
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[0], associatedEntity, this.varyLightReductionAmount(0.2f, 0, associatedEntity)), northFace[0].x, northFace[0].y, northFace[0].z, 3,0.66666666666666666666666666666667f,-0.36363636363636363636363636363636f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[1], associatedEntity, this.varyLightReductionAmount(0.2f, 0, associatedEntity)), northFace[1].x, northFace[1].y, northFace[1].z, 1,0,0.51515151515151515151515151515152f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[2], associatedEntity, this.varyLightReductionAmount(0.2f, 0, associatedEntity)), northFace[2].x, northFace[2].y, northFace[2].z, 2,0.66666666666666666666666666666667f,0.51515151515151515151515151515152f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[3], associatedEntity, this.varyLightReductionAmount(0.2f, 0, associatedEntity)), northFace[3].x, northFace[3].y, northFace[3].z, 0,0,-0.36363636363636363636363636363636f);
-        tessellator.addElements();
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[0], associatedEntity), northFace[0].x, northFace[0].y, northFace[0].z, 3,0.66666666666666666666666666666667f,-0.36363636363636363636363636363636f, northFace[4].x, northFace[4].y, northFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[1], associatedEntity), northFace[1].x, northFace[1].y, northFace[1].z, 1,0,0.51515151515151515151515151515152f, northFace[4].x, northFace[4].y, northFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[2], associatedEntity), northFace[2].x, northFace[2].y, northFace[2].z, 2,0.66666666666666666666666666666667f,0.51515151515151515151515151515152f, northFace[4].x, northFace[4].y, northFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[3], associatedEntity), northFace[3].x, northFace[3].y, northFace[3].z, 0,0,-0.36363636363636363636363636363636f, northFace[4].x, northFace[4].y, northFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
 
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[0], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), southFace[0].x, southFace[0].y, southFace[0].z, 3,0.66666666666666666666666666666667f,-0.36363636363636363636363636363636f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[1], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), southFace[1].x, southFace[1].y, southFace[1].z, 1,0,0.51515151515151515151515151515152f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[2], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), southFace[2].x, southFace[2].y, southFace[2].z, 2,0.66666666666666666666666666666667f,0.51515151515151515151515151515152f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[3], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), southFace[3].x, southFace[3].y, southFace[3].z, 0,0,-0.36363636363636363636363636363636f);
-        tessellator.addElements();
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[0], associatedEntity), southFace[0].x, southFace[0].y, southFace[0].z, 3,0.66666666666666666666666666666667f,-0.36363636363636363636363636363636f, southFace[4].x, southFace[4].y, southFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[1], associatedEntity), southFace[1].x, southFace[1].y, southFace[1].z, 1,0,0.51515151515151515151515151515152f, southFace[4].x, southFace[4].y, southFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[2], associatedEntity), southFace[2].x, southFace[2].y, southFace[2].z, 2,0.66666666666666666666666666666667f,0.51515151515151515151515151515152f, southFace[4].x, southFace[4].y, southFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[3], associatedEntity), southFace[3].x, southFace[3].y, southFace[3].z, 0,0,-0.36363636363636363636363636363636f, southFace[4].x, southFace[4].y, southFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
 
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[0], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), eastFace[0].x, eastFace[0].y, eastFace[0].z, 3,0.83333333333333333333333333333333f,-0.5f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[1], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), eastFace[1].x, eastFace[1].y, eastFace[1].z, 1,0,0.37878787878787878787878787878788f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[2], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), eastFace[2].x, eastFace[2].y, eastFace[2].z, 2,0.83333333333333333333333333333333f,0.37878787878787878787878787878788f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[3], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), eastFace[3].x, eastFace[3].y, eastFace[3].z, 0,0,-0.5f);
-        tessellator.addElements();
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[0], associatedEntity), eastFace[0].x, eastFace[0].y, eastFace[0].z, 3,0.83333333333333333333333333333333f,-0.5f, eastFace[4].x, eastFace[4].y, eastFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[1], associatedEntity), eastFace[1].x, eastFace[1].y, eastFace[1].z, 1,0,0.37878787878787878787878787878788f, eastFace[4].x, eastFace[4].y, eastFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[2], associatedEntity), eastFace[2].x, eastFace[2].y, eastFace[2].z, 2,0.83333333333333333333333333333333f,0.37878787878787878787878787878788f, eastFace[4].x, eastFace[4].y, eastFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[3], associatedEntity), eastFace[3].x, eastFace[3].y, eastFace[3].z, 0,0,-0.5f, eastFace[4].x, eastFace[4].y, eastFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
 
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[0], associatedEntity, this.varyLightReductionAmount(0.2f, 2, associatedEntity)), westFace[0].x, westFace[0].y, westFace[0].z, 3,0.83333333333333333333333333333333f,-0.5f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[1], associatedEntity, this.varyLightReductionAmount(0.2f, 2, associatedEntity)), westFace[1].x, westFace[1].y, westFace[1].z, 1,0,0.37878787878787878787878787878788f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[2], associatedEntity, this.varyLightReductionAmount(0.2f, 2, associatedEntity)), westFace[2].x, westFace[2].y, westFace[2].z, 2,0.83333333333333333333333333333333f,0.37878787878787878787878787878788f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[3], associatedEntity, this.varyLightReductionAmount(0.2f, 2, associatedEntity)), westFace[3].x, westFace[3].y, westFace[3].z, 0,0,-0.5f);
-        tessellator.addElements();
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[0], associatedEntity), westFace[0].x, westFace[0].y, westFace[0].z, 3,0.83333333333333333333333333333333f,-0.5f, westFace[4].x, westFace[4].y, westFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[1], associatedEntity), westFace[1].x, westFace[1].y, westFace[1].z, 1,0,0.37878787878787878787878787878788f, westFace[4].x, westFace[4].y, westFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[2], associatedEntity), westFace[2].x, westFace[2].y, westFace[2].z, 2,0.83333333333333333333333333333333f,0.37878787878787878787878787878788f, westFace[4].x, westFace[4].y, westFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[3], associatedEntity), westFace[3].x, westFace[3].y, westFace[3].z, 0,0,-0.5f, westFace[4].x, westFace[4].y, westFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
     }
 
-    private void head1SegmentUV(Tessellator tessellator, Vector3f[] topFace, Vector3f[] bottomFace, Vector3f[] northFace, Vector3f[] southFace, Vector3f[] eastFace, Vector3f[] westFace, Entity associatedEntity){
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[0], associatedEntity, 0), topFace[0].x, topFace[0].y, topFace[0].z, 2,0.33333333333333333333333333333333f, 0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[1], associatedEntity, 0), topFace[1].x, topFace[1].y, topFace[1].z, 0,-0.58333333333333333333333333333333f, -0.59090909090909090909090909090909f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[2], associatedEntity, 0), topFace[2].x, topFace[2].y, topFace[2].z, 1,-0.58333333333333333333333333333333f, 0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[3], associatedEntity, 0), topFace[3].x, topFace[3].y, topFace[3].z, 3,0.33333333333333333333333333333333f, -0.59090909090909090909090909090909f);
-        tessellator.addElements();
+    private void head1SegmentUV(WorldTessellator worldTessellator, Vector3f[] topFace, Vector3f[] bottomFace, Vector3f[] northFace, Vector3f[] southFace, Vector3f[] eastFace, Vector3f[] westFace, Entity associatedEntity){
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[0], associatedEntity), topFace[0].x, topFace[0].y, topFace[0].z, 2,0.33333333333333333333333333333333f, 0.25757575757575757575757575757576f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[1], associatedEntity), topFace[1].x, topFace[1].y, topFace[1].z, 0,-0.58333333333333333333333333333333f, -0.59090909090909090909090909090909f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[2], associatedEntity), topFace[2].x, topFace[2].y, topFace[2].z, 1,-0.58333333333333333333333333333333f, 0.25757575757575757575757575757576f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[3], associatedEntity), topFace[3].x, topFace[3].y, topFace[3].z, 3,0.33333333333333333333333333333333f, -0.59090909090909090909090909090909f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
 
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[0], associatedEntity, 0.2f), bottomFace[0].x, bottomFace[0].y, bottomFace[0].z, 2,0.33333333333333333333333333333333f, 0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[1], associatedEntity, 0.2f), bottomFace[1].x, bottomFace[1].y, bottomFace[1].z, 0,-0.58333333333333333333333333333333f, -0.59090909090909090909090909090909f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[2], associatedEntity, 0.2f), bottomFace[2].x, bottomFace[2].y, bottomFace[2].z, 1,-0.58333333333333333333333333333333f, 0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[3], associatedEntity, 0.2f), bottomFace[3].x, bottomFace[3].y, bottomFace[3].z, 3,0.33333333333333333333333333333333f, -0.59090909090909090909090909090909f);
-        tessellator.addElements();
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[0], associatedEntity), bottomFace[0].x, bottomFace[0].y, bottomFace[0].z, 2,0.33333333333333333333333333333333f, 0.25757575757575757575757575757576f, bottomFace[4].x, bottomFace[4].y, bottomFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[1], associatedEntity), bottomFace[1].x, bottomFace[1].y, bottomFace[1].z, 0,-0.58333333333333333333333333333333f, -0.59090909090909090909090909090909f, bottomFace[4].x, bottomFace[4].y, bottomFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[2], associatedEntity), bottomFace[2].x, bottomFace[2].y, bottomFace[2].z, 1,-0.58333333333333333333333333333333f, 0.25757575757575757575757575757576f, bottomFace[4].x, bottomFace[4].y, bottomFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[3], associatedEntity), bottomFace[3].x, bottomFace[3].y, bottomFace[3].z, 3,0.33333333333333333333333333333333f, -0.59090909090909090909090909090909f, bottomFace[4].x, bottomFace[4].y, bottomFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
 
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[0], associatedEntity, this.varyLightReductionAmount(0.2f, 0, associatedEntity)), northFace[0].x, northFace[0].y, northFace[0].z, 3,0.33333333333333333333333333333333f, -0.59090909090909090909090909090909f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[1], associatedEntity, this.varyLightReductionAmount(0.2f, 0, associatedEntity)), northFace[1].x, northFace[1].y, northFace[1].z, 1,-0.58333333333333333333333333333333f, 0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[2], associatedEntity, this.varyLightReductionAmount(0.2f, 0, associatedEntity)), northFace[2].x, northFace[2].y, northFace[2].z, 2,0.33333333333333333333333333333333f, 0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[3], associatedEntity, this.varyLightReductionAmount(0.2f, 0, associatedEntity)), northFace[3].x, northFace[3].y, northFace[3].z, 0,-0.58333333333333333333333333333333f, -0.59090909090909090909090909090909f);
-        tessellator.addElements();
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[0], associatedEntity), northFace[0].x, northFace[0].y, northFace[0].z, 3,0.33333333333333333333333333333333f, -0.59090909090909090909090909090909f, northFace[4].x, northFace[4].y, northFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[1], associatedEntity), northFace[1].x, northFace[1].y, northFace[1].z, 1,-0.58333333333333333333333333333333f, 0.25757575757575757575757575757576f, northFace[4].x, northFace[4].y, northFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[2], associatedEntity), northFace[2].x, northFace[2].y, northFace[2].z, 2,0.33333333333333333333333333333333f, 0.25757575757575757575757575757576f, northFace[4].x, northFace[4].y, northFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[3], associatedEntity), northFace[3].x, northFace[3].y, northFace[3].z, 0,-0.58333333333333333333333333333333f, -0.59090909090909090909090909090909f, northFace[4].x, northFace[4].y, northFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
 
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[0], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), southFace[0].x, southFace[0].y, southFace[0].z, 3,0.33333333333333333333333333333333f, -0.59090909090909090909090909090909f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[1], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), southFace[1].x, southFace[1].y, southFace[1].z, 1,-0.58333333333333333333333333333333f, 0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[2], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), southFace[2].x, southFace[2].y, southFace[2].z, 2,0.33333333333333333333333333333333f, 0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[3], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), southFace[3].x, southFace[3].y, southFace[3].z, 0,-0.58333333333333333333333333333333f, -0.59090909090909090909090909090909f);
-        tessellator.addElements();
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[0], associatedEntity), southFace[0].x, southFace[0].y, southFace[0].z, 3,0.33333333333333333333333333333333f, -0.59090909090909090909090909090909f, southFace[4].x, southFace[4].y, southFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[1], associatedEntity), southFace[1].x, southFace[1].y, southFace[1].z, 1,-0.58333333333333333333333333333333f, 0.25757575757575757575757575757576f, southFace[4].x, southFace[4].y, southFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[2], associatedEntity), southFace[2].x, southFace[2].y, southFace[2].z, 2,0.33333333333333333333333333333333f, 0.25757575757575757575757575757576f, southFace[4].x, southFace[4].y, southFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[3], associatedEntity), southFace[3].x, southFace[3].y, southFace[3].z, 0,-0.58333333333333333333333333333333f, -0.59090909090909090909090909090909f, southFace[4].x, southFace[4].y, southFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
 
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[0], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), eastFace[0].x, eastFace[0].y, eastFace[0].z, 3,0.4375f, -0.59090909090909090909090909090909f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[1], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), eastFace[1].x, eastFace[1].y, eastFace[1].z, 1,-0.35416666666666666666666666666667f, 0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[2], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), eastFace[2].x, eastFace[2].y, eastFace[2].z, 2,0.4375f, 0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[3], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), eastFace[3].x, eastFace[3].y, eastFace[3].z, 0,-0.35416666666666666666666666666667f, -0.59090909090909090909090909090909f);
-        tessellator.addElements();
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[0], associatedEntity), eastFace[0].x, eastFace[0].y, eastFace[0].z, 3,0.4375f, -0.59090909090909090909090909090909f, eastFace[4].x, eastFace[4].y, eastFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[1], associatedEntity), eastFace[1].x, eastFace[1].y, eastFace[1].z, 1,-0.35416666666666666666666666666667f, 0.25757575757575757575757575757576f, eastFace[4].x, eastFace[4].y, eastFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[2], associatedEntity), eastFace[2].x, eastFace[2].y, eastFace[2].z, 2,0.4375f, 0.25757575757575757575757575757576f, eastFace[4].x, eastFace[4].y, eastFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[3], associatedEntity), eastFace[3].x, eastFace[3].y, eastFace[3].z, 0,-0.35416666666666666666666666666667f, -0.59090909090909090909090909090909f, eastFace[4].x, eastFace[4].y, eastFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
 
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[0], associatedEntity, this.varyLightReductionAmount(0.2f, 2, associatedEntity)), westFace[0].x, westFace[0].y, westFace[0].z, 3,0.10416666666666666666666666666667f, -0.59090909090909090909090909090909f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[1], associatedEntity, this.varyLightReductionAmount(0.2f, 2, associatedEntity)), westFace[1].x, westFace[1].y, westFace[1].z, 1,-0.6875f, 0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[2], associatedEntity, this.varyLightReductionAmount(0.2f, 2, associatedEntity)), westFace[2].x, westFace[2].y, westFace[2].z, 2,0.10416666666666666666666666666667f, 0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[3], associatedEntity, this.varyLightReductionAmount(0.2f, 2, associatedEntity)), westFace[3].x, westFace[3].y, westFace[3].z, 0,-0.6875f, -0.59090909090909090909090909090909f);
-        tessellator.addElements();
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[0], associatedEntity), westFace[0].x, westFace[0].y, westFace[0].z, 3,0.10416666666666666666666666666667f, -0.59090909090909090909090909090909f, westFace[4].x, westFace[4].y, westFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[1], associatedEntity), westFace[1].x, westFace[1].y, westFace[1].z, 1,-0.6875f, 0.25757575757575757575757575757576f, westFace[4].x, westFace[4].y, westFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[2], associatedEntity), westFace[2].x, westFace[2].y, westFace[2].z, 2,0.10416666666666666666666666666667f, 0.25757575757575757575757575757576f, westFace[4].x, westFace[4].y, westFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[3], associatedEntity), westFace[3].x, westFace[3].y, westFace[3].z, 0,-0.6875f, -0.59090909090909090909090909090909f, westFace[4].x, westFace[4].y, westFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
     }
 
-    private void head2SegmentUV(Tessellator tessellator, Vector3f[] topFace, Vector3f[] bottomFace, Vector3f[] northFace, Vector3f[] southFace, Vector3f[] eastFace, Vector3f[] westFace, Entity associatedEntity){
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[0], associatedEntity, 0), topFace[0].x, topFace[0].y, topFace[0].z, 2,0.83333333333333333333333333333333f, 0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[1], associatedEntity, 0), topFace[1].x, topFace[1].y, topFace[1].z, 0,0, -0.63636363636363636363636363636364f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[2], associatedEntity, 0), topFace[2].x, topFace[2].y, topFace[2].z, 1,0, 0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[3], associatedEntity, 0), topFace[3].x, topFace[3].y, topFace[3].z, 3,0.83333333333333333333333333333333f, -0.63636363636363636363636363636364f);
-        tessellator.addElements();
+    private void head2SegmentUV(WorldTessellator worldTessellator, Vector3f[] topFace, Vector3f[] bottomFace, Vector3f[] northFace, Vector3f[] southFace, Vector3f[] eastFace, Vector3f[] westFace, Entity associatedEntity){
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[0], associatedEntity), topFace[0].x, topFace[0].y, topFace[0].z, 2,0.83333333333333333333333333333333f, 0.25757575757575757575757575757576f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[1], associatedEntity), topFace[1].x, topFace[1].y, topFace[1].z, 0,0, -0.63636363636363636363636363636364f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[2], associatedEntity), topFace[2].x, topFace[2].y, topFace[2].z, 1,0, 0.25757575757575757575757575757576f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[3], associatedEntity), topFace[3].x, topFace[3].y, topFace[3].z, 3,0.83333333333333333333333333333333f, -0.63636363636363636363636363636364f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
 
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[0], associatedEntity, 0.2f), bottomFace[0].x, bottomFace[0].y, bottomFace[0].z, 2,0.83333333333333333333333333333333f, 0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[1], associatedEntity, 0.2f), bottomFace[1].x, bottomFace[1].y, bottomFace[1].z, 0,0, -0.63636363636363636363636363636364f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[2], associatedEntity, 0.2f), bottomFace[2].x, bottomFace[2].y, bottomFace[2].z, 1,0, 0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[3], associatedEntity, 0.2f), bottomFace[3].x, bottomFace[3].y, bottomFace[3].z, 3,0.83333333333333333333333333333333f, -0.63636363636363636363636363636364f);
-        tessellator.addElements();
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[0], associatedEntity), bottomFace[0].x, bottomFace[0].y, bottomFace[0].z, 2,0.83333333333333333333333333333333f, 0.25757575757575757575757575757576f, bottomFace[4].x, bottomFace[4].y, bottomFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[1], associatedEntity), bottomFace[1].x, bottomFace[1].y, bottomFace[1].z, 0,0, -0.63636363636363636363636363636364f, bottomFace[4].x, bottomFace[4].y, bottomFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[2], associatedEntity), bottomFace[2].x, bottomFace[2].y, bottomFace[2].z, 1,0, 0.25757575757575757575757575757576f, bottomFace[4].x, bottomFace[4].y, bottomFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[3], associatedEntity), bottomFace[3].x, bottomFace[3].y, bottomFace[3].z, 3,0.83333333333333333333333333333333f, -0.63636363636363636363636363636364f, bottomFace[4].x, bottomFace[4].y, bottomFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
 
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[0], associatedEntity, this.varyLightReductionAmount(0.2f, 0, associatedEntity)), northFace[0].x, northFace[0].y, northFace[0].z, 3,0.83333333333333333333333333333333f, -0.63636363636363636363636363636364f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[1], associatedEntity, this.varyLightReductionAmount(0.2f, 0, associatedEntity)), northFace[1].x, northFace[1].y, northFace[1].z, 1,0, 0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[2], associatedEntity, this.varyLightReductionAmount(0.2f, 0, associatedEntity)), northFace[2].x, northFace[2].y, northFace[2].z, 2,0.83333333333333333333333333333333f, 0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[3], associatedEntity, this.varyLightReductionAmount(0.2f, 0, associatedEntity)), northFace[3].x, northFace[3].y, northFace[3].z, 0,0, -0.63636363636363636363636363636364f);
-        tessellator.addElements();
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[0], associatedEntity), northFace[0].x, northFace[0].y, northFace[0].z, 3,0.83333333333333333333333333333333f, -0.63636363636363636363636363636364f, northFace[4].x, northFace[4].y, northFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[1], associatedEntity), northFace[1].x, northFace[1].y, northFace[1].z, 1,0, 0.25757575757575757575757575757576f, northFace[4].x, northFace[4].y, northFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[2], associatedEntity), northFace[2].x, northFace[2].y, northFace[2].z, 2,0.83333333333333333333333333333333f, 0.25757575757575757575757575757576f, northFace[4].x, northFace[4].y, northFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[3], associatedEntity), northFace[3].x, northFace[3].y, northFace[3].z, 0,0, -0.63636363636363636363636363636364f, northFace[4].x, northFace[4].y, northFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
 
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[0], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), southFace[0].x, southFace[0].y, southFace[0].z, 3,0.83333333333333333333333333333333f, -0.63636363636363636363636363636364f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[1], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), southFace[1].x, southFace[1].y, southFace[1].z, 1,0, 0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[2], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), southFace[2].x, southFace[2].y, southFace[2].z, 2,0.83333333333333333333333333333333f, 0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[3], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), southFace[3].x, southFace[3].y, southFace[3].z, 0,0, -0.63636363636363636363636363636364f);
-        tessellator.addElements();
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[0], associatedEntity), southFace[0].x, southFace[0].y, southFace[0].z, 3,0.83333333333333333333333333333333f, -0.63636363636363636363636363636364f, southFace[4].x, southFace[4].y, southFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[1], associatedEntity), southFace[1].x, southFace[1].y, southFace[1].z, 1,0, 0.25757575757575757575757575757576f, southFace[4].x, southFace[4].y, southFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[2], associatedEntity), southFace[2].x, southFace[2].y, southFace[2].z, 2,0.83333333333333333333333333333333f, 0.25757575757575757575757575757576f, southFace[4].x, southFace[4].y, southFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[3], associatedEntity), southFace[3].x, southFace[3].y, southFace[3].z, 0,0, -0.63636363636363636363636363636364f, southFace[4].x, southFace[4].y, southFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
 
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[0], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), eastFace[0].x, eastFace[0].y, eastFace[0].z, 3,0.66666666666666666666666666666667f, -0.63636363636363636363636363636364f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[1], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), eastFace[1].x, eastFace[1].y, eastFace[1].z, 1,-0.1875f, 0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[2], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), eastFace[2].x, eastFace[2].y, eastFace[2].z, 2,0.66666666666666666666666666666667f, 0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[3], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), eastFace[3].x, eastFace[3].y, eastFace[3].z, 0,-0.1875f, -0.63636363636363636363636363636364f);
-        tessellator.addElements();
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[0], associatedEntity), eastFace[0].x, eastFace[0].y, eastFace[0].z, 3,0.66666666666666666666666666666667f, -0.63636363636363636363636363636364f, eastFace[4].x, eastFace[4].y, eastFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[1], associatedEntity), eastFace[1].x, eastFace[1].y, eastFace[1].z, 1,-0.1875f, 0.25757575757575757575757575757576f, eastFace[4].x, eastFace[4].y, eastFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[2], associatedEntity), eastFace[2].x, eastFace[2].y, eastFace[2].z, 2,0.66666666666666666666666666666667f, 0.25757575757575757575757575757576f, eastFace[4].x, eastFace[4].y, eastFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[3], associatedEntity), eastFace[3].x, eastFace[3].y, eastFace[3].z, 0,-0.1875f, -0.63636363636363636363636363636364f, eastFace[4].x, eastFace[4].y, eastFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
 
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[0], associatedEntity, this.varyLightReductionAmount(0.2f, 2, associatedEntity)), westFace[0].x, westFace[0].y, westFace[0].z, 3,0.66666666666666666666666666666667f, -0.63636363636363636363636363636364f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[1], associatedEntity, this.varyLightReductionAmount(0.2f, 2, associatedEntity)), westFace[1].x, westFace[1].y, westFace[1].z, 1,-0.1875f, 0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[2], associatedEntity, this.varyLightReductionAmount(0.2f, 2, associatedEntity)), westFace[2].x, westFace[2].y, westFace[2].z, 2,0.66666666666666666666666666666667f, 0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[3], associatedEntity, this.varyLightReductionAmount(0.2f, 2, associatedEntity)), westFace[3].x, westFace[3].y, westFace[3].z, 0,-0.1875f, -0.63636363636363636363636363636364f);
-        tessellator.addElements();
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[0], associatedEntity), westFace[0].x, westFace[0].y, westFace[0].z, 3,0.66666666666666666666666666666667f, -0.63636363636363636363636363636364f, westFace[4].x, westFace[4].y, westFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[1], associatedEntity), westFace[1].x, westFace[1].y, westFace[1].z, 1,-0.1875f, 0.25757575757575757575757575757576f, westFace[4].x, westFace[4].y, westFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[2], associatedEntity), westFace[2].x, westFace[2].y, westFace[2].z, 2,0.66666666666666666666666666666667f, 0.25757575757575757575757575757576f, westFace[4].x, westFace[4].y, westFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[3], associatedEntity), westFace[3].x, westFace[3].y, westFace[3].z, 0,-0.1875f, -0.63636363636363636363636363636364f, westFace[4].x, westFace[4].y, westFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
     }
 
-    private void head3SegmentUV(Tessellator tessellator, Vector3f[] topFace, Vector3f[] bottomFace, Vector3f[] northFace, Vector3f[] southFace, Vector3f[] eastFace, Vector3f[] westFace, Entity associatedEntity){
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[0], associatedEntity, 0), topFace[0].x, topFace[0].y, topFace[0].z, 2,0.41666666666666666666666666666667f, 0.42424242424242424242424242424242f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[1], associatedEntity, 0), topFace[1].x, topFace[1].y, topFace[1].z, 0,-0.41666666666666666666666666666667f, -0.5f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[2], associatedEntity, 0), topFace[2].x, topFace[2].y, topFace[2].z, 1,-0.41666666666666666666666666666667f, 0.42424242424242424242424242424242f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[3], associatedEntity, 0), topFace[3].x, topFace[3].y, topFace[3].z, 3,0.41666666666666666666666666666667f, -0.5f);
-        tessellator.addElements();
+    private void head3SegmentUV(WorldTessellator worldTessellator, Vector3f[] topFace, Vector3f[] bottomFace, Vector3f[] northFace, Vector3f[] southFace, Vector3f[] eastFace, Vector3f[] westFace, Entity associatedEntity){
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[0], associatedEntity), topFace[0].x, topFace[0].y, topFace[0].z, 2,0.41666666666666666666666666666667f, 0.42424242424242424242424242424242f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[1], associatedEntity), topFace[1].x, topFace[1].y, topFace[1].z, 0,-0.41666666666666666666666666666667f, -0.5f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[2], associatedEntity), topFace[2].x, topFace[2].y, topFace[2].z, 1,-0.41666666666666666666666666666667f, 0.42424242424242424242424242424242f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[3], associatedEntity), topFace[3].x, topFace[3].y, topFace[3].z, 3,0.41666666666666666666666666666667f, -0.5f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
 
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[0], associatedEntity, 0.2f), bottomFace[0].x, bottomFace[0].y, bottomFace[0].z, 2,0.41666666666666666666666666666667f, 0.42424242424242424242424242424242f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[1], associatedEntity, 0.2f), bottomFace[1].x, bottomFace[1].y, bottomFace[1].z, 0,-0.41666666666666666666666666666667f, -0.5f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[2], associatedEntity, 0.2f), bottomFace[2].x, bottomFace[2].y, bottomFace[2].z, 1,-0.41666666666666666666666666666667f, 0.42424242424242424242424242424242f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[3], associatedEntity, 0.2f), bottomFace[3].x, bottomFace[3].y, bottomFace[3].z, 3,0.41666666666666666666666666666667f, -0.5f);
-        tessellator.addElements();
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[0], associatedEntity), bottomFace[0].x, bottomFace[0].y, bottomFace[0].z, 2,0.41666666666666666666666666666667f, 0.42424242424242424242424242424242f, bottomFace[4].x, bottomFace[4].y, bottomFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[1], associatedEntity), bottomFace[1].x, bottomFace[1].y, bottomFace[1].z, 0,-0.41666666666666666666666666666667f, -0.5f, bottomFace[4].x, bottomFace[4].y, bottomFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[2], associatedEntity), bottomFace[2].x, bottomFace[2].y, bottomFace[2].z, 1,-0.41666666666666666666666666666667f, 0.42424242424242424242424242424242f, bottomFace[4].x, bottomFace[4].y, bottomFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[3], associatedEntity), bottomFace[3].x, bottomFace[3].y, bottomFace[3].z, 3,0.41666666666666666666666666666667f, -0.5f, bottomFace[4].x, bottomFace[4].y, bottomFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
 
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[0], associatedEntity, this.varyLightReductionAmount(0.2f, 0, associatedEntity)), northFace[0].x, northFace[0].y, northFace[0].z, 3,0.41666666666666666666666666666667f, -0.5f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[1], associatedEntity, this.varyLightReductionAmount(0.2f, 0, associatedEntity)), northFace[1].x, northFace[1].y, northFace[1].z, 1,-0.41666666666666666666666666666667f, 0.42424242424242424242424242424242f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[2], associatedEntity, this.varyLightReductionAmount(0.2f, 0, associatedEntity)), northFace[2].x, northFace[2].y, northFace[2].z, 2,0.41666666666666666666666666666667f, 0.42424242424242424242424242424242f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[3], associatedEntity, this.varyLightReductionAmount(0.2f, 0, associatedEntity)), northFace[3].x, northFace[3].y, northFace[3].z, 0,-0.41666666666666666666666666666667f, -0.5f);
-        tessellator.addElements();
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[0], associatedEntity), northFace[0].x, northFace[0].y, northFace[0].z, 3,0.41666666666666666666666666666667f, -0.5f, northFace[4].x, northFace[4].y, northFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[1], associatedEntity), northFace[1].x, northFace[1].y, northFace[1].z, 1,-0.41666666666666666666666666666667f, 0.42424242424242424242424242424242f, northFace[4].x, northFace[4].y, northFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[2], associatedEntity), northFace[2].x, northFace[2].y, northFace[2].z, 2,0.41666666666666666666666666666667f, 0.42424242424242424242424242424242f, northFace[4].x, northFace[4].y, northFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[3], associatedEntity), northFace[3].x, northFace[3].y, northFace[3].z, 0,-0.41666666666666666666666666666667f, -0.5f, northFace[4].x, northFace[4].y, northFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
 
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[0], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), southFace[0].x, southFace[0].y, southFace[0].z, 3,0.41666666666666666666666666666667f, -0.5f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[1], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), southFace[1].x, southFace[1].y, southFace[1].z, 1,-0.41666666666666666666666666666667f, 0.42424242424242424242424242424242f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[2], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), southFace[2].x, southFace[2].y, southFace[2].z, 2,0.41666666666666666666666666666667f, 0.42424242424242424242424242424242f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[3], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), southFace[3].x, southFace[3].y, southFace[3].z, 0,-0.41666666666666666666666666666667f, -0.5f);
-        tessellator.addElements();
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[0], associatedEntity), southFace[0].x, southFace[0].y, southFace[0].z, 3,0.41666666666666666666666666666667f, -0.5f, southFace[4].x, southFace[4].y, southFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[1], associatedEntity), southFace[1].x, southFace[1].y, southFace[1].z, 1,-0.41666666666666666666666666666667f, 0.42424242424242424242424242424242f, southFace[4].x, southFace[4].y, southFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[2], associatedEntity), southFace[2].x, southFace[2].y, southFace[2].z, 2,0.41666666666666666666666666666667f, 0.42424242424242424242424242424242f, southFace[4].x, southFace[4].y, southFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[3], associatedEntity), southFace[3].x, southFace[3].y, southFace[3].z, 0,-0.41666666666666666666666666666667f, -0.5f, southFace[4].x, southFace[4].y, southFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
 
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[0], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), eastFace[0].x, eastFace[0].y, eastFace[0].z, 3,0.89583333333333333333333333333333f, -0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[1], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), eastFace[1].x, eastFace[1].y, eastFace[1].z, 1,0, 0.66666666666666666666666666666667f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[2], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), eastFace[2].x, eastFace[2].y, eastFace[2].z, 2,0.89583333333333333333333333333333f, 0.66666666666666666666666666666667f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[3], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), eastFace[3].x, eastFace[3].y, eastFace[3].z, 0,0, -0.25757575757575757575757575757576f);
-        tessellator.addElements();
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[0], associatedEntity), eastFace[0].x, eastFace[0].y, eastFace[0].z, 3,0.89583333333333333333333333333333f, -0.25757575757575757575757575757576f, eastFace[4].x, eastFace[4].y, eastFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[1], associatedEntity), eastFace[1].x, eastFace[1].y, eastFace[1].z, 1,0, 0.66666666666666666666666666666667f, eastFace[4].x, eastFace[4].y, eastFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[2], associatedEntity), eastFace[2].x, eastFace[2].y, eastFace[2].z, 2,0.89583333333333333333333333333333f, 0.66666666666666666666666666666667f, eastFace[4].x, eastFace[4].y, eastFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[3], associatedEntity), eastFace[3].x, eastFace[3].y, eastFace[3].z, 0,0, -0.25757575757575757575757575757576f, eastFace[4].x, eastFace[4].y, eastFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
 
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[0], associatedEntity, this.varyLightReductionAmount(0.2f, 2, associatedEntity)), westFace[0].x, westFace[0].y, westFace[0].z, 3,0.29166666666666666666666666666667f, -0.5f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[1], associatedEntity, this.varyLightReductionAmount(0.2f, 2, associatedEntity)), westFace[1].x, westFace[1].y, westFace[1].z, 1,-0.60416666666666666666666666666667f, 0.42424242424242424242424242424242f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[2], associatedEntity, this.varyLightReductionAmount(0.2f, 2, associatedEntity)), westFace[2].x, westFace[2].y, westFace[2].z, 2,0.29166666666666666666666666666667f, 0.42424242424242424242424242424242f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[3], associatedEntity, this.varyLightReductionAmount(0.2f, 2, associatedEntity)), westFace[3].x, westFace[3].y, westFace[3].z, 0,-0.60416666666666666666666666666667f, -0.5f);
-        tessellator.addElements();
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[0], associatedEntity), westFace[0].x, westFace[0].y, westFace[0].z, 3,0.29166666666666666666666666666667f, -0.5f, westFace[4].x, westFace[4].y, westFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[1], associatedEntity), westFace[1].x, westFace[1].y, westFace[1].z, 1,-0.60416666666666666666666666666667f, 0.42424242424242424242424242424242f, westFace[4].x, westFace[4].y, westFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[2], associatedEntity), westFace[2].x, westFace[2].y, westFace[2].z, 2,0.29166666666666666666666666666667f, 0.42424242424242424242424242424242f, westFace[4].x, westFace[4].y, westFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[3], associatedEntity), westFace[3].x, westFace[3].y, westFace[3].z, 0,-0.60416666666666666666666666666667f, -0.5f, westFace[4].x, westFace[4].y, westFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
     }
 
-    private void tailSegmentUV(Tessellator tessellator, Vector3f[] topFace, Vector3f[] bottomFace, Vector3f[] northFace, Vector3f[] southFace, Vector3f[] eastFace, Vector3f[] westFace, Entity associatedEntity){
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[0], associatedEntity, 0), topFace[0].x, topFace[0].y, topFace[0].z, 2,0.20833333333333333333333333333333f, 0.68181818181818181818181818181818f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[1], associatedEntity, 0), topFace[1].x, topFace[1].y, topFace[1].z, 0,-0.5625f, -0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[2], associatedEntity, 0), topFace[2].x, topFace[2].y, topFace[2].z, 1,-0.5625f, 0.68181818181818181818181818181818f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[3], associatedEntity, 0), topFace[3].x, topFace[3].y, topFace[3].z, 3,0.20833333333333333333333333333333f, -0.25757575757575757575757575757576f);
-        tessellator.addElements();
+    private void tailSegmentUV(WorldTessellator worldTessellator, Vector3f[] topFace, Vector3f[] bottomFace, Vector3f[] northFace, Vector3f[] southFace, Vector3f[] eastFace, Vector3f[] westFace, Entity associatedEntity){
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[0], associatedEntity), topFace[0].x, topFace[0].y, topFace[0].z, 2,0.20833333333333333333333333333333f, 0.68181818181818181818181818181818f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[1], associatedEntity), topFace[1].x, topFace[1].y, topFace[1].z, 0,-0.5625f, -0.25757575757575757575757575757576f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[2], associatedEntity), topFace[2].x, topFace[2].y, topFace[2].z, 1,-0.5625f, 0.68181818181818181818181818181818f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[3], associatedEntity), topFace[3].x, topFace[3].y, topFace[3].z, 3,0.20833333333333333333333333333333f, -0.25757575757575757575757575757576f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
 
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[0], associatedEntity, 0.2f), bottomFace[0].x, bottomFace[0].y, bottomFace[0].z, 2,0.45833333333333333333333333333333f, 0.68181818181818181818181818181818f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[1], associatedEntity, 0.2f), bottomFace[1].x, bottomFace[1].y, bottomFace[1].z, 0,-0.3125f, -0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[2], associatedEntity, 0.2f), bottomFace[2].x, bottomFace[2].y, bottomFace[2].z, 1,-0.3125f, 0.68181818181818181818181818181818f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[3], associatedEntity, 0.2f), bottomFace[3].x, bottomFace[3].y, bottomFace[3].z, 3,0.45833333333333333333333333333333f, -0.25757575757575757575757575757576f);
-        tessellator.addElements();
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[0], associatedEntity), bottomFace[0].x, bottomFace[0].y, bottomFace[0].z, 2,0.45833333333333333333333333333333f, 0.68181818181818181818181818181818f, bottomFace[4].x, bottomFace[4].y, bottomFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[1], associatedEntity), bottomFace[1].x, bottomFace[1].y, bottomFace[1].z, 0,-0.3125f, -0.25757575757575757575757575757576f, bottomFace[4].x, bottomFace[4].y, bottomFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[2], associatedEntity), bottomFace[2].x, bottomFace[2].y, bottomFace[2].z, 1,-0.3125f, 0.68181818181818181818181818181818f, bottomFace[4].x, bottomFace[4].y, bottomFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[3], associatedEntity), bottomFace[3].x, bottomFace[3].y, bottomFace[3].z, 3,0.45833333333333333333333333333333f, -0.25757575757575757575757575757576f, bottomFace[4].x, bottomFace[4].y, bottomFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
 
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[0], associatedEntity, this.varyLightReductionAmount(0.2f, 0, associatedEntity)), northFace[0].x, northFace[0].y, northFace[0].z, 3,0.20833333333333333333333333333333f, -0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[1], associatedEntity, this.varyLightReductionAmount(0.2f, 0, associatedEntity)), northFace[1].x, northFace[1].y, northFace[1].z, 1,-0.5625f, 0.68181818181818181818181818181818f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[2], associatedEntity, this.varyLightReductionAmount(0.2f, 0, associatedEntity)), northFace[2].x, northFace[2].y, northFace[2].z, 2,0.20833333333333333333333333333333f, 0.68181818181818181818181818181818f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[3], associatedEntity, this.varyLightReductionAmount(0.2f, 0, associatedEntity)), northFace[3].x, northFace[3].y, northFace[3].z, 0,-0.5625f, -0.25757575757575757575757575757576f);
-        tessellator.addElements();
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[0], associatedEntity), northFace[0].x, northFace[0].y, northFace[0].z, 3,0.20833333333333333333333333333333f, -0.25757575757575757575757575757576f, northFace[4].x, northFace[4].y, northFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[1], associatedEntity), northFace[1].x, northFace[1].y, northFace[1].z, 1,-0.5625f, 0.68181818181818181818181818181818f, northFace[4].x, northFace[4].y, northFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[2], associatedEntity), northFace[2].x, northFace[2].y, northFace[2].z, 2,0.20833333333333333333333333333333f, 0.68181818181818181818181818181818f, northFace[4].x, northFace[4].y, northFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[3], associatedEntity), northFace[3].x, northFace[3].y, northFace[3].z, 0,-0.5625f, -0.25757575757575757575757575757576f, northFace[4].x, northFace[4].y, northFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
 
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[0], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), southFace[0].x, southFace[0].y, southFace[0].z, 3,0.20833333333333333333333333333333f, -0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[1], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), southFace[1].x, southFace[1].y, southFace[1].z, 1,-0.5625f, 0.68181818181818181818181818181818f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[2], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), southFace[2].x, southFace[2].y, southFace[2].z, 2,0.20833333333333333333333333333333f, 0.68181818181818181818181818181818f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[3], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), southFace[3].x, southFace[3].y, southFace[3].z, 0,-0.5625f, -0.25757575757575757575757575757576f);
-        tessellator.addElements();
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[0], associatedEntity), southFace[0].x, southFace[0].y, southFace[0].z, 3,0.20833333333333333333333333333333f, -0.25757575757575757575757575757576f, southFace[4].x, southFace[4].y, southFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[1], associatedEntity), southFace[1].x, southFace[1].y, southFace[1].z, 1,-0.5625f, 0.68181818181818181818181818181818f, southFace[4].x, southFace[4].y, southFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[2], associatedEntity), southFace[2].x, southFace[2].y, southFace[2].z, 2,0.20833333333333333333333333333333f, 0.68181818181818181818181818181818f, southFace[4].x, southFace[4].y, southFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[3], associatedEntity), southFace[3].x, southFace[3].y, southFace[3].z, 0,-0.5625f, -0.25757575757575757575757575757576f, southFace[4].x, southFace[4].y, southFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
 
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[0], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), eastFace[0].x, eastFace[0].y, eastFace[0].z, 3,0.10416666666666666666666666666667f, -0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[1], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), eastFace[1].x, eastFace[1].y, eastFace[1].z, 1,-0.8125f, 0.68181818181818181818181818181818f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[2], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), eastFace[2].x, eastFace[2].y, eastFace[2].z, 2,0.10416666666666666666666666666667f, 0.68181818181818181818181818181818f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[3], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), eastFace[3].x, eastFace[3].y, eastFace[3].z, 0,-0.8125f, -0.25757575757575757575757575757576f);
-        tessellator.addElements();
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[0], associatedEntity), eastFace[0].x, eastFace[0].y, eastFace[0].z, 3,0.10416666666666666666666666666667f, -0.25757575757575757575757575757576f, eastFace[4].x, eastFace[4].y, eastFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[1], associatedEntity), eastFace[1].x, eastFace[1].y, eastFace[1].z, 1,-0.8125f, 0.68181818181818181818181818181818f, eastFace[4].x, eastFace[4].y, eastFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[2], associatedEntity), eastFace[2].x, eastFace[2].y, eastFace[2].z, 2,0.10416666666666666666666666666667f, 0.68181818181818181818181818181818f, eastFace[4].x, eastFace[4].y, eastFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[3], associatedEntity), eastFace[3].x, eastFace[3].y, eastFace[3].z, 0,-0.8125f, -0.25757575757575757575757575757576f, eastFace[4].x, eastFace[4].y, eastFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
 
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[0], associatedEntity, this.varyLightReductionAmount(0.2f, 2, associatedEntity)), westFace[0].x, westFace[0].y, westFace[0].z, 3,0.10416666666666666666666666666667f, -0.25757575757575757575757575757576f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[1], associatedEntity, this.varyLightReductionAmount(0.2f, 2, associatedEntity)), westFace[1].x, westFace[1].y, westFace[1].z, 1,-0.8125f, 0.68181818181818181818181818181818f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[2], associatedEntity, this.varyLightReductionAmount(0.2f, 2, associatedEntity)), westFace[2].x, westFace[2].y, westFace[2].z, 2,0.10416666666666666666666666666667f, 0.68181818181818181818181818181818f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[3], associatedEntity, this.varyLightReductionAmount(0.2f, 2, associatedEntity)), westFace[3].x, westFace[3].y, westFace[3].z, 0,-0.8125f, -0.25757575757575757575757575757576f);
-        tessellator.addElements();
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[0], associatedEntity), westFace[0].x, westFace[0].y, westFace[0].z, 3,0.10416666666666666666666666666667f, -0.25757575757575757575757575757576f, westFace[4].x, westFace[4].y, westFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[1], associatedEntity), westFace[1].x, westFace[1].y, westFace[1].z, 1,-0.8125f, 0.68181818181818181818181818181818f, westFace[4].x, westFace[4].y, westFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[2], associatedEntity), westFace[2].x, westFace[2].y, westFace[2].z, 2,0.10416666666666666666666666666667f, 0.68181818181818181818181818181818f, westFace[4].x, westFace[4].y, westFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[3], associatedEntity), westFace[3].x, westFace[3].y, westFace[3].z, 0,-0.8125f, -0.25757575757575757575757575757576f, westFace[4].x, westFace[4].y, westFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
     }
 
-    private void earSegmentUV(Tessellator tessellator, Vector3f[] topFace, Vector3f[] bottomFace, Vector3f[] northFace, Vector3f[] southFace, Vector3f[] eastFace, Vector3f[] westFace, Entity associatedEntity){
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[0], associatedEntity, 0), topFace[0].x, topFace[0].y, topFace[0].z, 3,0.47916666666666666666666666666667f, -0.46969696969696969696969696969697f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[1], associatedEntity, 0), topFace[1].x, topFace[1].y, topFace[1].z, 1,-0.35416666666666666666666666666667f, 0.51515151515151515151515151515152f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[2], associatedEntity, 0), topFace[2].x, topFace[2].y, topFace[2].z, 2,0.47916666666666666666666666666667f, 0.51515151515151515151515151515152f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[3], associatedEntity, 0), topFace[3].x, topFace[3].y, topFace[3].z, 0,-0.35416666666666666666666666666667f, -0.46969696969696969696969696969697f);
-        tessellator.addElements();
+    private void earSegmentUV(WorldTessellator worldTessellator, Vector3f[] topFace, Vector3f[] bottomFace, Vector3f[] northFace, Vector3f[] southFace, Vector3f[] eastFace, Vector3f[] westFace, Entity associatedEntity){
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[0], associatedEntity), topFace[0].x, topFace[0].y, topFace[0].z, 3,0.47916666666666666666666666666667f, -0.46969696969696969696969696969697f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[1], associatedEntity), topFace[1].x, topFace[1].y, topFace[1].z, 1,-0.35416666666666666666666666666667f, 0.51515151515151515151515151515152f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[2], associatedEntity), topFace[2].x, topFace[2].y, topFace[2].z, 2,0.47916666666666666666666666666667f, 0.51515151515151515151515151515152f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[3], associatedEntity), topFace[3].x, topFace[3].y, topFace[3].z, 0,-0.35416666666666666666666666666667f, -0.46969696969696969696969696969697f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
 
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[0], associatedEntity, 0.2f), bottomFace[0].x, bottomFace[0].y, bottomFace[0].z, 3,0.47916666666666666666666666666667f, -0.46969696969696969696969696969697f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[1], associatedEntity, 0.2f), bottomFace[1].x, bottomFace[1].y, bottomFace[1].z, 1,-0.35416666666666666666666666666667f, 0.51515151515151515151515151515152f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[2], associatedEntity, 0.2f), bottomFace[2].x, bottomFace[2].y, bottomFace[2].z, 2,0.47916666666666666666666666666667f, 0.51515151515151515151515151515152f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[3], associatedEntity, 0.2f), bottomFace[3].x, bottomFace[3].y, bottomFace[3].z, 0,-0.35416666666666666666666666666667f, -0.46969696969696969696969696969697f);
-        tessellator.addElements();
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[0], associatedEntity), bottomFace[0].x, bottomFace[0].y, bottomFace[0].z, 3,0.47916666666666666666666666666667f, -0.46969696969696969696969696969697f, bottomFace[4].x, bottomFace[4].y, bottomFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[1], associatedEntity), bottomFace[1].x, bottomFace[1].y, bottomFace[1].z, 1,-0.35416666666666666666666666666667f, 0.51515151515151515151515151515152f, bottomFace[4].x, bottomFace[4].y, bottomFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[2], associatedEntity), bottomFace[2].x, bottomFace[2].y, bottomFace[2].z, 2,0.47916666666666666666666666666667f, 0.51515151515151515151515151515152f, bottomFace[4].x, bottomFace[4].y, bottomFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(bottomFace[3], associatedEntity), bottomFace[3].x, bottomFace[3].y, bottomFace[3].z, 0,-0.35416666666666666666666666666667f, -0.46969696969696969696969696969697f, bottomFace[4].x, bottomFace[4].y, bottomFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
 
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[0], associatedEntity, this.varyLightReductionAmount(0.2f, 0, associatedEntity)), northFace[0].x, northFace[0].y, northFace[0].z, 3,0.47916666666666666666666666666667f,-0.34848484848484848484848484848485f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[1], associatedEntity, this.varyLightReductionAmount(0.2f, 0, associatedEntity)), northFace[1].x, northFace[1].y, northFace[1].z, 1,-0.5f,0.59090909090909090909090909090909f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[2], associatedEntity, this.varyLightReductionAmount(0.2f, 0, associatedEntity)), northFace[2].x, northFace[2].y, northFace[2].z, 2,0.47916666666666666666666666666667f,0.59090909090909090909090909090909f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[3], associatedEntity, this.varyLightReductionAmount(0.2f, 0, associatedEntity)), northFace[3].x, northFace[3].y, northFace[3].z, 0,-0.5f,-0.34848484848484848484848484848485f);
-        tessellator.addElements();
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[0], associatedEntity), northFace[0].x, northFace[0].y, northFace[0].z, 3,0.47916666666666666666666666666667f,-0.34848484848484848484848484848485f, northFace[4].x, northFace[4].y, northFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[1], associatedEntity), northFace[1].x, northFace[1].y, northFace[1].z, 1,-0.5f,0.59090909090909090909090909090909f, northFace[4].x, northFace[4].y, northFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[2], associatedEntity), northFace[2].x, northFace[2].y, northFace[2].z, 2,0.47916666666666666666666666666667f,0.59090909090909090909090909090909f, northFace[4].x, northFace[4].y, northFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(northFace[3], associatedEntity), northFace[3].x, northFace[3].y, northFace[3].z, 0,-0.5f,-0.34848484848484848484848484848485f, northFace[4].x, northFace[4].y, northFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
 
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[0], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), southFace[0].x, southFace[0].y, southFace[0].z, 3,0.47916666666666666666666666666667f,-0.34848484848484848484848484848485f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[1], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), southFace[1].x, southFace[1].y, southFace[1].z, 1,-0.5f,0.59090909090909090909090909090909f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[2], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), southFace[2].x, southFace[2].y, southFace[2].z, 2,0.47916666666666666666666666666667f,0.59090909090909090909090909090909f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[3], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), southFace[3].x, southFace[3].y, southFace[3].z, 0,-0.5f,-0.34848484848484848484848484848485f);
-        tessellator.addElements();
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[0], associatedEntity), southFace[0].x, southFace[0].y, southFace[0].z, 3,0.47916666666666666666666666666667f,-0.34848484848484848484848484848485f, southFace[4].x, southFace[4].y, southFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[1], associatedEntity), southFace[1].x, southFace[1].y, southFace[1].z, 1,-0.5f,0.59090909090909090909090909090909f, southFace[4].x, southFace[4].y, southFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[2], associatedEntity), southFace[2].x, southFace[2].y, southFace[2].z, 2,0.47916666666666666666666666666667f,0.59090909090909090909090909090909f, southFace[4].x, southFace[4].y, southFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(southFace[3], associatedEntity), southFace[3].x, southFace[3].y, southFace[3].z, 0,-0.5f,-0.34848484848484848484848484848485f, southFace[4].x, southFace[4].y, southFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
 
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[0], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), eastFace[0].x, eastFace[0].y, eastFace[0].z, 3,0.29166666666666666666666666666667f, -0.34848484848484848484848484848485f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[1], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), eastFace[1].x, eastFace[1].y, eastFace[1].z, 1,-0.54166666666666666666666666666667f, 0.59090909090909090909090909090909f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[2], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), eastFace[2].x, eastFace[2].y, eastFace[2].z, 2,0.29166666666666666666666666666667f, 0.59090909090909090909090909090909f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[3], associatedEntity, this.varyLightReductionAmount(0.2f, 1, associatedEntity)), eastFace[3].x, eastFace[3].y, eastFace[3].z, 0,-0.54166666666666666666666666666667f, -0.34848484848484848484848484848485f);
-        tessellator.addElements();
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[0], associatedEntity), eastFace[0].x, eastFace[0].y, eastFace[0].z, 3,0.29166666666666666666666666666667f, -0.34848484848484848484848484848485f, eastFace[4].x, eastFace[4].y, eastFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[1], associatedEntity), eastFace[1].x, eastFace[1].y, eastFace[1].z, 1,-0.54166666666666666666666666666667f, 0.59090909090909090909090909090909f, eastFace[4].x, eastFace[4].y, eastFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[2], associatedEntity), eastFace[2].x, eastFace[2].y, eastFace[2].z, 2,0.29166666666666666666666666666667f, 0.59090909090909090909090909090909f, eastFace[4].x, eastFace[4].y, eastFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(eastFace[3], associatedEntity), eastFace[3].x, eastFace[3].y, eastFace[3].z, 0,-0.54166666666666666666666666666667f, -0.34848484848484848484848484848485f, eastFace[4].x, eastFace[4].y, eastFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
 
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[0], associatedEntity, this.varyLightReductionAmount(0.2f, 2, associatedEntity)), westFace[0].x, westFace[0].y, westFace[0].z, 3,0.29166666666666666666666666666667f,-0.42424242424242424242424242424242f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[1], associatedEntity, this.varyLightReductionAmount(0.2f, 2, associatedEntity)), westFace[1].x, westFace[1].y, westFace[1].z, 1,-0.54166666666666666666666666666667f,0.51515151515151515151515151515152f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[2], associatedEntity, this.varyLightReductionAmount(0.2f, 2, associatedEntity)), westFace[2].x, westFace[2].y, westFace[2].z, 2,0.29166666666666666666666666666667f,0.51515151515151515151515151515152f);
-        tessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[3], associatedEntity, this.varyLightReductionAmount(0.2f, 2, associatedEntity)), westFace[3].x, westFace[3].y, westFace[3].z, 0,-0.54166666666666666666666666666667f,-0.42424242424242424242424242424242f);
-        tessellator.addElements();
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[0], associatedEntity), westFace[0].x, westFace[0].y, westFace[0].z, 3,0.29166666666666666666666666666667f,-0.42424242424242424242424242424242f, westFace[4].x, westFace[4].y, westFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[1], associatedEntity), westFace[1].x, westFace[1].y, westFace[1].z, 1,-0.54166666666666666666666666666667f,0.51515151515151515151515151515152f, westFace[4].x, westFace[4].y, westFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[2], associatedEntity), westFace[2].x, westFace[2].y, westFace[2].z, 2,0.29166666666666666666666666666667f,0.51515151515151515151515151515152f, westFace[4].x, westFace[4].y, westFace[4].z, this.skyLightValue);
+        worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(westFace[3], associatedEntity), westFace[3].x, westFace[3].y, westFace[3].z, 0,-0.54166666666666666666666666666667f,-0.42424242424242424242424242424242f, westFace[4].x, westFace[4].y, westFace[4].z, this.skyLightValue);
+        worldTessellator.addElements();
     }
 }
