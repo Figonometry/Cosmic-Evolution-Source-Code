@@ -140,17 +140,27 @@ public final class GuiMainMenu extends Gui {
             y -= 60;
             fontRenderer.drawString(this.sg.title, x, y, 16711875);
             y -= 60;
-            fontRenderer.drawString("Particles no longer render when farther than 32 blocks", x, y, yellow);
+            fontRenderer.drawString("Overhauled the lighting system to improve visual quality utilizing normals and shadows", x, y, yellow);
             y -= 30;
-            fontRenderer.drawString("Heavily modified the block collision system", x, y, yellow);
+            fontRenderer.drawString("Block/Entity faces facing towards the sun are more lit than block faces facing away", x, y, yellow);
             y -= 30;
-            fontRenderer.drawString("Added Deer entities, spawnable by pressing G", x, y, green);
+            fontRenderer.drawString("Block and Skylight are utilized separately in the rendering, the highest value is what is shown", x, y, yellow);
             y -= 30;
-            fontRenderer.drawString("Fixed a bug where horizontal render distance would be initially set to 20", x, y, yellow);
+            fontRenderer.drawString("During sunset skylight value falls off in a logarithmic pattern", x, y, yellow);
             y -= 30;
-            fontRenderer.drawString("Improved rendering efficiency", x, y, yellow);
+            fontRenderer.drawString("The sky now changes color during sunrise/sunset instead of going from blue to black", x, y, yellow);
             y -= 30;
-            fontRenderer.drawString("Updates to the FPS count no longer are tied to the framerate", x, y, yellow);
+            fontRenderer.drawString("The color of the sunlight will change during sunrise/sunset", x, y, yellow);
+            y -= 30;
+            fontRenderer.drawString("Added shadows within 256 blocks of the player", x, y, green);
+            y -= 30;
+            fontRenderer.drawString("Added a setting under the video settings menu for shadows", x, y, green);
+            y -= 30;
+            fontRenderer.drawString("Added a setting under the video settings menu for view bobbing", x, y, green);
+            y -= 30;
+            fontRenderer.drawString("Moved the settings for sound/music volume to the options menu", x, y, yellow);
+            y -= 30;
+            fontRenderer.drawString("Resized the Sun and Moon to their correct sizes visible from the Earth", x, y, yellow);
 
 
 

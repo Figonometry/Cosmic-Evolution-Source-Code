@@ -24,6 +24,7 @@ import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.render.Assets;
 import spacegame.render.Camera;
+import spacegame.render.Shader;
 import spacegame.world.Save;
 import spacegame.world.World;
 import spacegame.world.WorldEarth;
@@ -36,7 +37,7 @@ import java.util.Random;
 public final class SpaceGame implements Runnable {
     public static SpaceGame instance;
     public final File launcherDirectory;
-    public static final boolean DEBUG_MODE = true;
+    public static final boolean DEBUG_MODE = false;
     public volatile boolean running;
     public String title;
     public boolean vsync;
@@ -95,7 +96,7 @@ public final class SpaceGame implements Runnable {
     }
 
     private void startGame() {
-        this.title = "Cosmic Evolution Alpha v0.18 WIP";
+        this.title = "Cosmic Evolution Alpha v0.18";
         this.clearLogFiles(new File(this.launcherDirectory + "/crashReports"));
         this.initLWJGL();
         this.initAllBufferObjects();
@@ -159,6 +160,10 @@ public final class SpaceGame implements Runnable {
         GLFW.glfwShowWindow(this.window);
 
         GL.createCapabilities();
+
+        Shader.terrainShader.uploadBoolean("shadowMapSetting", GameSettings.shadowMap);
+        Shader.worldShader2DTexture.uploadBoolean("shadowMapSetting", GameSettings.shadowMap);
+        Shader.worldShaderTextureArray.uploadBoolean("shadowMapSetting", GameSettings.shadowMap);
 
         GL46.glEnable(GL46.GL_DEPTH_TEST);
         GL46.glDepthFunc(GL46.GL_LESS);
@@ -329,21 +334,21 @@ public final class SpaceGame implements Runnable {
             KeyListener.gKeyReleased = false;
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_MINUS)){
-            this.save.time = 98000;
-        }
-
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_SLASH)){
-            this.save.time = 109000;
-        }
-
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_EQUAL)){
-            this.save.time = 116000;
-        }
-
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_BACKSLASH)){
-            this.save.time = 55000;
-        }
+      //  if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_MINUS)){
+      //      this.save.time = 98000;
+      //  }
+//
+      //  if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_SLASH)){
+      //      this.save.time = 109000;
+      //  }
+//
+      //  if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_EQUAL)){
+      //      this.save.time = 116000;
+      //  }
+//
+      //  if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_BACKSLASH)){
+      //      this.save.time = 55000;
+      //  }
 
 
         if (MouseListener.mouseButtonDown(GLFW.GLFW_MOUSE_BUTTON_LEFT)) {

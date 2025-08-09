@@ -16,6 +16,8 @@ public abstract class GameSettings {
     public static boolean showFPS = false;
     public static boolean vsync = false;
     public static boolean invertMouse = false;
+    public static boolean shadowMap = true;
+    public static boolean viewBob = true;
     public static KeyBinding keyBeingModified;
     public static KeyBinding forwardKey = new KeyBinding("Forward", "W", GLFW.GLFW_KEY_W);
     public static KeyBinding backwardKey = new KeyBinding("Backward", "S", GLFW.GLFW_KEY_S);
@@ -77,6 +79,12 @@ public abstract class GameSettings {
                     if(options[0].equals("chunkColumnHeight")){
                         chunkColumnHeight = parseInt(options[1]);
                     }
+                    if(options[0].equals("shadowMap")){
+                        shadowMap = options[1].equals("true");
+                    }
+                    if(options[0].equals("viewBob")){
+                        viewBob = options[1].equals("true");
+                    }
                     if(options[0].equals("forwardKey")){
                         forwardKey.key = options[1];
                         forwardKey.keyCode = KeyMappings.getKeyCodeFromMap(forwardKey.key, forwardKey.keyCode);
@@ -129,6 +137,8 @@ public abstract class GameSettings {
             writer.println("sensitivity:" + sensitivity);
             writer.println("renderDistance:" + renderDistance);
             writer.println("chunkColumnHeight:" + chunkColumnHeight);
+            writer.println("shadowMap:" + shadowMap);
+            writer.println("viewBob:" + viewBob);
             writer.println("forwardKey:" + forwardKey.key);
             writer.println("backwardKey:" + backwardKey.key);
             writer.println("leftKey:" + leftKey.key);

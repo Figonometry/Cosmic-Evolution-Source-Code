@@ -21,6 +21,8 @@ public enum EnumButtonEffects {
     SHOW_FPS,
     CHUNK_VIEW_HORIZONTAL,
     CHUNK_VIEW_VERTICAL,
+    SHADOW_MAP,
+    VIEW_BOB,
     KEY_FORWARD,
     KEY_BACKWARD,
     KEY_LEFT,

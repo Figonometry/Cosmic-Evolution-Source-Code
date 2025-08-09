@@ -799,7 +799,6 @@ public final class Chunk implements Comparable<Chunk> {
         for(int i = 0; i < this.blocks.length; i++){
             if(this.blocks[i] == Block.water.ID){
                 airAboveWater = this.findAirAboveWater(i);
-                this.lighting[i] = airAboveWater;
                 this.skyLight[i] = airAboveWater;
             }
         }

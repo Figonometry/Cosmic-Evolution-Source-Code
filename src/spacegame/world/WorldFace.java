@@ -422,7 +422,7 @@ public final class WorldFace {
     }
 
     public void propagateDarkness(int x, int y, int z) {
-        int previousLight = this.getBlockLightValueActual(x, y, z);
+        int previousLight = this.getBlockLightValue(x, y, z);
         this.clearBlockLight(x, y, z);
         this.checkSurroundingBlocksToPropagateDarkness(x, y, z, previousLight);
         ArrayList<int[]> localCopyDarknessQueue = new ArrayList<>();
@@ -454,33 +454,33 @@ public final class WorldFace {
 
     public void checkSurroundingBlocksToPropagateDarkness(int x, int y, int z, int neighborPreviousLightValue) {
         if (this.shouldBlockAddToDarknessQueue(x + 1, y, z, neighborPreviousLightValue)) {
-            this.darknessUpdateQueue.add(new int[]{x + 1, y, z, this.getBlockLightValueActual(x + 1, y, z)});
-            this.previouslyQueuedDarknessUpdate.add(new int[]{x + 1, y, z, this.getBlockLightValueActual(x + 1, y, z)});
+            this.darknessUpdateQueue.add(new int[]{x + 1, y, z, this.getBlockLightValue(x + 1, y, z)});
+            this.previouslyQueuedDarknessUpdate.add(new int[]{x + 1, y, z, this.getBlockLightValue(x + 1, y, z)});
         }
         if (this.shouldBlockAddToDarknessQueue(x - 1, y, z, neighborPreviousLightValue)) {
-            this.darknessUpdateQueue.add(new int[]{x - 1, y, z, this.getBlockLightValueActual(x - 1, y, z)});
-            this.previouslyQueuedDarknessUpdate.add(new int[]{x - 1, y, z, this.getBlockLightValueActual(x - 1, y, z)});
+            this.darknessUpdateQueue.add(new int[]{x - 1, y, z, this.getBlockLightValue(x - 1, y, z)});
+            this.previouslyQueuedDarknessUpdate.add(new int[]{x - 1, y, z, this.getBlockLightValue(x - 1, y, z)});
         }
         if (this.shouldBlockAddToDarknessQueue(x, y + 1, z, neighborPreviousLightValue)) {
-            this.darknessUpdateQueue.add(new int[]{x, y + 1, z, this.getBlockLightValueActual(x, y + 1, z)});
-            this.previouslyQueuedDarknessUpdate.add(new int[]{x, y + 1, z, this.getBlockLightValueActual(x, y + 1, z)});
+            this.darknessUpdateQueue.add(new int[]{x, y + 1, z, this.getBlockLightValue(x, y + 1, z)});
+            this.previouslyQueuedDarknessUpdate.add(new int[]{x, y + 1, z, this.getBlockLightValue(x, y + 1, z)});
         }
         if (this.shouldBlockAddToDarknessQueue(x, y - 1, z, neighborPreviousLightValue)) {
-            this.darknessUpdateQueue.add(new int[]{x, y - 1, z, this.getBlockLightValueActual(x, y - 1, z)});
-            this.previouslyQueuedDarknessUpdate.add(new int[]{x, y - 1, z, this.getBlockLightValueActual(x, y - 1, z)});
+            this.darknessUpdateQueue.add(new int[]{x, y - 1, z, this.getBlockLightValue(x, y - 1, z)});
+            this.previouslyQueuedDarknessUpdate.add(new int[]{x, y - 1, z, this.getBlockLightValue(x, y - 1, z)});
         }
         if (this.shouldBlockAddToDarknessQueue(x, y, z + 1, neighborPreviousLightValue)) {
-            this.darknessUpdateQueue.add(new int[]{x, y, z + 1, this.getBlockLightValueActual(x, y, z + 1)});
-            this.previouslyQueuedDarknessUpdate.add(new int[]{x, y, z + 1, this.getBlockLightValueActual(x, y, z + 1)});
+            this.darknessUpdateQueue.add(new int[]{x, y, z + 1, this.getBlockLightValue(x, y, z + 1)});
+            this.previouslyQueuedDarknessUpdate.add(new int[]{x, y, z + 1, this.getBlockLightValue(x, y, z + 1)});
         }
         if (this.shouldBlockAddToDarknessQueue(x, y, z - 1, neighborPreviousLightValue)) {
-            this.darknessUpdateQueue.add(new int[]{x, y, z - 1, this.getBlockLightValueActual(x, y, z - 1)});
-            this.previouslyQueuedDarknessUpdate.add(new int[]{x, y, z - 1, this.getBlockLightValueActual(x, y, z - 1)});
+            this.darknessUpdateQueue.add(new int[]{x, y, z - 1, this.getBlockLightValue(x, y, z - 1)});
+            this.previouslyQueuedDarknessUpdate.add(new int[]{x, y, z - 1, this.getBlockLightValue(x, y, z - 1)});
         }
     }
 
     private boolean shouldBlockAddToDarknessQueue(int x, int y, int z, int neighborPreviousLightValue) {
-        return !Block.list[this.getBlockID(x, y, z)].isSolid && !this.hasBlockAlreadyDarknessQueued(x, y, z) && (this.getBlockLightValueActual(x, y, z) < neighborPreviousLightValue);
+        return !Block.list[this.getBlockID(x, y, z)].isSolid && !this.hasBlockAlreadyDarknessQueued(x, y, z) && (this.getBlockLightValue(x, y, z) < neighborPreviousLightValue);
     }
 
     private void clearBlockLight(int[] coordinates) {
@@ -492,9 +492,9 @@ public final class WorldFace {
         if(chunk != null){
             if(chunk.lighting == null){
                 chunk.initChunk();
-                chunk.setBlockLightValue(x, y, z, (byte) 0);
-                chunk.clearBlockLightColor(x, y, z);
             }
+            chunk.setBlockLightValue(x, y, z, (byte) 0);
+            chunk.clearBlockLightColor(x, y, z);
         }
     }
 
@@ -543,7 +543,7 @@ public final class WorldFace {
     }
 
     public void checkSurroundingBlocksToPropagateLight(int x, int y, int z) {
-        if (this.getBlockLightValueActual(x, y, z) <= 0) {
+        if (this.getBlockLightValue(x, y, z) <= 0) {
             return;
         }
         int blockLightValue = this.getBlockLightValue(x, y, z);
@@ -575,7 +575,7 @@ public final class WorldFace {
     }
 
     private boolean shouldBlockAddToLightQueue(int x, int y, int z, int neighborLightValue) {
-        return !Block.list[this.getBlockID(x, y, z)].isSolid && !this.hasBlockAlreadyLightQueued(x, y, z) && (this.getBlockLightValueActual(x, y, z) < neighborLightValue);
+        return !Block.list[this.getBlockID(x, y, z)].isSolid && !this.hasBlockAlreadyLightQueued(x, y, z) && (this.getBlockLightValue(x, y, z) < neighborLightValue);
     }
 
     private boolean hasBlockAlreadyLightQueued(int x, int y, int z) {
@@ -601,13 +601,13 @@ public final class WorldFace {
 
     private byte getPropagatedLightValue(int x, int y, int z) {
         byte[] nearbyLightLevels = new byte[6];
-        byte currentLightLevel = this.getBlockLightValueActual(x, y, z);
-        nearbyLightLevels[0] = this.getBlockLightValueActual(x + 1, y, z);
-        nearbyLightLevels[1] = this.getBlockLightValueActual(x - 1, y, z);
-        nearbyLightLevels[2] = this.getBlockLightValueActual(x, y, z + 1);
-        nearbyLightLevels[3] = this.getBlockLightValueActual(x, y, z - 1);
-        nearbyLightLevels[4] = this.getBlockLightValueActual(x, y + 1, z);
-        nearbyLightLevels[5] = this.getBlockLightValueActual(x, y - 1, z);
+        byte currentLightLevel = this.getBlockLightValue(x, y, z);
+        nearbyLightLevels[0] = this.getBlockLightValue(x + 1, y, z);
+        nearbyLightLevels[1] = this.getBlockLightValue(x - 1, y, z);
+        nearbyLightLevels[2] = this.getBlockLightValue(x, y, z + 1);
+        nearbyLightLevels[3] = this.getBlockLightValue(x, y, z - 1);
+        nearbyLightLevels[4] = this.getBlockLightValue(x, y + 1, z);
+        nearbyLightLevels[5] = this.getBlockLightValue(x, y - 1, z);
         Arrays.sort(nearbyLightLevels);
         nearbyLightLevels[5]--;
         if (nearbyLightLevels[5] <= 0) {
@@ -785,18 +785,6 @@ public final class WorldFace {
         }
     }
 
-    public synchronized byte getBlockLightValueActual(int x, int y, int z) {
-        Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
-        if(chunk != null) {
-            if (chunk.lighting != null) {
-                return chunk.getBlockLightValue(x, y, z);
-            } else {
-                return 0;
-            }
-        }else {
-            return 0;
-        }
-    }
 
     public synchronized float[] getBlockLightColor(int x, int y, int z) {
         Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);

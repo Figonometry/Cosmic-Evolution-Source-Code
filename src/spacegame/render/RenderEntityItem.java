@@ -130,9 +130,9 @@ public final class RenderEntityItem {
         WorldTessellator worldTessellator = WorldTessellator.instance;
         ModelFace modelFace;
         this.currentTime = SpaceGame.instance.save.time;
-        this.chunkX = (int)this.x >> 5;
-        this.chunkY = (int)this.y >> 5;
-        this.chunkZ = (int)this.z >> 5;
+        this.chunkX = MathUtils.floorDouble(this.x) >> 5;
+        this.chunkY = MathUtils.floorDouble(this.y) >> 5;
+        this.chunkZ = MathUtils.floorDouble(this.z) >> 5;
         for(int i = 0; i < this.entityModel.modelFaces.length; i++){
             modelFace = this.entityModel.modelFaces[i];
             this.renderOpaqueFace(worldTessellator, SpaceGame.instance.save.activeWorld.activeWorldFace, this.blockID, modelFace.faceType, modelFace, 0,0,0,0,0,0,0,0,0,0,0,0);
@@ -227,7 +227,8 @@ public final class RenderEntityItem {
         Vector3f vertex2 = new Vector3f(blockFace.vertices[1][0], blockFace.vertices[1][1], blockFace.vertices[1][2]).rotateY((float) Math.toRadians(this.currentTime % 720)).add(blockPosition);
         Vector3f vertex3 = new Vector3f(blockFace.vertices[2][0], blockFace.vertices[2][1], blockFace.vertices[2][2]).rotateY((float) Math.toRadians(this.currentTime % 720)).add(blockPosition);
         Vector3f vertex4 = new Vector3f(blockFace.vertices[3][0], blockFace.vertices[3][1], blockFace.vertices[3][2]).rotateY((float) Math.toRadians(this.currentTime % 720)).add(blockPosition);
-        Vector3f normal = new Vector3f(blockFace.vertices[4][0], blockFace.vertices[4][1], blockFace.vertices[4][2]).rotateY((float) Math.toRadians(this.currentTime % 720));
+        Vector3f normal = new Vector3f(blockFace.normal[0], blockFace.normal[1], blockFace.normal[2]).rotateY((float) Math.toRadians(this.currentTime % 720));
+
         float skyLightValue = this.getLightValueFromMap(worldFace.getBlockSkyLightValue(MathUtils.floorDouble(chunkX + x), MathUtils.floorDouble(chunkY + y), MathUtils.floorDouble(chunkZ + z)));
         this.resetLight();
         this.setVertexLight1Arg(worldFace.getBlockLightValue(MathUtils.floorDouble(chunkX + x), MathUtils.floorDouble(chunkY + y), MathUtils.floorDouble(chunkZ + z)), x, y, z, worldFace.getBlockLightColor(MathUtils.floorDouble(chunkX + x), MathUtils.floorDouble(chunkY + y), MathUtils.floorDouble(chunkZ + z)));

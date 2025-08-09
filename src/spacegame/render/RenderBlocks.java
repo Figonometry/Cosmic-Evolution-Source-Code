@@ -1665,7 +1665,7 @@ public class RenderBlocks {
         Vector3f vertex2 = new Vector3f(blockFace.vertices[1][0], blockFace.vertices[1][1], blockFace.vertices[1][2]).add(blockPosition);
         Vector3f vertex3 = new Vector3f(blockFace.vertices[2][0], blockFace.vertices[2][1], blockFace.vertices[2][2]).add(blockPosition);
         Vector3f vertex4 = new Vector3f(blockFace.vertices[3][0], blockFace.vertices[3][1], blockFace.vertices[3][2]).add(blockPosition);
-        Vector3f normal = new Vector3f(blockFace.vertices[4][0], blockFace.vertices[4][1], blockFace.vertices[4][2]);
+        Vector3f normal = new Vector3f(blockFace.normal[0], blockFace.normal[1], blockFace.normal[2]);
 
 
         switch (blockFace.faceType) {
@@ -1923,7 +1923,7 @@ public class RenderBlocks {
         Vector3f vertex2 = new Vector3f(blockFace.vertices[1][0], blockFace.vertices[1][1], blockFace.vertices[1][2]).add(blockPosition);
         Vector3f vertex3 = new Vector3f(blockFace.vertices[2][0], blockFace.vertices[2][1], blockFace.vertices[2][2]).add(blockPosition);
         Vector3f vertex4 = new Vector3f(blockFace.vertices[3][0], blockFace.vertices[3][1], blockFace.vertices[3][2]).add(blockPosition);
-        Vector3f normal = new Vector3f(blockFace.vertices[4][0], blockFace.vertices[4][1], blockFace.vertices[4][2]);
+        Vector3f normal = new Vector3f(blockFace.normal[0], blockFace.normal[1], blockFace.normal[2]);
 
         switch (blockFace.faceType) {
             case TOP_FACE, TOP_FACE_UNSORTED -> {

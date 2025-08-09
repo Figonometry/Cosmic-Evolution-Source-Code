@@ -578,7 +578,7 @@ public final class EntityPlayer extends EntityLiving {
         this.prevChunkZ = 0;
         SpaceGame.camera.resetViewMatrix();
         this.setPlayerActualPos(x, y, z);
-        if(!this.sg.save.activeWorld.activeWorldFace.paused) {
+        if(!this.sg.save.activeWorld.activeWorldFace.paused && GameSettings.viewBob) {
             double xShift = 0.25 * ((MathUtils.sin((float) (((this.sg.save.thePlayer.viewBobTimer / 60f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
             double yShift = 0.125 * ((MathUtils.sin((float) (((this.sg.save.thePlayer.viewBobTimer / 60f) - 0.125f) * (Math.PI * 4f))) * 0.5) + 0.5f);
             SpaceGame.camera.viewMatrix.translateLocal(-xShift, -yShift, 0);

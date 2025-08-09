@@ -91,7 +91,7 @@ public final class GuiInGame extends Gui {
             fontRenderer.drawString("Draw Calls: " +  SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.drawCalls, leftSide, 190, 16777215);
             fontRenderer.drawString("Thread Count: " + Thread.activeCount(), leftSide, 160, 16777215);
             fontRenderer.drawString("Thread Queue Size: " + SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.threadQueue.size(), leftSide, 130, 16777215);
-            fontRenderer.drawString("Sky Light LevelL: " + SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockSkyLightValue((int) SpaceGame.instance.save.thePlayer.x, (int) SpaceGame.instance.save.thePlayer.y, (int) SpaceGame.instance.save.thePlayer.z), leftSide, 100, 16777215);
+            fontRenderer.drawString("Sky Light Level: " + SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockSkyLightValue((int) SpaceGame.instance.save.thePlayer.x, (int) SpaceGame.instance.save.thePlayer.y, (int) SpaceGame.instance.save.thePlayer.z), leftSide, 100, 16777215);
         }
     }
 
@@ -326,8 +326,10 @@ public final class GuiInGame extends Gui {
                 float x = 2f;
                 float y = -2.5f;
                 float z = -3f;
-                x -= 0.5f * ((MathUtils.sin((float) (((this.sg.save.thePlayer.viewBobTimer / 60f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
-                y -= 0.25f * ((MathUtils.sin((float) (((this.sg.save.thePlayer.viewBobTimer / 60f) - 0.125f) * (Math.PI * 4f))) * 0.5) + 0.5f);
+                if(GameSettings.viewBob) {
+                    x -= 0.5f * ((MathUtils.sin((float) (((this.sg.save.thePlayer.viewBobTimer / 60f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
+                    y -= 0.25f * ((MathUtils.sin((float) (((this.sg.save.thePlayer.viewBobTimer / 60f) - 0.125f) * (Math.PI * 4f))) * 0.5) + 0.5f);
+                }
                 z -= 1f * ((MathUtils.sin((float) (((SpaceGame.instance.save.thePlayer.swingTimer / 15f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
                 Vector3f position = new Vector3f(x,y,z);
                 Matrix3f rotationMatrix = new Matrix3f();
@@ -441,8 +443,10 @@ public final class GuiInGame extends Gui {
                 float x = 2f;
                 float y = -1f;
                 float z = -3f;
-                x -= 0.125f * ((MathUtils.sin((float) (((this.sg.save.thePlayer.viewBobTimer / 60f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
-                y -= 0.0625f * ((MathUtils.sin((float) (((this.sg.save.thePlayer.viewBobTimer / 60f) - 0.125f) * (Math.PI * 4f))) * 0.5) + 0.5f);
+                if(GameSettings.viewBob) {
+                    x -= 0.125f * ((MathUtils.sin((float) (((this.sg.save.thePlayer.viewBobTimer / 60f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
+                    y -= 0.0625f * ((MathUtils.sin((float) (((this.sg.save.thePlayer.viewBobTimer / 60f) - 0.125f) * (Math.PI * 4f))) * 0.5) + 0.5f);
+                }
                 z -= 1f * ((MathUtils.sin((float) (((SpaceGame.instance.save.thePlayer.swingTimer / 15f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
                 Vector3f position = new Vector3f(x,y,z);
                 Matrix3f rotationMatrix = new Matrix3f();

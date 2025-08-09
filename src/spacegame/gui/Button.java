@@ -173,6 +173,15 @@ public class Button {
                     this.sg.save.activeWorld.activeWorldFace.chunkController.resetChunkLoading();
                 }
             }
+            case SHADOW_MAP -> {
+                GameSettings.shadowMap = !GameSettings.shadowMap;
+                Shader.terrainShader.uploadBoolean("shadowMapSetting", GameSettings.shadowMap);
+                Shader.worldShader2DTexture.uploadBoolean("shadowMapSetting", GameSettings.shadowMap);
+                Shader.worldShaderTextureArray.uploadBoolean("shadowMapSetting", GameSettings.shadowMap);
+            }
+            case VIEW_BOB -> {
+                GameSettings.viewBob = !GameSettings.viewBob;
+            }
             case KEY_FORWARD -> {
                 GameSettings.setKeyBeingModified(GameSettings.forwardKey);
             }
@@ -580,6 +589,12 @@ public class Button {
             }
             case CHUNK_VIEW_VERTICAL -> {
                 string = "- Vertical View: " + GameSettings.chunkColumnHeight + " +";
+            }
+            case SHADOW_MAP -> {
+                string = "Shadows: " + GameSettings.shadowMap;
+            }
+            case VIEW_BOB -> {
+                string = "View Bobbing: " + GameSettings.viewBob;
             }
             case KEY_FORWARD -> {
                 string = "Forward: " + GameSettings.forwardKey.key;

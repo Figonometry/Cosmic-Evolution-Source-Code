@@ -15,8 +15,8 @@ public final class GuiVideoSettingsMainMenu extends Gui {
     public Button fullscreen;
     public Button fov;
     public Button mouseSensitivity;
-    public Button volumeSounds;
-    public Button volumeMusic;
+    public Button viewBobbing;
+    public Button shadowMapping;
     public Button chunkViewDistanceVertical;
     public Button chunkViewDistanceHorizontal;
     public TextureLoader star;
@@ -27,8 +27,8 @@ public final class GuiVideoSettingsMainMenu extends Gui {
     public GuiVideoSettingsMainMenu(SpaceGame spaceGame){
         super(spaceGame);
         this.sg = spaceGame;
-        this.volumeSounds = new Button(EnumButtonEffects.VOLUME_SOUNDS.name(), 512, 64, -587,150, this, this.sg);
-        this.volumeMusic = new Button(EnumButtonEffects.VOLUME_MUSIC.name(), 512, 64, 0, 150, this, this.sg);
+        this.viewBobbing = new Button(EnumButtonEffects.VIEW_BOB.name(), 512, 64, -587,150, this, this.sg);
+        this.shadowMapping = new Button(EnumButtonEffects.SHADOW_MAP.name(), 512, 64, 0, 150, this, this.sg);
         this.mouseSensitivity = new Button(EnumButtonEffects.MOUSE_SENSITIVITY.name(), 512, 64, 587, 150, this, this.sg);
         this.showFPS = new Button(EnumButtonEffects.SHOW_FPS.name(), 512, 64, -587, 0, this, this.sg);
         this.fullscreen = new Button(EnumButtonEffects.FULLSCREEN.name(), 512, 64, 0,0, this, this.sg);
@@ -111,8 +111,8 @@ public final class GuiVideoSettingsMainMenu extends Gui {
 
         tessellator.toggleOrtho();
 
-        this.volumeSounds.renderButton();
-        this.volumeMusic.renderButton();
+        this.viewBobbing.renderButton();
+        this.shadowMapping.renderButton();
         this.mouseSensitivity.renderButton();
         this.fov.renderButton();
         this.vsync.renderButton();
@@ -127,10 +127,10 @@ public final class GuiVideoSettingsMainMenu extends Gui {
     public Button getActiveButton() {
         if(this.back.isMouseHoveredOver() && this.back.active){
             return this.back;
-        } else if(this.volumeSounds.isMouseHoveredOver() && this.volumeSounds.active){
-            return this.volumeSounds;
-        } else if(this.volumeMusic.isMouseHoveredOver() && this.volumeMusic.active){
-            return this.volumeMusic;
+        } else if(this.shadowMapping.isMouseHoveredOver() && this.shadowMapping.active){
+            return this.shadowMapping;
+        } else if(this.viewBobbing.isMouseHoveredOver() && this.viewBobbing.active){
+            return this.viewBobbing;
         } else if(this.fov.isMouseHoveredOver() && this.fov.active){
             return this.fov;
         } else if(this.vsync.isMouseHoveredOver() && this.vsync.active){

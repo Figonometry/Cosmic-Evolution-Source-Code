@@ -180,7 +180,7 @@ public final class RenderWorldScene {
     }
 
     private void setShadowMap(Sun sun, Vector3f dir){
-        if(this.hasTickPassed) {
+        if(this.hasTickPassed && GameSettings.shadowMap) {
             Vector3f normalizedDir = dir.normalize();
             float lightDist = 3000f;
             float orthoSize = 256;
@@ -392,7 +392,7 @@ public final class RenderWorldScene {
                     tessellator.addVertex2DTexture(this.getSunColor(), (float) vertex4SunFlare.x, (float) vertex4SunFlare.y, (float) vertex4SunFlare.z, 0);
                     tessellator.addElements();
                     GL46.glEnable(GL46.GL_BLEND);
-                    GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE);
+                    GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_COLOR);
                     Shader.worldShader2DTexture.uploadBoolean("useFog", false);
                     tessellator.drawTexture2D(Sun.sunFlare.texID, Shader.worldShader2DTexture, SpaceGame.camera);
                     GL46.glDisable(GL46.GL_BLEND);
@@ -787,7 +787,7 @@ public final class RenderWorldScene {
     }
 
     public Vector3f getPositionOnSphere(double latitude, double longitude, double R){
-        R *= 0.0000001;
+        R *= 0.00000001;
         Vector3f position = new Vector3f();
         float latRad = (float) Math.toRadians(latitude);
         float lonRad = (float) Math.toRadians(longitude);
@@ -798,7 +798,7 @@ public final class RenderWorldScene {
     }
 
     public Vector3f getPositionOnSphereNonStar(double latitude, double longitude, double R){
-        R *= 0.001;
+        R *= 0.0001;
         Vector3f position = new Vector3f();
         float latRad = (float) Math.toRadians(latitude);
         float lonRad = (float) Math.toRadians(longitude);

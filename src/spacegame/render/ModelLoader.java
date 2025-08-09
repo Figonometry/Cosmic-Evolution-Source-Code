@@ -337,10 +337,7 @@ public final class ModelLoader{
                         normal[1] = this.clampFloat(normal[1]);
                         normal[2] = this.clampFloat(normal[2]);
 
-                        this.modelFaces[modelFaceIndex].setFloatValue(4, 0, normal[0]);
-                        this.modelFaces[modelFaceIndex].setFloatValue(4, 1, normal[1]);
-                        this.modelFaces[modelFaceIndex].setFloatValue(4, 2, normal[2]);
-
+                        this.modelFaces[modelFaceIndex].setNormal(normal[0], normal[1], normal[2]);
                         modelFaceIndex++;
                     }
                 }
@@ -1337,6 +1334,7 @@ public final class ModelLoader{
                     scaledFace.vertices[j][1] = this.modelFaces[i].vertices[j][1] * scaleFactor;
                     scaledFace.vertices[j][2] = this.modelFaces[i].vertices[j][2] * scaleFactor;
                 }
+                scaledFace.setNormal(this.modelFaces[i].normal[0], this.modelFaces[i].normal[1], this.modelFaces[i].normal[2]);
                 scaledModel.addModelFace(scaledFace);
             }
         }
@@ -1368,6 +1366,7 @@ public final class ModelLoader{
                     translatedFace.vertices[j][1] = this.modelFaces[i].vertices[j][1] + y;
                     translatedFace.vertices[j][2] = this.modelFaces[i].vertices[j][2] + z;
                 }
+                translatedFace.setNormal(this.modelFaces[i].normal[0], this.modelFaces[i].normal[1], this.modelFaces[i].normal[2]);
                 translatedModel.addModelFace(translatedFace);
             }
         }
@@ -1399,6 +1398,7 @@ public final class ModelLoader{
                     alteredFace.vertices[j][1] = this.modelFaces[i].vertices[j][1];
                     alteredFace.vertices[j][2] = this.modelFaces[i].vertices[j][2];
                 }
+                alteredFace.setNormal(this.modelFaces[i].normal[0], this.modelFaces[i].normal[1], this.modelFaces[i].normal[2]);
                 alteredModel.addModelFace(alteredFace);
             }
         }

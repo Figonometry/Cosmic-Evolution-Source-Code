@@ -106,6 +106,7 @@ uniform bool useFog;
 uniform float fogDistance;
 uniform bool underwater;
 uniform bool renderShadows;
+uniform bool shadowMapSetting;
 
 uniform float fogRed;
 uniform float fogGreen;

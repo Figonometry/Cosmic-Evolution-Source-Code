@@ -9,6 +9,8 @@ import spacegame.render.TextureLoader;
 
 public final class GuiSettingsInGame extends Gui {
     private SpaceGame sg;
+    public Button volumeSounds;
+    public Button volumeMusic;
     public Button videoSettings;
     public Button keyBinds;
     public Button back;
@@ -18,8 +20,10 @@ public final class GuiSettingsInGame extends Gui {
     public GuiSettingsInGame(SpaceGame spaceGame) {
         super(spaceGame);
         this.sg = spaceGame;
-        this.videoSettings = new Button(EnumButtonEffects.VIDEO_SETTINGS.name(), 512, 64, 0, -50, this, this.sg);
-        this.keyBinds = new Button(EnumButtonEffects.KEYBINDS.name(), 512, 64, 0, 50, this, this.sg);
+        this.volumeSounds = new Button(EnumButtonEffects.VOLUME_SOUNDS.name(), 512, 64, -300,150, this, this.sg);
+        this.volumeMusic = new Button(EnumButtonEffects.VOLUME_MUSIC.name(), 512, 64, 300, 150, this, this.sg);
+        this.videoSettings = new Button(EnumButtonEffects.VIDEO_SETTINGS.name(), 512, 64, 0, -150, this, this.sg);
+        this.keyBinds = new Button(EnumButtonEffects.KEYBINDS.name(), 512, 64, 0, -50, this, this.sg);
         this.back = new Button(EnumButtonEffects.BACK.name(), 512, 64, 0, -400, this, this.sg);
     }
 
@@ -71,6 +75,8 @@ public final class GuiSettingsInGame extends Gui {
         GL46.glDisable(GL46.GL_BLEND);
         tessellator.toggleOrtho();
 
+        this.volumeSounds.renderButton();
+        this.volumeMusic.renderButton();
         this.keyBinds.renderButton();
         this.videoSettings.renderButton();
         this.back.renderButton();
@@ -88,6 +94,12 @@ public final class GuiSettingsInGame extends Gui {
         }
         if(this.back.isMouseHoveredOver() && this.back.active){
             return this.back;
+        }
+        if(this.volumeSounds.isMouseHoveredOver() && this.volumeSounds.active){
+            return this.volumeSounds;
+        }
+        if(this.volumeMusic.isMouseHoveredOver() && this.volumeMusic.active){
+            return this.volumeMusic;
         }
         return null;
     }

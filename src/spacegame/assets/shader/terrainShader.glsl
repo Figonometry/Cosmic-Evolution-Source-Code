@@ -236,6 +236,7 @@ uniform bool useFog;
 uniform float fogDistance;
 uniform bool underwater;
 uniform bool renderShadows;
+uniform bool shadowMapSetting;
 
 uniform float fogRed;
 uniform float fogGreen;
@@ -296,7 +297,7 @@ void main()
     float id = fTexId;
     color = fColor * texture(textureArray, vec3(fTexCoords, id));
     if (color.w > 0){
-        if (renderShadows && isInShadowRange == 1){
+        if (renderShadows && isInShadowRange == 1 && shadowMapSetting){
             float shadow = getShadowFactor(fragPosInLightSpace);
             color.xyz *= shadow;
         }
