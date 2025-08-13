@@ -59,8 +59,8 @@ public final class GuiUniverseMap extends Gui {
         GL46.glEnable(GL46.GL_DEPTH_TEST);
         FontRenderer fontRenderer = FontRenderer.instance;
         int leftSide = -970;
-        fontRenderer.drawString(SpaceGame.instance.title + " (" + SpaceGame.instance.fps * -1 + " FPS)", leftSide, 460, 16777215);
-        fontRenderer.drawString("Current Selected Object: " + this.selectedObject, leftSide, 430, 16777215);
+        fontRenderer.drawString(SpaceGame.instance.title + " (" + SpaceGame.instance.fps * -1 + " FPS)", leftSide, 460,-15, 16777215, 50);
+        fontRenderer.drawString("Current Selected Object: " + this.selectedObject, leftSide, 430,-15, 16777215, 50);
 
 
         this.sg.everything.sun.render(this.sg.everything.sun.mappedTexture);
@@ -68,9 +68,9 @@ public final class GuiUniverseMap extends Gui {
         this.sg.everything.moon.render(this.sg.everything.moon.mappedTexture);
         starPositions.clear();
 
-        fontRenderer.drawString("Yaw: " + yaw, leftSide, 400, 16777215);
-        fontRenderer.drawString("Pitch: " + pitch, leftSide, 370, 16777215);
-        fontRenderer.drawString("Orbital Velocity: " + this.selectedObject.orbitalVelocity, leftSide, 340, 16777215);
+        fontRenderer.drawString("Yaw: " + yaw, leftSide, 400,-15, 16777215, 50);
+        fontRenderer.drawString("Pitch: " + pitch, leftSide, 370,-15, 16777215, 50);
+        fontRenderer.drawString("Orbital Velocity: " + this.selectedObject.orbitalVelocity, leftSide, 340,-15, 16777215, 50);
 
     }
 

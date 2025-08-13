@@ -113,8 +113,8 @@ public final class GuiCreateNewWorld extends Gui {
         this.nameWorld.renderTextFieldAndText();
         this.setSeed.renderTextFieldAndText();
         FontRenderer fontRenderer = FontRenderer.instance;
-        fontRenderer.drawCenteredString("Name World", -384, 75, 16777215);
-        fontRenderer.drawCenteredString("Set Seed", -384, -25, 16777215);
+        fontRenderer.drawCenteredString("Name World", -384, 75,-15, 16777215, 50);
+        fontRenderer.drawCenteredString("Set Seed", -384, -25,-15, 16777215, 50);
     }
 
     @Override

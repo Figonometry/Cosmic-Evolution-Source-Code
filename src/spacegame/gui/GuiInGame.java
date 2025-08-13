@@ -75,23 +75,23 @@ public final class GuiInGame extends Gui {
         int leftSide = -970;
         FontRenderer fontRenderer = FontRenderer.instance;
         if(GameSettings.showFPS) {
-            fontRenderer.drawString(SpaceGame.instance.title + " (" + SpaceGame.instance.fps * -1 + " FPS)", leftSide, 460, 16777215);
+            fontRenderer.drawString(SpaceGame.instance.title + " (" + SpaceGame.instance.fps * -1 + " FPS)", leftSide, 460,-15, 16777215, 50);
         } else {
-            fontRenderer.drawString(SpaceGame.instance.title, leftSide, 460, 16777215);
+            fontRenderer.drawString(SpaceGame.instance.title, leftSide, 460,-15, 16777215, 50);
         }
         if (SpaceGame.DEBUG_MODE) {
-            fontRenderer.drawString("X: " + SpaceGame.instance.save.thePlayer.x, leftSide, 430, 16777215);
-            fontRenderer.drawString("Y: " + (SpaceGame.instance.save.thePlayer.y), leftSide, 400, 16777215);
-            fontRenderer.drawString("Z: " + SpaceGame.instance.save.thePlayer.z, leftSide, 370, 16777215);
-            fontRenderer.drawString("Pitch: " + SpaceGame.instance.save.thePlayer.pitch, leftSide, 340, 16777215);
-            fontRenderer.drawString("Yaw: " + SpaceGame.instance.save.thePlayer.yaw, leftSide, 310, 16777215);
-            fontRenderer.drawString("Chunks Loaded " + SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.numberOfLoadedChunks(), leftSide, 280, 16777215);
-            fontRenderer.drawString("Block Light Level: " + SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockLightValue((int) SpaceGame.instance.save.thePlayer.x, (int) SpaceGame.instance.save.thePlayer.y, (int) SpaceGame.instance.save.thePlayer.z), leftSide, 250, 16777215);
-            fontRenderer.drawString("Regions Loaded: " + SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.numberOfLoadedRegions(), leftSide, 220, 16777215);
-            fontRenderer.drawString("Draw Calls: " +  SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.drawCalls, leftSide, 190, 16777215);
-            fontRenderer.drawString("Thread Count: " + Thread.activeCount(), leftSide, 160, 16777215);
-            fontRenderer.drawString("Thread Queue Size: " + SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.threadQueue.size(), leftSide, 130, 16777215);
-            fontRenderer.drawString("Sky Light Level: " + SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockSkyLightValue((int) SpaceGame.instance.save.thePlayer.x, (int) SpaceGame.instance.save.thePlayer.y, (int) SpaceGame.instance.save.thePlayer.z), leftSide, 100, 16777215);
+            fontRenderer.drawString("X: " + SpaceGame.instance.save.thePlayer.x, leftSide, 430,-15, 16777215, 50);
+            fontRenderer.drawString("Y: " + (SpaceGame.instance.save.thePlayer.y), leftSide, 400,-15, 16777215, 50);
+            fontRenderer.drawString("Z: " + SpaceGame.instance.save.thePlayer.z, leftSide, 370,-15, 16777215, 50);
+            fontRenderer.drawString("Pitch: " + SpaceGame.instance.save.thePlayer.pitch, leftSide, 340,-15, 16777215, 50);
+            fontRenderer.drawString("Yaw: " + SpaceGame.instance.save.thePlayer.yaw, leftSide, 310,-15, 16777215, 50);
+            fontRenderer.drawString("Chunks Loaded " + SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.numberOfLoadedChunks(), leftSide, 280,-15, 16777215, 50);
+            fontRenderer.drawString("Block Light Level: " + SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockLightValue((int) SpaceGame.instance.save.thePlayer.x, (int) SpaceGame.instance.save.thePlayer.y, (int) SpaceGame.instance.save.thePlayer.z), leftSide, 250,-15, 16777215, 50);
+            fontRenderer.drawString("Regions Loaded: " + SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.numberOfLoadedRegions(), leftSide, 220,-15, 16777215, 50);
+            fontRenderer.drawString("Draw Calls: " +  SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.drawCalls, leftSide, 190,-15, 16777215, 50);
+            fontRenderer.drawString("Thread Count: " + Thread.activeCount(), leftSide, 160,-15, 16777215, 50);
+            fontRenderer.drawString("Thread Queue Size: " + SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.threadQueue.size(), leftSide, 130,-15, 16777215, 50);
+            fontRenderer.drawString("Sky Light Level: " + SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockSkyLightValue((int) SpaceGame.instance.save.thePlayer.x, (int) SpaceGame.instance.save.thePlayer.y, (int) SpaceGame.instance.save.thePlayer.z), leftSide, 100,-15, 16777215, 50);
         }
     }
 

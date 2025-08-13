@@ -10,6 +10,7 @@ public final class FontRenderer {
     public int[] glyphMap = new int[256];
     public char[] glyphs = new char[256];
     public static final FontRenderer instance = new FontRenderer();
+    public boolean italic = false;
 
 
     public FontRenderer() {
@@ -277,7 +278,7 @@ public final class FontRenderer {
     }
 
 
-    public void drawString(String string, int x, int y, int color) {
+    public void drawString(String string, float x, float y, float depth, int color, int font) {
         char[] stringChars = new char[string.length()];
         int[] stringGlpyhIndex = new int[stringChars.length];
 
@@ -292,12 +293,13 @@ public final class FontRenderer {
                 }
             }
         }
-        this.generateStringVertexData(stringGlpyhIndex, x, y, color);
-        this.generateStringVertexDataShadow(stringGlpyhIndex, x+3, y-3);
+        this.generateStringVertexData(stringGlpyhIndex, x, y, depth,color, font);
+        this.generateStringVertexDataShadow(stringGlpyhIndex, x+3, y-3, depth-3,font);
     }
 
-    public void drawCenteredString(String string, int x, int y, int color) {
-        x -= string.length() * 17F/2F;
+    public void drawCenteredString(String string, float x, float y, float depth, int color, int font) {
+        final float spacingSizePerFont = 0.34f;
+        x -= string.length() * (font * spacingSizePerFont)/2F;
         char[] stringChars = new char[string.length()];
         int[] stringGlpyhIndex = new int[stringChars.length];
 
@@ -312,110 +314,100 @@ public final class FontRenderer {
                 }
             }
         }
-        this.generateStringVertexData(stringGlpyhIndex, x, y, color);
-        this.generateStringVertexDataShadow(stringGlpyhIndex, x+3, y-3);
+        this.generateStringVertexData(stringGlpyhIndex, x, y, depth,color,font);
+        this.generateStringVertexDataShadow(stringGlpyhIndex, x+3, y-3, depth-1,font);
     }
 
-    public void drawLargeCenteredString(String string, int x, int y, int color) {
-        x -= string.length() * 35;
-        char[] stringChars = new char[string.length()];
-        int[] stringGlpyhIndex = new int[stringChars.length];
 
-        for (int i = 0; i <= string.length() - 1; i++) {
-            stringChars[i] = string.charAt(i);
-        }
+    public void drawString(boolean value, int x, int y, int depth, int color, int font) {
+        drawString(Boolean.toString(value), x, y, color, font, depth);
+    }
 
-        for (int i = 0; i <= 255; i++) {
-            for (int j = 0; j <= stringChars.length - 1; j++) {
-                if (glyphs[i] == stringChars[j]) {
-                    stringGlpyhIndex[j] = i;
-                }
+    public void drawString(char character, int x, int y, int depth, int color, int font) {
+        drawString(Character.toString(character), x, y, color, font, depth);
+    }
+
+    public void drawString(byte value, int x, int y, int depth,  int color, int font) {
+        drawString(Byte.toString(value), x, y, color, font, depth);
+    }
+
+    public void drawString(short value, int x, int y, int depth,  int color, int font) {
+        drawString(Short.toString(value), x, y, color, font, depth);
+    }
+
+    public void drawString(int value, int x, int y, int depth,  int color, int font) {
+        drawString(Integer.toString(value), x, y, color, font, depth);
+    }
+
+    public void drawString(long value, int x, int y, int depth,  int color, int font) {
+        drawString(Long.toString(value), x, y, color, font, depth);
+    }
+
+    public void drawString(double value, int x, int y, int depth,  int color, int font) {
+        drawString(Double.toString(value), x, y, color, font, depth);
+    }
+
+    public void drawString(float value, int x, int y, int depth,  int color, int font) {
+        drawString(Float.toString(value), x, y, color, font, depth);
+    }
+
+
+
+    private void generateStringVertexData(int[] stringGlyphIndex, float x, float y, float depth, int color, int font) {
+        Tessellator tessellator = Tessellator.instance;
+        final float spacingSizePerFont = 0.34f;
+        int numGlyphs = stringGlyphIndex.length;
+        for (int i = 0; i < numGlyphs; i++) {
+            if(this.italic){
+                tessellator.addVertex2DTextureWithAtlas(color, x + font, y, depth, 3, Assets.fontTextureAtlas.textures.get(stringGlyphIndex[i]), stringGlyphIndex[i]/16F);
+                tessellator.addVertex2DTextureWithAtlas(color, x + (font/4f), y + font, depth, 1, Assets.fontTextureAtlas.textures.get(stringGlyphIndex[i]), stringGlyphIndex[i]/16F);
+                tessellator.addVertex2DTextureWithAtlas(color, x + font + (font/4f), y + font, depth, 2, Assets.fontTextureAtlas.textures.get(stringGlyphIndex[i]), stringGlyphIndex[i]/16F);
+                tessellator.addVertex2DTextureWithAtlas(color, x, y, depth, 0, Assets.fontTextureAtlas.textures.get(stringGlyphIndex[i]), stringGlyphIndex[i]/16F);
+                tessellator.addElements();
+                x += font * spacingSizePerFont;
+            } else {
+                tessellator.addVertex2DTextureWithAtlas(color, x + font, y, depth, 3, Assets.fontTextureAtlas.textures.get(stringGlyphIndex[i]), stringGlyphIndex[i]/16F);
+                tessellator.addVertex2DTextureWithAtlas(color, x, y + font, depth, 1, Assets.fontTextureAtlas.textures.get(stringGlyphIndex[i]), stringGlyphIndex[i]/16F);
+                tessellator.addVertex2DTextureWithAtlas(color, x + font, y + font, depth, 2, Assets.fontTextureAtlas.textures.get(stringGlyphIndex[i]), stringGlyphIndex[i]/16F);
+                tessellator.addVertex2DTextureWithAtlas(color, x, y, depth, 0, Assets.fontTextureAtlas.textures.get(stringGlyphIndex[i]), stringGlyphIndex[i]/16F);
+                tessellator.addElements();
+                x += font * spacingSizePerFont;
             }
         }
-        generateLargeStringVertexData(stringGlpyhIndex, x, y, color);
+        tessellator.toggleOrtho();
+        tessellator.drawTexture2DWithAtlas(Assets.fontTextureLoader.texID, Shader.screen2DTextureAtlas, SpaceGame.camera);
+        tessellator.toggleOrtho();
     }
 
-    public void drawString(boolean value, int x, int y, int color) {
-        drawString(Boolean.toString(value), x, y, color);
-    }
-
-    public void drawString(char character, int x, int y, int color) {
-        drawString(Character.toString(character), x, y, color);
-    }
-
-    public void drawString(byte value, int x, int y, int color) {
-        drawString(Byte.toString(value), x, y, color);
-    }
-
-    public void drawString(short value, int x, int y, int color) {
-        drawString(Short.toString(value), x, y, color);
-    }
-
-    public void drawString(int value, int x, int y, int color) {
-        drawString(Integer.toString(value), x, y, color);
-    }
-
-    public void drawString(long value, int x, int y, int color) {
-        drawString(Long.toString(value), x, y, color);
-    }
-
-    public void drawString(double value, int x, int y, int color) {
-        drawString(Double.toString(value), x, y, color);
-    }
-
-    public void drawString(float value, int x, int y, int color) {
-        drawString(Float.toString(value), x, y, color);
-    }
-
-
-
-    private void generateStringVertexData(int[] stringGlyphIndex, int x, int y, int color) {
+    private void generateStringVertexDataShadow(int[] stringGlyphIndex, float x, float y, float depth, int font) {
         Tessellator tessellator = Tessellator.instance;
+        final float spacingSizePerFont = 0.34f;
         int numGlyphs = stringGlyphIndex.length;
         for (int i = 0; i < numGlyphs; i++) {
-            tessellator.addVertex2DTextureWithAtlas(color, x + 50, y, -15, 3, Assets.fontTextureAtlas.textures.get(stringGlyphIndex[i]), stringGlyphIndex[i]/16F);
-            tessellator.addVertex2DTextureWithAtlas(color, x, y + 50, -15, 1, Assets.fontTextureAtlas.textures.get(stringGlyphIndex[i]), stringGlyphIndex[i]/16F);
-            tessellator.addVertex2DTextureWithAtlas(color, x + 50, y + 50, -15, 2, Assets.fontTextureAtlas.textures.get(stringGlyphIndex[i]), stringGlyphIndex[i]/16F);
-            tessellator.addVertex2DTextureWithAtlas(color, x, y, -15, 0, Assets.fontTextureAtlas.textures.get(stringGlyphIndex[i]), stringGlyphIndex[i]/16F);
-            tessellator.addElements();
-            x += 17;
+            if(this.italic){
+                tessellator.addVertex2DTextureWithAtlas(4210752, x + font, y, depth, 3, Assets.fontTextureAtlas.textures.get(stringGlyphIndex[i]), stringGlyphIndex[i]/16F);
+                tessellator.addVertex2DTextureWithAtlas(4210752, x + (font/4f), y + font, depth, 1, Assets.fontTextureAtlas.textures.get(stringGlyphIndex[i]), stringGlyphIndex[i]/16F);
+                tessellator.addVertex2DTextureWithAtlas(4210752, x + font + (font/4f), y + font, depth, 2, Assets.fontTextureAtlas.textures.get(stringGlyphIndex[i]), stringGlyphIndex[i]/16F);
+                tessellator.addVertex2DTextureWithAtlas(4210752, x, y, -17, 0, Assets.fontTextureAtlas.textures.get(stringGlyphIndex[i]), stringGlyphIndex[i]/16F);
+                tessellator.addElements();
+                x += font * spacingSizePerFont;
+            } else {
+                tessellator.addVertex2DTextureWithAtlas(4210752, x + font, y, depth, 3, Assets.fontTextureAtlas.textures.get(stringGlyphIndex[i]), stringGlyphIndex[i] / 16F);
+                tessellator.addVertex2DTextureWithAtlas(4210752, x, y + font, depth, 1, Assets.fontTextureAtlas.textures.get(stringGlyphIndex[i]), stringGlyphIndex[i] / 16F);
+                tessellator.addVertex2DTextureWithAtlas(4210752, x + font, y + font, depth, 2, Assets.fontTextureAtlas.textures.get(stringGlyphIndex[i]), stringGlyphIndex[i] / 16F);
+                tessellator.addVertex2DTextureWithAtlas(4210752, x, y, depth, 0, Assets.fontTextureAtlas.textures.get(stringGlyphIndex[i]), stringGlyphIndex[i] / 16F);
+                tessellator.addElements();
+                x += font * spacingSizePerFont;
+            }
         }
         tessellator.toggleOrtho();
         tessellator.drawTexture2DWithAtlas(Assets.fontTextureLoader.texID, Shader.screen2DTextureAtlas, SpaceGame.camera);
         tessellator.toggleOrtho();
     }
 
-    private void generateStringVertexDataShadow(int[] stringGlyphIndex, int x, int y) {
-        Tessellator tessellator = Tessellator.instance;
-        int numGlyphs = stringGlyphIndex.length;
-        for (int i = 0; i < numGlyphs; i++) {
-            tessellator.addVertex2DTextureWithAtlas(4210752, x + 50, y, -17, 3, Assets.fontTextureAtlas.textures.get(stringGlyphIndex[i]), stringGlyphIndex[i]/16F);
-            tessellator.addVertex2DTextureWithAtlas(4210752, x, y + 50, -17, 1, Assets.fontTextureAtlas.textures.get(stringGlyphIndex[i]), stringGlyphIndex[i]/16F);
-            tessellator.addVertex2DTextureWithAtlas(4210752, x + 50, y + 50, -17, 2, Assets.fontTextureAtlas.textures.get(stringGlyphIndex[i]), stringGlyphIndex[i]/16F);
-            tessellator.addVertex2DTextureWithAtlas(4210752, x, y, -17, 0, Assets.fontTextureAtlas.textures.get(stringGlyphIndex[i]), stringGlyphIndex[i]/16F);
-            tessellator.addElements();
-            x += 17;
-        }
-        tessellator.toggleOrtho();
-        tessellator.drawTexture2DWithAtlas(Assets.fontTextureLoader.texID, Shader.screen2DTextureAtlas, SpaceGame.camera);
-        tessellator.toggleOrtho();
-    }
 
-    private void generateLargeStringVertexData(int[] stringGlyphIndex, int x, int y, int color) {
-        Tessellator tessellator = Tessellator.instance;
-        int numGlyphs = stringGlyphIndex.length;
-
-        for (int i = 0; i < numGlyphs; i++) {
-            tessellator.addVertex2DTextureWithAtlas(color, x + 200, y, -15, 3, Assets.fontTextureAtlas.textures.get(stringGlyphIndex[i]), stringGlyphIndex[i]/16F);
-            tessellator.addVertex2DTextureWithAtlas(color, x, y + 200, -15, 1, Assets.fontTextureAtlas.textures.get(stringGlyphIndex[i]), stringGlyphIndex[i]/16F);
-            tessellator.addVertex2DTextureWithAtlas(color, x + 200, y + 50, -15, 2, Assets.fontTextureAtlas.textures.get(stringGlyphIndex[i]), stringGlyphIndex[i]/16F);
-            tessellator.addVertex2DTextureWithAtlas(color, x, y, -15, 0, Assets.fontTextureAtlas.textures.get(stringGlyphIndex[i]), stringGlyphIndex[i]/16F);
-            tessellator.addElements();
-            x += 68;
-        }
-        tessellator.toggleOrtho();
-        tessellator.drawTexture2DWithAtlas(Assets.fontTextureLoader.texID, Shader.screen2DTextureAtlas, SpaceGame.camera);
-        tessellator.toggleOrtho();
+    public void toggleItalics(){
+        this.italic = !this.italic;
     }
 
 }

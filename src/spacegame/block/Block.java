@@ -186,7 +186,7 @@ public class Block {
 
         File blockFile = new File(filepath);
         if(!blockFile.exists()){
-            throw new RuntimeException("Missing blockFile at " + filepath);
+            throw new RuntimeException("Missing Block File at: " + filepath);
         }
         BufferedReader reader = null;
         try {

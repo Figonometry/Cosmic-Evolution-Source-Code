@@ -132,35 +132,36 @@ public final class GuiMainMenu extends Gui {
             int backgroundZ = -100;
             int y = backgroundHeight/2 - 150;
             int x = -backgroundWidth/2;
+            int depth = -15;
             int white = 16777215;
             int green = Color.magenta.getRGB() * -1;
             int red = 16711680;
             int yellow = Color.blue.getRGB() * -1;
-            fontRenderer.drawString("This game is in early Alpha, expect there to be bugs, crashes and general instability", x, y, red);
+            fontRenderer.drawString("This game is in early Alpha, expect there to be bugs, crashes and general instability", x, y, depth, red, 50);
             y -= 60;
-            fontRenderer.drawString(this.sg.title, x, y, 16711875);
+            fontRenderer.drawString(this.sg.title, x, y, depth, 16711875, 50);
             y -= 60;
-            fontRenderer.drawString("Overhauled the lighting system to improve visual quality utilizing normals and shadows", x, y, yellow);
+            fontRenderer.drawString("Overhauled the lighting system to improve visual quality utilizing normals and shadows", x, y, depth, yellow, 50);
             y -= 30;
-            fontRenderer.drawString("Block/Entity faces facing towards the sun are more lit than block faces facing away", x, y, yellow);
+            fontRenderer.drawString("Block/Entity faces facing towards the sun are more lit than block faces facing away", x, y, depth, yellow, 50);
             y -= 30;
-            fontRenderer.drawString("Block and Skylight are utilized separately in the rendering, the highest value is what is shown", x, y, yellow);
+            fontRenderer.drawString("Block and Skylight are utilized separately in the rendering, the highest value is what is shown", x, y, depth, yellow, 50);
             y -= 30;
-            fontRenderer.drawString("During sunset skylight value falls off in a logarithmic pattern", x, y, yellow);
+            fontRenderer.drawString("During sunset skylight value falls off in a logarithmic pattern", x, y, depth, yellow, 50);
             y -= 30;
-            fontRenderer.drawString("The sky now changes color during sunrise/sunset instead of going from blue to black", x, y, yellow);
+            fontRenderer.drawString("The sky now changes color during sunrise/sunset instead of going from blue to black", x, y, depth, yellow, 50);
             y -= 30;
-            fontRenderer.drawString("The color of the sunlight will change during sunrise/sunset", x, y, yellow);
+            fontRenderer.drawString("The color of the sunlight will change during sunrise/sunset", x, y, depth, yellow, 50);
             y -= 30;
-            fontRenderer.drawString("Added shadows within 256 blocks of the player", x, y, green);
+            fontRenderer.drawString("Added shadows within 256 blocks of the player", x, y, depth, green, 50);
             y -= 30;
-            fontRenderer.drawString("Added a setting under the video settings menu for shadows", x, y, green);
+            fontRenderer.drawString("Added a setting under the video settings menu for shadows", x, y, depth, green, 50);
             y -= 30;
-            fontRenderer.drawString("Added a setting under the video settings menu for view bobbing", x, y, green);
+            fontRenderer.drawString("Added a setting under the video settings menu for view bobbing", x, y, depth, green, 50);
             y -= 30;
-            fontRenderer.drawString("Moved the settings for sound/music volume to the options menu", x, y, yellow);
+            fontRenderer.drawString("Moved the settings for sound/music volume to the options menu", x, y, depth, yellow, 50);
             y -= 30;
-            fontRenderer.drawString("Resized the Sun and Moon to their correct sizes visible from the Earth", x, y, yellow);
+            fontRenderer.drawString("Resized the Sun and Moon to their correct sizes visible from the Earth", x, y, depth, yellow, 50);
 
 
 
@@ -187,7 +188,7 @@ public final class GuiMainMenu extends Gui {
         this.bugReport.renderButton();
         this.information.renderButton();
 
-        fontRenderer.drawString(this.sg.title, -970, 460, Color.magenta.getRGB() * -1);
+        fontRenderer.drawString(this.sg.title, -970, 460, -15, Color.magenta.getRGB() * -1, 50);
     }
 
     @Override

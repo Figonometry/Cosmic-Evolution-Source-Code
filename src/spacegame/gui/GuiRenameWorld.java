@@ -106,7 +106,7 @@ public final class GuiRenameWorld extends Gui {
         this.back.renderButton();
         this.nameWorld.renderTextFieldAndText();
         FontRenderer fontRenderer = FontRenderer.instance;
-        fontRenderer.drawCenteredString("Name World", -384, 75, 16777215);
+        fontRenderer.drawCenteredString("Name World", -384, 75,-15, 16777215, 50);
     }
 
     @Override

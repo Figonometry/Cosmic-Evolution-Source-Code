@@ -57,7 +57,7 @@ public final class TextField implements Runnable {
         GL46.glDeleteTextures(cursor.texID);
 
         FontRenderer fontRenderer = FontRenderer.instance;
-        fontRenderer.drawString(this.text, this.x - this.width/2, this.y - this.height/2, 16777215);
+        fontRenderer.drawString(this.text, this.x - this.width/2, this.y - this.height/2,-15, 16777215, 50);
     }
 
     public void scanForInputText(){

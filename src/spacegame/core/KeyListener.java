@@ -11,6 +11,7 @@ public final class KeyListener {
     public static boolean capsLockEnabled;
     public static boolean dropKeyReleased;
     public static boolean gKeyReleased;
+    public static boolean graveKeyReleased;
     public boolean keyPressed[] = new boolean[600];
 
 

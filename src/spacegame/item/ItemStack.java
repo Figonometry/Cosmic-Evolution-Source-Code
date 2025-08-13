@@ -128,7 +128,7 @@ public final class ItemStack {
             tessellator.toggleOrtho();
             if(this.count > 1) {
                 FontRenderer fontRenderer = FontRenderer.instance;
-                fontRenderer.drawString(Byte.toString(this.count), (int) this.x - 48, (int) (this.y - 48), 16777215);
+                fontRenderer.drawString(Byte.toString(this.count), (int) this.x - 48, (int) (this.y - 48),-15, 16777215, 50);
             }
 
             this.renderDurabilityBar();
@@ -199,7 +199,7 @@ public final class ItemStack {
             tessellator.toggleOrtho();
             if(this.count > 1) {
                 FontRenderer fontRenderer = FontRenderer.instance;
-                fontRenderer.drawString(Byte.toString(this.count), (int) this.x - 48, (int) (this.y - 48), 16777215);
+                fontRenderer.drawString(Byte.toString(this.count), (int) this.x - 48, (int) (this.y - 48),-15, 16777215, 50);
             }
             this.renderDurabilityBar();
         }

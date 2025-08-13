@@ -731,7 +731,7 @@ public class Button {
         }
 
         FontRenderer fontRenderer = FontRenderer.instance;
-        fontRenderer.drawCenteredString(string, this.x - 25, y - 25, 16777215);
+        fontRenderer.drawCenteredString(string, this.x - 25, this.y - 25, -15,16777215, 50);
     }
 
 }

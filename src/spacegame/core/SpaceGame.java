@@ -26,6 +26,7 @@ import spacegame.render.Assets;
 import spacegame.render.Camera;
 import spacegame.render.Shader;
 import spacegame.world.Save;
+import spacegame.world.Tech;
 import spacegame.world.World;
 import spacegame.world.WorldEarth;
 
@@ -96,7 +97,7 @@ public final class SpaceGame implements Runnable {
     }
 
     private void startGame() {
-        this.title = "Cosmic Evolution Alpha v0.18";
+        this.title = "Cosmic Evolution Alpha v0.19 WIP";
         this.clearLogFiles(new File(this.launcherDirectory + "/crashReports"));
         this.initLWJGL();
         this.initAllBufferObjects();
@@ -334,21 +335,38 @@ public final class SpaceGame implements Runnable {
             KeyListener.gKeyReleased = false;
         }
 
-      //  if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_MINUS)){
-      //      this.save.time = 98000;
-      //  }
-//
-      //  if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_SLASH)){
-      //      this.save.time = 109000;
-      //  }
-//
-      //  if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_EQUAL)){
-      //      this.save.time = 116000;
-      //  }
-//
-      //  if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_BACKSLASH)){
-      //      this.save.time = 55000;
-      //  }
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_MINUS)){
+            this.save.time = 98500;
+        }
+
+
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_SLASH)){
+            this.save.time = 109000;
+        }
+
+
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_EQUAL)){
+            this.save.time = 116000;
+        }
+
+
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_BACKSLASH)){
+            this.save.time = 55000;
+        }
+
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_GRAVE_ACCENT) && KeyListener.graveKeyReleased){
+            if(this.currentGui instanceof GuiInGame){
+                this.save.activeWorld.activeWorldFace.toggleWorldPause();
+                GLFW.glfwSetInputMode(this.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
+                this.setNewGui(new GuiTechTree(this));
+                ((GuiTechTree)this.currentGui).switchEraDisplayed(Tech.NEOLITHIC_ERA);
+            } else if(this.currentGui instanceof GuiTechTree){
+                this.save.activeWorld.activeWorldFace.toggleWorldPause();
+                GLFW.glfwSetInputMode(this.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
+                this.setNewGui(new GuiInGame(this));
+            }
+            KeyListener.graveKeyReleased = false;
+        }
 
 
         if (MouseListener.mouseButtonDown(GLFW.GLFW_MOUSE_BUTTON_LEFT)) {
@@ -401,12 +419,19 @@ public final class SpaceGame implements Runnable {
                 }
             }
         }
+        if(this.currentGui instanceof GuiTechTree) {
+            if (MouseListener.getScrollY() == -1) {
+                ((GuiTechTree) this.currentGui).zoomTechBlocks(-1);
+            } else if (MouseListener.getScrollY() == 1) {
+                ((GuiTechTree) this.currentGui).zoomTechBlocks(1);
+            }
+        }
         MouseListener.instance.scrollY = 0;
-
+        MouseListener.endFrame();
+        GLFW.glfwPollEvents();
     }
 
     private void checkKeyBindStates() {
-        GLFW.glfwPollEvents();
         if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_ESCAPE) && this.save != null && this.currentGui instanceof GuiInGame) {
             this.save.activeWorld.activeWorldFace.paused = true;
             this.setNewGui(new GuiPauseInGame(this));
@@ -435,6 +460,10 @@ public final class SpaceGame implements Runnable {
 
         if(!KeyListener.isKeyPressed(GLFW.GLFW_KEY_G)){
             KeyListener.gKeyReleased = true;
+        }
+
+        if(!KeyListener.isKeyPressed(GLFW.GLFW_KEY_GRAVE_ACCENT)){
+            KeyListener.graveKeyReleased = true;
         }
 
         if(!KeyListener.isKeyPressed(GameSettings.inventoryKey.keyCode)){
@@ -577,6 +606,13 @@ public final class SpaceGame implements Runnable {
                 }
             }
         }
+
+            if(this.currentGui instanceof GuiTechTree){
+                float deltaX = MouseListener.getDeltaX();
+                float deltaY = -MouseListener.getDeltaY();
+                ((GuiTechTree) this.currentGui).moveTechBlocks(deltaX, deltaY);
+            }
+
         MouseListener.rightClickReleased = false;
     }
 
@@ -636,7 +672,7 @@ public final class SpaceGame implements Runnable {
         GuiUniverseMap.universeCamera.setFrustum();
         GL46.glClear(GL46.GL_COLOR_BUFFER_BIT);
         GL46.glClear(GL46.GL_DEPTH_BUFFER_BIT);
-        if(this.save != null && !(this.currentGui instanceof GuiWorldLoadingScreen || this.currentGui instanceof GuiUniverseMap)) {
+        if(this.save != null && !(this.currentGui instanceof GuiWorldLoadingScreen || this.currentGui instanceof GuiUniverseMap || this.currentGui instanceof GuiTechTree)) {
             this.save.activeWorld.renderWorld();
             this.save.thePlayer.renderShadow();
         }

@@ -1,0 +1,75 @@
+package spacegame.gui;
+
+import spacegame.core.SpaceGame;
+import spacegame.render.Shader;
+import spacegame.render.Tessellator;
+import spacegame.render.TextureLoader;
+import spacegame.world.Tech;
+
+public final class ButtonTechTree extends Button {
+    public TextureLoader texture;
+    public boolean active = true;
+    public int width;
+    public int height;
+    public int x;
+    public int y;
+    public String name;
+    public int era;
+    private GuiTechTree techTree;
+
+    public ButtonTechTree(String name, int width, int height, int x, int y, int era, GuiTechTree techTree){
+        super(name, width, height, x, y, techTree, SpaceGame.instance);
+        this.name = name;
+        this.width = width;
+        this.height = height;
+        this.x = x;
+        this.y = y;
+        this.era = era;
+        this.techTree = techTree;
+        switch (this.era){
+            case Tech.NEOLITHIC_ERA -> {
+                this.texture = new TextureLoader("src/spacegame/assets/textures/gui/guiTechTree/neolithicButton.png", 240, 64);
+            }
+            default -> {
+                this.texture = new TextureLoader("src/spacegame/assets/textures/gui/guiTechTree/emptyButton.png", 256, 256);
+            }
+        }
+    }
+
+    @Override
+    public void onLeftClick(){
+        if(this.era == this.techTree.eraDisplayed && !this.active)return;
+        this.techTree.switchEraDisplayed(this.era);
+    }
+    @Override
+    public void renderButton(){
+        Tessellator tessellator = Tessellator.instance;
+        tessellator.toggleOrtho();
+        if(this.era != this.techTree.eraDisplayed){
+            if(this.isMouseHoveredOver()){
+                tessellator.addVertex2DTexture(12713983, this.x - this.width/2, this.y - this.height/2, -20,3);
+                tessellator.addVertex2DTexture(12713983, this.x + this.width/2, this.y + this.height/2, -20,1);
+                tessellator.addVertex2DTexture(12713983, this.x - this.width/2, this.y + this.height/2, -20,2);
+                tessellator.addVertex2DTexture(12713983, this.x + this.width/2, this.y - this.height/2, -20,0);
+                tessellator.addElements();
+            } else {
+                tessellator.addVertex2DTexture(16777215, this.x - this.width/2, this.y - this.height/2, -20,3);
+                tessellator.addVertex2DTexture(16777215, this.x + this.width/2, this.y + this.height/2, -20,1);
+                tessellator.addVertex2DTexture(16777215, this.x - this.width/2, this.y + this.height/2, -20,2);
+                tessellator.addVertex2DTexture(16777215, this.x + this.width/2, this.y - this.height/2, -20,0);
+                tessellator.addElements();
+            }
+        } else {
+            tessellator.addVertex2DTexture(5000268, this.x - this.width/2, this.y - this.height/2, -20,3);
+            tessellator.addVertex2DTexture(5000268, this.x + this.width/2, this.y + this.height/2, -20,1);
+            tessellator.addVertex2DTexture(5000268, this.x - this.width/2, this.y + this.height/2, -20,2);
+            tessellator.addVertex2DTexture(5000268, this.x + this.width/2, this.y - this.height/2, -20,0);
+            tessellator.addElements();
+        }
+        tessellator.drawTexture2D(this.texture.texID, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.toggleOrtho();
+        FontRenderer fontRenderer = FontRenderer.instance;
+        fontRenderer.drawCenteredString(this.name, this.x - 25, this.y - 25, -15,16777215, 50);
+    }
+
+}
