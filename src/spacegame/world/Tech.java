@@ -1,7 +1,10 @@
 package spacegame.world;
 
+import spacegame.gui.TechBlock;
+
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public final class Tech {
     public static final Tech[] list = new Tech[256];
@@ -54,6 +57,7 @@ public final class Tech {
     public String era;
     public ArrayList<String> requiredTechs = new ArrayList<>();
     public ArrayList<String> unlockedTech = new ArrayList<>();
+    public ArrayList<String> infoText = new ArrayList<>();
     public static final int UNKNOWN = 0;
     public static final int LOCKED = 1;
     public static final int LOCKED_KNOWN = 2;
@@ -61,15 +65,15 @@ public final class Tech {
     public static final int NEOLITHIC_ERA = 1;
 
 
-    private Tech(int techID, String filepath){
+    private Tech(int techID, String filepath) {
         this.techID = techID;
-        if(list[techID] != null){
+        if (list[techID] != null) {
             throw new RuntimeException("Tech List already occupied at index: " + techID);
         }
         list[techID] = this;
 
         File techFile = new File(filepath);
-        if(!techFile.exists()){
+        if (!techFile.exists()) {
             throw new RuntimeException("Missing Tech File at: " + filepath);
         }
         BufferedReader reader = null;
@@ -79,42 +83,64 @@ public final class Tech {
             throw new RuntimeException(e);
         }
         String line = "";
-        while (true){
+        while (true) {
             try {
-                if((line = reader.readLine()) == null)break;
+                if ((line = reader.readLine()) == null) break;
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
             String[] properties = line.split(":");
 
-            if(properties[0].equals("unlockRequirementAmount")){
+            if (properties[0].equals("unlockRequirementAmount")) {
                 this.unlockRequirementAmount = Integer.parseInt(properties[1]);
             }
 
-            if(properties[0].equals("techName")){
+            if (properties[0].equals("techName")) {
                 this.techName = properties[1];
             }
 
-            if(properties[0].equals("era")){
+            if (properties[0].equals("era")) {
                 this.era = properties[1];
             }
 
-            if(properties[0].equals("techUpdateEvent")){
+            if (properties[0].equals("techUpdateEvent")) {
                 this.techUpdateEvent = properties[1];
             }
 
-            if(properties[0].equals("requiredTech")){
+            if (properties[0].equals("requiredTech")) {
                 this.requiredTechs.add(properties[1]);
             }
 
-            if(properties[0].equals("isRootNode")){
+            if (properties[0].equals("isRootNode")) {
                 this.isRootNode = Boolean.parseBoolean(properties[1]);
             }
 
-            if(properties[0].equals("unlockedTech")){
+            if (properties[0].equals("unlockedTech")) {
                 this.unlockedTech.add(properties[1]);
             }
+
+            if (properties[0].equals("infoText")) {
+                this.infoText = this.splitInfoText(properties[1]);
+            }
         }
+    }
+
+    private ArrayList<String> splitInfoText(String text){
+        ArrayList<String> info = new ArrayList<>();
+        char[] characters = text.toCharArray();
+
+        char[] stringLength = new char[45];
+        for(int i = 0; i < characters.length; i++){
+            stringLength[i % 45] = characters[i];
+            if(i % 45 == 44){
+                info.add(new String(stringLength));
+                Arrays.fill(stringLength, ' ');
+            }
+        }
+
+        info.add(new String(stringLength));
+
+        return info;
     }
 
     public ArrayList<String> getRequiredTechs(){
@@ -123,8 +149,51 @@ public final class Tech {
 
 
     public void unlockTech(){
-        this.state = UNLOCKED;
+        this.state = UNLOCKED; //Unlock this tech and then change the state of all child techs from unknown to locked if requirements are met
+
+        Tech unlockedTech;
+        for(int i = 0; i < this.unlockedTech.size(); i++){
+            unlockedTech = this.getTechFromName(this.unlockedTech.get(i));
+           if(this.canTechBeResearched(unlockedTech)){
+               unlockedTech.state = LOCKED;
+           }
+        }
+
+
         this.saveTechToSaveFile();
+    }
+
+    public void unlockChildrenFromBaseNode() {
+        Tech unlockedTech;
+        for (int i = 0; i < this.unlockedTech.size(); i++) {
+            unlockedTech = this.getTechFromName(this.unlockedTech.get(i));
+            unlockedTech.unlockTech();
+        }
+    }
+
+    private boolean canTechBeResearched(Tech tech){
+        ArrayList<String> requiredTechs = tech.getRequiredTechs();
+
+        Tech prequisiteTech;
+        for(int i = 0; i < requiredTechs.size(); i++){
+            prequisiteTech = this.getTechFromName(requiredTechs.get(i));
+            if(prequisiteTech.state != UNLOCKED){
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public Tech getTechFromName(String name){
+        for(int i = 0; i < list.length; i++){
+            if(list[i] == null)continue;
+
+            if(list[i].techName.equals(name)){
+                return list[i];
+            }
+        }
+        throw new RuntimeException("Error at Tech Name Lookup Function");
     }
 
 
@@ -134,11 +203,15 @@ public final class Tech {
             if(list[i].state == UNKNOWN || list[i].state == UNLOCKED)continue;
             if(!list[i].techUpdateEvent.equals(event))continue;
 
-
             list[i].progressAmountCompleted++;
             if(list[i].state == LOCKED)list[i].state = LOCKED_KNOWN;
             if(list[i].progressAmountCompleted >= list[i].unlockRequirementAmount)list[i].unlockTech();
         }
+    }
+
+    public static void loadEraBaseNodes(){
+        Tech.neolithicEra.unlockTech();
+        Tech.neolithicEra.unlockChildrenFromBaseNode();
     }
 
 
@@ -152,6 +225,10 @@ public final class Tech {
 
     public static void saveAllTechnologiesToFile(File saveFile){
 
+    }
+
+    public String getTechName(){
+        return this.state == UNKNOWN ? "???" : this.techName;
     }
 
     public static ArrayList<Tech> getEraTechList(int era){

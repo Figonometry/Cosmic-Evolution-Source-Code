@@ -78,13 +78,19 @@ public abstract class Entity {
     }
 
     protected void moveWithVector(){
-        this.deltaX = this.movementVector.x;
-        this.deltaY = this.movementVector.y;
-        this.deltaZ = this.movementVector.z;
+        this.deltaX = this.movementVector.x * this.speed;
+        this.deltaY = this.movementVector.y * this.speed;
+        this.deltaZ = this.movementVector.z * this.speed;
     }
 
     protected void updateAxisAlignedBB() {
-        this.boundingBox .adjustEntityBoundingBox(this.x, this.y, this.z, this.width, this.height, this.depth);
+        this.boundingBox.adjustEntityBoundingBox(this.x, this.y, this.z, this.width, this.height, this.depth);
+
+        double blockCeil = MathUtils.ceilDouble(this.boundingBox.minY);
+        double threshold = 0.001;
+        if(Math.abs(blockCeil - this.boundingBox.minY) < threshold){
+            this.boundingBox.minY = blockCeil; //This is to catch rounding errors when setting the entity's bounding box, more may have to be implemented
+        }
     }
 
     protected void renderShadow(){
@@ -171,7 +177,7 @@ public abstract class Entity {
 
 
     protected void moveAndHandleCollision(){
-        this.boundingBox.adjustEntityBoundingBox(this.x, this.y, this.z, this.width, this.height, this.depth);
+        this.updateAxisAlignedBB();
         surroundingBlocks.clear();
         surroundingBlocks = SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockBoundingBoxes(this.boundingBox.expand(this.deltaX, this.deltaY, this.deltaZ), surroundingBlocks);
 

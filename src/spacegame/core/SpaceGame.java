@@ -97,7 +97,7 @@ public final class SpaceGame implements Runnable {
     }
 
     private void startGame() {
-        this.title = "Cosmic Evolution Alpha v0.19 WIP";
+        this.title = "Cosmic Evolution Alpha v0.19";
         this.clearLogFiles(new File(this.launcherDirectory + "/crashReports"));
         this.initLWJGL();
         this.initAllBufferObjects();
@@ -212,6 +212,7 @@ public final class SpaceGame implements Runnable {
         GuiUniverseMap.universeCamera.setFarPlaneDistance(512);
         GuiUniverseMap.universeCamera.viewMatrix.translate(-0.000000000000000001, 0, 0);
         this.setNewGui(new GuiMainMenu(this));
+        Tech.loadEraBaseNodes();
     }
 
     private void mainLoop() {

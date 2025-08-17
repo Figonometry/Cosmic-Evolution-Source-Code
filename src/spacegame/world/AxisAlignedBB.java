@@ -104,7 +104,6 @@ public final class AxisAlignedBB {
                     }
                 }
 
-
                 if(deltaY < 0.0 && entityBoundingBox.minY >= this.maxY) {
                     max = this.maxY - entityBoundingBox.minY;
                     if(max > deltaY) {

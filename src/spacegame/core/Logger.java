@@ -23,7 +23,6 @@ public final class Logger {
         }
     }
 
-    public static void printOpenGLState(){
+    //Should probably update the Logger to handle when the JVM aborts, launch a window to notify the player so they're not stuck wondering wtf happened
 
-    }
 }

@@ -29,6 +29,16 @@ public abstract class MathUtils {
         return a < a1 ? a1 - 1 : a1;
     }
 
+    public static int ceilDouble(double a) {
+        int a1 = (int)a;
+        return a > a1 ? a1 + 1: a1;
+    }
+
+    public static int ceilFloat(float a) {
+        int a1 = (int)a;
+        return a > a1 ? a1 + 1: a1;
+    }
+
     public static int floatToIntRGBA(float comp){
         return (int) (comp * 255);
     }

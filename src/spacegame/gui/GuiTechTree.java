@@ -16,6 +16,7 @@ public final class GuiTechTree extends Gui {
     public TextureLoader techBlock;
     public TextureLoader line;
     public TextureLoader treeArea;
+    public TextureLoader transparentBackground;
     public ArrayList<TechBlock> currentTechsToDisplay;
     public ButtonTechTree neolithicButton;
     public ButtonTechTree age2;
@@ -64,8 +65,9 @@ public final class GuiTechTree extends Gui {
 
     @Override
     public void loadTextures() {
-        this.techBlock = new TextureLoader("src/spacegame/assets/textures/gui/guiTechTree/techBlock.png", 64, 64);
+        this.techBlock = new TextureLoader("src/spacegame/assets/textures/gui/guiTechTree/techBlock.png", 256, 256);
         this.line = new TextureLoader("src/spacegame/assets/textures/gui/guiTechTree/line.png", 32, 32);
+        this.transparentBackground = new TextureLoader("src/spacegame/assets/textures/gui/transparentBackground.png", 32, 32);
         switch (this.eraDisplayed){
             case Tech.NEOLITHIC_ERA -> {
                 this.background = new TextureLoader("src/spacegame/assets/textures/gui/guiTechTree/neolithicBackGround.png", 256,256);
@@ -80,10 +82,12 @@ public final class GuiTechTree extends Gui {
         GL46.glDeleteTextures(this.background.texID);
         GL46.glDeleteTextures(this.treeArea.texID);
         GL46.glDeleteTextures(this.line.texID);
+        GL46.glDeleteTextures(this.transparentBackground.texID);
         this.background = null;
         this.techBlock = null;
         this.treeArea = null;
         this.line = null;
+        this.transparentBackground = null;
     }
 
     public void switchEraDisplayed(int newEra){
@@ -107,8 +111,8 @@ public final class GuiTechTree extends Gui {
         final int startingY = 0;
         final int width = 256;
         final int height = 128;
-        final int heightOffset = 192;
-        final int widthOffset = 400;
+        final int heightOffset = (int) (192 * 1.5f);
+        final int widthOffset = (int) (400 * 1.5f);
         int x = 0;
         int y = 0;
         //Place root of the era Tree
@@ -217,8 +221,18 @@ public final class GuiTechTree extends Gui {
         this.age12.renderButton();
         this.age13.renderButton();
 
+        TechBlock techBlock = null;
+        TechBlock hoveredBlock = null;
         for(int i = 0; i < this.currentTechsToDisplay.size(); i++){
-            this.currentTechsToDisplay.get(i).renderTechBlock();
+            techBlock = this.currentTechsToDisplay.get(i);
+            techBlock.renderTechBlock();
+            if(techBlock.isMouseHoveredOver()){
+                hoveredBlock = techBlock; //The hovered block needs to be assigned here so it can be drawn after the rest of the tree renders, sometime I hate OpenGL
+            }
+        }
+
+        if(hoveredBlock != null) {
+            hoveredBlock.drawInfoBox();
         }
     }
 
@@ -243,10 +257,10 @@ public final class GuiTechTree extends Gui {
         backgroundY = 75;
         backgroundHeight = 800;
         backgroundZ = -100;
-        tessellator.addVertex2DTexture(16777215, backgroundX - backgroundWidth/2, backgroundY - backgroundHeight/2, backgroundZ, 3);
-        tessellator.addVertex2DTexture(16777215, backgroundX + backgroundWidth/2, backgroundY + backgroundHeight/2, backgroundZ, 1);
-        tessellator.addVertex2DTexture(16777215, backgroundX - backgroundWidth/2, backgroundY + backgroundHeight/2, backgroundZ, 2);
-        tessellator.addVertex2DTexture(16777215, backgroundX + backgroundWidth/2, backgroundY - backgroundHeight/2, backgroundZ, 0);
+        tessellator.addVertex2DTexture(16777215, backgroundX - backgroundWidth, backgroundY - backgroundHeight, backgroundZ, 3);
+        tessellator.addVertex2DTexture(16777215, backgroundX + backgroundWidth, backgroundY + backgroundHeight, backgroundZ, 1);
+        tessellator.addVertex2DTexture(16777215, backgroundX - backgroundWidth, backgroundY + backgroundHeight, backgroundZ, 2);
+        tessellator.addVertex2DTexture(16777215, backgroundX + backgroundWidth, backgroundY - backgroundHeight, backgroundZ, 0);
         tessellator.addElements();
         tessellator.drawTexture2D(this.treeArea.texID, Shader.screen2DTexture, SpaceGame.camera);
         tessellator.toggleOrtho();
@@ -304,9 +318,18 @@ public final class GuiTechTree extends Gui {
         }
     }
 
-    public void zoomTechBlocks(float zoom){
+    public TechBlock getHoveredTechBlock(){
+        TechBlock returnBlock;
         for(int i = 0; i < this.currentTechsToDisplay.size(); i++){
-            this.currentTechsToDisplay.get(i).adjustZoom(zoom == 1);
+            returnBlock = this.currentTechsToDisplay.get(i);
+            if(returnBlock.isMouseHoveredOver()){
+                return  returnBlock;
+            }
         }
+        return null;
+    }
+
+    public void zoomTechBlocks(float zoom) {
+        TechBlock.adjustZoom(zoom == 1);
     }
 }
