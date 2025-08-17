@@ -2,12 +2,11 @@ package spacegame.gui;
 
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
-import spacegame.core.MathUtils;
+import spacegame.core.MathUtil;
 import spacegame.core.SpaceGame;
 import spacegame.core.Timer;
+import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
-import spacegame.render.Tessellator;
-import spacegame.render.TextureLoader;
 
 import java.awt.*;
 import java.util.Random;
@@ -24,10 +23,10 @@ public final class GuiMainMenu extends Gui {
     private Button quitGame;
     private Button bugReport;
     private Button information;
-    public TextureLoader star;
-    public TextureLoader earth;
-    public TextureLoader title;
-    public TextureLoader background;
+    public int star;
+    public int earth;
+    public int title;
+    public int background;
 
 
     static {
@@ -70,34 +69,32 @@ public final class GuiMainMenu extends Gui {
 
     @Override
     public void loadTextures() {
-        this.star = new TextureLoader("src/spacegame/assets/textures/gui/guiMainMenu/star.png", 64,  64);
-        this.earth = new TextureLoader("src/spacegame/assets/textures/gui/guiMainMenu/earth.png", 512,512);
-        this.title = new TextureLoader("src/spacegame/assets/textures/gui/guiMainMenu/logo.png", 1476,144);
-        this.background = new TextureLoader("src/spacegame/assets/textures/gui/transparentBackground.png", 32,32);
+        this.star = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/star.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.earth = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/earth.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.title = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/logo.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.background = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
     }
 
     @Override
     public void deleteTextures() {
-        GL46.glDeleteTextures(this.star.texID);
-        GL46.glDeleteTextures(this.earth.texID);
-        GL46.glDeleteTextures(this.title.texID);
-        GL46.glDeleteTextures(this.background.texID);
-        this.star = null;
-        this.earth = null;
-        this.title = null;
-        this.background = null;
+        SpaceGame.instance.renderEngine.deleteTexture(this.star);
+        SpaceGame.instance.renderEngine.deleteTexture(this.earth);
+        SpaceGame.instance.renderEngine.deleteTexture(this.title);
+        SpaceGame.instance.renderEngine.deleteTexture(this.background);
     }
 
     @Override
     public void drawGui() {
         FontRenderer fontRenderer = FontRenderer.instance;
-        Tessellator tessellator = Tessellator.instance;
+        RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         tessellator.toggleOrtho();
         GLFW.glfwSetInputMode(this.sg.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
         for(int i = 0; i < starCount; i++){
            renderStar(i, tessellator);
         }
-        tessellator.drawTexture2D(this.star.texID, Shader.screen2DTexture, SpaceGame.camera);
+
+        tessellator.drawTexture2D(this.star, Shader.screen2DTexture, SpaceGame.camera);
+
 
         int earthSize = 256;
         int earthX = 0;
@@ -108,7 +105,7 @@ public final class GuiMainMenu extends Gui {
         tessellator.addVertex2DTexture(16777215, earthX - earthSize, earthY + earthSize, earthZ, 2);
         tessellator.addVertex2DTexture(16777215, earthX + earthSize, earthY - earthSize, earthZ, 0);
         tessellator.addElements();
-        tessellator.drawTexture2D(this.earth.texID, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.earth, Shader.screen2DTexture, SpaceGame.camera);
 
         int titleWidth = 1476;
         int titleHeight = 144;
@@ -120,7 +117,7 @@ public final class GuiMainMenu extends Gui {
         tessellator.addVertex2DTexture(16777215, titleX - titleWidth/2, titleY + titleHeight/2, titleZ, 2);
         tessellator.addVertex2DTexture(16777215, titleX + titleWidth/2, titleY - titleHeight/2, titleZ, 0);
         tessellator.addElements();
-        tessellator.drawTexture2D(this.title.texID, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.title, Shader.screen2DTexture, SpaceGame.camera);
 
         tessellator.toggleOrtho();
 
@@ -142,14 +139,25 @@ public final class GuiMainMenu extends Gui {
             fontRenderer.drawString(this.sg.title, x, y, depth, 16711875, 50);
             y -= 60;
             fontRenderer.toggleItalics();
-            fontRenderer.drawString("Added in a tech tree system, menu accessible by pressing the ~ key, system not currently implemented", x, y, depth, green, 50);
+            fontRenderer.drawString("Improved performance", x, y, depth, yellow, 50);
             y -= 30;
-            fontRenderer.drawString("Added variable sizes and italics to fonts", x, y, depth, green, 50);
+            fontRenderer.drawString("Added descriptions to the Foraging I and Stone Hand Tools techs", x, y, depth, green, 50);
             y -= 30;
-            fontRenderer.drawString("Fixed a bug where you fell through blocks at Y 64", x, y, depth, yellow, 50);
+            fontRenderer.drawString("Added a progress indicator on known techs", x, y, depth, green, 50);
             y -= 30;
-            fontRenderer.drawString("Fixed a bug where dropped items shoot up really high", x, y, depth, yellow, 50);
+            fontRenderer.drawString("Added lines to show what features a tech unlocks", x, y, depth, green, 50);
             y -= 30;
+            fontRenderer.drawString("Added tech logging events for crafting stone tools and harvesting berries", x, y, depth, green, 50);
+            y -= 30;
+            fontRenderer.drawString("Tech progress along with tech states are saved/loaded from disk", x, y, depth,yellow, 50);
+            y -= 30;
+            fontRenderer.drawString("Updated the block model for berry bushes", x, y, depth, yellow, 50);
+            y -= 30;
+            fontRenderer.drawString("Added a flowering stage to berry bushes", x, y, depth, green, 50);
+            y -= 30;
+            fontRenderer.drawString("Berry bushes now drop themselves when broken, this will change later", x, y, depth, yellow, 50);
+            y -= 30;
+            fontRenderer.drawString("Berry bushes no longer break instantly", x, y, depth, yellow, 50);
             fontRenderer.toggleItalics();
 
 
@@ -163,7 +171,7 @@ public final class GuiMainMenu extends Gui {
             tessellator.addElements();
             GL46.glEnable(GL46.GL_BLEND);
             GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-            tessellator.drawTexture2D(this.background.texID, Shader.screen2DTexture, SpaceGame.camera);
+            tessellator.drawTexture2D(this.background, Shader.screen2DTexture, SpaceGame.camera);
             tessellator.toggleOrtho();
             GL46.glDisable(GL46.GL_BLEND);
         }
@@ -178,6 +186,7 @@ public final class GuiMainMenu extends Gui {
         this.information.renderButton();
 
         fontRenderer.drawString(this.sg.title, -970, 460, -15, Color.magenta.getRGB() * -1, 50);
+
     }
 
     @Override
@@ -203,7 +212,7 @@ public final class GuiMainMenu extends Gui {
         return null;
     }
 
-    public static void renderStar(int starNumber, Tessellator tessellator){
+    public static void renderStar(int starNumber, RenderEngine.Tessellator tessellator){
         float x = starCoordinates[starNumber][0];
         float y = starCoordinates[starNumber][1];
         float z = starCoordinates[starNumber][2];
@@ -227,9 +236,9 @@ public final class GuiMainMenu extends Gui {
 
 
 
-        red *= (MathUtils.sin((float) ((double) Timer.elapsedTime /starColorTimer[starNumber])) * 0.25F) + 0.75F;
-        green *= (MathUtils.sin((float) ((double) Timer.elapsedTime / starColorTimer[starNumber])) * 0.25F) + 0.75F;
-        blue *= (MathUtils.sin((float) ((double) Timer.elapsedTime / starColorTimer[starNumber])) * 0.25F) + 0.75F;
+        red *= (MathUtil.sin((float) ((double) Timer.elapsedTime /starColorTimer[starNumber])) * 0.25F) + 0.75F;
+        green *= (MathUtil.sin((float) ((double) Timer.elapsedTime / starColorTimer[starNumber])) * 0.25F) + 0.75F;
+        blue *= (MathUtil.sin((float) ((double) Timer.elapsedTime / starColorTimer[starNumber])) * 0.25F) + 0.75F;
 
         color = new Color(red,green,blue);
         return color.getRGB() * -1;

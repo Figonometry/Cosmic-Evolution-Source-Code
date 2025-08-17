@@ -1,0 +1,5 @@
+techName:Bread III
+techUpdateEvent:Berry Collection
+unlockRequirementAmount:50
+requiredTech:Bread II
+era:Neolithic

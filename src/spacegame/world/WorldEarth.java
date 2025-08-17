@@ -6,20 +6,23 @@ import spacegame.core.SpaceGame;
 import java.io.File;
 
 public final class WorldEarth extends World {
-    public static NoiseMap treeNoise;
-    public static NoiseMap berryNoise;
-    public static NoiseMap3D terrainNoise;
-    public static NoiseMap3D secondaryTerrainNoise;
-    public static NoiseMap dirtNoise;
-    public static NoiseMap sampleNoise;
-    public static NoiseMap continentalNoise;
-    public static NoiseMap secondaryContinentalNoise;
-    public static NoiseMap scaleNoise;
-    public static NoiseMap secondaryScaleNoise;
+    public NoiseMap2D treeNoise;
+    public NoiseMap2D berryNoise;
+    public NoiseMap3D terrainNoise;
+    public NoiseMap3D secondaryTerrainNoise;
+    public NoiseMap2D dirtNoise;
+    public NoiseMap2D sampleNoise;
+    public NoiseMap2D continentalNoise;
+    public NoiseMap2D secondaryContinentalNoise;
+    public NoiseMap2D scaleNoise;
+    public NoiseMap2D secondaryScaleNoise;
+    public NoiseMap2D temperatureNoise1;
+    public NoiseMap2D temperatureNoise2;
+    public NoiseMap2D rainfallNoise1;
+    public NoiseMap2D rainfallNoise2;
 
     public WorldEarth(SpaceGame spaceGame, int size) {
         super(spaceGame,size);
-        this.activeWorldFace = new WorldFace(this.sg, this);
         this.skyLightLevel = 15;
         this.skyColor = new float[]{0.52734375F, 0.8046875F, 0.91796875F};
         this.defaultSkyColor = new float[]{0.52734375F, 0.8046875F, 0.91796875F};
@@ -28,39 +31,47 @@ public final class WorldEarth extends World {
         if(!this.worldFolder.exists()){
             this.worldFolder.mkdirs();
         }
-        World.totalMaps = 10;
+        World.totalMaps = 14;
     }
 
     @Override
     public void initNoiseMaps() {
         World.worldLoadPhase = 0;
         World.noiseMapsCompleted = 0;
-        treeNoise = new NoiseMap(255, 255, 2, 3, 1, 2, this.sg.save.seed);
+        this.treeNoise = new NoiseMap2D(255, 255, 2, 3, 1, 2, this.sg.save.seed);
         World.noiseMapsCompleted++;
-        berryNoise = new NoiseMap(317, 317, 1, 1, 1, 0, this.sg.save.seed);
+        this.berryNoise = new NoiseMap2D(317, 317, 1, 1, 1, 0, this.sg.save.seed);
         World.noiseMapsCompleted++;
-        dirtNoise = new NoiseMap(32, 32, 3, 2, 1, 2, this.sg.save.seed);
+        this.dirtNoise = new NoiseMap2D(32, 32, 3, 2, 1, 2, this.sg.save.seed);
         World.noiseMapsCompleted++;
-        terrainNoise = new NoiseMap3D(256, 256, 256, 16, this.sg.save.seed);
+        this.terrainNoise = new NoiseMap3D(256, 256, 256, 16, this.sg.save.seed);
         World.noiseMapsCompleted++;
-        sampleNoise = new NoiseMap(256, 256, 6, 7, 1, 12, this.sg.save.seed);
+        this.sampleNoise = new NoiseMap2D(256, 256, 6, 7, 1, 12, this.sg.save.seed);
         World.noiseMapsCompleted++;
-        continentalNoise = new NoiseMap(256, 256, 3, 1, 1, 0, this.sg.save.seed);
+        this.continentalNoise = new NoiseMap2D(256, 256, 3, 1, 1, 0, this.sg.save.seed);
         World.noiseMapsCompleted++;
-        secondaryTerrainNoise = new NoiseMap3D(345, 256, 345, 16, this.sg.save.seed);
+        this.secondaryTerrainNoise = new NoiseMap3D(345, 256, 345, 16, this.sg.save.seed);
         World.noiseMapsCompleted++;
-        secondaryContinentalNoise = new NoiseMap(631, 631, 3, 1, 1, 0, this.sg.save.seed);
+        this.secondaryContinentalNoise = new NoiseMap2D(631, 631, 3, 1, 1, 0, this.sg.save.seed);
         World.noiseMapsCompleted++;
-        scaleNoise = new NoiseMap(128, 128, 16, 0.011, 1, 0, this.sg.save.seed);
+        this.scaleNoise = new NoiseMap2D(128, 128, 16, 0.011, 1, 0, this.sg.save.seed);
         World.noiseMapsCompleted++;
-        secondaryScaleNoise = new NoiseMap(311, 311, 4, 0.011, 1, 0, this.sg.save.seed);
+        this.secondaryScaleNoise = new NoiseMap2D(311, 311, 4, 0.011, 1, 0, this.sg.save.seed);
+        World.noiseMapsCompleted++;
+        this.temperatureNoise1 = new NoiseMap2D(715, 715, 1, 0.5, 1, 0.5, this.sg.save.seed);
+        World.noiseMapsCompleted++;
+        this.temperatureNoise2 = new NoiseMap2D(1379, 1379, 1, 0.5, 1, 0, this.sg.save.seed);
+        World.noiseMapsCompleted++;
+        this.rainfallNoise1 = new NoiseMap2D(937, 937, 1, 0.5, 1, 0.5, this.sg.save.seed);
+        World.noiseMapsCompleted++;
+        this.rainfallNoise2 = new NoiseMap2D(1579, 1579, 1, 0.5, 1, 0, this.sg.save.seed);
         World.noiseMapsCompleted++;
         World.worldLoadPhase = 1;
     }
 
     @Override
     public void saveWorld() {
-        this.activeWorldFace.chunkController.saveAllRegions();
+        this.chunkController.saveAllRegions();
     }
 
     @Override
@@ -70,7 +81,17 @@ public final class WorldEarth extends World {
 
     @Override
     public void saveWorldWithoutUnload(){
-        this.activeWorldFace.chunkController.saveAllRegionsWithoutUnload();
+        this.chunkController.saveAllRegionsWithoutUnload();
     }
+
+    public void tick() {
+        this.chunkController.tick();
+        if(this.delayWhenExitingUI > 0) {
+            this.delayWhenExitingUI--;
+        }
+    }
+
+
+
 
 }

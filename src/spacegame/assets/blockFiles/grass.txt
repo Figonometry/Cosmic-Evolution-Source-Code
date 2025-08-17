@@ -4,3 +4,4 @@ blockModel:standardBlockModel
 stepSound:grass
 breakTimer:60
 hardness:0.05
+toolType:shovel

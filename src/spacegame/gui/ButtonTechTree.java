@@ -1,13 +1,11 @@
 package spacegame.gui;
 
 import spacegame.core.SpaceGame;
+import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
-import spacegame.render.Tessellator;
-import spacegame.render.TextureLoader;
-import spacegame.world.Tech;
 
 public final class ButtonTechTree extends Button {
-    public TextureLoader texture;
+    public int texture;
     public boolean active = true;
     public int width;
     public int height;
@@ -28,10 +26,21 @@ public final class ButtonTechTree extends Button {
         this.techTree = techTree;
         switch (this.era){
             case Tech.NEOLITHIC_ERA -> {
-                this.texture = new TextureLoader("src/spacegame/assets/textures/gui/guiTechTree/neolithicButton.png", 240, 64);
+                this.texture = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiTechTree/neolithicButton.png", RenderEngine.TEXTURE_TYPE_2D, 0);
             }
             default -> {
-                this.texture = new TextureLoader("src/spacegame/assets/textures/gui/guiTechTree/emptyButton.png", 256, 256);
+                this.texture = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiTechTree/emptyButton.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+            }
+        }
+    }
+
+    public void reloadTexture(){
+        switch (this.era){
+            case Tech.NEOLITHIC_ERA -> {
+                this.texture = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiTechTree/neolithicButton.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+            }
+            default -> {
+                this.texture = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiTechTree/emptyButton.png", RenderEngine.TEXTURE_TYPE_2D, 0);
             }
         }
     }
@@ -43,7 +52,7 @@ public final class ButtonTechTree extends Button {
     }
     @Override
     public void renderButton(){
-        Tessellator tessellator = Tessellator.instance;
+        RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         tessellator.toggleOrtho();
         if(this.era != this.techTree.eraDisplayed){
             if(this.isMouseHoveredOver()){
@@ -66,7 +75,7 @@ public final class ButtonTechTree extends Button {
             tessellator.addVertex2DTexture(5000268, this.x + this.width/2, this.y - this.height/2, -20,0);
             tessellator.addElements();
         }
-        tessellator.drawTexture2D(this.texture.texID, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.texture, Shader.screen2DTexture, SpaceGame.camera);
         tessellator.toggleOrtho();
         FontRenderer fontRenderer = FontRenderer.instance;
         fontRenderer.drawCenteredString(this.name, this.x - 25, this.y - 25, -15,16777215, 50);

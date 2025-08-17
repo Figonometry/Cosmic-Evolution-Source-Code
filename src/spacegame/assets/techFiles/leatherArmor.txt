@@ -1,0 +1,5 @@
+techName:Leather Armor
+techUpdateEvent:Berry Collection
+unlockRequirementAmount:50
+requiredTech:Basic Clothing
+era:Neolithic

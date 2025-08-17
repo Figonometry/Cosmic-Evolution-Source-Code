@@ -16,6 +16,7 @@ uniform vec4 lightColor;
 uniform bool performNormals;
 uniform vec3 normalizedLightVector;
 uniform vec3 playerPositionInChunk;
+uniform bool compressTest;
 
 out vec4 fColor;
 out vec2 fTexCoords;
@@ -74,6 +75,54 @@ vec4 setFinalColor(vec4 skyLightColor, vec4 vertexColor){
     return finalColor;
 }
 
+int floatToHalf(float value) {
+    uint floatBits = floatBitsToUint(value);
+    uint sign = (floatBits >> 16u) & 0x8000u;
+    int exponent = int((floatBits >> 23u) & 0xFFu) - 112;
+    uint mantissa = floatBits & 0x7FFFFFu;
+
+    if (exponent <= 0) {
+        return int(sign); // subnormal or zero
+    } else if (exponent >= 31) {
+        return int(sign | 0x7FFFu); // infinity or NaN
+    } else {
+        return int(sign | (uint(exponent) << 10u) | (mantissa >> 13u));
+    }
+}
+
+
+float halfToFloat(int f16) {
+    int sign = (f16 >> 15) & 0x1;
+    int exponent = (f16 >> 10) & 0x1F;
+    int mantissa = f16 & 0x3FF;
+
+    if (exponent == 0) {
+        return sign == 0? 0 : -0.0f;
+    } else if (exponent == 31) {
+        return intBitsToFloat(sign == 0 ? 0x7f800000 : 0xff800000);
+    } else {
+        exponent += 112;
+        mantissa <<= 13;
+        return intBitsToFloat((sign << 31) | (exponent << 23) | mantissa);
+    }
+}
+
+vec3 compress(){
+    float x = aPos.x;
+    float y = aPos.y;
+    float z = aPos.z;
+
+    int x1 = floatToHalf(x);
+    int y1 = floatToHalf(y);
+    int z1 = floatToHalf(z);
+
+    float x2 = halfToFloat(x1);
+    float y2 = halfToFloat(y1);
+    float z2 = halfToFloat(z1);
+
+    return vec3(x2, y2, z2);
+}
+
 void main()
 {
 
@@ -82,7 +131,11 @@ void main()
 
     fTexCoords = aTexCoords;
 
+
     vec3 correctPos = vec3(chunkOffset + aPos);
+    if(compressTest){
+        correctPos = vec3(chunkOffset + compress());
+    }
     gl_Position = vec4(uProjection * uView * vec4(correctPos, 1.0));
 
     vec3 correctPosRelativeToSun = vec3(sunChunkOffset + aPos);

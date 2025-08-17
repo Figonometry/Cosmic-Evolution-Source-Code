@@ -1,10 +1,7 @@
 package spacegame.gui;
 
 import spacegame.core.SpaceGame;
-import spacegame.render.Assets;
-import spacegame.render.Shader;
-import spacegame.render.Tessellator;
-import spacegame.render.Texture;
+import spacegame.render.*;
 
 public abstract class Gui {
     public SpaceGame sg;
@@ -27,14 +24,14 @@ public abstract class Gui {
         int y = -15;
         float z = -1F;
 
-        Tessellator tessellator = Tessellator.instance;
+        RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         tessellator.toggleOrtho();
         tessellator.addVertex2DTextureWithAtlas(color, x, y, z, 3, textureID, fontID);
         tessellator.addVertex2DTextureWithAtlas(color, x + 30, y + 30, z, 1, textureID, fontID);
         tessellator.addVertex2DTextureWithAtlas(color, x, y + 30, z, 2, textureID, fontID);
         tessellator.addVertex2DTextureWithAtlas(color, x + 30, y, z, 0, textureID, fontID);
         tessellator.addElements();
-        tessellator.drawTexture2DWithAtlas(Assets.fontTextureLoader.texID, Shader.screen2DTextureAtlas, SpaceGame.camera);
+        tessellator.drawTexture2DWithAtlas(Assets.fontTextureLoader, Shader.screen2DTextureAtlas, SpaceGame.camera);
         tessellator.toggleOrtho();
     }
 

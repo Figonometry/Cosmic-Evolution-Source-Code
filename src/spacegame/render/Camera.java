@@ -35,6 +35,7 @@ public final class Camera {
     public void adjustProjection(double fov, double nearDistance) {
         fov *= 100;
         this.projectionMatrix.setPerspective(Math.toRadians(fov), (double)SpaceGame.width / (double)SpaceGame.height, nearDistance, this.farPlaneDistance); //znear MUST NEVER BE 0
+        Shader.terrainShader.uploadMat4d("uProjection", this.projectionMatrix);
     }
 
     public void adjustGuiMatrix() {

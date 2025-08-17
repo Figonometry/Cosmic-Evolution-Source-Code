@@ -1,6 +1,9 @@
 package spacegame.render;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Arrays;
 
 public final class ModelLoader{
@@ -1330,11 +1333,11 @@ public final class ModelLoader{
             if(this.modelFaces[i] != null){
                 scaledFace = new ModelFace(this.modelFaces[i].faceType);
                 for(int j = 0; j < scaledFace.vertices.length; j++){
-                    scaledFace.vertices[j][0] = this.modelFaces[i].vertices[j][0] * scaleFactor;
-                    scaledFace.vertices[j][1] = this.modelFaces[i].vertices[j][1] * scaleFactor;
-                    scaledFace.vertices[j][2] = this.modelFaces[i].vertices[j][2] * scaleFactor;
+                    scaledFace.vertices[j].x = this.modelFaces[i].vertices[j].x * scaleFactor;
+                    scaledFace.vertices[j].y = this.modelFaces[i].vertices[j].y * scaleFactor;
+                    scaledFace.vertices[j].z = this.modelFaces[i].vertices[j].z * scaleFactor;
                 }
-                scaledFace.setNormal(this.modelFaces[i].normal[0], this.modelFaces[i].normal[1], this.modelFaces[i].normal[2]);
+                scaledFace.setNormal(this.modelFaces[i].normal.x, this.modelFaces[i].normal.y, this.modelFaces[i].normal.z);
                 scaledModel.addModelFace(scaledFace);
             }
         }
@@ -1362,11 +1365,11 @@ public final class ModelLoader{
             if(this.modelFaces[i] != null){
                 translatedFace = new ModelFace(this.modelFaces[i].faceType);
                 for(int j = 0; j < translatedFace.vertices.length; j++){
-                    translatedFace.vertices[j][0] = this.modelFaces[i].vertices[j][0] + x;
-                    translatedFace.vertices[j][1] = this.modelFaces[i].vertices[j][1] + y;
-                    translatedFace.vertices[j][2] = this.modelFaces[i].vertices[j][2] + z;
+                    translatedFace.vertices[j].x = this.modelFaces[i].vertices[j].x + x;
+                    translatedFace.vertices[j].y = this.modelFaces[i].vertices[j].y + y;
+                    translatedFace.vertices[j].z = this.modelFaces[i].vertices[j].z + z;
                 }
-                translatedFace.setNormal(this.modelFaces[i].normal[0], this.modelFaces[i].normal[1], this.modelFaces[i].normal[2]);
+                translatedFace.setNormal(this.modelFaces[i].normal.x, this.modelFaces[i].normal.y, this.modelFaces[i].normal.z);
                 translatedModel.addModelFace(translatedFace);
             }
         }
@@ -1394,11 +1397,11 @@ public final class ModelLoader{
             if(this.modelFaces[i] != null){
                alteredFace = new ModelFace(this.modelFaces[i].faceType);
                 for(int j = 0; j < alteredFace.vertices.length; j++){
-                    alteredFace.vertices[j][0] = this.modelFaces[i].vertices[j][0];
-                    alteredFace.vertices[j][1] = this.modelFaces[i].vertices[j][1];
-                    alteredFace.vertices[j][2] = this.modelFaces[i].vertices[j][2];
+                    alteredFace.vertices[j].x = this.modelFaces[i].vertices[j].x;
+                    alteredFace.vertices[j].y = this.modelFaces[i].vertices[j].y;
+                    alteredFace.vertices[j].z = this.modelFaces[i].vertices[j].z;
                 }
-                alteredFace.setNormal(this.modelFaces[i].normal[0], this.modelFaces[i].normal[1], this.modelFaces[i].normal[2]);
+                alteredFace.setNormal(this.modelFaces[i].normal.x, this.modelFaces[i].normal.y, this.modelFaces[i].normal.z);
                 alteredModel.addModelFace(alteredFace);
             }
         }
@@ -1408,106 +1411,106 @@ public final class ModelLoader{
                 alteredFace = alteredModel.modelFaces[i];
                 switch (alteredFace.faceType){
                     case RenderBlocks.TOP_FACE -> {
-                        alteredFace.vertices[0][0] = alteredFace.vertices[0][0] - (changeConstant * xFactor);
-                        alteredFace.vertices[0][1] = alteredFace.vertices[0][1] - (changeConstant * yFactor);
-                        alteredFace.vertices[0][2] = alteredFace.vertices[0][2] + (changeConstant * zFactor);
+                        alteredFace.vertices[0].x = alteredFace.vertices[0].x - (changeConstant * xFactor);
+                        alteredFace.vertices[0].y = alteredFace.vertices[0].y - (changeConstant * yFactor);
+                        alteredFace.vertices[0].z = alteredFace.vertices[0].z + (changeConstant * zFactor);
 
-                        alteredFace.vertices[1][0] = alteredFace.vertices[1][0] + (changeConstant * xFactor);
-                        alteredFace.vertices[1][1] = alteredFace.vertices[1][1] - (changeConstant * yFactor);
-                        alteredFace.vertices[1][2] = alteredFace.vertices[1][2] - (changeConstant * zFactor);
+                        alteredFace.vertices[1].x = alteredFace.vertices[1].x + (changeConstant * xFactor);
+                        alteredFace.vertices[1].y = alteredFace.vertices[1].y - (changeConstant * yFactor);
+                        alteredFace.vertices[1].z = alteredFace.vertices[1].z - (changeConstant * zFactor);
 
-                        alteredFace.vertices[2][0] = alteredFace.vertices[2][0] - (changeConstant * xFactor);
-                        alteredFace.vertices[2][1] = alteredFace.vertices[2][1] - (changeConstant * yFactor);
-                        alteredFace.vertices[2][2] = alteredFace.vertices[2][2] - (changeConstant * zFactor);
+                        alteredFace.vertices[2].x = alteredFace.vertices[2].x - (changeConstant * xFactor);
+                        alteredFace.vertices[2].y = alteredFace.vertices[2].y - (changeConstant * yFactor);
+                        alteredFace.vertices[2].z = alteredFace.vertices[2].z - (changeConstant * zFactor);
 
-                        alteredFace.vertices[3][0] = alteredFace.vertices[3][0] + (changeConstant * xFactor);
-                        alteredFace.vertices[3][1] = alteredFace.vertices[3][1] - (changeConstant * yFactor);
-                        alteredFace.vertices[3][2] = alteredFace.vertices[3][2] + (changeConstant * zFactor);
+                        alteredFace.vertices[3].x = alteredFace.vertices[3].x + (changeConstant * xFactor);
+                        alteredFace.vertices[3].y = alteredFace.vertices[3].y - (changeConstant * yFactor);
+                        alteredFace.vertices[3].z = alteredFace.vertices[3].z + (changeConstant * zFactor);
                     }
                     case RenderBlocks.BOTTOM_FACE -> {
-                        alteredFace.vertices[0][0] = alteredFace.vertices[0][0] + (changeConstant * xFactor);
-                        alteredFace.vertices[0][1] = alteredFace.vertices[0][1] + (changeConstant * yFactor);
-                        alteredFace.vertices[0][2] = alteredFace.vertices[0][2] + (changeConstant * zFactor);
+                        alteredFace.vertices[0].x = alteredFace.vertices[0].x + (changeConstant * xFactor);
+                        alteredFace.vertices[0].y = alteredFace.vertices[0].y + (changeConstant * yFactor);
+                        alteredFace.vertices[0].z = alteredFace.vertices[0].z + (changeConstant * zFactor);
 
-                        alteredFace.vertices[1][0] = alteredFace.vertices[1][0] - (changeConstant * xFactor);
-                        alteredFace.vertices[1][1] = alteredFace.vertices[1][1] + (changeConstant * yFactor);
-                        alteredFace.vertices[1][2] = alteredFace.vertices[1][2] - (changeConstant * zFactor);
+                        alteredFace.vertices[1].x = alteredFace.vertices[1].x - (changeConstant * xFactor);
+                        alteredFace.vertices[1].y = alteredFace.vertices[1].y + (changeConstant * yFactor);
+                        alteredFace.vertices[1].z = alteredFace.vertices[1].z - (changeConstant * zFactor);
 
-                        alteredFace.vertices[2][0] = alteredFace.vertices[2][0] + (changeConstant * xFactor);
-                        alteredFace.vertices[2][1] = alteredFace.vertices[2][1] + (changeConstant * yFactor);
-                        alteredFace.vertices[2][2] = alteredFace.vertices[2][2] - (changeConstant * zFactor);
+                        alteredFace.vertices[2].x = alteredFace.vertices[2].x + (changeConstant * xFactor);
+                        alteredFace.vertices[2].y = alteredFace.vertices[2].y + (changeConstant * yFactor);
+                        alteredFace.vertices[2].z = alteredFace.vertices[2].z - (changeConstant * zFactor);
 
-                        alteredFace.vertices[3][0] = alteredFace.vertices[3][0] - (changeConstant * xFactor);
-                        alteredFace.vertices[3][1] = alteredFace.vertices[3][1] + (changeConstant * yFactor);
-                        alteredFace.vertices[3][2] = alteredFace.vertices[3][2] + (changeConstant * zFactor);
+                        alteredFace.vertices[3].x = alteredFace.vertices[3].x - (changeConstant * xFactor);
+                        alteredFace.vertices[3].y = alteredFace.vertices[3].y + (changeConstant * yFactor);
+                        alteredFace.vertices[3].z = alteredFace.vertices[3].z + (changeConstant * zFactor);
                     }
                     case RenderBlocks.NORTH_FACE -> {
-                        alteredFace.vertices[0][0] = alteredFace.vertices[0][0] + (changeConstant * xFactor);
-                        alteredFace.vertices[0][1] = alteredFace.vertices[0][1] + (changeConstant * yFactor);
-                        alteredFace.vertices[0][2] = alteredFace.vertices[0][2] + (changeConstant * zFactor);
+                        alteredFace.vertices[0].x = alteredFace.vertices[0].x + (changeConstant * xFactor);
+                        alteredFace.vertices[0].y = alteredFace.vertices[0].y + (changeConstant * yFactor);
+                        alteredFace.vertices[0].z = alteredFace.vertices[0].z + (changeConstant * zFactor);
 
-                        alteredFace.vertices[1][0] = alteredFace.vertices[1][0] + (changeConstant * xFactor);
-                        alteredFace.vertices[1][1] = alteredFace.vertices[1][1] - (changeConstant * yFactor);
-                        alteredFace.vertices[1][2] = alteredFace.vertices[1][2] - (changeConstant * zFactor);
+                        alteredFace.vertices[1].x = alteredFace.vertices[1].x + (changeConstant * xFactor);
+                        alteredFace.vertices[1].y = alteredFace.vertices[1].y - (changeConstant * yFactor);
+                        alteredFace.vertices[1].z = alteredFace.vertices[1].z - (changeConstant * zFactor);
 
-                        alteredFace.vertices[2][0] = alteredFace.vertices[2][0] + (changeConstant * xFactor);
-                        alteredFace.vertices[2][1] = alteredFace.vertices[2][1] - (changeConstant * yFactor);
-                        alteredFace.vertices[2][2] = alteredFace.vertices[2][2] + (changeConstant * zFactor);
+                        alteredFace.vertices[2].x = alteredFace.vertices[2].x + (changeConstant * xFactor);
+                        alteredFace.vertices[2].y = alteredFace.vertices[2].y - (changeConstant * yFactor);
+                        alteredFace.vertices[2].z = alteredFace.vertices[2].z + (changeConstant * zFactor);
 
-                        alteredFace.vertices[3][0] = alteredFace.vertices[3][0] + (changeConstant * xFactor);
-                        alteredFace.vertices[3][1] = alteredFace.vertices[3][1] + (changeConstant * yFactor);
-                        alteredFace.vertices[3][2] = alteredFace.vertices[3][2] - (changeConstant * zFactor);
+                        alteredFace.vertices[3].x = alteredFace.vertices[3].x + (changeConstant * xFactor);
+                        alteredFace.vertices[3].y = alteredFace.vertices[3].y + (changeConstant * yFactor);
+                        alteredFace.vertices[3].z = alteredFace.vertices[3].z - (changeConstant * zFactor);
                     }
                     case RenderBlocks.SOUTH_FACE -> {
-                        alteredFace.vertices[0][0] = alteredFace.vertices[0][0] - (changeConstant * xFactor);
-                        alteredFace.vertices[0][1] = alteredFace.vertices[0][1] + (changeConstant * yFactor);
-                        alteredFace.vertices[0][2] = alteredFace.vertices[0][2] - (changeConstant * zFactor);
+                        alteredFace.vertices[0].x = alteredFace.vertices[0].x - (changeConstant * xFactor);
+                        alteredFace.vertices[0].y = alteredFace.vertices[0].y + (changeConstant * yFactor);
+                        alteredFace.vertices[0].z = alteredFace.vertices[0].z - (changeConstant * zFactor);
 
-                        alteredFace.vertices[1][0] = alteredFace.vertices[1][0] - (changeConstant * xFactor);
-                        alteredFace.vertices[1][1] = alteredFace.vertices[1][1] - (changeConstant * yFactor);
-                        alteredFace.vertices[1][2] = alteredFace.vertices[1][2] + (changeConstant * zFactor);
+                        alteredFace.vertices[1].x = alteredFace.vertices[1].x - (changeConstant * xFactor);
+                        alteredFace.vertices[1].y = alteredFace.vertices[1].y - (changeConstant * yFactor);
+                        alteredFace.vertices[1].z = alteredFace.vertices[1].z + (changeConstant * zFactor);
 
-                        alteredFace.vertices[2][0] = alteredFace.vertices[2][0] - (changeConstant * xFactor);
-                        alteredFace.vertices[2][1] = alteredFace.vertices[2][1] - (changeConstant * yFactor);
-                        alteredFace.vertices[2][2] = alteredFace.vertices[2][2] - (changeConstant * zFactor);
+                        alteredFace.vertices[2].x = alteredFace.vertices[2].x - (changeConstant * xFactor);
+                        alteredFace.vertices[2].y = alteredFace.vertices[2].y - (changeConstant * yFactor);
+                        alteredFace.vertices[2].z = alteredFace.vertices[2].z - (changeConstant * zFactor);
 
-                        alteredFace.vertices[3][0] = alteredFace.vertices[3][0] - (changeConstant * xFactor);
-                        alteredFace.vertices[3][1] = alteredFace.vertices[3][1] + (changeConstant * yFactor);
-                        alteredFace.vertices[3][2] = alteredFace.vertices[3][2] + (changeConstant * zFactor);
+                        alteredFace.vertices[3].x = alteredFace.vertices[3].x - (changeConstant * xFactor);
+                        alteredFace.vertices[3].y = alteredFace.vertices[3].y + (changeConstant * yFactor);
+                        alteredFace.vertices[3].z = alteredFace.vertices[3].z + (changeConstant * zFactor);
                     }
                     case RenderBlocks.EAST_FACE -> {
-                        alteredFace.vertices[0][0] = alteredFace.vertices[0][0] - (changeConstant * xFactor);
-                        alteredFace.vertices[0][1] = alteredFace.vertices[0][1] + (changeConstant * yFactor);
-                        alteredFace.vertices[0][2] = alteredFace.vertices[0][2] + (changeConstant * zFactor);
+                        alteredFace.vertices[0].x = alteredFace.vertices[0].x - (changeConstant * xFactor);
+                        alteredFace.vertices[0].y = alteredFace.vertices[0].y + (changeConstant * yFactor);
+                        alteredFace.vertices[0].z = alteredFace.vertices[0].z + (changeConstant * zFactor);
 
-                        alteredFace.vertices[1][0] = alteredFace.vertices[1][0] + (changeConstant * xFactor);
-                        alteredFace.vertices[1][1] = alteredFace.vertices[1][1] - (changeConstant * yFactor);
-                        alteredFace.vertices[1][2] = alteredFace.vertices[1][2] + (changeConstant * zFactor);
+                        alteredFace.vertices[1].x = alteredFace.vertices[1].x + (changeConstant * xFactor);
+                        alteredFace.vertices[1].y = alteredFace.vertices[1].y - (changeConstant * yFactor);
+                        alteredFace.vertices[1].z = alteredFace.vertices[1].z + (changeConstant * zFactor);
 
-                        alteredFace.vertices[2][0] = alteredFace.vertices[2][0] - (changeConstant * xFactor);
-                        alteredFace.vertices[2][1] = alteredFace.vertices[2][1] - (changeConstant * yFactor);
-                        alteredFace.vertices[2][2] = alteredFace.vertices[2][2] + (changeConstant * zFactor);
+                        alteredFace.vertices[2].x = alteredFace.vertices[2].x - (changeConstant * xFactor);
+                        alteredFace.vertices[2].y = alteredFace.vertices[2].y - (changeConstant * yFactor);
+                        alteredFace.vertices[2].z = alteredFace.vertices[2].z + (changeConstant * zFactor);
 
-                        alteredFace.vertices[3][0] = alteredFace.vertices[3][0] + (changeConstant * xFactor);
-                        alteredFace.vertices[3][1] = alteredFace.vertices[3][1] + (changeConstant * yFactor);
-                        alteredFace.vertices[3][2] = alteredFace.vertices[3][2] + (changeConstant * zFactor);
+                        alteredFace.vertices[3].x = alteredFace.vertices[3].x + (changeConstant * xFactor);
+                        alteredFace.vertices[3].y = alteredFace.vertices[3].y + (changeConstant * yFactor);
+                        alteredFace.vertices[3].z = alteredFace.vertices[3].z + (changeConstant * zFactor);
                     }
                     case RenderBlocks.WEST_FACE -> {
-                        alteredFace.vertices[0][0] = alteredFace.vertices[0][0] + (changeConstant * xFactor);
-                        alteredFace.vertices[0][1] = alteredFace.vertices[0][1] + (changeConstant * yFactor);
-                        alteredFace.vertices[0][2] = alteredFace.vertices[0][2] - (changeConstant * zFactor);
+                        alteredFace.vertices[0].x = alteredFace.vertices[0].x + (changeConstant * xFactor);
+                        alteredFace.vertices[0].y = alteredFace.vertices[0].y + (changeConstant * yFactor);
+                        alteredFace.vertices[0].z = alteredFace.vertices[0].z - (changeConstant * zFactor);
 
-                        alteredFace.vertices[1][0] = alteredFace.vertices[1][0] - (changeConstant * xFactor);
-                        alteredFace.vertices[1][1] = alteredFace.vertices[1][1] - (changeConstant * yFactor);
-                        alteredFace.vertices[1][2] = alteredFace.vertices[1][2] - (changeConstant * zFactor);
+                        alteredFace.vertices[1].x = alteredFace.vertices[1].x - (changeConstant * xFactor);
+                        alteredFace.vertices[1].y = alteredFace.vertices[1].y - (changeConstant * yFactor);
+                        alteredFace.vertices[1].z = alteredFace.vertices[1].z - (changeConstant * zFactor);
 
-                        alteredFace.vertices[2][0] = alteredFace.vertices[2][0] + (changeConstant * xFactor);
-                        alteredFace.vertices[2][1] = alteredFace.vertices[2][1] - (changeConstant * yFactor);
-                        alteredFace.vertices[2][2] = alteredFace.vertices[2][2] - (changeConstant * zFactor);
+                        alteredFace.vertices[2].x = alteredFace.vertices[2].x + (changeConstant * xFactor);
+                        alteredFace.vertices[2].y = alteredFace.vertices[2].y - (changeConstant * yFactor);
+                        alteredFace.vertices[2].z = alteredFace.vertices[2].z - (changeConstant * zFactor);
 
-                        alteredFace.vertices[3][0] = alteredFace.vertices[3][0] - (changeConstant * xFactor);
-                        alteredFace.vertices[3][1] = alteredFace.vertices[3][1] + (changeConstant * yFactor);
-                        alteredFace.vertices[3][2] = alteredFace.vertices[3][2] - (changeConstant * zFactor);
+                        alteredFace.vertices[3].x = alteredFace.vertices[3].x - (changeConstant * xFactor);
+                        alteredFace.vertices[3].y = alteredFace.vertices[3].y + (changeConstant * yFactor);
+                        alteredFace.vertices[3].z = alteredFace.vertices[3].z - (changeConstant * zFactor);
                     }
                 }
             }
@@ -1537,9 +1540,9 @@ public final class ModelLoader{
             if(this.modelFaces[i] != null){
                 alteredFace = new ModelFace(this.modelFaces[i].faceType);
                 for(int j = 0; j < alteredFace.vertices.length; j++){
-                    alteredFace.vertices[j][0] = this.modelFaces[i].vertices[j][0];
-                    alteredFace.vertices[j][1] = this.modelFaces[i].vertices[j][1];
-                    alteredFace.vertices[j][2] = this.modelFaces[i].vertices[j][2];
+                    alteredFace.vertices[j].x = this.modelFaces[i].vertices[j].x;
+                    alteredFace.vertices[j].y = this.modelFaces[i].vertices[j].y;
+                    alteredFace.vertices[j].z = this.modelFaces[i].vertices[j].z;
                 }
                 alteredModel.addModelFace(alteredFace);
             }
@@ -1564,12 +1567,12 @@ public final class ModelLoader{
             switch (alteredFace.faceType){
                 case RenderBlocks.TOP_FACE -> {
                     for(int j = 0; j < alteredFace.vertices.length; j++){
-                        alteredFace.vertices[j][1] += 0.5F;
+                        alteredFace.vertices[j].y += 0.5F;
                     }
                 }
                 case RenderBlocks.NORTH_FACE, RenderBlocks.SOUTH_FACE, RenderBlocks.EAST_FACE, RenderBlocks.WEST_FACE -> {
-                    alteredFace.vertices[1][1] += 0.5F;
-                    alteredFace.vertices[2][1] += 0.5F;
+                    alteredFace.vertices[1].y += 0.5F;
+                    alteredFace.vertices[2].y += 0.5F;
                 }
             }
         }
@@ -1584,9 +1587,9 @@ public final class ModelLoader{
             if(this.modelFaces[i] != null){
                 alteredFace = new ModelFace(this.modelFaces[i].faceType);
                 for(int j = 0; j < alteredFace.vertices.length; j++){
-                    alteredFace.vertices[j][0] = this.modelFaces[i].vertices[j][0];
-                    alteredFace.vertices[j][1] = this.modelFaces[i].vertices[j][1];
-                    alteredFace.vertices[j][2] = this.modelFaces[i].vertices[j][2];
+                    alteredFace.vertices[j].x = this.modelFaces[i].vertices[j].x;
+                    alteredFace.vertices[j].y = this.modelFaces[i].vertices[j].y;
+                    alteredFace.vertices[j].z = this.modelFaces[i].vertices[j].z;
                 }
                 alteredModel.addModelFace(alteredFace);
             }
@@ -1611,12 +1614,12 @@ public final class ModelLoader{
             switch (alteredFace.faceType){
                 case RenderBlocks.BOTTOM_FACE -> {
                     for(int j = 0; j < alteredFace.vertices.length; j++){
-                        alteredFace.vertices[j][1] -= 0.5F;
+                        alteredFace.vertices[j].y -= 0.5F;
                     }
                 }
                 case RenderBlocks.NORTH_FACE, RenderBlocks.SOUTH_FACE, RenderBlocks.EAST_FACE, RenderBlocks.WEST_FACE -> {
-                    alteredFace.vertices[0][1] -= 0.5F;
-                    alteredFace.vertices[3][1] -= 0.5F;
+                    alteredFace.vertices[0].y -= 0.5F;
+                    alteredFace.vertices[3].y -= 0.5F;
                 }
             }
         }
@@ -1631,9 +1634,9 @@ public final class ModelLoader{
             if(this.modelFaces[i] != null){
                 alteredFace = new ModelFace(this.modelFaces[i].faceType);
                 for(int j = 0; j < alteredFace.vertices.length; j++){
-                    alteredFace.vertices[j][0] = this.modelFaces[i].vertices[j][0];
-                    alteredFace.vertices[j][1] = this.modelFaces[i].vertices[j][1];
-                    alteredFace.vertices[j][2] = this.modelFaces[i].vertices[j][2];
+                    alteredFace.vertices[j].x = this.modelFaces[i].vertices[j].x;
+                    alteredFace.vertices[j].y = this.modelFaces[i].vertices[j].y;
+                    alteredFace.vertices[j].z = this.modelFaces[i].vertices[j].z;
                 }
                 alteredModel.addModelFace(alteredFace);
             }
@@ -1657,16 +1660,16 @@ public final class ModelLoader{
             alteredFace = alteredModel.modelFaces[i];
             switch (alteredFace.faceType){
                 case RenderBlocks.TOP_FACE, RenderBlocks.EAST_FACE -> {
-                    alteredFace.vertices[1][0] -= 0.5F;
-                    alteredFace.vertices[3][0] -= 0.5F;
+                    alteredFace.vertices[1].x -= 0.5F;
+                    alteredFace.vertices[3].x -= 0.5F;
                 }
                 case RenderBlocks.BOTTOM_FACE, RenderBlocks.WEST_FACE -> {
-                    alteredFace.vertices[0][0] -= 0.5F;
-                    alteredFace.vertices[2][0] -= 0.5F;
+                    alteredFace.vertices[0].x -= 0.5F;
+                    alteredFace.vertices[2].x -= 0.5F;
                 }
                 case RenderBlocks.NORTH_FACE -> {
                     for(int j = 0; j < alteredFace.vertices.length; j++){
-                        alteredFace.vertices[j][0] -= 0.5F;
+                        alteredFace.vertices[j].x -= 0.5F;
 
                     }
                 }
@@ -1683,9 +1686,9 @@ public final class ModelLoader{
             if(this.modelFaces[i] != null){
                 alteredFace = new ModelFace(this.modelFaces[i].faceType);
                 for(int j = 0; j < alteredFace.vertices.length; j++){
-                    alteredFace.vertices[j][0] = this.modelFaces[i].vertices[j][0];
-                    alteredFace.vertices[j][1] = this.modelFaces[i].vertices[j][1];
-                    alteredFace.vertices[j][2] = this.modelFaces[i].vertices[j][2];
+                    alteredFace.vertices[j].x = this.modelFaces[i].vertices[j].x;
+                    alteredFace.vertices[j].y = this.modelFaces[i].vertices[j].y;
+                    alteredFace.vertices[j].z = this.modelFaces[i].vertices[j].z;
                 }
                 alteredModel.addModelFace(alteredFace);
             }
@@ -1709,16 +1712,16 @@ public final class ModelLoader{
             alteredFace = alteredModel.modelFaces[i];
             switch (alteredFace.faceType){
                 case RenderBlocks.BOTTOM_FACE, RenderBlocks.WEST_FACE  -> {
-                    alteredFace.vertices[1][0] += 0.5F;
-                    alteredFace.vertices[3][0] += 0.5F;
+                    alteredFace.vertices[1].x += 0.5F;
+                    alteredFace.vertices[3].x += 0.5F;
                 }
                 case RenderBlocks.EAST_FACE, RenderBlocks.TOP_FACE -> {
-                    alteredFace.vertices[0][0] += 0.5F;
-                    alteredFace.vertices[2][0] += 0.5F;
+                    alteredFace.vertices[0].x += 0.5F;
+                    alteredFace.vertices[2].x += 0.5F;
                 }
                 case RenderBlocks.SOUTH_FACE -> {
                     for(int j = 0; j < alteredFace.vertices.length; j++){
-                        alteredFace.vertices[j][0] += 0.5F;
+                        alteredFace.vertices[j].x += 0.5F;
 
                     }
                 }
@@ -1735,9 +1738,9 @@ public final class ModelLoader{
             if(this.modelFaces[i] != null){
                 alteredFace = new ModelFace(this.modelFaces[i].faceType);
                 for(int j = 0; j < alteredFace.vertices.length; j++){
-                    alteredFace.vertices[j][0] = this.modelFaces[i].vertices[j][0];
-                    alteredFace.vertices[j][1] = this.modelFaces[i].vertices[j][1];
-                    alteredFace.vertices[j][2] = this.modelFaces[i].vertices[j][2];
+                    alteredFace.vertices[j].x = this.modelFaces[i].vertices[j].x;
+                    alteredFace.vertices[j].y = this.modelFaces[i].vertices[j].y;
+                    alteredFace.vertices[j].z = this.modelFaces[i].vertices[j].z;
                 }
                 alteredModel.addModelFace(alteredFace);
             }
@@ -1761,20 +1764,20 @@ public final class ModelLoader{
             alteredFace = alteredModel.modelFaces[i];
             switch (alteredFace.faceType){
                 case RenderBlocks.TOP_FACE, RenderBlocks.BOTTOM_FACE -> {
-                    alteredFace.vertices[0][2] -= 0.5F;
-                    alteredFace.vertices[3][2] -= 0.5F;
+                    alteredFace.vertices[0].z -= 0.5F;
+                    alteredFace.vertices[3].z -= 0.5F;
                 }
                 case RenderBlocks.NORTH_FACE -> {
-                    alteredFace.vertices[0][2] -= 0.5F;
-                    alteredFace.vertices[2][2] -= 0.5F;
+                    alteredFace.vertices[0].z -= 0.5F;
+                    alteredFace.vertices[2].z -= 0.5F;
                 }
                 case RenderBlocks.SOUTH_FACE -> {
-                    alteredFace.vertices[1][2] -= 0.5F;
-                    alteredFace.vertices[3][2] -= 0.5F;
+                    alteredFace.vertices[1].z -= 0.5F;
+                    alteredFace.vertices[3].z -= 0.5F;
                 }
                 case RenderBlocks.EAST_FACE -> {
                     for(int j = 0; j < alteredFace.vertices.length; j++){
-                        alteredFace.vertices[j][2] -= 0.5F;
+                        alteredFace.vertices[j].z -= 0.5F;
                     }
                 }
             }
@@ -1790,9 +1793,9 @@ public final class ModelLoader{
             if(this.modelFaces[i] != null){
                 alteredFace = new ModelFace(this.modelFaces[i].faceType);
                 for(int j = 0; j < alteredFace.vertices.length; j++){
-                    alteredFace.vertices[j][0] = this.modelFaces[i].vertices[j][0];
-                    alteredFace.vertices[j][1] = this.modelFaces[i].vertices[j][1];
-                    alteredFace.vertices[j][2] = this.modelFaces[i].vertices[j][2];
+                    alteredFace.vertices[j].x = this.modelFaces[i].vertices[j].x;
+                    alteredFace.vertices[j].y = this.modelFaces[i].vertices[j].y;
+                    alteredFace.vertices[j].z = this.modelFaces[i].vertices[j].z;
                 }
                 alteredModel.addModelFace(alteredFace);
             }
@@ -1816,26 +1819,60 @@ public final class ModelLoader{
             alteredFace = alteredModel.modelFaces[i];
             switch (alteredFace.faceType){
                 case RenderBlocks.TOP_FACE, RenderBlocks.BOTTOM_FACE -> {
-                    alteredFace.vertices[1][2] += 0.5F;
-                    alteredFace.vertices[2][2] += 0.5F;
+                    alteredFace.vertices[1].z += 0.5F;
+                    alteredFace.vertices[2].z += 0.5F;
                 }
                 case RenderBlocks.NORTH_FACE -> {
-                    alteredFace.vertices[1][2] += 0.5F;
-                    alteredFace.vertices[3][2] += 0.5F;
+                    alteredFace.vertices[1].z += 0.5F;
+                    alteredFace.vertices[3].z += 0.5F;
                 }
                 case RenderBlocks.SOUTH_FACE -> {
-                    alteredFace.vertices[0][2] += 0.5F;
-                    alteredFace.vertices[2][2] += 0.5F;
+                    alteredFace.vertices[0].z += 0.5F;
+                    alteredFace.vertices[2].z += 0.5F;
                 }
                 case RenderBlocks.WEST_FACE -> {
                     for(int j = 0; j < alteredFace.vertices.length; j++){
-                        alteredFace.vertices[j][2] += 0.5F;
+                        alteredFace.vertices[j].z += 0.5F;
                     }
                 }
             }
         }
 
         return alteredModel;
+    }
+
+
+    public ModelLoader copyModel(){
+        ModelLoader returnModel = new ModelLoader();
+        returnModel.modelFaces = new ModelFace[this.modelFaces.length];
+
+        for(int i = 0; i < this.modelFaces.length; i++){
+
+            returnModel.modelFaces[i] = new ModelFace(this.modelFaces[i].faceType);
+
+            returnModel.modelFaces[i].normal.x = this.modelFaces[i].normal.x;
+            returnModel.modelFaces[i].normal.y = this.modelFaces[i].normal.y;
+            returnModel.modelFaces[i].normal.z = this.modelFaces[i].normal.z;
+
+            for(int j = 0; j < returnModel.modelFaces[i].vertices.length; j++){
+                returnModel.modelFaces[i].vertices[j].x = this.modelFaces[i].vertices[j].x;
+                returnModel.modelFaces[i].vertices[j].y = this.modelFaces[i].vertices[j].y;
+                returnModel.modelFaces[i].vertices[j].z = this.modelFaces[i].vertices[j].z;
+            }
+        }
+
+        return returnModel;
+    }
+
+
+    //meant for the default block model
+    public ModelFace getModelFace(int face){
+        for(int i = 0; i < this.modelFaces.length; i++){
+            if(this.modelFaces[i].faceType == face){
+                return this.modelFaces[i];
+            }
+        }
+        return null;
     }
 
 

@@ -5,15 +5,14 @@ import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
 import spacegame.core.MouseListener;
 import spacegame.core.SpaceGame;
+import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
-import spacegame.render.Tessellator;
-import spacegame.render.TextureLoader;
 
 public final class GuiLightFire extends GuiAction {
-    public TextureLoader campFire;
-    public TextureLoader stone1Texture;
-    public TextureLoader stone2Texture;
-    public TextureLoader transparentBackground;
+    public int campFire;
+    public int stone1Texture;
+    public int stone2Texture;
+    public int transparentBackground;
     public MoveableObject stone1;
     public MoveableObject stone2;
     public int x;
@@ -41,28 +40,24 @@ public final class GuiLightFire extends GuiAction {
 
     @Override
     public void loadTextures() {
-        this.campFire = new TextureLoader("src/spacegame/assets/textures/blocks/campFireUnlit.png", 32, 32);
-        this.stone1Texture = new TextureLoader("src/spacegame/assets/textures/gui/guiInventory/stone1.png", 32, 32);
-        this.stone2Texture = new TextureLoader("src/spacegame/assets/textures/gui/guiInventory/stone2.png", 32, 32);
-        this.transparentBackground = new TextureLoader("src/spacegame/assets/textures/gui/transparentBackground.png", 32,32);
+        this.campFire = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/blocks/campFireUnlit.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.stone1Texture = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInventory/stone1.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.stone2Texture = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInventory/stone2.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.transparentBackground = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
     }
 
     @Override
     public void deleteTextures() {
-        GL46.glDeleteTextures(this.campFire.texID);
-        GL46.glDeleteTextures(this.stone1Texture.texID);
-        GL46.glDeleteTextures(this.stone2Texture.texID);
-        GL46.glDeleteTextures(this.transparentBackground.texID);
-        this.campFire = null;
-        this.stone1Texture = null;
-        this.stone2Texture = null;
-        this.transparentBackground = null;
+        SpaceGame.instance.renderEngine.deleteTexture(this.campFire);
+        SpaceGame.instance.renderEngine.deleteTexture(this.stone1Texture);
+        SpaceGame.instance.renderEngine.deleteTexture(this.stone2Texture);
+        SpaceGame.instance.renderEngine.deleteTexture(this.transparentBackground);
     }
 
     @Override
     public void drawGui() {
         GLFW.glfwSetInputMode(this.sg.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
-        Tessellator tessellator = Tessellator.instance;
+        RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         tessellator.toggleOrtho();
         float x = 0;
         float y = 0;
@@ -76,7 +71,7 @@ public final class GuiLightFire extends GuiAction {
         tessellator.addElements();
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-        tessellator.drawTexture2D(this.transparentBackground.texID, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.transparentBackground, Shader.screen2DTexture, SpaceGame.camera);
 
         backgroundWidth = 512;
         backgroundHeight = 512;
@@ -86,12 +81,12 @@ public final class GuiLightFire extends GuiAction {
         tessellator.addVertex2DTexture(16777215, x - backgroundWidth/2, y + backgroundHeight/2, z, 2);
         tessellator.addVertex2DTexture(16777215, x + backgroundWidth/2, y - backgroundHeight/2, z, 0);
         tessellator.addElements();
-        tessellator.drawTexture2D(this.campFire.texID, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.campFire, Shader.screen2DTexture, SpaceGame.camera);
         GL46.glDisable(GL46.GL_BLEND);
         tessellator.toggleOrtho();
 
-        this.stone1.render(this.stone1Texture.texID);
-        this.stone2.render(this.stone2Texture.texID);
+        this.stone1.render(this.stone1Texture);
+        this.stone2.render(this.stone2Texture);
         this.checkFireLighting();
     }
 
@@ -101,13 +96,13 @@ public final class GuiLightFire extends GuiAction {
         if (this.sg.currentlySelectedMoveableObject != null) {
             if (this.sg.currentlySelectedMoveableObject.equals(this.stone1)) {
                 if (this.stone2.isMouseHoveredOver() && this.sg.currentlySelectedMoveableObject.pickedUp && Math.abs(x) <= 256 && Math.abs(y) <= 256) {
-                   this.sg.save.activeWorld.activeWorldFace.setBlockWithNotify(this.x, this.y, this.z, Block.campfireLit.ID);
+                   this.sg.save.activeWorld.setBlockWithNotify(this.x, this.y, this.z, Block.campfireLit.ID);
                    GLFW.glfwSetInputMode(this.sg.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
                    this.sg.setNewGui(new GuiInGame(this.sg));
                 }
             } else if (this.sg.currentlySelectedMoveableObject.equals(this.stone2)) {
                 if (this.stone1.isMouseHoveredOver() && this.sg.currentlySelectedMoveableObject.pickedUp && Math.abs(x) <= 256 && Math.abs(y) <= 256) {
-                    this.sg.save.activeWorld.activeWorldFace.setBlockWithNotify(this.x, this.y, this.z, Block.campfireLit.ID);
+                    this.sg.save.activeWorld.setBlockWithNotify(this.x, this.y, this.z, Block.campfireLit.ID);
                     GLFW.glfwSetInputMode(this.sg.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
                     this.sg.setNewGui(new GuiInGame(this.sg));
                 }

@@ -7,7 +7,7 @@ public abstract class WorldGen {
     public Chunk chunk;
     public int index;
     public Random rand;
-    public WorldFace worldFace;
+    public WorldEarth worldEarth;
     public static ArrayList<Chunk> chunksToRebuild = new ArrayList<>();
     public boolean willGenerate;
     public ArrayList<int[]> blockPos = new ArrayList<>();

@@ -1,0 +1,7 @@
+techName:Refined Stone Tools
+techUpdateEvent:Crafting Stone Hand Tools
+unlockedTech:Polished Stone Tools
+unlockRequirementAmount:50
+requiredTech:Stone Hand Tools
+unlockedDescription:Better Stone Tools
+era:Neolithic

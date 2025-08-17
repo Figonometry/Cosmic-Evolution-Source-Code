@@ -249,6 +249,12 @@ public final class Shader {
         GL46.glUniform3f(varLocation, vec.x, vec.y, vec.z);
     }
 
+    public void uploadVec3f(String varName, float x, float y, float z){ //Meant for faster upload of vec3 to avoid object allocation overhead
+        int varLocation = GL46.glGetUniformLocation(shaderProgramID, varName);
+        this.use();
+        GL46.glUniform3f(varLocation, x, y, z);
+    }
+
     public void uploadFloat(String varName, float val) {
         int varLocation = GL46.glGetUniformLocation(this.shaderProgramID, varName);
         this.use();

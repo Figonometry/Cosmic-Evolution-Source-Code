@@ -3,17 +3,16 @@ package spacegame.gui;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
 import spacegame.core.SpaceGame;
+import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
-import spacegame.render.Tessellator;
-import spacegame.render.TextureLoader;
 import spacegame.world.Save;
 
 public final class GuiWorldSelect extends Gui {
     private SpaceGame sg;
-    public TextureLoader background;
-    public TextureLoader title;
-    public TextureLoader star;
-    public TextureLoader earth;
+    public int background;
+    public int title;
+    public int star;
+    public int earth;
     public Button save1;
     public Button save2;
     public Button save3;
@@ -39,33 +38,29 @@ public final class GuiWorldSelect extends Gui {
 
     @Override
     public void loadTextures() {
-        this.star = new TextureLoader("src/spacegame/assets/textures/gui/guiMainMenu/star.png", 64,  64);
-        this.earth = new TextureLoader("src/spacegame/assets/textures/gui/guiMainMenu/earth.png", 512,512);
-        this.title = new TextureLoader("src/spacegame/assets/textures/gui/guiMainMenu/saveSelect.png", 1052,120);
-        this.background = new TextureLoader("src/spacegame/assets/textures/gui/transparentBackground.png", 32,32);
+        this.star = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/star.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.earth = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/earth.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.title = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/saveSelect.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.background = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
     }
 
     @Override
     public void deleteTextures() {
-        GL46.glDeleteTextures(this.star.texID);
-        GL46.glDeleteTextures(this.earth.texID);
-        GL46.glDeleteTextures(this.title.texID);
-        GL46.glDeleteTextures(this.background.texID);
-        this.star = null;
-        this.earth = null;
-        this.title = null;
-        this.background = null;
+        SpaceGame.instance.renderEngine.deleteTexture(this.star);
+        SpaceGame.instance.renderEngine.deleteTexture(this.earth);
+        SpaceGame.instance.renderEngine.deleteTexture(this.title);
+        SpaceGame.instance.renderEngine.deleteTexture(this.background);
     }
 
     @Override
     public void drawGui() {
-        Tessellator tessellator = Tessellator.instance;
+        RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         tessellator.toggleOrtho();
         GLFW.glfwSetInputMode(this.sg.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
         for(int i = 0; i < GuiMainMenu.starCount; i++){
             GuiMainMenu.renderStar(i, tessellator);
         }
-        tessellator.drawTexture2D(this.star.texID, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.star, Shader.screen2DTexture, SpaceGame.camera);
 
         int titleWidth = 1052;
         int titleHeight = 120;
@@ -77,7 +72,7 @@ public final class GuiWorldSelect extends Gui {
         tessellator.addVertex2DTexture(16777215, titleX - titleWidth/2, titleY + titleHeight/2, titleZ, 2);
         tessellator.addVertex2DTexture(16777215, titleX + titleWidth/2, titleY - titleHeight/2, titleZ, 0);
         tessellator.addElements();
-        tessellator.drawTexture2D(this.title.texID, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.title, Shader.screen2DTexture, SpaceGame.camera);
 
         int earthSize = 256;
         int earthX = 0;
@@ -88,7 +83,7 @@ public final class GuiWorldSelect extends Gui {
         tessellator.addVertex2DTexture(16777215, earthX - earthSize, earthY + earthSize, earthZ, 2);
         tessellator.addVertex2DTexture(16777215, earthX + earthSize, earthY - earthSize, earthZ, 0);
         tessellator.addElements();
-        tessellator.drawTexture2D(this.earth.texID, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.earth, Shader.screen2DTexture, SpaceGame.camera);
 
         int backgroundWidth = SpaceGame.width;
         int backgroundHeight = SpaceGame.height;
@@ -102,7 +97,7 @@ public final class GuiWorldSelect extends Gui {
         tessellator.addElements();
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-        tessellator.drawTexture2D(this.background.texID, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.background, Shader.screen2DTexture, SpaceGame.camera);
         GL46.glDisable(GL46.GL_BLEND);
 
         tessellator.toggleOrtho();

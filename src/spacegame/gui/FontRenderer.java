@@ -1,10 +1,9 @@
 package spacegame.gui;
 
-import spacegame.core.MathUtils;
 import spacegame.core.SpaceGame;
 import spacegame.render.Assets;
+import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
-import spacegame.render.Tessellator;
 
 public final class FontRenderer {
     public int[] glyphMap = new int[256];
@@ -354,7 +353,7 @@ public final class FontRenderer {
 
 
     private void generateStringVertexData(int[] stringGlyphIndex, float x, float y, float depth, int color, int font) {
-        Tessellator tessellator = Tessellator.instance;
+        RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         final float spacingSizePerFont = 0.34f;
         int numGlyphs = stringGlyphIndex.length;
         for (int i = 0; i < numGlyphs; i++) {
@@ -375,12 +374,12 @@ public final class FontRenderer {
             }
         }
         tessellator.toggleOrtho();
-        tessellator.drawTexture2DWithAtlas(Assets.fontTextureLoader.texID, Shader.screen2DTextureAtlas, SpaceGame.camera);
+        tessellator.drawTexture2DWithAtlas(Assets.fontTextureLoader, Shader.screen2DTextureAtlas, SpaceGame.camera);
         tessellator.toggleOrtho();
     }
 
     private void generateStringVertexDataShadow(int[] stringGlyphIndex, float x, float y, float depth, int font) {
-        Tessellator tessellator = Tessellator.instance;
+        RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         final float spacingSizePerFont = 0.34f;
         int numGlyphs = stringGlyphIndex.length;
         for (int i = 0; i < numGlyphs; i++) {
@@ -401,7 +400,7 @@ public final class FontRenderer {
             }
         }
         tessellator.toggleOrtho();
-        tessellator.drawTexture2DWithAtlas(Assets.fontTextureLoader.texID, Shader.screen2DTextureAtlas, SpaceGame.camera);
+        tessellator.drawTexture2DWithAtlas(Assets.fontTextureLoader, Shader.screen2DTextureAtlas, SpaceGame.camera);
         tessellator.toggleOrtho();
     }
 

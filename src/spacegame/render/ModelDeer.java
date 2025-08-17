@@ -1,7 +1,7 @@
 package spacegame.render;
 
 import org.joml.Vector3f;
-import spacegame.core.MathUtils;
+import spacegame.core.MathUtil;
 import spacegame.core.SpaceGame;
 import spacegame.entity.Entity;
 import spacegame.entity.EntityDeer;
@@ -76,16 +76,16 @@ public final class ModelDeer extends Model {
         float angleBackLeftLeg = 0;
         float angleFrontRightLeg = 0;
         if(!deer.stopBackRightLeg) {
-            angleBackRightLeg = (float) (MathUtils.sin((stepInCycle / 4.775)) * legAngleMax);
+            angleBackRightLeg = (float) (MathUtil.sin((stepInCycle / 4.775)) * legAngleMax);
         }
         if(!deer.stopFrontLeftLeg) {
-            angleFrontLeftLeg = (float) (MathUtils.sin(((stepInCycle - 7.5) / 4.775)) * legAngleMax);
+            angleFrontLeftLeg = (float) (MathUtil.sin(((stepInCycle - 7.5) / 4.775)) * legAngleMax);
         }
         if(!deer.stopBackLeftLeg) {
-            angleBackLeftLeg = (float) (MathUtils.sin(((stepInCycle - 15) / 4.775)) * legAngleMax);
+            angleBackLeftLeg = (float) (MathUtil.sin(((stepInCycle - 15) / 4.775)) * legAngleMax);
         }
         if(!deer.stopFrontRightLeg) {
-            angleFrontRightLeg = (float) (MathUtils.sin(((stepInCycle - 22.5) / 4.775)) * legAngleMax);
+            angleFrontRightLeg = (float) (MathUtil.sin(((stepInCycle - 22.5) / 4.775)) * legAngleMax);
         }
 
         if(!continueAnimation){
@@ -117,7 +117,7 @@ public final class ModelDeer extends Model {
     }
 
     public void renderModel(Entity associatedEntity){
-        WorldTessellator worldTessellator = WorldTessellator.instance;
+        RenderEngine.WorldTessellator worldTessellator = RenderEngine.WorldTessellator.instance;
         Vector3f position;
         Vector3f[] topFace;
         Vector3f[] bottomFace;
@@ -213,7 +213,7 @@ public final class ModelDeer extends Model {
 
         Shader.worldShader2DTexture.uploadVec3f("chunkOffset", new Vector3f(offsetX, offsetY, offsetZ));
         Shader.worldShader2DTexture.uploadBoolean("useFog", true);
-        worldTessellator.drawTexture2D(EntityDeer.texture.texID, Shader.worldShader2DTexture, SpaceGame.camera);
+        worldTessellator.drawTexture2D(EntityDeer.texture, Shader.worldShader2DTexture, SpaceGame.camera);
     }
 
     public void rotateModelSegment(int segmentInArray, float x, float y, float z, float angleDeg){
@@ -258,17 +258,17 @@ public final class ModelDeer extends Model {
         float x = (float) (Math.abs((associatedEntity.x % 32f) - vertex.x) + associatedEntity.x);
         float y = (float) (Math.abs((associatedEntity.y % 32f) - vertex.y) + associatedEntity.y);
         float z = (float) (Math.abs((associatedEntity.z % 32f) - vertex.z) + associatedEntity.z);
-        int xInt = MathUtils.floorDouble(x);
-        int yInt = MathUtils.floorDouble(y);
-        int zInt = MathUtils.floorDouble(z);
-        float[] lightColor =  !associatedEntity.canDamage ? new float[]{1,0.65f,0.65f}  : SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockLightColor(xInt, yInt, zInt);
-        this.setVertexLight1Arg(SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockLightValue(xInt, yInt, zInt), x, y, z, lightColor);
-        this.skyLightValue = GuiInGame.getLightValueFromMap(SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockSkyLightValue(xInt, yInt, zInt));
+        int xInt = MathUtil.floorDouble(x);
+        int yInt = MathUtil.floorDouble(y);
+        int zInt = MathUtil.floorDouble(z);
+        float[] lightColor =  !associatedEntity.canDamage ? new float[]{1,0.65f,0.65f}  : SpaceGame.instance.save.activeWorld.getBlockLightColor(xInt, yInt, zInt);
+        this.setVertexLight1Arg(SpaceGame.instance.save.activeWorld.getBlockLightValue(xInt, yInt, zInt), x, y, z, lightColor);
+        this.skyLightValue = GuiInGame.getLightValueFromMap(SpaceGame.instance.save.activeWorld.getBlockSkyLightValue(xInt, yInt, zInt));
         Color color = new Color(this.red, this.green, this.blue, 0);
         return color.getRGB();
     }
 
-    private void bodySegmentUV(WorldTessellator worldTessellator, Vector3f[] topFace, Vector3f[] bottomFace, Vector3f[] northFace, Vector3f[] southFace, Vector3f[] eastFace, Vector3f[] westFace, Entity associatedEntity){
+    private void bodySegmentUV(RenderEngine.WorldTessellator worldTessellator, Vector3f[] topFace, Vector3f[] bottomFace, Vector3f[] northFace, Vector3f[] southFace, Vector3f[] eastFace, Vector3f[] westFace, Entity associatedEntity){
         worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[0], associatedEntity), topFace[0].x, topFace[0].y, topFace[0].z, 2,0,0, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
         worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[1], associatedEntity), topFace[1].x, topFace[1].y, topFace[1].z, 0,0,-0.75757575757575757575757575757576f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
         worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[2], associatedEntity), topFace[2].x, topFace[2].y, topFace[2].z, 1,0,0, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
@@ -306,7 +306,7 @@ public final class ModelDeer extends Model {
         worldTessellator.addElements();
     }
 
-    private void legSegmentUV(WorldTessellator worldTessellator, Vector3f[] topFace, Vector3f[] bottomFace, Vector3f[] northFace, Vector3f[] southFace, Vector3f[] eastFace, Vector3f[] westFace, Entity associatedEntity){
+    private void legSegmentUV(RenderEngine.WorldTessellator worldTessellator, Vector3f[] topFace, Vector3f[] bottomFace, Vector3f[] northFace, Vector3f[] southFace, Vector3f[] eastFace, Vector3f[] westFace, Entity associatedEntity){
         worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[0], associatedEntity), topFace[0].x, topFace[0].y, topFace[0].z, 2,0.10416666666666666666666666666667f,0.68181818181818181818181818181818f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
         worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[1], associatedEntity), topFace[1].x, topFace[1].y, topFace[1].z, 0,-0.8125f,-0.25757575757575757575757575757576f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
         worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[2], associatedEntity), topFace[2].x, topFace[2].y, topFace[2].z, 1,-0.8125f,0.68181818181818181818181818181818f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
@@ -344,7 +344,7 @@ public final class ModelDeer extends Model {
         worldTessellator.addElements();
     }
 
-    private void neckSegmentUV(WorldTessellator worldTessellator, Vector3f[] topFace, Vector3f[] bottomFace, Vector3f[] northFace, Vector3f[] southFace, Vector3f[] eastFace, Vector3f[] westFace, Entity associatedEntity){
+    private void neckSegmentUV(RenderEngine.WorldTessellator worldTessellator, Vector3f[] topFace, Vector3f[] bottomFace, Vector3f[] northFace, Vector3f[] southFace, Vector3f[] eastFace, Vector3f[] westFace, Entity associatedEntity){
         worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[0], associatedEntity), topFace[0].x, topFace[0].y, topFace[0].z, 2,0.66666666666666666666666666666667f,0.51515151515151515151515151515152f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
         worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[1], associatedEntity), topFace[1].x, topFace[1].y, topFace[1].z, 0,0,-0.36363636363636363636363636363636f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
         worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[2], associatedEntity), topFace[2].x, topFace[2].y, topFace[2].z, 1,0,0.51515151515151515151515151515152f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
@@ -382,7 +382,7 @@ public final class ModelDeer extends Model {
         worldTessellator.addElements();
     }
 
-    private void head1SegmentUV(WorldTessellator worldTessellator, Vector3f[] topFace, Vector3f[] bottomFace, Vector3f[] northFace, Vector3f[] southFace, Vector3f[] eastFace, Vector3f[] westFace, Entity associatedEntity){
+    private void head1SegmentUV(RenderEngine.WorldTessellator worldTessellator, Vector3f[] topFace, Vector3f[] bottomFace, Vector3f[] northFace, Vector3f[] southFace, Vector3f[] eastFace, Vector3f[] westFace, Entity associatedEntity){
         worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[0], associatedEntity), topFace[0].x, topFace[0].y, topFace[0].z, 2,0.33333333333333333333333333333333f, 0.25757575757575757575757575757576f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
         worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[1], associatedEntity), topFace[1].x, topFace[1].y, topFace[1].z, 0,-0.58333333333333333333333333333333f, -0.59090909090909090909090909090909f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
         worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[2], associatedEntity), topFace[2].x, topFace[2].y, topFace[2].z, 1,-0.58333333333333333333333333333333f, 0.25757575757575757575757575757576f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
@@ -420,7 +420,7 @@ public final class ModelDeer extends Model {
         worldTessellator.addElements();
     }
 
-    private void head2SegmentUV(WorldTessellator worldTessellator, Vector3f[] topFace, Vector3f[] bottomFace, Vector3f[] northFace, Vector3f[] southFace, Vector3f[] eastFace, Vector3f[] westFace, Entity associatedEntity){
+    private void head2SegmentUV(RenderEngine.WorldTessellator worldTessellator, Vector3f[] topFace, Vector3f[] bottomFace, Vector3f[] northFace, Vector3f[] southFace, Vector3f[] eastFace, Vector3f[] westFace, Entity associatedEntity){
         worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[0], associatedEntity), topFace[0].x, topFace[0].y, topFace[0].z, 2,0.83333333333333333333333333333333f, 0.25757575757575757575757575757576f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
         worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[1], associatedEntity), topFace[1].x, topFace[1].y, topFace[1].z, 0,0, -0.63636363636363636363636363636364f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
         worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[2], associatedEntity), topFace[2].x, topFace[2].y, topFace[2].z, 1,0, 0.25757575757575757575757575757576f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
@@ -458,7 +458,7 @@ public final class ModelDeer extends Model {
         worldTessellator.addElements();
     }
 
-    private void head3SegmentUV(WorldTessellator worldTessellator, Vector3f[] topFace, Vector3f[] bottomFace, Vector3f[] northFace, Vector3f[] southFace, Vector3f[] eastFace, Vector3f[] westFace, Entity associatedEntity){
+    private void head3SegmentUV(RenderEngine.WorldTessellator worldTessellator, Vector3f[] topFace, Vector3f[] bottomFace, Vector3f[] northFace, Vector3f[] southFace, Vector3f[] eastFace, Vector3f[] westFace, Entity associatedEntity){
         worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[0], associatedEntity), topFace[0].x, topFace[0].y, topFace[0].z, 2,0.41666666666666666666666666666667f, 0.42424242424242424242424242424242f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
         worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[1], associatedEntity), topFace[1].x, topFace[1].y, topFace[1].z, 0,-0.41666666666666666666666666666667f, -0.5f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
         worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[2], associatedEntity), topFace[2].x, topFace[2].y, topFace[2].z, 1,-0.41666666666666666666666666666667f, 0.42424242424242424242424242424242f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
@@ -496,7 +496,7 @@ public final class ModelDeer extends Model {
         worldTessellator.addElements();
     }
 
-    private void tailSegmentUV(WorldTessellator worldTessellator, Vector3f[] topFace, Vector3f[] bottomFace, Vector3f[] northFace, Vector3f[] southFace, Vector3f[] eastFace, Vector3f[] westFace, Entity associatedEntity){
+    private void tailSegmentUV(RenderEngine.WorldTessellator worldTessellator, Vector3f[] topFace, Vector3f[] bottomFace, Vector3f[] northFace, Vector3f[] southFace, Vector3f[] eastFace, Vector3f[] westFace, Entity associatedEntity){
         worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[0], associatedEntity), topFace[0].x, topFace[0].y, topFace[0].z, 2,0.20833333333333333333333333333333f, 0.68181818181818181818181818181818f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
         worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[1], associatedEntity), topFace[1].x, topFace[1].y, topFace[1].z, 0,-0.5625f, -0.25757575757575757575757575757576f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
         worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[2], associatedEntity), topFace[2].x, topFace[2].y, topFace[2].z, 1,-0.5625f, 0.68181818181818181818181818181818f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
@@ -534,7 +534,7 @@ public final class ModelDeer extends Model {
         worldTessellator.addElements();
     }
 
-    private void earSegmentUV(WorldTessellator worldTessellator, Vector3f[] topFace, Vector3f[] bottomFace, Vector3f[] northFace, Vector3f[] southFace, Vector3f[] eastFace, Vector3f[] westFace, Entity associatedEntity){
+    private void earSegmentUV(RenderEngine.WorldTessellator worldTessellator, Vector3f[] topFace, Vector3f[] bottomFace, Vector3f[] northFace, Vector3f[] southFace, Vector3f[] eastFace, Vector3f[] westFace, Entity associatedEntity){
         worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[0], associatedEntity), topFace[0].x, topFace[0].y, topFace[0].z, 3,0.47916666666666666666666666666667f, -0.46969696969696969696969696969697f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
         worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[1], associatedEntity), topFace[1].x, topFace[1].y, topFace[1].z, 1,-0.35416666666666666666666666666667f, 0.51515151515151515151515151515152f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);
         worldTessellator.addVertex2DTextureWithSampling(this.calculateVertexLightColor(topFace[2], associatedEntity), topFace[2].x, topFace[2].y, topFace[2].z, 2,0.47916666666666666666666666666667f, 0.51515151515151515151515151515152f, topFace[4].x, topFace[4].y, topFace[4].z, this.skyLightValue);

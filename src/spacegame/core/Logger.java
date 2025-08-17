@@ -16,6 +16,7 @@ public final class Logger {
             exception.printStackTrace(ps);
             exception.printStackTrace();
             ps.println("WARNING: EXCEPTION FOUND IN THREAD: " + Thread.currentThread().getName());
+            System.out.println("WARNING: EXCEPTION FOUND IN THREAD: " + Thread.currentThread().getName());
             ps.println("Please forward the stacktrace to Fig");
             ps.close();
         } catch (FileNotFoundException e) {

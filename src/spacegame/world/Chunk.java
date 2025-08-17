@@ -1,16 +1,13 @@
 package spacegame.world;
 
-import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
 import spacegame.block.ITickable;
-import spacegame.core.MathUtils;
+import spacegame.core.MathUtil;
 import spacegame.core.SpaceGame;
 import spacegame.entity.Entity;
 import spacegame.entity.EntityParticle;
-import spacegame.item.Item;
 import spacegame.render.*;
 
 import java.awt.*;
@@ -18,10 +15,11 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Random;
 
 public final class Chunk implements Comparable<Chunk> {
+    public World parentWorld;
     public boolean needsToUpdate = false;
+    public long updateTime;
     public boolean populated = false;
     public boolean shouldRender;
     public boolean updating;
@@ -29,22 +27,17 @@ public final class Chunk implements Comparable<Chunk> {
     public boolean containsAir;
     public boolean updateSkylight;
     public boolean firstRender = true;
-    public boolean containsItems;
     public float distanceFromPlayer;
     public boolean occluded;
     public int queryID = -10;
     public final int x;
     public final int y;
     public final int z;
-    private final WorldFace worldFace;
     public short[] blocks = new short[32768];
     public byte[] lighting = new byte[32768];
     public byte[] skyLight = new byte[32768];
     public int[] lightColor = new int[32768];
     public short[] tickableBlockIndex = new short[32768];
-    public short[] renderableItemID;
-    public short[] renderableItemIndexes;
-    public short[] renderableItemDurability;
     public int[] topFaceBitMask = new int[1024]; //This increments x, then z, each int goes up in Y value //reading is done by a mask with &, if it returns a non zero value it is true
     public int[] bottomFaceBitMask = new int[1024]; //writing is done by using a mask with ^ to flip that specific bit, keeping in mind to only update when a state change occurs
     public int[] northFaceBitMask = new int[1024]; //This increments z, then y, each int goes up in X value
@@ -57,9 +50,9 @@ public final class Chunk implements Comparable<Chunk> {
     public int[] excludeSouthFace;
     public int[] excludeEastFace;
     public int[] excludeWestFace;
-    public int vertexIndexOpaque = 0;
-    public int vertexIndexTransparent = 0;
     public boolean empty = true;
+    public int elementOffsetOpaque;
+    public int elementOffsetTransparent;
     public Vector3f chunkOffset = new Vector3f();
     public ShouldFaceRenderSorter sorter = new ShouldFaceRenderSorter();
     public ArrayList<LightColorLocation> lightColorLocations = new ArrayList<>();
@@ -68,10 +61,6 @@ public final class Chunk implements Comparable<Chunk> {
     public IntBuffer elementBufferOpaque;
     public FloatBuffer vertexBufferTransparent;
     public IntBuffer elementBufferTransparent;
-    public float[] vertexArrayOpaque;
-    public int[] elementArrayOpaque;
-    public float[] vertexArrayTransparent;
-    public int[] elementArrayTransparent;
     public int opaqueVBOID = -10;
     public int opaqueVAOID = -10;
     public int opaqueEBOID = -10;
@@ -85,11 +74,11 @@ public final class Chunk implements Comparable<Chunk> {
     public static final int normalSize = 2;
     public static final int vertexSizeBytes = (positionsSize + colorSize + texCoordsSize + texIndexSize + normalSize) * Float.BYTES;
 
-    public Chunk(int x, int y, int z, WorldFace worldFace) {
+    public Chunk(int x, int y, int z, World world) {
         this.x = x;
         this.y = y;
         this.z = z;
-        this.worldFace = worldFace;
+        this.parentWorld = world;
     }
 
     public void setBlock(int x, int y, int z, short blockID) {
@@ -375,8 +364,8 @@ public final class Chunk implements Comparable<Chunk> {
         ArrayList<int[]> previousSkyLightUpdateQueue = new ArrayList<>();
         for (int i = 0; i < this.blocks.length; i++) {
             if (Block.list[this.blocks[i]].ID != Block.water.ID) {
-                if (!Block.list[this.blocks[i]].isSolid && this.worldFace.doesBlockHaveSkyAccess(this.getBlockXFromIndex(i), this.getBlockYFromIndex(i), this.getBlockZFromIndex(i))) {
-                    this.worldFace.propagateSkyLight(this.getBlockXFromIndex(i), this.getBlockYFromIndex(i), this.getBlockZFromIndex(i), skyLightUpdateQueue, previousSkyLightUpdateQueue);
+                if (!Block.list[this.blocks[i]].isSolid && this.parentWorld.doesBlockHaveSkyAccess(this.getBlockXFromIndex(i), this.getBlockYFromIndex(i), this.getBlockZFromIndex(i))) {
+                    this.parentWorld.propagateSkyLight(this.getBlockXFromIndex(i), this.getBlockYFromIndex(i), this.getBlockZFromIndex(i), skyLightUpdateQueue, previousSkyLightUpdateQueue);
                 }
             }
         }
@@ -399,8 +388,8 @@ public final class Chunk implements Comparable<Chunk> {
     }
 
     public synchronized void clearBlockLightColor(int x, int y, int z) {
-        if (this.worldFace.doesBlockHaveSkyAccess(x, y, z)) {
-            this.lightColor[getBlockIndexFromCoordinates(x, y, z)] = new Color(this.worldFace.parentWorld.skyLightColor[0], this.worldFace.parentWorld.skyLightColor[1], this.worldFace.parentWorld.skyLightColor[2]).getRGB();
+        if (this.parentWorld.doesBlockHaveSkyAccess(x, y, z)) {
+            this.lightColor[getBlockIndexFromCoordinates(x, y, z)] = new Color(this.parentWorld.skyLightColor[0], this.parentWorld.skyLightColor[1], this.parentWorld.skyLightColor[2]).getRGB();
         } else {
             this.lightColor[getBlockIndexFromCoordinates(x, y, z)] = 16777215;
         }
@@ -413,13 +402,13 @@ public final class Chunk implements Comparable<Chunk> {
         } else if (Block.list[this.blocks[getBlockIndexFromCoordinates(x, y, z)]].isSolid) {
             return new float[3];
         }
-        float[] colorArray = this.worldFace.getBlockLightColor(x, y, z);
-        float[] colorArray0 = this.worldFace.getBlockLightColor(x + 1, y, z);
-        float[] colorArray1 = this.worldFace.getBlockLightColor(x - 1, y, z);
-        float[] colorArray2 = this.worldFace.getBlockLightColor(x, y, z + 1);
-        float[] colorArray3 = this.worldFace.getBlockLightColor(x, y, z - 1);
-        float[] colorArray4 = this.worldFace.getBlockLightColor(x, y + 1, z);
-        float[] colorArray5 = this.worldFace.getBlockLightColor(x, y - 1, z);
+        float[] colorArray = this.parentWorld.getBlockLightColor(x, y, z);
+        float[] colorArray0 = this.parentWorld.getBlockLightColor(x + 1, y, z);
+        float[] colorArray1 = this.parentWorld.getBlockLightColor(x - 1, y, z);
+        float[] colorArray2 = this.parentWorld.getBlockLightColor(x, y, z + 1);
+        float[] colorArray3 = this.parentWorld.getBlockLightColor(x, y, z - 1);
+        float[] colorArray4 = this.parentWorld.getBlockLightColor(x, y + 1, z);
+        float[] colorArray5 = this.parentWorld.getBlockLightColor(x, y - 1, z);
 
         Color color = new Color(colorArray[0], colorArray[1], colorArray[2]);
         Color color0 = new Color(colorArray0[0], colorArray0[1], colorArray0[2]);
@@ -503,10 +492,10 @@ public final class Chunk implements Comparable<Chunk> {
     }
 
     public void markDirty() {
-        this.worldFace.chunkController.addChunkToRebuildQueue(this);
+        this.parentWorld.chunkController.addChunkToRebuildQueue(this);
     }
     public void markToPopulate(){
-        this.worldFace.chunkController.addChunkToPopulationQueue(this);
+        this.parentWorld.chunkController.addChunkToPopulationQueue(this);
     }
 
 
@@ -579,7 +568,8 @@ public final class Chunk implements Comparable<Chunk> {
             firstBlock = this.blocks[index];
             secondBlock = this.blocks[index + 1024];
         } else {
-            Chunk chunk = this.worldFace.findChunkFromChunkCoordinates(this.x, this.y + 1, this.z);
+            Chunk chunk = this.parentWorld.findChunkFromChunkCoordinates(this.x, this.y + 1, this.z);
+            if(chunk == null)return true;
             firstBlock = this.blocks[index];
             if(chunk.blocks != null) {
                 secondBlock = chunk.blocks[index - 31744];
@@ -602,7 +592,8 @@ public final class Chunk implements Comparable<Chunk> {
             firstBlock = this.blocks[index];
             secondBlock = this.blocks[index - 1024];
         } else {
-            Chunk chunk = this.worldFace.findChunkFromChunkCoordinates(this.x, this.y - 1, this.z);
+            Chunk chunk = this.parentWorld.findChunkFromChunkCoordinates(this.x, this.y - 1, this.z);
+            if(chunk == null)return true;
             firstBlock = this.blocks[index];
             if(chunk.blocks != null) {
                 secondBlock = chunk.blocks[index + 31744];
@@ -623,7 +614,8 @@ public final class Chunk implements Comparable<Chunk> {
             firstBlock = this.blocks[index];
             secondBlock = this.blocks[index - 1];
         } else {
-            Chunk chunk = this.worldFace.findChunkFromChunkCoordinates(this.x - 1, this.y, this.z);
+            Chunk chunk = this.parentWorld.findChunkFromChunkCoordinates(this.x - 1, this.y, this.z);
+            if(chunk == null)return true;
             firstBlock = this.blocks[index];
             if(chunk.blocks != null) {
                 secondBlock = chunk.blocks[index + 31];
@@ -644,7 +636,8 @@ public final class Chunk implements Comparable<Chunk> {
             firstBlock = this.blocks[index];
             secondBlock = this.blocks[index + 1];
         } else {
-            Chunk chunk = this.worldFace.findChunkFromChunkCoordinates(this.x + 1, this.y, this.z);
+            Chunk chunk = this.parentWorld.findChunkFromChunkCoordinates(this.x + 1, this.y, this.z);
+            if(chunk == null)return true;
             firstBlock = this.blocks[index];
             if(chunk.blocks != null) {
                 secondBlock = chunk.blocks[index - 31];
@@ -665,7 +658,8 @@ public final class Chunk implements Comparable<Chunk> {
             firstBlock = this.blocks[index];
             secondBlock = this.blocks[index - 32];
         } else {
-            Chunk chunk = this.worldFace.findChunkFromChunkCoordinates(this.x, this.y, this.z - 1);
+            Chunk chunk = this.parentWorld.findChunkFromChunkCoordinates(this.x, this.y, this.z - 1);
+            if(chunk == null)return true;
             firstBlock = this.blocks[index];
             if(chunk.blocks != null) {
                 secondBlock = chunk.blocks[index + 992];
@@ -686,7 +680,8 @@ public final class Chunk implements Comparable<Chunk> {
             firstBlock = this.blocks[index];
             secondBlock = this.blocks[index + 32];
         } else {
-            Chunk chunk = this.worldFace.findChunkFromChunkCoordinates(this.x, this.y, this.z + 1);
+            Chunk chunk = this.parentWorld.findChunkFromChunkCoordinates(this.x, this.y, this.z + 1);
+            if(chunk == null)return true;
             firstBlock = this.blocks[index];
             if(chunk.blocks != null) {
                 secondBlock = chunk.blocks[index - 992];
@@ -788,7 +783,7 @@ public final class Chunk implements Comparable<Chunk> {
             z = this.getBlockZFromIndex(i);
             this.notifyBlock(x, y, z);
             if(Block.list[this.blocks[i]].isLightBlock){
-                this.worldFace.propagateLightSource(x,y,z, Block.list[this.blocks[i]].lightBlockValue);
+                this.parentWorld.propagateLightSource(x,y,z, Block.list[this.blocks[i]].lightBlockValue);
             }
         }
     }
@@ -810,9 +805,9 @@ public final class Chunk implements Comparable<Chunk> {
         int y = this.getBlockYFromIndex(index);
         int z = this.getBlockZFromIndex(index);
         for(byte i = 1; i < 16; i++){
-            if(this.worldFace.getBlockID(x, y + i, z) == Block.air.ID){
-                return (byte) (this.worldFace.parentWorld.skyLightLevel - i);
-            } else if(Block.list[this.worldFace.getBlockID(x, y + i, z)].isSolid){
+            if(this.parentWorld.getBlockID(x, y + i, z) == Block.air.ID){
+                return (byte) (this.parentWorld.skyLightLevel - i);
+            } else if(Block.list[this.parentWorld.getBlockID(x, y + i, z)].isSolid){
                 return 0;
             }
         }
@@ -908,59 +903,26 @@ public final class Chunk implements Comparable<Chunk> {
         GL46.glDrawElements(GL46.GL_TRIANGLES, this.elementBufferTransparent.limit(), GL46.GL_UNSIGNED_INT, 0);
     }
 
-    public void renderShadowMap(int sunX, int sunY, int sunZ){
-        if(this.elementBufferOpaque == null)return;
-        if(this.elementBufferOpaque.limit() == 0)return;
+    public void renderShadowMap(int sunX, int sunY, int sunZ) {
+        if (this.elementBufferOpaque == null) return;
+        if (this.elementBufferOpaque.limit() == 0) return;
+
         Shader.shadowMapShader.uploadVec3f("chunkOffset", new Vector3f((this.x - sunX) << 5, (this.y - sunY) << 5, (this.z - sunZ) << 5));
+
         GL46.glBindVertexArray(this.opaqueVAOID);
         GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, this.opaqueVBOID);
         GL46.glBindBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, this.opaqueEBOID);
         GL46.glDrawElements(GL46.GL_TRIANGLES, this.elementBufferOpaque.limit(), GL46.GL_UNSIGNED_INT, 0);
+
+        if (this.elementBufferTransparent == null) return;
+        if (this.elementBufferTransparent.limit() == 0)return;
+
+        GL46.glBindVertexArray(this.transparentVAOID);
+        GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, this.transparentVBOID);
+        GL46.glBindBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, this.transparentEBOID);
+        GL46.glDrawElements(GL46.GL_TRIANGLES, this.elementBufferTransparent.limit(), GL46.GL_UNSIGNED_INT, 0);
     }
 
-    public void renderItems(int sunX, int sunY, int sunZ){
-        if(this.renderableItemID == null || this.distanceFromPlayer >= 3){return;}
-        WorldTessellator worldTessellator = WorldTessellator.instance;
-        int x;
-        int y;
-        int z;
-        short index;
-        Random rand = new Random(this.x | this.y | this.z);
-        float size;
-        for(int i = 0; i < this.renderableItemID.length; i++){
-            index = this.renderableItemIndexes[i];
-            float itemID = Item.list[this.renderableItemID[i]].getTextureID(this.renderableItemID[i], (byte)0, RenderBlocks.TOP_FACE);
-            x = this.getBlockXFromIndex(index);
-            y = this.getBlockYFromIndex(index);
-            z = this.getBlockZFromIndex(index);
-            byte light = this.worldFace.getBlockLightValue(x,y + 1,z);
-            float lightValueFromMap = this.getLightValueFromMap(light);
-            float skyLightValue = this.getLightValueFromMap(this.worldFace.getBlockSkyLightValue(x, y + 1, z));
-            Color color = new Color(lightValueFromMap, lightValueFromMap, lightValueFromMap, 0);
-            int colorInt = color.getRGB();
-            x %= 32;
-            y %= 32;
-            z %= 32;
-            if(this.renderableItemID[i] != Item.stone.ID) {
-                size = 1;
-            } else {
-                size = rand.nextFloat(0.125f, 1);
-                x += rand.nextFloat(1);
-                z += rand.nextFloat(1);
-            }
-            worldTessellator.addVertexTextureArray(colorInt, x + size, y + 1.02f, z, 3, itemID, RenderBlocks.TOP_FACE, 0, 1, 0, skyLightValue);
-            worldTessellator.addVertexTextureArray(colorInt, x, y + 1.02f, z + size, 1, itemID, RenderBlocks.TOP_FACE, 0, 1, 0, skyLightValue);
-            worldTessellator.addVertexTextureArray(colorInt, x + size, y + 1.02f, z + size, 2, itemID, RenderBlocks.TOP_FACE, 0, 1, 0, skyLightValue);
-            worldTessellator.addVertexTextureArray(colorInt, x, y + 1.02f, z, 0, itemID, RenderBlocks.TOP_FACE, 0, 1, 0, skyLightValue);
-            worldTessellator.addElements();
-        }
-        Shader.worldShaderTextureArray.uploadVec3f("sunChunkOffset", new Vector3f((this.x - sunX) << 5, (this.y - sunY) << 5, (this.z - sunZ) << 5));
-        Shader.worldShaderTextureArray.uploadVec3f("chunkOffset", chunkOffset);
-        GL46.glEnable(GL46.GL_BLEND);
-        GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-        worldTessellator.drawTextureArray(Assets.itemTextureArray.arrayID, Shader.worldShaderTextureArray, SpaceGame.camera);
-        GL46.glDisable(GL46.GL_BLEND);
-    }
 
 
     private float getLightValueFromMap(byte lightValue) {
@@ -1042,7 +1004,7 @@ public final class Chunk implements Comparable<Chunk> {
         this.southFaceBitMask = new int[1024];
         this.eastFaceBitMask = new int[1024];
         this.westFaceBitMask = new int[1024];
-        Arrays.fill(this.lightColor, new Color(this.worldFace.parentWorld.skyLightColor[0], this.worldFace.parentWorld.skyLightColor[1], this.worldFace.parentWorld.skyLightColor[2]).getRGB());
+        Arrays.fill(this.lightColor, new Color(this.parentWorld.skyLightColor[0], this.parentWorld.skyLightColor[1], this.parentWorld.skyLightColor[2]).getRGB());
     }
 
     public void addEntityToList(Entity entity){
@@ -1070,7 +1032,7 @@ public final class Chunk implements Comparable<Chunk> {
             chunkY = (int)entity.y >> 5;
             chunkZ = (int)entity.z >> 5;
             if(chunkX != this.x || chunkY != this.y || chunkZ != this.z){
-                this.worldFace.chunkController.findChunkFromChunkCoordinates(chunkX, chunkY, chunkZ).addEntityToList(entity);
+                this.parentWorld.chunkController.findChunkFromChunkCoordinates(chunkX, chunkY, chunkZ).addEntityToList(entity);
                 this.removeEntity(entity);
             }
         }
@@ -1082,11 +1044,11 @@ public final class Chunk implements Comparable<Chunk> {
         for(int i = 0; i < this.entities.size(); i++){
             entity = this.entities.get(i);
             if(entity instanceof EntityParticle){
-                if(MathUtils.distance3D(entity.x, entity.y, entity.z, SpaceGame.instance.save.thePlayer.x, SpaceGame.instance.save.thePlayer.y, SpaceGame.instance.save.thePlayer.z) <= 32){
+                if(MathUtil.distance3D(entity.x, entity.y, entity.z, SpaceGame.instance.save.thePlayer.x, SpaceGame.instance.save.thePlayer.y, SpaceGame.instance.save.thePlayer.z) <= 32){
                     entity.render();
                 }
             } else {
-                if(MathUtils.distance3D(entity.x, entity.y, entity.z, SpaceGame.instance.save.thePlayer.x, SpaceGame.instance.save.thePlayer.y, SpaceGame.instance.save.thePlayer.z) <= 128){
+                if(MathUtil.distance3D(entity.x, entity.y, entity.z, SpaceGame.instance.save.thePlayer.x, SpaceGame.instance.save.thePlayer.y, SpaceGame.instance.save.thePlayer.z) <= 128){
                     entity.render();
                 }
             }
@@ -1094,14 +1056,7 @@ public final class Chunk implements Comparable<Chunk> {
     }
 
     public boolean doesChunkContainEntities(){
-        Entity entity;
-        for(int i = 0; i < this.entities.size(); i++){
-            entity = this.entities.get(i);
-            if(entity != null){
-                return true;
-            }
-        }
-        return false;
+        return this.entities.size() != 0;
     }
 
     public void tickEntities(){
@@ -1122,7 +1077,7 @@ public final class Chunk implements Comparable<Chunk> {
             if (this.blocks != null && this.tickableBlockIndex != null) {
                     for (int i = 0; i < this.tickableBlockIndex.length; i++) {
                         if (Block.list[this.blocks[this.tickableBlockIndex[i]]] instanceof ITickable) {
-                            ((ITickable) Block.list[this.blocks[this.tickableBlockIndex[i]]]).tick(this.getBlockXFromIndex(this.tickableBlockIndex[i]), this.getBlockYFromIndex(this.tickableBlockIndex[i]), this.getBlockZFromIndex(this.tickableBlockIndex[i]));
+                            ((ITickable) Block.list[this.blocks[this.tickableBlockIndex[i]]]).tick(this.getBlockXFromIndex(this.tickableBlockIndex[i]), this.getBlockYFromIndex(this.tickableBlockIndex[i]), this.getBlockZFromIndex(this.tickableBlockIndex[i]), this.parentWorld);
                         }
                     }
             }
@@ -1146,112 +1101,6 @@ public final class Chunk implements Comparable<Chunk> {
         }
     }
 
-    public void addRenderableItem(int x, int y, int z, short itemID, short durability){
-        if(this.renderableItemID == null || this.renderableItemIndexes == null || this.renderableItemDurability == null){
-            this.renderableItemIndexes = new short[0];
-            this.renderableItemID = new short[0];
-            this.renderableItemDurability = new short[0];
-        }
-
-        short[] newRenderableItemID = new short[this.renderableItemID.length + 1];
-        short[] newRenderableItemIndexes = new short[this.renderableItemIndexes.length + 1];
-        short[] newRenderableItemDurability = new short[this.renderableItemDurability.length + 1];
-
-        for(int i = 0; i < this.renderableItemID.length; i++){
-            newRenderableItemID[i] = this.renderableItemID[i];
-            newRenderableItemIndexes[i] = this.renderableItemIndexes[i];
-            newRenderableItemDurability[i] = this.renderableItemDurability[i];
-        }
-
-        newRenderableItemID[this.renderableItemID.length] = itemID;
-        newRenderableItemIndexes[this.renderableItemIndexes.length] = (short) getBlockIndexFromCoordinates(x,y,z);
-        newRenderableItemDurability[this.renderableItemDurability.length] = durability;
-        this.renderableItemID = newRenderableItemID;
-        this.renderableItemIndexes = newRenderableItemIndexes;
-        this.renderableItemDurability = newRenderableItemDurability;
-        this.containsItems = true;
-    }
-
-    public void modifyItemID(int x, int y, int z, short itemID){
-        int index = getBlockIndexFromCoordinates(x,y,z);
-        for(int i = 0; i < this.renderableItemIndexes.length; i++){
-            if(index == this.renderableItemIndexes[i]){
-               this.renderableItemID[i] = itemID;
-               break;
-            }
-        }
-    }
-
-    public boolean isItemAtLocation(int x, int y, int z){
-        if(this.renderableItemIndexes == null){return false;}
-        int index = getBlockIndexFromCoordinates(x,y,z);
-        for(int i = 0; i < this.renderableItemIndexes.length; i++){
-            if(this.renderableItemIndexes[i] == index){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public short getItemInChunk(int x, int y, int z){
-        for(int i = 0; i < this.renderableItemIndexes.length; i++){
-            if(getBlockIndexFromCoordinates(x,y,z) == this.renderableItemIndexes[i]){
-                return this.renderableItemID[i];
-            }
-        }
-        return -1;
-    }
-
-    public short getItemDurabilityInChunk(int x, int y, int z){
-        for(int i = 0; i < this.renderableItemDurability.length; i++){
-            if(getBlockIndexFromCoordinates(x,y,z) == this.renderableItemIndexes[i]){
-                return this.renderableItemDurability[i];
-            }
-        }
-        return -1;
-    }
-
-    public void removeItemInChunk(int x, int y, int z){
-        for(int i = 0; i < this.renderableItemIndexes.length; i++){
-            if(getBlockIndexFromCoordinates(x,y,z) == this.renderableItemIndexes[i]){
-                this.renderableItemID[i] = -1;
-                this.renderableItemIndexes[i] = -1;
-                this.renderableItemDurability[i] = -1;
-            }
-        }
-
-
-        ArrayList<Short> newRenderableItemID = new ArrayList<>();
-        ArrayList<Short> newRenderableItemIndexes = new ArrayList<>();
-        ArrayList<Short> newRenderableItemDurability = new ArrayList<>();
-        for(int i = 0; i < this.renderableItemID.length; i++){
-            if(this.renderableItemID[i] != -1) {
-                newRenderableItemID.add((this.renderableItemID[i]));
-                newRenderableItemIndexes.add(this.renderableItemIndexes[i]);
-                newRenderableItemDurability.add(this.renderableItemDurability[i]);
-            }
-        }
-
-        short[] newRenderableItemIDArray = new short[newRenderableItemID.size()];
-        short[] newRenderableItemIndexesArray = new short[newRenderableItemIndexes.size()];
-        short[] newRenderableItemDurabilityArray = new short[newRenderableItemDurability.size()];
-
-        for(int i = 0; i < newRenderableItemIDArray.length; i++){
-            newRenderableItemIDArray[i] = newRenderableItemID.get(i);
-            newRenderableItemIndexesArray[i] = newRenderableItemIndexes.get(i);
-            newRenderableItemDurabilityArray[i] = newRenderableItemDurability.get(i);
-        }
-
-        this.renderableItemID = newRenderableItemIDArray;
-        this.renderableItemIndexes = newRenderableItemIndexesArray;
-        this.renderableItemDurability = newRenderableItemDurabilityArray;
-
-
-        if(this.renderableItemID.length == 0) {
-            this.containsItems = false;
-        }
-
-    }
 
     public long getChunkSeed(){
         return (long) this.x * this.y + this.z;

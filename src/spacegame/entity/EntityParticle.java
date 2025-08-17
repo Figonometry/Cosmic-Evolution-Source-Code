@@ -6,9 +6,9 @@ import spacegame.block.Block;
 import spacegame.core.GameSettings;
 import spacegame.core.SpaceGame;
 import spacegame.render.Assets;
+import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
-import spacegame.render.Tessellator;
-import spacegame.world.WorldFace;
+import spacegame.world.World;
 
 import java.awt.*;
 
@@ -53,7 +53,7 @@ public final class EntityParticle extends EntityNonLiving {
 
     @Override
     public void render(){
-        Tessellator tessellator = Tessellator.instance;
+        RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         this.chunkX = (int)this.x >> 5;
         this.chunkY = (int)this.y >> 5;
         this.chunkZ = (int)this.z >> 5;
@@ -73,7 +73,7 @@ public final class EntityParticle extends EntityNonLiving {
         zOffset *= 32;
         Vector3f chunkOffset = new Vector3f(xOffset, yOffset, zOffset);
         Shader.worldShaderTextureArray.uploadVec3f("chunkOffset", chunkOffset);
-        WorldFace worldFace = SpaceGame.instance.save.activeWorld.activeWorldFace;
+        World world = SpaceGame.instance.save.activeWorld;
         float x = (float) (this.x % 32);
         float y = (float) (this.y % 32);
         float z = (float) (this.z % 32);
@@ -100,7 +100,7 @@ public final class EntityParticle extends EntityNonLiving {
         Vector3d vertex4 = new Vector3d(0, -size, size).rotateY(-Math.toRadians(SpaceGame.instance.save.thePlayer.yaw)).add(blockPosition);
         this.resetLight();
         if(this.useLight) {
-            this.setVertexLight1Arg(worldFace.getBlockLightValue((int) (this.chunkX * 32 + x), (int) (this.chunkY * 32 + y), (int) (this.chunkZ * 32 + z)), x, y, z, worldFace.getBlockLightColor((int) (this.chunkX * 32 + x), (int) (this.chunkY * 32 + y), (int) (this.chunkZ * 32 + z)));
+            this.setVertexLight1Arg(world.getBlockLightValue((int) (this.chunkX * 32 + x), (int) (this.chunkY * 32 + y), (int) (this.chunkZ * 32 + z)), x, y, z, world.getBlockLightColor((int) (this.chunkX * 32 + x), (int) (this.chunkY * 32 + y), (int) (this.chunkZ * 32 + z)));
         }
         int colorValue = new Color(this.red, this.green, this.blue, 0).getRGB();
         tessellator.addVertexTextureArrayWithSampling(colorValue, (float) vertex1.x, (float) vertex1.y, (float) vertex1.z, 3, blockID, 0.46875f, -0.46875f);
@@ -109,7 +109,7 @@ public final class EntityParticle extends EntityNonLiving {
         tessellator.addVertexTextureArrayWithSampling(colorValue, (float) vertex4.x, (float) vertex4.y, (float) vertex4.z, 0, blockID, -0.46875f, -0.46875f);
         tessellator.addElements();
         Shader.worldShaderTextureArray.uploadBoolean("blocks", false);
-        tessellator.drawVertexArray(Assets.blockTextureArray.arrayID, Shader.worldShaderTextureArray, SpaceGame.camera);
+        tessellator.drawVertexArray(Assets.blockTextureArray, Shader.worldShaderTextureArray, SpaceGame.camera);
     }
 
     private  void resetLight() {

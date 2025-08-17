@@ -10,7 +10,6 @@ public final class AxisAlignedBB {
     public double maxY;
     public double minZ;
     public double maxZ;
-    public boolean liquid;
     public boolean air;
 
     public AxisAlignedBB(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {

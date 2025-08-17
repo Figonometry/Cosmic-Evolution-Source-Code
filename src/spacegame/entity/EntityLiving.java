@@ -1,7 +1,7 @@
 package spacegame.entity;
 
 import spacegame.block.Block;
-import spacegame.core.MathUtils;
+import spacegame.core.MathUtil;
 import spacegame.core.Sound;
 import spacegame.core.SoundPlayer;
 import spacegame.core.SpaceGame;
@@ -9,7 +9,6 @@ import spacegame.entity.ai.AIPassive;
 import spacegame.gui.GuiWorldLoadingScreen;
 import spacegame.world.AxisAlignedBB;
 
-import java.util.ArrayList;
 import java.util.Random;
 
 public abstract class EntityLiving extends Entity {
@@ -49,7 +48,7 @@ public abstract class EntityLiving extends Entity {
     }
 
     public void playAmbientSound(){
-        if(Block.rand.nextInt(1200) == 0){
+        if(SpaceGame.globalRand.nextInt(1200) == 0){
             new SoundPlayer(SpaceGame.instance).playSound(this.x, this.y, this.z, new Sound(this.getAmbientSound(), false), new Random().nextFloat(0.9F, 1));
         }
     }
@@ -57,13 +56,13 @@ public abstract class EntityLiving extends Entity {
 
     protected void performStepSound(){
         if((SpaceGame.instance.currentGui instanceof GuiWorldLoadingScreen))return;
-            int x = MathUtils.floorDouble(this.x);
-            int z = MathUtils.floorDouble(this.z);
-            int prevX = MathUtils.floorDouble(this.prevX);
-            int prevZ = MathUtils.floorDouble(this.prevZ);
+            int x = MathUtil.floorDouble(this.x);
+            int z = MathUtil.floorDouble(this.z);
+            int prevX = MathUtil.floorDouble(this.prevX);
+            int prevZ = MathUtil.floorDouble(this.prevZ);
             if ((x != prevX || z != prevZ) && this.stepTimer <= 0) {
-                int lowerY = MathUtils.floorDouble(this.y - (this.height/2) - 0.1);
-                new SoundPlayer(SpaceGame.instance).playSound(this.x, lowerY, this.z, new Sound(Block.list[SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockID(x, lowerY, z)].stepSound, false), new Random().nextFloat(0.6F, 1));
+                int lowerY = MathUtil.floorDouble(this.y - (this.height/2) - 0.1);
+                new SoundPlayer(SpaceGame.instance).playSound(this.x, lowerY, this.z, new Sound(Block.list[SpaceGame.instance.save.activeWorld.getBlockID(x, lowerY, z)].stepSound, false), new Random().nextFloat(0.6F, 1));
                 this.stepTimer = 30;
             } else {
                 this.stepTimer--;

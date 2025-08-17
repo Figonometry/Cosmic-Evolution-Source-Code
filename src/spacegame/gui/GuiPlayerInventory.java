@@ -5,14 +5,13 @@ import org.lwjgl.opengl.GL46;
 import spacegame.core.SpaceGame;
 import spacegame.item.Inventory;
 import spacegame.item.ItemStack;
+import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
-import spacegame.render.Tessellator;
-import spacegame.render.TextureLoader;
 
 public final class GuiPlayerInventory extends GuiInventory {
-    public TextureLoader inventoryUI;
-    public static TextureLoader transparentBackground;
-    public static TextureLoader fillableColorWithShadedBottom;
+    public int inventoryUI;
+    public static int transparentBackground;
+    public static int fillableColorWithShadedBottom;
 
     public GuiPlayerInventory(SpaceGame spaceGame, Inventory associatedInventory) {
         super(spaceGame);
@@ -21,26 +20,23 @@ public final class GuiPlayerInventory extends GuiInventory {
 
     @Override
     public void loadTextures() {
-        this.inventoryUI = new TextureLoader("src/spacegame/assets/textures/gui/guiInventory/playerInventory.png", 32, 32);
-        transparentBackground = new TextureLoader("src/spacegame/assets/textures/gui/transparentBackground.png", 32,32);
-        fillableColorWithShadedBottom = new TextureLoader("src/spacegame/assets/textures/gui/fillableColorWithShadedBottom.png", 32,32);
+        this.inventoryUI = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInventory/playerInventory.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        transparentBackground = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        fillableColorWithShadedBottom = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColorWithShadedBottom.png", RenderEngine.TEXTURE_TYPE_2D, 0);
         this.loadTexture();
     }
 
     @Override
     public void deleteTextures() {
-        GL46.glDeleteTextures(this.inventoryUI.texID);
-        GL46.glDeleteTextures(transparentBackground.texID);
-        GL46.glDeleteTextures(fillableColorWithShadedBottom.texID);
-        this.inventoryUI = null;
-       transparentBackground = null;
-       fillableColorWithShadedBottom = null;
-       this.unloadTexture();
+        SpaceGame.instance.renderEngine.deleteTexture(this.inventoryUI);
+        SpaceGame.instance.renderEngine.deleteTexture(transparentBackground);
+        SpaceGame.instance.renderEngine.deleteTexture(fillableColorWithShadedBottom);
+        this.unloadTexture();
     }
 
     @Override
     public void drawGui() {
-        Tessellator tessellator = Tessellator.instance;
+        RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         tessellator.toggleOrtho();
         GLFW.glfwSetInputMode(this.sg.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
         int backgroundWidth = 1920;
@@ -55,7 +51,7 @@ public final class GuiPlayerInventory extends GuiInventory {
         tessellator.addElements();
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-        tessellator.drawTexture2D(transparentBackground.texID, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(transparentBackground, Shader.screen2DTexture, SpaceGame.camera);
         GL46.glDisable(GL46.GL_BLEND);
 
         int inventoryUIWidth = 656;
@@ -68,7 +64,7 @@ public final class GuiPlayerInventory extends GuiInventory {
         tessellator.addVertex2DTexture(16777215, inventoryUIX - inventoryUIWidth/2, inventoryUIY + inventoryUIHeight/2, inventoryUIZ, 2);
         tessellator.addVertex2DTexture(16777215, inventoryUIX + inventoryUIWidth/2, inventoryUIY - inventoryUIHeight/2, inventoryUIZ, 0);
         tessellator.addElements();
-        tessellator.drawTexture2D(this.inventoryUI.texID, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.inventoryUI, Shader.screen2DTexture, SpaceGame.camera);
         tessellator.toggleOrtho();
 
         this.associatedInventory.renderInventory();

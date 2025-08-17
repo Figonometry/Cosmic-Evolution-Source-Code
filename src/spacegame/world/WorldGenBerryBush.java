@@ -1,7 +1,6 @@
 package spacegame.world;
 
 import spacegame.block.Block;
-import spacegame.core.SpaceGame;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -9,8 +8,8 @@ import java.util.Random;
 public final class WorldGenBerryBush extends WorldGen{
     public ArrayList<int[]> blockPos = new ArrayList<>();
 
-    public WorldGenBerryBush(Chunk chunk, WorldFace worldFace, int index) {
-        this.worldFace = worldFace;
+    public WorldGenBerryBush(Chunk chunk, WorldEarth worldEarth, int index) {
+        this.worldEarth = worldEarth;
         this.index = index;
         this.chunk = chunk;
         this.rand = new Random();
@@ -46,7 +45,7 @@ public final class WorldGenBerryBush extends WorldGen{
     }
 
     private boolean isBlockValid(int x, int y, int z){
-        return this.worldFace.getBlockID(x,y,z) == Block.grass.ID && this.worldFace.getBlockID(x, y + 1, z) == Block.air.ID;
+        return this.worldEarth.getBlockID(x,y,z) == Block.grass.ID && this.worldEarth.getBlockID(x, y + 1, z) == Block.air.ID;
     }
 
     private boolean doesBlockIntersectSphere(int x, int y, int z, int startX, int startY, int startZ, int radius){
@@ -62,14 +61,14 @@ public final class WorldGenBerryBush extends WorldGen{
         int[] blockData;
         for (int i = 0; i < this.blockPos.size(); i++) {
             blockData = this.blockPos.get(i);
-            this.worldFace.setBlock(blockData[0], blockData[1] + 1, blockData[2], (short) blockData[3]);
-            chunk = this.worldFace.findChunkFromChunkCoordinates(blockData[0] >> 5, blockData[1] + 1 >> 5, blockData[2] >> 5);
+            this.worldEarth.setBlock(blockData[0], blockData[1] + 1, blockData[2], (short) blockData[3]);
+            chunk = this.worldEarth.findChunkFromChunkCoordinates(blockData[0] >> 5, blockData[1] + 1 >> 5, blockData[2] >> 5);
             this.addChunkToRebuildQueue(chunk);
         }
 
         for (int i = 0; i < this.blockPos.size(); i++) {
             blockData = this.blockPos.get(i);
-            this.worldFace.notifySurroundingBlockWithoutRebuild(blockData[0], blockData[1] + 1, blockData[2]);
+            this.worldEarth.notifySurroundingBlockWithoutRebuild(blockData[0], blockData[1] + 1, blockData[2]);
         }
         this.blockPos.clear();
         markAllChunksInRebuildQueueDirty();

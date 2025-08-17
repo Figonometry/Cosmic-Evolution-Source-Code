@@ -6,8 +6,9 @@ import spacegame.core.SpaceGame;
 import spacegame.entity.EntityPlayer;
 import spacegame.item.Item;
 import spacegame.render.ModelLoader;
+import spacegame.world.AxisAlignedBB;
 import spacegame.world.Chunk;
-import spacegame.world.WorldFace;
+import spacegame.world.World;
 
 import java.io.*;
 import java.util.Random;
@@ -15,7 +16,6 @@ import java.util.Random;
 import static spacegame.entity.EntityPlayer.selectedInventorySlot;
 
 public class Block {
-    public static Random rand  = new Random();
     public static final ModelLoader standardBlockModel = new ModelLoader("src/spacegame/assets/models/blockModels/standardBlock.obj");
     public static final ModelLoader torchBlockModel = new ModelLoader("src/spacegame/assets/models/blockModels/torch.obj");
     public static final ModelLoader torchNorthBlockModel = new ModelLoader("src/spacegame/assets/models/blockModels/torchNorth.obj");
@@ -25,6 +25,8 @@ public class Block {
     public static final ModelLoader xCrossBlockModel = new ModelLoader("src/spacegame/assets/models/blockModels/xCrossBlock.obj");
     public static final ModelLoader topFaceBlockModel = new ModelLoader("src/spacegame/assets/models/blockModels/topFaceBlock.obj");
     public static final ModelLoader fireBlockModel = new ModelLoader("src/spacegame/assets/models/blockModels/fire.obj");
+    public static final ModelLoader itemStoneModel = new ModelLoader("src/spacegame/assets/models/blockModels/itemStone.obj");
+    public static final ModelLoader berryBushModel = new ModelLoader("src/spacegame/assets/models/blockModels/berryBush.obj");
     public static final ModelLoader size15NormalModel = standardBlockModel.alterStandardBlockModel(1,0,1);
     public static final ModelLoader size14NormalModel = standardBlockModel.alterStandardBlockModel(2,0,2);
     public static final ModelLoader size13NormalModel = standardBlockModel.alterStandardBlockModel(3,0,3);
@@ -70,6 +72,8 @@ public class Block {
     public static final ModelLoader size3EastWestModel = standardBlockModel.alterStandardBlockModel(13,13,0);
     public static final ModelLoader size2EastWestModel = standardBlockModel.alterStandardBlockModel(14,14,0);
     public static final ModelLoader size1EastWestModel = standardBlockModel.alterStandardBlockModel(15,15,0);
+    public static final AxisAlignedBB standardBlock = new AxisAlignedBB(0,0,0,1,1,1);
+    public static final AxisAlignedBB itemStoneBoundingBox = new AxisAlignedBB(0,0,0,1,0.125,1);
     public static final Block[] list = new Block[Short.MAX_VALUE];
     public static final Block air = new Block((short) 0, -1, "src/spacegame/assets/blockFiles/air.txt");
     public static final Block grass = new BlockGrass((short) 1, 2, "src/spacegame/assets/blockFiles/grass.txt");
@@ -131,7 +135,7 @@ public class Block {
     public static final Block oakLogSize3EastWest = new BlockLog((short) 57, 8,"src/spacegame/assets/blockFiles/oakLogSize3EastWest.txt");
     public static final Block oakLogSize2EastWest = new BlockLog((short) 58, 8,"src/spacegame/assets/blockFiles/oakLogSize2EastWest.txt");
     public static final Block oakLogSize1EastWest = new BlockLog((short) 59, 8, "src/spacegame/assets/blockFiles/oakLogSize2EastWest.txt");
-    public static final Block leaf = new Block((short) 60, 10,"src/spacegame/assets/blockFiles/leaf.txt"); //Leaf Erikson
+    public static final Block leaf = new BlockLeaf((short) 60, 10,"src/spacegame/assets/blockFiles/leaf.txt"); //Leaf Erikson
     public static final Block berryBush = new BlockBerryBush((short) 61, 11, "src/spacegame/assets/blockFiles/berryBush.txt");
     public static final Block berryBushNoBerries = new BlockBerryBush((short) 62, 12, "src/spacegame/assets/blockFiles/berryBush.txt");
     public static final Block campfireUnLit2Sticks = new BlockCampFireUnlit((short) 63, 13, "src/spacegame/assets/blockFiles/campFireUnlit.txt");
@@ -154,6 +158,10 @@ public class Block {
     public static final Block campFireLitLight2 = new BlockCampFireLit((short)80, 17, "src/spacegame/assets/blockFiles/campFireLitLight2.txt");
     public static final Block campFireLitLight1 = new BlockCampFireLit((short)81, 17, "src/spacegame/assets/blockFiles/campFireLitLight1.txt");
     public static final Block campFireBurnedOut = new Block((short)82, 19, "src/spacegame/assets/blockFiles/campFireBurnedOut.txt");
+    public static final Block grassBlockLower = new Block((short)83, 20, "src/spacegame/assets/blockFiles/grassBlockLower.txt");
+    public static final Block cactus = new BlockCactus((short)84, 21, "src/spacegame/assets/blockFiles/cactus.txt");
+    public static final Block itemStone = new Block((short)85, stone.textureID, "src/spacegame/assets/blockFiles/itemStone.txt");
+    public static final Block berryBushFlower = new BlockBerryBush((short)86, 27, "src/spacegame/assets/blockFiles/berryBush.txt");
     public final short ID;
     public final int textureID;
     public static int facingDirection;
@@ -174,6 +182,7 @@ public class Block {
     public float hardness;
     public boolean requiresTool;
     public float itemDropChance = 1;
+    public AxisAlignedBB standardCollisionBoundingBox = standardBlock;
 
     public Block(short ID, int textureID, String filepath) {
         if (list[ID] != null) {
@@ -239,6 +248,12 @@ public class Block {
                 this.canBurnOut = Boolean.parseBoolean(properties[1]);
             }
 
+            if (properties[0].equals("boundingBox")) {
+                switch (properties[1]){
+                    case "itemStoneBoundingBox" -> this.standardCollisionBoundingBox = itemStoneBoundingBox;
+                }
+            }
+
             if (properties[0].equals("blockModel")) {
                 switch (properties[1]){
                     case "standardBlockModel" -> this.blockModel = standardBlockModel;
@@ -250,6 +265,8 @@ public class Block {
                     case "xCrossBlockModel" -> this.blockModel = xCrossBlockModel;
                     case "topFaceBlockModel" -> this.blockModel = topFaceBlockModel;
                     case "fireBlockModel" -> this.blockModel = fireBlockModel;
+                    case "itemStoneModel" -> this.blockModel = itemStoneModel;
+                    case "berryBushModel" -> this.blockModel = berryBushModel;
                     case "size15NormalModel" -> this.blockModel = size15NormalModel;
                     case "size14NormalModel" -> this.blockModel = size14NormalModel;
                     case "size13NormalModel" -> this.blockModel = size13NormalModel;
@@ -351,17 +368,17 @@ public class Block {
         return this.textureID;
     }
 
-    public void onLeftClick(int x, int y, int z, WorldFace worldFace, EntityPlayer player) {
+    public void onLeftClick(int x, int y, int z, World world, EntityPlayer player) {
         if (!this.canBeBroken) {return;}
-        worldFace.setBlockWithNotify(x, y, z, Block.air.ID);
+        world.setBlockWithNotify(x, y, z, Block.air.ID);
         new SoundPlayer(SpaceGame.instance).playSound(x, y, z, new Sound(this.stepSound, false), new Random().nextFloat(0.6F, 1));
         if (player.inventory.itemStacks[selectedInventorySlot].durability != -1) {
             player.inventory.itemStacks[selectedInventorySlot].durability--;
         }
     }
 
-    public void onRightClick(int x, int y, int z, WorldFace worldFace, EntityPlayer player) {
-        Chunk chunk = worldFace.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
+    public void onRightClick(int x, int y, int z, World world, EntityPlayer player) {
+        Chunk chunk = world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
         if (chunk.blocks == null) {chunk.initChunk();}
         if (chunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)] != air.ID && chunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)] != water.ID) {return;}
 
@@ -379,25 +396,19 @@ public class Block {
                 case 4 -> Block.torchWest.ID;
                 default -> Block.torchStandard.ID;
             };
-        } else if (Item.list[heldItem].canPlaceOnGround) {
-            if (!worldFace.isItemAtLocation(x, y - 1, z) && worldFace.getBlockID(x, y - 1, z) != Block.air.ID) {
-                worldFace.setItemOnGround(x, y - 1, z, player.getHeldItem(), player.getHeldItemDurability());
-                new SoundPlayer(SpaceGame.instance).playSound(x, y, z, new Sound(Sound.itemPickup, false), new Random().nextFloat(0.5F, 0.9F));
-                player.removeItemFromInventory();
-                player.isSwinging = true;
-            } else if (worldFace.getBlockID(x, y - 1, z) != Block.air.ID) {
-                Item.list[player.getHeldItem()].onRightClick(x, y - 1, z, worldFace, player);
-                if (worldFace.getItemInChunk(x, y - 1, z) == Item.rawStick.ID && heldItem == Item.rawStick.ID) {
-                    worldFace.setBlockWithNotify(x, y, z, campfireUnLit2Sticks.ID);
-                    worldFace.removeItemFromGround(x, y - 1, z);
-                    player.removeItemFromInventory();
-                }
-            }
-            return;
         }
+
+        switch (Item.list[heldItem].itemName){
+           case "RAW_STONE":
+               heldBlock = itemStone.ID;
+               break;
+        }
+
+
+
         new SoundPlayer(SpaceGame.instance).playSound(x, y, z, new Sound(list[player.getHeldBlock()].stepSound, false), new Random().nextFloat(0.6F, 1));
         player.removeItemFromInventory();
-        worldFace.setBlockWithNotify(x, y, z, heldBlock);
+        world.setBlockWithNotify(x, y, z, heldBlock);
         player.isSwinging = true;
     }
 

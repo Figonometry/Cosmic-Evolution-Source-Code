@@ -7,7 +7,7 @@ import org.joml.Vector3f;
 import org.lwjgl.opengl.GL46;
 import spacegame.celestial.CelestialObject;
 import spacegame.celestial.Sun;
-import spacegame.core.MathUtils;
+import spacegame.core.MathUtil;
 import spacegame.core.SpaceGame;
 import spacegame.gui.GuiUniverseMap;
 
@@ -50,7 +50,7 @@ public final class RenderCelestialBody {
         }
 
         if(!(celestialObject instanceof Sun)) {
-            Tessellator tessellator = Tessellator.instance;
+            RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
             float sizeX = (float) celestialObject.semiMajorAxis * GuiUniverseMap.mapScale;
             float sizeZ = (float) celestialObject.semiMinorAxis * GuiUniverseMap.mapScale;
             Vector3d positionDifference = new Vector3d();
@@ -70,8 +70,8 @@ public final class RenderCelestialBody {
 
             if(this.doesOrbitLineNeedToRender(celestialObject)) {
                 double inclinationInRads = Math.toRadians(celestialObject.inclination);
-                double cosInclination = MathUtils.cos(inclinationInRads);
-                double sinInclination = MathUtils.sin(inclinationInRads);
+                double cosInclination = MathUtil.cos(inclinationInRads);
+                double sinInclination = MathUtil.sin(inclinationInRads);
 
                 float y1 = (float) (0 * cosInclination - (z - sizeZ) * sinInclination);
                 float z1 = (float) (0 * sinInclination + (z - sizeZ) * cosInclination);
@@ -85,7 +85,7 @@ public final class RenderCelestialBody {
                 tessellator.addElements();
                 GL46.glEnable(GL46.GL_BLEND);
                 GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-                tessellator.drawTexture2D(GuiUniverseMap.orbitLine.texID, Shader.universeShader2DTexture, GuiUniverseMap.universeCamera);
+                tessellator.drawTexture2D(GuiUniverseMap.orbitLine, Shader.universeShader2DTexture, GuiUniverseMap.universeCamera);
                 GL46.glDisable(GL46.GL_BLEND);
             }
 
@@ -96,7 +96,7 @@ public final class RenderCelestialBody {
         x = 0;
         y = 0;
         z = 0;
-        Tessellator tessellator = Tessellator.instance;
+        RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         Vector3f vertex1;
         Vector3f vertex2;
         Vector3f vertex3;
@@ -157,7 +157,7 @@ public final class RenderCelestialBody {
             tessellator.addElements();
             GL46.glEnable(GL46.GL_BLEND);
             GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_COLOR);
-            tessellator.drawTexture2D(Sun.sunFlare.texID, Shader.universeShader2DTexture, GuiUniverseMap.universeCamera);
+            tessellator.drawTexture2D(Sun.sunFlare, Shader.universeShader2DTexture, GuiUniverseMap.universeCamera);
             GL46.glDisable(GL46.GL_BLEND);
         }
     }
@@ -194,7 +194,7 @@ public final class RenderCelestialBody {
         float dotProduct = vertexDir.dot(lightDir);
         float angle = (float) Math.toDegrees(Math.acos(dotProduct));
 
-        float intensity = Math.max(0, (float) MathUtils.cos(Math.toRadians(angle)));
+        float intensity = Math.max(0, (float) MathUtil.cos(Math.toRadians(angle)));
 
         int red = (baseColor >> 16) & 0xFF;
         int green = (baseColor >> 8) & 0xFF;
@@ -214,9 +214,9 @@ public final class RenderCelestialBody {
         Vector3f position = new Vector3f();
         float latRad = (float) Math.toRadians(latitude);
         float lonRad = (float) Math.toRadians(longitude);
-        position.x = (float) (R * MathUtils.cos(latRad) * MathUtils.cos(lonRad));
-        position.y = (float) (R * MathUtils.sin(latRad));
-        position.z = (float) (R * MathUtils.cos(latRad) * MathUtils.sin(lonRad));
+        position.x = (float) (R * MathUtil.cos(latRad) * MathUtil.cos(lonRad));
+        position.y = (float) (R * MathUtil.sin(latRad));
+        position.z = (float) (R * MathUtil.cos(latRad) * MathUtil.sin(lonRad));
         return position;
     }
 

@@ -1,0 +1,3 @@
+itemName:STONE_HAND_SHOVEL
+toolType:shovel
+stackLimit:1

@@ -1,5 +1,7 @@
 package spacegame.core;
 
+import spacegame.render.Shader;
+
 public final class Timer {
     private static final long NS_PER_SECOND = 1000000000L;
     private static final long MAX_NS_PER_UPDATE = 1000000000L;
@@ -34,7 +36,7 @@ public final class Timer {
         this.ticks = (int) this.passedTime;
         elapsedTime += this.ticks;
         if(SpaceGame.instance.save != null){
-            if(!SpaceGame.instance.save.activeWorld.activeWorldFace.paused){
+            if(!SpaceGame.instance.save.activeWorld.paused){
                 SpaceGame.instance.save.time += this.ticks;
             }
         }
@@ -44,6 +46,9 @@ public final class Timer {
 
         this.passedTime -= (float) this.ticks;
         this.a = this.passedTime;
+
+
+        Shader.terrainShader.uploadDouble("time", (double) Timer.elapsedTime % 8388608);
     }
 
 

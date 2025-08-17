@@ -2,6 +2,7 @@ package spacegame.world;
 
 import spacegame.core.SpaceGame;
 import spacegame.entity.EntityPlayer;
+import spacegame.gui.Tech;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
 
@@ -41,7 +42,6 @@ public final class Save {
         }
         this.seed = seed;
         this.saveName = saveName;
-        this.time += 7200;
         this.savedSkyLightLevel = 15;
         this.spawnX = x;
         this.spawnZ = z;
@@ -77,6 +77,7 @@ public final class Save {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        Tech.loadSaveTechnologies(this.saveFolder);
     }
 
     public void saveDataToFile(){
@@ -102,6 +103,7 @@ public final class Save {
         }
         this.thePlayer.savePlayerToFile();
         this.activeWorld.saveWorld();
+        Tech.saveAllTechnologiesToFile(this.saveFolder);
     }
 
     public void saveDataToFileWithoutChunkUnload(){
@@ -127,6 +129,7 @@ public final class Save {
         }
         this.thePlayer.savePlayerToFile();
         this.activeWorld.saveWorldWithoutUnload();
+        Tech.saveAllTechnologiesToFile(this.saveFolder);
     }
 
     public void saveInitDataToFile(String saveName, double x, double z){
@@ -154,7 +157,7 @@ public final class Save {
     public void tick() {
         this.activeWorld.tick();
         this.thePlayer.tick();
-        this.activeWorld.activeWorldFace.chunkController.renderWorldScene.hasTickPassed = true;
+        this.activeWorld.chunkController.renderWorldScene.hasTickPassed = true;
     }
 
     public void setActiveWorld(World world) {

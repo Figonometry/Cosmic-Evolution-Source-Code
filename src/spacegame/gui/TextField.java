@@ -1,11 +1,9 @@
 package spacegame.gui;
 
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.opengl.GL46;
 import spacegame.core.*;
+import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
-import spacegame.render.Tessellator;
-import spacegame.render.TextureLoader;
 
 public final class TextField implements Runnable {
    public int width;
@@ -25,9 +23,9 @@ public final class TextField implements Runnable {
     }
 
     public void renderTextFieldAndText(){
-        Tessellator tessellator = Tessellator.instance;
-        TextureLoader textFieldOutline = new TextureLoader("src/spacegame/assets/textures/gui/outline32.png", 32, 32);
-        TextureLoader cursor = new TextureLoader("src/spacegame/assets/textures/gui/fillableColor.png", 32, 32);
+        RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
+        int textFieldOutline = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/outline32.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        int cursor = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColor.png", RenderEngine.TEXTURE_TYPE_2D, 0);
 
         tessellator.toggleOrtho();
 
@@ -37,7 +35,7 @@ public final class TextField implements Runnable {
         tessellator.addVertex2DTexture(16777215, this.x - this.width/2, this.y + this.height/2, outlineZ, 2);
         tessellator.addVertex2DTexture(16777215, this.x + this.width/2, this.y - this.height/2, outlineZ, 0);
         tessellator.addElements();
-        tessellator.drawTexture2D(textFieldOutline.texID, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(textFieldOutline, Shader.screen2DTexture, SpaceGame.camera);
 
         if(this.typing && this.text.length() < 28) {
             if(Timer.elapsedTime % 60 <= 30) {
@@ -47,14 +45,14 @@ public final class TextField implements Runnable {
                 tessellator.addVertex2DTexture(16777215, this.x - this.width / 2 + ((this.text.length() + 1.2F) * 17), this.y + this.height / 2 - 5, cursorZ, 2);
                 tessellator.addVertex2DTexture(16777215, this.x - this.width / 2 + ((this.text.length() + 1.2F) * 17) + 9, this.y - this.height / 2 + 5, cursorZ, 0);
                 tessellator.addElements();
-                tessellator.drawTexture2D(cursor.texID, Shader.screen2DTexture, SpaceGame.camera);
+                tessellator.drawTexture2D(cursor, Shader.screen2DTexture, SpaceGame.camera);
             }
         }
 
         tessellator.toggleOrtho();
 
-        GL46.glDeleteTextures(textFieldOutline.texID);
-        GL46.glDeleteTextures(cursor.texID);
+        SpaceGame.instance.renderEngine.deleteTexture(textFieldOutline);
+        SpaceGame.instance.renderEngine.deleteTexture(cursor);
 
         FontRenderer fontRenderer = FontRenderer.instance;
         fontRenderer.drawString(this.text, this.x - this.width/2, this.y - this.height/2,-15, 16777215, 50);
@@ -79,13 +77,13 @@ public final class TextField implements Runnable {
                     }
                 }
             }
-            if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_BACKSPACE) && KeyListener.backSpaceReleased && this.text.length() > 0) {
+            if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_BACKSPACE) && KeyListener.keyReleased[GLFW.GLFW_KEY_BACKSPACE] && this.text.length() > 0) {
                 char[] newTextCharacters = new char[this.text.length() - 1];
                 for (int i = 0; i < this.text.length() - 1; i++) {
                     newTextCharacters[i] = this.text.charAt(i);
                 }
                 this.text = new String(newTextCharacters);
-                KeyListener.backSpaceReleased = false;
+                KeyListener.setKeyReleased(GLFW.GLFW_KEY_BACKSLASH);
             }
         }
     }

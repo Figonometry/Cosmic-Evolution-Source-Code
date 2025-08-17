@@ -4,12 +4,11 @@ import org.joml.Vector3f;
 import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
 import spacegame.core.GameSettings;
-import spacegame.core.MathUtils;
+import spacegame.core.MathUtil;
 import spacegame.core.SpaceGame;
 import spacegame.render.ModelLoader;
+import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
-import spacegame.render.Tessellator;
-import spacegame.render.TextureLoader;
 import spacegame.world.AxisAlignedBB;
 
 import java.util.ArrayList;
@@ -53,7 +52,7 @@ public abstract class Entity {
     public boolean despawn = false;
     public boolean canMoveWithVector = false;
     public Vector3f movementVector = new Vector3f();
-    public static TextureLoader shadow;
+    public static int shadow;
     public static ArrayList<AxisAlignedBB> surroundingBlocks = new ArrayList<>();
 
     public void tick() {
@@ -86,28 +85,28 @@ public abstract class Entity {
     protected void updateAxisAlignedBB() {
         this.boundingBox.adjustEntityBoundingBox(this.x, this.y, this.z, this.width, this.height, this.depth);
 
-        double blockCeil = MathUtils.ceilDouble(this.boundingBox.minY);
+        double blockCeil = MathUtil.ceilDouble(this.boundingBox.minY);
         double threshold = 0.001;
         if(Math.abs(blockCeil - this.boundingBox.minY) < threshold){
-            this.boundingBox.minY = blockCeil; //This is to catch rounding errors when setting the entity's bounding box, more may have to be implemented
+            this.boundingBox.minY = blockCeil;
         }
     }
 
     protected void renderShadow(){
-        int x = MathUtils.floorDouble(this.x);
-        int y = MathUtils.floorDouble(this.y - (this.height/2) - 0.1);
-        int z = MathUtils.floorDouble(this.z);
+        int x = MathUtil.floorDouble(this.x);
+        int y = MathUtil.floorDouble(this.y - (this.height/2) - 0.1);
+        int z = MathUtil.floorDouble(this.z);
 
-        if(Block.list[SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockID(x,y,z)].isSolid) {
+        if(Block.list[SpaceGame.instance.save.activeWorld.getBlockID(x,y,z)].isSolid) {
             Shader.worldShader2DTexture.uploadBoolean("useFog", true);
             Shader.worldShader2DTexture.uploadFloat("fogRed", SpaceGame.instance.save.activeWorld.skyColor[0]);
             Shader.worldShader2DTexture.uploadFloat("fogGreen", SpaceGame.instance.save.activeWorld.skyColor[1]);
             Shader.worldShader2DTexture.uploadFloat("fogBlue", SpaceGame.instance.save.activeWorld.skyColor[2]);
             Shader.worldShader2DTexture.uploadFloat("fogDistance", GameSettings.renderDistance << 5);
-            y = MathUtils.floorDouble(this.y);
-            int playerChunkX = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.x) >> 5;
-            int playerChunkY = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.y) >> 5;
-            int playerChunkZ = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.z) >> 5;
+            y = MathUtil.floorDouble(this.y);
+            int playerChunkX = MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.x) >> 5;
+            int playerChunkY = MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.y) >> 5;
+            int playerChunkZ = MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.z) >> 5;
             int xOffset = (x >> 5) - playerChunkX;
             int yOffset = (y >> 5) - playerChunkY;
             int zOffset = (z >> 5) - playerChunkZ;
@@ -116,7 +115,7 @@ public abstract class Entity {
             zOffset <<= 5;
             Vector3f chunkOffset = new Vector3f(xOffset, yOffset, zOffset);
             Shader.worldShader2DTexture.uploadVec3f("chunkOffset", chunkOffset);
-            Tessellator tessellator = Tessellator.instance;
+            RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
             tessellator.addVertex2DTexture(16777215, (float) ((this.x % 32) + (this.width)), (float) ((this.y % 32) - (this.height / 2) + 0.01F), (float) ((this.z % 32) - (this.width)), 3);
             tessellator.addVertex2DTexture(16777215, (float) ((this.x % 32) - (this.width)), (float) ((this.y % 32) - (this.height / 2) + 0.01F), (float) ((this.z % 32) + (this.width)), 1);
             tessellator.addVertex2DTexture(16777215, (float) ((this.x % 32) + (this.width)), (float) ((this.y % 32) - (this.height / 2) + 0.01F), (float) ((this.z % 32) + (this.width)), 2);
@@ -124,7 +123,7 @@ public abstract class Entity {
             tessellator.addElements();
             GL46.glEnable(GL46.GL_BLEND);
             GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-            tessellator.drawTexture2D(shadow.texID, Shader.worldShader2DTexture, SpaceGame.camera);
+            tessellator.drawTexture2D(shadow, Shader.worldShader2DTexture, SpaceGame.camera);
             GL46.glDisable(GL46.GL_BLEND);
         }
     }
@@ -157,8 +156,8 @@ public abstract class Entity {
             distance = (float) (speed / Math.sqrt(distance));
             rawDeltaX *= distance;
             rawDeltaZ *= distance;
-            float sine = (float) MathUtils.sin((float) Math.toRadians(this.yaw));
-            float cosine = (float) MathUtils.cos((float) Math.toRadians(this.yaw));
+            float sine = (float) MathUtil.sin((float) Math.toRadians(this.yaw));
+            float cosine = (float) MathUtil.cos((float) Math.toRadians(this.yaw));
             this.deltaX += rawDeltaX * cosine - rawDeltaZ * sine;
             this.deltaZ += rawDeltaZ * cosine + rawDeltaX * sine;
         }
@@ -179,7 +178,7 @@ public abstract class Entity {
     protected void moveAndHandleCollision(){
         this.updateAxisAlignedBB();
         surroundingBlocks.clear();
-        surroundingBlocks = SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockBoundingBoxes(this.boundingBox.expand(this.deltaX, this.deltaY, this.deltaZ), surroundingBlocks);
+        surroundingBlocks = SpaceGame.instance.save.activeWorld.getBlockBoundingBoxes(this.boundingBox.expand(this.deltaX, this.deltaY, this.deltaZ), surroundingBlocks);
 
         AxisAlignedBB block;
         for(int i = 0; i < surroundingBlocks.size(); i++) {
@@ -228,7 +227,7 @@ public abstract class Entity {
     }
 
     public static void initShadow(){
-        shadow = new TextureLoader("src/spacegame/assets/textures/item/shadow.png", 32, 32);
+        shadow = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/item/shadow.png", RenderEngine.TEXTURE_TYPE_2D, 0);
     }
 
 }

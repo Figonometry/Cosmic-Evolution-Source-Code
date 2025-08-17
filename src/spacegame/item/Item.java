@@ -2,7 +2,7 @@ package spacegame.item;
 
 import spacegame.core.SpaceGame;
 import spacegame.entity.EntityPlayer;
-import spacegame.world.WorldFace;
+import spacegame.world.World;
 
 import java.io.*;
 
@@ -10,20 +10,21 @@ public class Item {
     public static final Item[] list = new Item[Short.MAX_VALUE];
     public static final Item block = new ItemBlock((short)0, -1, "src/spacegame/assets/itemFiles/block.txt");
     public static final Item torch = new Item((short)1, 1, "src/spacegame/assets/itemFiles/torch.txt");
-    public static final Item stone = new ItemStone((short)2, 2, "src/spacegame/assets/itemFiles/stone.txt", Material.RAW_STONE);
+    public static final Item stone = new Item((short)2, 2, "src/spacegame/assets/itemFiles/stone.txt");
     public static final Item stoneFragments = new ItemStoneFragments((short)3, 3, "src/spacegame/assets/itemFiles/stoneFragments.txt");
     public static final Item stoneHandAxe = new ItemAxe((short)4, 4, "src/spacegame/assets/itemFiles/stoneHandAxe.txt", Material.RAW_STONE);
     public static final Item berry = new ItemBerry((short)5, 5, "src/spacegame/assets/itemFiles/berry.txt");
     public static final Item rawStick = new Item((short)6, 6, "src/spacegame/assets/itemFiles/rawStick.txt");
     public static final Item unlitTorch = new Item((short)7, 7, "src/spacegame/assets/itemFiles/unlitTorch.txt");
     public static final Item woodShards = new Item((short)8, 8, "src/spacegame/assets/itemFiles/woodShards.txt");
+    public static final Item stoneHandKnifeBlade = new ItemKnife((short)9, 9, "src/spacegame/assets/itemFiles/stoneHandKnifeBlade.txt", Material.RAW_STONE);
+    public static final Item stoneHandShovel = new ItemShovel((short)10, 10, "src/spacegame/assets/itemFiles/stoneHandShovel.txt", Material.RAW_STONE);
     public final short ID;
     public final int textureID;
     public short metadata;
     public short durability = -1; //If this is -1 that means the item has no durability and should never render a durability bar
     public float hardness = 0;
     public boolean renderItemWithBlockModel;
-    public boolean canPlaceOnGround;
     public byte stackLimit = 100;
     public String itemName;
     public String toolType = "";
@@ -68,10 +69,6 @@ public class Item {
                 this.renderItemWithBlockModel = Boolean.parseBoolean(properties[1]);
             }
 
-            if (properties[0].equals("canPlaceOnGround")) {
-                this.canPlaceOnGround = Boolean.parseBoolean(properties[1]);
-            }
-
             if (properties[0].equals("stackLimit")) {
                 this.stackLimit = Byte.parseByte(properties[1]);
             }
@@ -81,7 +78,7 @@ public class Item {
             }
 
             if (properties[0].equals("toolType")) {
-                this.itemName = properties[1];
+                this.toolType = properties[1];
             }
         }
         try {
@@ -95,11 +92,11 @@ public class Item {
         return list[ID].textureID;
     }
 
-    public void onLeftClick(int x, int y, int z, WorldFace worldFace, EntityPlayer player){
+    public void onLeftClick(int x, int y, int z, World world, EntityPlayer player){
 
     }
 
-    public void onRightClick(int x, int y, int z, WorldFace worldFace, EntityPlayer player){
+    public void onRightClick(int x, int y, int z, World world, EntityPlayer player){
 
     }
 

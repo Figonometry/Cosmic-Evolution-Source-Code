@@ -1,6 +1,7 @@
 package spacegame.celestial;
 
-import spacegame.render.TextureCubeMapLoader;
+import spacegame.core.SpaceGame;
+import spacegame.render.RenderEngine;
 import spacegame.world.World;
 
 public final class Universe {
@@ -8,7 +9,7 @@ public final class Universe {
     public Moon moon;
     public Sun sun;
     public CelestialObject[] objects = new CelestialObject[3];
-    public TextureCubeMapLoader[] cubeMaps = new TextureCubeMapLoader[this.objects.length];
+    public int[] cubeMaps = new int[this.objects.length];
 
     public Universe(){
         this.sun = new Sun(null,0, 0,0, 0, 0, 0, 0, 69520200, 0, CelestialObject.surfaceGravity(27.9), 216000, Long.MAX_VALUE, true, 1.9885e30, 1, 0, 0);
@@ -17,12 +18,12 @@ public final class Universe {
         this.objects[0] = this.sun;
         this.objects[1] = this.earth;
         this.objects[2] = this.moon;
-        this.cubeMaps[0] = new TextureCubeMapLoader("src/spacegame/assets/textures/gui/guiUniverse/sun");
-        this.cubeMaps[1] = new TextureCubeMapLoader("src/spacegame/assets/textures/gui/guiUniverse/earth");
-        this.cubeMaps[2] = new TextureCubeMapLoader("src/spacegame/assets/textures/gui/guiUniverse/moon");
-        this.objects[0].mappedTexture = this.cubeMaps[0].texID;
-        this.objects[1].mappedTexture = this.cubeMaps[1].texID;
-        this.objects[2].mappedTexture = this.cubeMaps[2].texID;
+        this.cubeMaps[0] = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiUniverse/sun", RenderEngine.TEXTURE_TYPE_CUBEMAP, 0);
+        this.cubeMaps[1] = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiUniverse/earth", RenderEngine.TEXTURE_TYPE_CUBEMAP, 0);
+        this.cubeMaps[2] = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiUniverse/moon", RenderEngine.TEXTURE_TYPE_CUBEMAP, 0);
+        this.objects[0].mappedTexture = this.cubeMaps[0];
+        this.objects[1].mappedTexture = this.cubeMaps[1];
+        this.objects[2].mappedTexture = this.cubeMaps[2];
     }
 
     public void updateCelestialObjects(){

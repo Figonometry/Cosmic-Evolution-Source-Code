@@ -4,22 +4,21 @@ import org.lwjgl.opengl.GL46;
 import spacegame.core.SpaceGame;
 import spacegame.item.Inventory;
 import spacegame.item.ItemStack;
-import spacegame.render.TextureLoader;
+import spacegame.render.RenderEngine;
 
 public abstract class GuiInventory extends Gui {
     public Inventory associatedInventory;
-    public static TextureLoader fillableColor;
+    public static int fillableColor;
     public GuiInventory(SpaceGame spaceGame) {
         super(spaceGame);
     }
 
     public void loadTexture(){
-        fillableColor = new TextureLoader("src/spacegame/assets/textures/gui/fillableColor.png", 32, 32);
+        fillableColor = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColor.png", RenderEngine.TEXTURE_TYPE_2D, 0);
     }
 
     public void unloadTexture(){
-        GL46.glDeleteTextures(fillableColor.texID);
-        fillableColor = null;
+        SpaceGame.instance.renderEngine.deleteTexture(fillableColor);
     }
 
     public abstract ItemStack getHoveredItemStack();

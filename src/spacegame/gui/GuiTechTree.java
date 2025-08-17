@@ -2,21 +2,18 @@ package spacegame.gui;
 
 import org.lwjgl.opengl.GL46;
 import spacegame.core.SpaceGame;
-import spacegame.item.ItemStack;
+import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
-import spacegame.render.Tessellator;
-import spacegame.render.TextureLoader;
-import spacegame.world.Tech;
 
 import java.util.ArrayList;
 
 public final class GuiTechTree extends Gui {
     public int eraDisplayed = 1;
-    public TextureLoader background;
-    public TextureLoader techBlock;
-    public TextureLoader line;
-    public TextureLoader treeArea;
-    public TextureLoader transparentBackground;
+    public int background;
+    public int techBlock;
+    public int line;
+    public int treeArea;
+    public int transparentBackground;
     public ArrayList<TechBlock> currentTechsToDisplay;
     public ButtonTechTree neolithicButton;
     public ButtonTechTree age2;
@@ -65,29 +62,51 @@ public final class GuiTechTree extends Gui {
 
     @Override
     public void loadTextures() {
-        this.techBlock = new TextureLoader("src/spacegame/assets/textures/gui/guiTechTree/techBlock.png", 256, 256);
-        this.line = new TextureLoader("src/spacegame/assets/textures/gui/guiTechTree/line.png", 32, 32);
-        this.transparentBackground = new TextureLoader("src/spacegame/assets/textures/gui/transparentBackground.png", 32, 32);
+        this.techBlock = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiTechTree/techBlock.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.line = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiTechTree/line.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.transparentBackground = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
         switch (this.eraDisplayed){
             case Tech.NEOLITHIC_ERA -> {
-                this.background = new TextureLoader("src/spacegame/assets/textures/gui/guiTechTree/neolithicBackGround.png", 256,256);
-                this.treeArea = new TextureLoader("src/spacegame/assets/textures/gui/guiTechTree/clayTexture.png", 268,200);
+                this.background = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiTechTree/neolithicBackGround.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+                this.treeArea = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiTechTree/clayTexture.png", RenderEngine.TEXTURE_TYPE_2D, 0);
             }
         }
     }
 
     @Override
     public void deleteTextures() {
-        GL46.glDeleteTextures(this.techBlock.texID);
-        GL46.glDeleteTextures(this.background.texID);
-        GL46.glDeleteTextures(this.treeArea.texID);
-        GL46.glDeleteTextures(this.line.texID);
-        GL46.glDeleteTextures(this.transparentBackground.texID);
-        this.background = null;
-        this.techBlock = null;
-        this.treeArea = null;
-        this.line = null;
-        this.transparentBackground = null;
+        SpaceGame.instance.renderEngine.deleteTexture(this.techBlock);
+        SpaceGame.instance.renderEngine.deleteTexture(this.line);
+        SpaceGame.instance.renderEngine.deleteTexture(this.transparentBackground);
+        SpaceGame.instance.renderEngine.deleteTexture(this.background);
+        SpaceGame.instance.renderEngine.deleteTexture(this.treeArea);
+        SpaceGame.instance.renderEngine.deleteTexture(this.age2.texture);
+        SpaceGame.instance.renderEngine.deleteTexture(this.age3.texture);
+        SpaceGame.instance.renderEngine.deleteTexture(this.age4.texture);
+        SpaceGame.instance.renderEngine.deleteTexture(this.age5.texture);
+        SpaceGame.instance.renderEngine.deleteTexture(this.age6.texture);
+        SpaceGame.instance.renderEngine.deleteTexture(this.age7.texture);
+        SpaceGame.instance.renderEngine.deleteTexture(this.age8.texture);
+        SpaceGame.instance.renderEngine.deleteTexture(this.age9.texture);
+        SpaceGame.instance.renderEngine.deleteTexture(this.age10.texture);
+        SpaceGame.instance.renderEngine.deleteTexture(this.age11.texture);
+        SpaceGame.instance.renderEngine.deleteTexture(this.age12.texture);
+        SpaceGame.instance.renderEngine.deleteTexture(this.age13.texture);
+    }
+
+    private void loadButtonTextures(){
+        this.age2.reloadTexture();
+        this.age3.reloadTexture();
+        this.age4.reloadTexture();
+        this.age5.reloadTexture();
+        this.age6.reloadTexture();
+        this.age7.reloadTexture();
+        this.age8.reloadTexture();
+        this.age9.reloadTexture();
+        this.age10.reloadTexture();
+        this.age11.reloadTexture();
+        this.age12.reloadTexture();
+        this.age13.reloadTexture();
     }
 
     public void switchEraDisplayed(int newEra){
@@ -95,6 +114,7 @@ public final class GuiTechTree extends Gui {
         this.deleteTextures();
         switch (this.eraDisplayed){
             case Tech.NEOLITHIC_ERA -> {
+                this.loadButtonTextures();
                 this.loadTextures();
                 this.currentTechsToDisplay = this.createTechBlocks();
             }
@@ -237,7 +257,7 @@ public final class GuiTechTree extends Gui {
     }
 
     private void drawNeolithicTechTreeBackgroundElements(){
-        Tessellator tessellator = Tessellator.instance;
+        RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         tessellator.toggleOrtho();
         int backgroundWidth = 1920;
         int backgroundHeight = 1017;
@@ -251,7 +271,7 @@ public final class GuiTechTree extends Gui {
         tessellator.addElements();
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-        tessellator.drawTexture2D(this.background.texID, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.background, Shader.screen2DTexture, SpaceGame.camera);
         GL46.glDisable(GL46.GL_BLEND);
 
         backgroundY = 75;
@@ -262,7 +282,7 @@ public final class GuiTechTree extends Gui {
         tessellator.addVertex2DTexture(16777215, backgroundX - backgroundWidth, backgroundY + backgroundHeight, backgroundZ, 2);
         tessellator.addVertex2DTexture(16777215, backgroundX + backgroundWidth, backgroundY - backgroundHeight, backgroundZ, 0);
         tessellator.addElements();
-        tessellator.drawTexture2D(this.treeArea.texID, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.treeArea, Shader.screen2DTexture, SpaceGame.camera);
         tessellator.toggleOrtho();
 
 

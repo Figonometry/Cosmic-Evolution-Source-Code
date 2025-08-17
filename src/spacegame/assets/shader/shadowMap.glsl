@@ -9,6 +9,10 @@ uniform mat4 combinedViewProjectionMatrix;
 uniform vec3 chunkOffset;
 uniform vec3 sunPosition;
 uniform double time;
+uniform bool wavyLeaves;
+
+out float fTexID;
+out vec2 fTexCoords;
 
 float halfToFloat(int f16) {
     int sign = (f16 >> 15) & 0x1;
@@ -32,6 +36,12 @@ vec3 decompressPosition(float posXY, float posZAndTexID){
     return vec3(halfToFloat((combinedIntXY >> 16) & 65535), halfToFloat(combinedIntXY & 65535), halfToFloat((combinedIntZ >> 16) & 65535));
 }
 
+vec2 decompressTextureCoordinates(float texCoord){
+    int combinedInt = floatBitsToInt(texCoord);
+    return vec2(((combinedInt >> 18) & 63) != 0 ? ((combinedInt >> 18) & 63) * 0.03125f : float((combinedInt >> 12) & 63), ((combinedInt >> 6) & 63) != 0 ? ((combinedInt >> 6) & 63) * 0.03125f : float(combinedInt & 63));
+}
+
+
 float decompressTexID(float posZAndTexID){
     int combinedInt = floatBitsToInt(posZAndTexID);
     return float(combinedInt & 65535);
@@ -47,7 +57,9 @@ float sinX(float x, float y, float z){
 
 void main() {
     vec3 correctPos = vec3(chunkOffset + decompressPosition(aPos, aTexId));
-    if(int(decompressTexID(aTexId)) == 10){
+    fTexID = decompressTexID(aTexId);
+    fTexCoords = decompressTextureCoordinates(aTexCoords);
+    if(int(fTexID) == 10 && wavyLeaves){ //Leaves
         correctPos.x = sinX(correctPos.x, correctPos.y, correctPos.z);
     }
     gl_Position = vec4(combinedViewProjectionMatrix * vec4(correctPos, 1.0));
@@ -56,6 +68,18 @@ void main() {
 #type fragment
 #version 460 core
 
+in float fTexID;
+in vec2 fTexCoords;
+
+
+uniform sampler2DArray textureArray;
+
 void main(){
-    //This is intentionally blank, the depth buffer will be written to in here
+    float id = fTexID;
+    vec4 color = texture(textureArray, vec3(fTexCoords, id));
+
+     if(color.w < 0.1f){
+         discard;
+     }
+
 }

@@ -44,27 +44,6 @@ public final class ThreadChunkSave implements Runnable {
                 chunkData.setIntArray("southFaceBitMask", chunk.southFaceBitMask);
                 chunkData.setIntArray("eastFaceBitMask", chunk.eastFaceBitMask);
                 chunkData.setIntArray("westFaceBitMask", chunk.westFaceBitMask);
-                if(chunk.renderableItemID != null) {
-                    int[] renderableItemID = new int[chunk.renderableItemID.length];
-                    for (int i = 0; i < renderableItemID.length; i++) {
-                        renderableItemID[i] = chunk.renderableItemID[i];
-                    }
-                    chunkData.setIntArray("renderableItemID", renderableItemID);
-                }
-                if(chunk.renderableItemIndexes != null) {
-                    int[] renderableItemIndexes = new int[chunk.renderableItemIndexes.length];
-                    for (int i = 0; i < renderableItemIndexes.length; i++) {
-                        renderableItemIndexes[i] = chunk.renderableItemIndexes[i];
-                    }
-                    chunkData.setIntArray("renderableItemIndexes", renderableItemIndexes);
-                }
-                if(chunk.renderableItemDurability != null) {
-                    int[] renderableItemDurability = new int[chunk.renderableItemDurability.length];
-                    for (int i = 0; i < renderableItemDurability.length; i++) {
-                        renderableItemDurability[i] = chunk.renderableItemDurability[i];
-                    }
-                    chunkData.setIntArray("renderableItemDurability", renderableItemDurability);
-                }
             }
 
 

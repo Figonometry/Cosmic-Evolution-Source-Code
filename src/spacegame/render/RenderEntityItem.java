@@ -4,11 +4,11 @@ import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL46;
 import spacegame.core.GameSettings;
-import spacegame.core.MathUtils;
+import spacegame.core.MathUtil;
 import spacegame.core.SpaceGame;
 import spacegame.gui.GuiInGame;
 import spacegame.item.Item;
-import spacegame.world.WorldFace;
+import spacegame.world.WorldEarth;
 
 import java.awt.*;
 
@@ -63,7 +63,7 @@ public final class RenderEntityItem {
     }
 
     public void renderEntityAsBillboard(){
-        WorldTessellator worldTessellator = WorldTessellator.instance;
+        RenderEngine.WorldTessellator worldTessellator = RenderEngine.WorldTessellator.instance;
         this.chunkX = (int)this.x >> 5;
         this.chunkY = (int)this.y >> 5;
         this.chunkZ = (int)this.z >> 5;
@@ -83,10 +83,10 @@ public final class RenderEntityItem {
         zOffset *= 32;
         Vector3f chunkOffset = new Vector3f(xOffset, yOffset, zOffset);
         Shader.worldShaderTextureArray.uploadVec3f("chunkOffset", chunkOffset);
-        WorldFace worldFace = SpaceGame.instance.save.activeWorld.activeWorldFace;
+        WorldEarth worldEarth = (WorldEarth) SpaceGame.instance.save.activeWorld;
         this.currentTime = SpaceGame.instance.save.time;
         float x = (float) (this.x % 32);
-        float y = (float) ((float) (this.y % 32) + 0.05F + (0.05F * ((MathUtils.sin((((double) this.currentTime / 120) * Math.PI * 2) - (0.5 * Math.PI)) * 0.5) + 0.5f)));
+        float y = (float) ((float) (this.y % 32) + 0.05F + (0.05F * ((MathUtil.sin((((double) this.currentTime / 120) * Math.PI * 2) - (0.5 * Math.PI)) * 0.5) + 0.5f)));
         float z = (float) (this.z % 32);
 
         if(x < 0){
@@ -110,8 +110,8 @@ public final class RenderEntityItem {
         Vector3d vertex4 = new Vector3d(0, -0.125, 0.125).rotateY(-Math.toRadians(SpaceGame.instance.save.thePlayer.yaw)).add(blockPosition);
         Vector3d normal = new Vector3d(0, 0, 1).rotateY(-Math.toRadians(SpaceGame.instance.save.thePlayer.yaw));
         this.resetLight();
-        this.setVertexLight1Arg(worldFace.getBlockLightValue((int)(this.chunkX * 32 + x), (int)(this.chunkY * 32 + y), (int)(this.chunkZ * 32 + z)),  x, y, z, worldFace.getBlockLightColor((int)(this.chunkX * 32 + x), (int)(this.chunkY * 32 + y), (int)(this.chunkZ * 32 + z)));
-        float skyLightValue = GuiInGame.getLightValueFromMap(worldFace.getBlockSkyLightValue((int)(this.chunkX * 32 + x), (int)(this.chunkY * 32 + y), (int)(this.chunkZ * 32 + z)));
+        this.setVertexLight1Arg(worldEarth.getBlockLightValue((int)(this.chunkX * 32 + x), (int)(this.chunkY * 32 + y), (int)(this.chunkZ * 32 + z)),  x, y, z, worldEarth.getBlockLightColor((int)(this.chunkX * 32 + x), (int)(this.chunkY * 32 + y), (int)(this.chunkZ * 32 + z)));
+        float skyLightValue = GuiInGame.getLightValueFromMap(worldEarth.getBlockSkyLightValue((int)(this.chunkX * 32 + x), (int)(this.chunkY * 32 + y), (int)(this.chunkZ * 32 + z)));
         int colorValue = new Color(this.red, this.green, this.blue, 0).getRGB();
         worldTessellator.addVertexTextureArray(colorValue, (float) vertex1.x, (float) vertex1.y, (float) vertex1.z, 3, blockID, RenderBlocks.WEST_FACE, (float) normal.x, (float) normal.y, (float) normal.z, skyLightValue);
         worldTessellator.addVertexTextureArray(colorValue, (float) vertex2.x, (float) vertex2.y, (float) vertex2.z, 1, blockID, RenderBlocks.WEST_FACE, (float) normal.x, (float) normal.y, (float) normal.z, skyLightValue);
@@ -121,21 +121,21 @@ public final class RenderEntityItem {
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
         GL46.glDepthMask(false);
-        worldTessellator.drawTextureArray(Assets.itemTextureArray.arrayID, Shader.worldShaderTextureArray, SpaceGame.camera);
+        worldTessellator.drawTextureArray(Assets.itemTextureArray, Shader.worldShaderTextureArray, SpaceGame.camera);
         GL46.glDepthMask(true);
         GL46.glDisable(GL46.GL_BLEND);
     }
 
     public void renderEntityAsBlock(){
-        WorldTessellator worldTessellator = WorldTessellator.instance;
+        RenderEngine.WorldTessellator worldTessellator = RenderEngine.WorldTessellator.instance;
         ModelFace modelFace;
         this.currentTime = SpaceGame.instance.save.time;
-        this.chunkX = MathUtils.floorDouble(this.x) >> 5;
-        this.chunkY = MathUtils.floorDouble(this.y) >> 5;
-        this.chunkZ = MathUtils.floorDouble(this.z) >> 5;
+        this.chunkX = MathUtil.floorDouble(this.x) >> 5;
+        this.chunkY = MathUtil.floorDouble(this.y) >> 5;
+        this.chunkZ = MathUtil.floorDouble(this.z) >> 5;
         for(int i = 0; i < this.entityModel.modelFaces.length; i++){
             modelFace = this.entityModel.modelFaces[i];
-            this.renderOpaqueFace(worldTessellator, SpaceGame.instance.save.activeWorld.activeWorldFace, this.blockID, modelFace.faceType, modelFace, 0,0,0,0,0,0,0,0,0,0,0,0);
+            this.renderOpaqueFace(worldTessellator, (WorldEarth) SpaceGame.instance.save.activeWorld, this.blockID, modelFace.faceType, modelFace, 0,0,0,0,0,0,0,0,0,0,0,0);
             worldTessellator.addElements();
         }
         Shader.worldShaderTextureArray.uploadBoolean("useFog", true);
@@ -154,7 +154,7 @@ public final class RenderEntityItem {
         zOffset *= 32;
         Vector3f chunkOffset = new Vector3f(xOffset, yOffset, zOffset);
         Shader.worldShaderTextureArray.uploadVec3f("chunkOffset", chunkOffset);
-        worldTessellator.drawTextureArray(Assets.blockTextureArray.arrayID, Shader.worldShaderTextureArray, SpaceGame.camera);
+        worldTessellator.drawTextureArray(Assets.blockTextureArray, Shader.worldShaderTextureArray, SpaceGame.camera);
     }
 
     private float getLightValueFromMap(byte lightValue) {
@@ -198,9 +198,9 @@ public final class RenderEntityItem {
     }
 
 
-    private void renderOpaqueFace(WorldTessellator worldTessellator, WorldFace worldFace, short block, int face, ModelFace blockFace, float xSample1, float ySample1, float xSample2, float ySample2, float xSample3, float ySample3, float xSample4, float ySample4, int corner1, int corner2, int corner3, int corner4) {
+    private void renderOpaqueFace(RenderEngine.WorldTessellator worldTessellator, WorldEarth worldEarth, short block, int face, ModelFace blockFace, float xSample1, float ySample1, float xSample2, float ySample2, float xSample3, float ySample3, float xSample4, float ySample4, int corner1, int corner2, int corner3, int corner4) {
         float x = (float) (this.x % 32);
-        float y = (float) ((float) (this.y % 32) + 0.05F + (0.05F * ((MathUtils.sin((((double) this.currentTime / 120) * Math.PI * 2) - (0.5 * Math.PI)) * 0.5) + 0.5f)));
+        float y = (float) ((float) (this.y % 32) + 0.05F + (0.05F * ((MathUtil.sin((((double) this.currentTime / 120) * Math.PI * 2) - (0.5 * Math.PI)) * 0.5) + 0.5f)));
         float z = (float) (this.z % 32);
 
         if(x < 0){
@@ -223,16 +223,16 @@ public final class RenderEntityItem {
 
         Vector3f blockPosition = new Vector3f(x, (float) (y + this.entityHeight/2), z);
 
-        Vector3f vertex1 = new Vector3f(blockFace.vertices[0][0], blockFace.vertices[0][1], blockFace.vertices[0][2]).rotateY((float) Math.toRadians(this.currentTime % 720)).add(blockPosition);
-        Vector3f vertex2 = new Vector3f(blockFace.vertices[1][0], blockFace.vertices[1][1], blockFace.vertices[1][2]).rotateY((float) Math.toRadians(this.currentTime % 720)).add(blockPosition);
-        Vector3f vertex3 = new Vector3f(blockFace.vertices[2][0], blockFace.vertices[2][1], blockFace.vertices[2][2]).rotateY((float) Math.toRadians(this.currentTime % 720)).add(blockPosition);
-        Vector3f vertex4 = new Vector3f(blockFace.vertices[3][0], blockFace.vertices[3][1], blockFace.vertices[3][2]).rotateY((float) Math.toRadians(this.currentTime % 720)).add(blockPosition);
-        Vector3f normal = new Vector3f(blockFace.normal[0], blockFace.normal[1], blockFace.normal[2]).rotateY((float) Math.toRadians(this.currentTime % 720));
+        Vector3f vertex1 = new Vector3f(blockFace.vertices[0].x, blockFace.vertices[0].y, blockFace.vertices[0].z).rotateY((float) Math.toRadians(this.currentTime % 720)).add(blockPosition);
+        Vector3f vertex2 = new Vector3f(blockFace.vertices[1].x, blockFace.vertices[1].y, blockFace.vertices[1].z).rotateY((float) Math.toRadians(this.currentTime % 720)).add(blockPosition);
+        Vector3f vertex3 = new Vector3f(blockFace.vertices[2].x, blockFace.vertices[2].y, blockFace.vertices[2].z).rotateY((float) Math.toRadians(this.currentTime % 720)).add(blockPosition);
+        Vector3f vertex4 = new Vector3f(blockFace.vertices[3].x, blockFace.vertices[3].y, blockFace.vertices[3].z).rotateY((float) Math.toRadians(this.currentTime % 720)).add(blockPosition);
+        Vector3f normal = new Vector3f(blockFace.normal.x, blockFace.normal.y, blockFace.normal.z).rotateY((float) Math.toRadians(this.currentTime % 720));
 
-        float skyLightValue = this.getLightValueFromMap(worldFace.getBlockSkyLightValue(MathUtils.floorDouble(chunkX + x), MathUtils.floorDouble(chunkY + y), MathUtils.floorDouble(chunkZ + z)));
+        float skyLightValue = this.getLightValueFromMap(worldEarth.getBlockSkyLightValue(MathUtil.floorDouble(chunkX + x), MathUtil.floorDouble(chunkY + y), MathUtil.floorDouble(chunkZ + z)));
         this.resetLight();
-        this.setVertexLight1Arg(worldFace.getBlockLightValue(MathUtils.floorDouble(chunkX + x), MathUtils.floorDouble(chunkY + y), MathUtils.floorDouble(chunkZ + z)), x, y, z, worldFace.getBlockLightColor(MathUtils.floorDouble(chunkX + x), MathUtils.floorDouble(chunkY + y), MathUtils.floorDouble(chunkZ + z)));
-        int lightColor = MathUtils.RGBToInt(this.red, this.green, this.blue);
+        this.setVertexLight1Arg(worldEarth.getBlockLightValue(MathUtil.floorDouble(chunkX + x), MathUtil.floorDouble(chunkY + y), MathUtil.floorDouble(chunkZ + z)), x, y, z, worldEarth.getBlockLightColor(MathUtil.floorDouble(chunkX + x), MathUtil.floorDouble(chunkY + y), MathUtil.floorDouble(chunkZ + z)));
+        int lightColor = MathUtil.RGBToInt(this.red, this.green, this.blue);
         switch (blockFace.faceType) {
             case RenderBlocks.TOP_FACE, RenderBlocks.TOP_FACE_UNSORTED -> {
                 worldTessellator.addVertexTextureArrayWithSampling(lightColor ,vertex1.x, vertex1.y, vertex1.z, 1, blockID, xSample1, ySample1, normal.x, normal.y, normal.z, skyLightValue);
@@ -254,7 +254,7 @@ public final class RenderEntityItem {
                 if(this.blue < 0.1f){
                     this.blue = 0.1f;
                 }
-                lightColor = MathUtils.RGBToInt(this.red, this.green, this.blue);
+                lightColor = MathUtil.RGBToInt(this.red, this.green, this.blue);
 
                 worldTessellator.addVertexTextureArrayWithSampling(lightColor ,vertex1.x, vertex1.y, vertex1.z, 2, blockID, xSample1, ySample1, normal.x, normal.y, normal.z, skyLightValue);
                 worldTessellator.addVertexTextureArrayWithSampling(lightColor ,vertex2.x, vertex2.y, vertex2.z, 0, blockID, xSample2, ySample2, normal.x, normal.y, normal.z, skyLightValue);
@@ -322,7 +322,7 @@ public final class RenderEntityItem {
                     }
                 }
 
-                lightColor = MathUtils.RGBToInt(this.red, this.green, this.blue);
+                lightColor = MathUtil.RGBToInt(this.red, this.green, this.blue);
                 worldTessellator.addVertexTextureArrayWithSampling(lightColor ,vertex1.x, vertex1.y, vertex1.z, 3, blockID, xSample1, ySample1, normal.x, normal.y, normal.z, skyLightValue);
                 worldTessellator.addVertexTextureArrayWithSampling(lightColor ,vertex2.x, vertex2.y, vertex2.z, 1, blockID, xSample2, ySample2, normal.x, normal.y, normal.z, skyLightValue);
                 worldTessellator.addVertexTextureArrayWithSampling(lightColor ,vertex3.x, vertex3.y, vertex3.z, 2, blockID, xSample3, ySample3, normal.x, normal.y, normal.z, skyLightValue);

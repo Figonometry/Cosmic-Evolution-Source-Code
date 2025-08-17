@@ -3,17 +3,16 @@ package spacegame.gui;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
 import spacegame.core.SpaceGame;
+import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
-import spacegame.render.Tessellator;
-import spacegame.render.TextureLoader;
 
 public final class GuiPauseInGame extends Gui {
     public SpaceGame sg;
     public Button back;
     public Button settings;
     public Button quit;
-    public TextureLoader title;
-    public TextureLoader background;
+    public int title;
+    public int background;
 
     public GuiPauseInGame(SpaceGame spaceGame) {
         super(spaceGame);
@@ -25,21 +24,19 @@ public final class GuiPauseInGame extends Gui {
 
     @Override
     public void loadTextures() {
-        this.title = new TextureLoader("src/spacegame/assets/textures/gui/guiInGame/pause.png", 546,144);
-        this.background = new TextureLoader("src/spacegame/assets/textures/gui/transparentBackground.png", 32,32);
+        this.title = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInGame/pause.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.background = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
     }
 
     @Override
     public void deleteTextures() {
-        GL46.glDeleteTextures(this.title.texID);
-        GL46.glDeleteTextures(this.background.texID);
-        this.title = null;
-        this.background = null;
+        SpaceGame.instance.renderEngine.deleteTexture(this.title);
+        SpaceGame.instance.renderEngine.deleteTexture(this.background);
     }
 
     @Override
     public void drawGui() {
-        Tessellator tessellator = Tessellator.instance;
+        RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         tessellator.toggleOrtho();
         GLFW.glfwSetInputMode(this.sg.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
 
@@ -53,7 +50,7 @@ public final class GuiPauseInGame extends Gui {
         tessellator.addVertex2DTexture(16777215, titleX - titleWidth/2, titleY + titleHeight/2, titleZ, 2);
         tessellator.addVertex2DTexture(16777215, titleX + titleWidth/2, titleY - titleHeight/2, titleZ, 0);
         tessellator.addElements();
-        tessellator.drawTexture2D(this.title.texID, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.title, Shader.screen2DTexture, SpaceGame.camera);
 
         int backgroundWidth = 1920;
         int backgroundHeight = 1017;
@@ -67,7 +64,7 @@ public final class GuiPauseInGame extends Gui {
         tessellator.addElements();
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-        tessellator.drawTexture2D(this.background.texID, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.background, Shader.screen2DTexture, SpaceGame.camera);
         GL46.glDisable(GL46.GL_BLEND);
         tessellator.toggleOrtho();
 

@@ -13,14 +13,13 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.Random;
 
 public final class GuiCraftingStick extends GuiCrafting {
     public Button craft;
-    public TextureLoader inventoryUI;
-    public TextureLoader arrow;
-    public TextureLoader transparentBackground;
-    public TextureLoader fillableColor;
+    public int inventoryUI;
+    public int arrow;
+    public int transparentBackground;
+    public int fillableColor;
     public CraftingMaterial[] materials;
     public short outputItemID;
     public int x;
@@ -37,7 +36,7 @@ public final class GuiCraftingStick extends GuiCrafting {
         int yMat; //base -120
         int[] pixels = new int[1024];
         String filepath = "src/spacegame/assets/textures/item/" +
-                TextureArrayLoader.getBlockName(Item.rawStick.ID, "src/spacegame/assets/textures/item/") + ".png";
+                RenderEngine.getBlockName(Item.rawStick.ID, "src/spacegame/assets/textures/item/") + ".png";
         BufferedImage image = null;
 
         try {
@@ -100,28 +99,24 @@ public final class GuiCraftingStick extends GuiCrafting {
 
     @Override
     public void loadTextures() {
-        this.inventoryUI = new TextureLoader("src/spacegame/assets/textures/blocks/" + TextureArrayLoader.getBlockName(Block.oakLogFullSizeNormal.textureID, "src/spacegame/assets/textures/blocks/") + ".png", 32, 32);
-        this.arrow = new TextureLoader("src/spacegame/assets/textures/gui/guiInventory/arrow.png", 32, 32);
-        this.transparentBackground = new TextureLoader("src/spacegame/assets/textures/gui/transparentBackground.png", 32,32);
-        this.fillableColor = new TextureLoader("src/spacegame/assets/textures/gui/fillableColor.png", 32,32);
+        this.inventoryUI = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/blocks/" + RenderEngine.getBlockName(Block.oakLogFullSizeNormal.textureID, "src/spacegame/assets/textures/blocks/") + ".png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.arrow = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInventory/arrow.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.transparentBackground = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.fillableColor = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColor.png", RenderEngine.TEXTURE_TYPE_2D, 0);
     }
 
     @Override
     public void deleteTextures() {
-        GL46.glDeleteTextures(this.inventoryUI.texID);
-        GL46.glDeleteTextures(this.arrow.texID);
-        GL46.glDeleteTextures(this.transparentBackground.texID);
-        GL46.glDeleteTextures(this.fillableColor.texID);
-        this.inventoryUI = null;
-        this.arrow = null;
-        this.transparentBackground = null;
-        this.fillableColor = null;
+        SpaceGame.instance.renderEngine.deleteTexture(this.inventoryUI);
+        SpaceGame.instance.renderEngine.deleteTexture(this.arrow);
+        SpaceGame.instance.renderEngine.deleteTexture(this.transparentBackground);
+        SpaceGame.instance.renderEngine.deleteTexture(this.fillableColor);
     }
 
     @Override
     public void drawGui() {
         GLFW.glfwSetInputMode(this.sg.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
-        Tessellator tessellator = Tessellator.instance;
+        RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         tessellator.toggleOrtho();
         int backgroundWidth = 1920;
         int backgroundHeight = 1017;
@@ -135,7 +130,7 @@ public final class GuiCraftingStick extends GuiCrafting {
         tessellator.addElements();
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-        tessellator.drawTexture2D(this.transparentBackground.texID, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.transparentBackground, Shader.screen2DTexture, SpaceGame.camera);
         GL46.glDisable(GL46.GL_BLEND);
 
         backgroundWidth = 798;
@@ -148,7 +143,7 @@ public final class GuiCraftingStick extends GuiCrafting {
         tessellator.addVertex2DTexture(16777215, backgroundX - (float) backgroundWidth /2, backgroundY + (float) backgroundHeight /2, backgroundZ, 2);
         tessellator.addVertex2DTexture(16777215, backgroundX + (float) backgroundWidth /2, backgroundY - (float) backgroundHeight /2, backgroundZ, 0);
         tessellator.addElements();
-        tessellator.drawTexture2D(this.inventoryUI.texID, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.inventoryUI, Shader.screen2DTexture, SpaceGame.camera);
 
         backgroundZ += 10;
         int arrowX = 64;
@@ -162,7 +157,7 @@ public final class GuiCraftingStick extends GuiCrafting {
         tessellator.addElements();
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-        tessellator.drawTexture2D(this.arrow.texID, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.arrow, Shader.screen2DTexture, SpaceGame.camera);
 
         int outputSlotX = 315;
         int outputSlotY = 0;
@@ -173,7 +168,7 @@ public final class GuiCraftingStick extends GuiCrafting {
         tessellator.addVertex2DTexture(0, outputSlotX - (float)outputWidth/2, outputSlotY + (float)outputHeight/2, backgroundZ, 2);
         tessellator.addVertex2DTexture(0, outputSlotX + (float)outputWidth/2, outputSlotY - (float)outputHeight/2, backgroundZ, 0);
         tessellator.addElements();
-        tessellator.drawTexture2D(this.transparentBackground.texID, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.transparentBackground, Shader.screen2DTexture, SpaceGame.camera);
 
         outputSlotX = -250;
         outputSlotY = 0;
@@ -184,7 +179,7 @@ public final class GuiCraftingStick extends GuiCrafting {
         tessellator.addVertex2DTexture(0, outputSlotX - (float)outputWidth/2, outputSlotY + (float)outputHeight/2, backgroundZ, 2);
         tessellator.addVertex2DTexture(0, outputSlotX + (float)outputWidth/2, outputSlotY - (float)outputHeight/2, backgroundZ, 0);
         tessellator.addElements();
-        tessellator.drawTexture2D(this.transparentBackground.texID, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.transparentBackground, Shader.screen2DTexture, SpaceGame.camera);
         GL46.glDisable(GL46.GL_BLEND);
         tessellator.toggleOrtho();
 
@@ -231,7 +226,7 @@ public final class GuiCraftingStick extends GuiCrafting {
     }
 
     private void renderOutputItem(){
-        Tessellator tessellator = Tessellator.instance;
+        RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         tessellator.toggleOrtho();
         float itemID = Item.list[this.outputItemID].getTextureID(this.outputItemID, (byte)0, RenderBlocks.WEST_FACE);
         float x = 315;
@@ -246,7 +241,7 @@ public final class GuiCraftingStick extends GuiCrafting {
         tessellator.addElements();
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-        tessellator.drawVertexArray(Assets.itemTextureArray.arrayID, Shader.screenTextureArray, SpaceGame.camera);
+        tessellator.drawVertexArray(Assets.itemTextureArray, Shader.screenTextureArray, SpaceGame.camera);
         GL46.glDisable(GL46.GL_BLEND);
         tessellator.toggleOrtho();
     }
@@ -256,7 +251,7 @@ public final class GuiCraftingStick extends GuiCrafting {
     }
 
     private void renderCraftingMaterials(){
-        Tessellator tessellator = Tessellator.instance;
+        RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         tessellator.toggleOrtho();
         int color;
         float x;
@@ -278,7 +273,7 @@ public final class GuiCraftingStick extends GuiCrafting {
                 tessellator.addElements();
             }
         }
-        tessellator.drawTexture2D(this.fillableColor.texID, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.fillableColor, Shader.screen2DTexture, SpaceGame.camera);
         tessellator.toggleOrtho();
     }
 

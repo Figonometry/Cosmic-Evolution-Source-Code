@@ -14,5 +14,6 @@ public enum EnumBlocks {
     BERRY_BUSH,
     CAMPFIRE,
     CAMPFIRE_LIT,
-    FIRE;
+    FIRE,
+    ITEM_STONE;
 }

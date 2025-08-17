@@ -2,8 +2,8 @@ package spacegame.gui;
 
 import spacegame.core.MouseListener;
 import spacegame.core.SpaceGame;
+import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
-import spacegame.render.Tessellator;
 
 public final class MoveableObject {
     public float staringX;
@@ -23,7 +23,7 @@ public final class MoveableObject {
     }
 
     public void render(int textureID){
-        Tessellator tessellator = Tessellator.instance;
+        RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         tessellator.toggleOrtho();
         float z = -50;
         float width = 96;

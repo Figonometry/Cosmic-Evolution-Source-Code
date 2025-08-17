@@ -1,20 +1,17 @@
 package spacegame.entity;
 
-import org.lwjgl.opengl.GL46;
 import spacegame.core.Sound;
 import spacegame.core.SpaceGame;
 import spacegame.entity.ai.AIPassive;
-import spacegame.gui.FontRenderer;
 import spacegame.render.Model;
 import spacegame.render.ModelDeer;
-import spacegame.render.TextureLoader;
-import spacegame.world.AxisAlignedBB;
+import spacegame.render.RenderEngine;
 
 import java.io.File;
 import java.util.Random;
 
 public final class EntityDeer extends EntityLiving {
-    public static TextureLoader texture;
+    public static int texture;
     public int animationTimer = 0;
     public boolean animate = true;
     public boolean isMale;
@@ -45,7 +42,7 @@ public final class EntityDeer extends EntityLiving {
     }
 
     public static void loadTexture(){
-        texture = new TextureLoader("src/spacegame/assets/textures/entity/deer.png", 48, 66);
+        texture = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/entity/deer.png", RenderEngine.TEXTURE_TYPE_2D, 0);
     }
 
     @Override

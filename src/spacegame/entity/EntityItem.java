@@ -2,6 +2,7 @@ package spacegame.entity;
 
 import org.joml.Vector3f;
 import spacegame.block.Block;
+import spacegame.core.MathUtil;
 import spacegame.core.Sound;
 import spacegame.core.SoundPlayer;
 import spacegame.core.SpaceGame;
@@ -65,7 +66,7 @@ public final class EntityItem extends EntityNonLiving {
     @Override
     public void render() {
         new RenderEntityItem(this.x, this.y, this.z, null, false, false, this.item, this.itemMetadata, this.height, this.width).renderEntity();
-        if(Block.list[SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockID((int) this.x, (int) (this.y - 0.1), (int) this.z)].isSolid) {
+        if(Block.list[SpaceGame.instance.save.activeWorld.getBlockID(MathUtil.floorDouble(this.x), MathUtil.floorDouble(this.y - 0.1), MathUtil.floorDouble(this.z))].isSolid) {
             this.renderShadow();
         }
     }

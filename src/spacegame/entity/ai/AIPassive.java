@@ -1,24 +1,22 @@
 package spacegame.entity.ai;
 
 import org.joml.Vector2f;
-import org.joml.Vector2i;
-import spacegame.core.MathUtils;
-import spacegame.entity.Entity;
+import spacegame.core.MathUtil;
+import spacegame.core.SpaceGame;
 import spacegame.entity.EntityLiving;
 
 import java.util.Random;
 
-public abstract class AIPassive {
-    private static final Random rand = new Random();
+public abstract class AIPassive { ;
 
 
     public static void chooseNewTargetAndSetAngle(EntityLiving entity){
-        int x = MathUtils.floorDouble(entity.x);
-        int z = MathUtils.floorDouble(entity.z);
+        int x = MathUtil.floorDouble(entity.x);
+        int z = MathUtil.floorDouble(entity.z);
 
 
-        int targetX = x + rand.nextInt(-10, 11);
-        int targetZ = z + rand.nextInt(-10, 11);
+        int targetX = x + SpaceGame.globalRand.nextInt(-10, 11);
+        int targetZ = z + SpaceGame.globalRand.nextInt(-10, 11);
 
         Vector2f startPos = new Vector2f(x,z);
         Vector2f targetPos = new Vector2f(targetX, targetZ);
@@ -28,7 +26,7 @@ public abstract class AIPassive {
         entity.targetZ = targetZ + 0.5;
         entity.shouldMove = true;
 
-        double distance = MathUtils.distance2D(x, z, targetX + 0.5, targetZ + 0.5);
+        double distance = MathUtil.distance2D(x, z, targetX + 0.5, targetZ + 0.5);
         double distancePerTick = distancePerTick(entity);
 
         entity.moveTimer = (int) (distance/distancePerTick);
@@ -41,8 +39,8 @@ public abstract class AIPassive {
         double distance = entity.rawDeltaX * entity.rawDeltaX; //If distance is ever 0.0 this will result in a NaN return and will cause the moveTimer to become 2^31
         distance = (float) (entity.speed / Math.sqrt(distance));
         entity.rawDeltaX *= distance;
-        double sine = MathUtils.sin((float) Math.toRadians(entity.yaw));
-        double cosine = MathUtils.cos((float) Math.toRadians(entity.yaw));
+        double sine = MathUtil.sin((float) Math.toRadians(entity.yaw));
+        double cosine = MathUtil.cos((float) Math.toRadians(entity.yaw));
         deltaX += entity.rawDeltaX * cosine - 0 * sine;
         deltaZ += 0 * cosine + entity.rawDeltaX * sine;
 

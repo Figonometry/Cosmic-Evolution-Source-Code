@@ -12,12 +12,16 @@ import java.util.Random;
 
 public final class GuiCraftingStoneTools extends GuiCrafting {
     public Button craft;
-    public TextureLoader inventoryUI;
-    public TextureLoader arrow;
-    public TextureLoader transparentBackground;
-    public TextureLoader fillableColor;
+    public Button close;
+    public int inventoryUI;
+    public int recipeOverlay;
+    public int transparentBackground;
+    public int fillableColor;
+    public int outline;
     public CraftingMaterial[] materials;
+    public short selectedItemID = -1;
     public short outputItemID;
+    public RecipeSelector[] selectableRecipes;
     public int x;
     public int y;
     public int z;
@@ -26,18 +30,39 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
         this.x = x;
         this.y = y;
         this.z = z;
-        this.craft = new Button(EnumButtonEffects.CRAFT.name(), 128,50, 0,-150, this, this.sg);
+        this.close = new Button(EnumButtonEffects.CLOSE.name(), 50, 50, 349, 190, this, this.sg);
+        this.craft = new Button(EnumButtonEffects.CRAFT.name(), 128,50, 0,-175, this, this.sg);
+        this.craft.active = false;
+        this.selectableRecipes = new RecipeSelector[4];
+        this.setSelectableItemIDs();
         this.materials = new CraftingMaterial[64];
         int xMat; //base -370
         int yMat; //base -120
         Random rand = new Random();
         float color;
         for(int i = 0 ; i < this.materials.length; i++){
-            color = rand.nextFloat(0.4f, 0.6f);
-            xMat = -362 + ((i % 8) * 32);
+            color = rand.nextFloat(0.4f, 0.7f);
+            xMat = -112 + ((i % 8) * 32);
             yMat = -112 + ((i / 8) * 32);
             this.materials[i] = new CraftingMaterial(32, 32, xMat, yMat, "stone");
             this.materials[i].setColor(new Color(color, color, color, 0).getRGB());
+        }
+    }
+
+    private void setSelectableItemIDs(){
+        float selectableWidth = 64;
+        float selectableHeight = 64;
+        float selectableX = -320;
+        float selectableY = 64;
+
+        for(int i = 0; i < this.selectableRecipes.length; i++){
+            switch (i) {
+                case 3 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneFragments.ID, selectableX, selectableY, selectableWidth, selectableHeight);
+                case 0 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneHandAxe.ID, selectableX, selectableY, selectableWidth, selectableHeight);
+                case 1 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneHandKnifeBlade.ID, selectableX, selectableY, selectableWidth, selectableHeight);
+                case 2 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneHandShovel.ID, selectableX, selectableY, selectableWidth, selectableHeight);
+            }
+            selectableX += 64;
         }
     }
 
@@ -53,28 +78,35 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
 
     @Override
     public void loadTextures() {
-        this.inventoryUI = new TextureLoader("src/spacegame/assets/textures/gui/guiInventory/playerInventory.png", 32, 32);
-        this.arrow = new TextureLoader("src/spacegame/assets/textures/gui/guiInventory/arrow.png", 32, 32);
-        this.transparentBackground = new TextureLoader("src/spacegame/assets/textures/gui/transparentBackground.png", 32,32);
-        this.fillableColor = new TextureLoader("src/spacegame/assets/textures/gui/fillableColor.png", 32,32);
+        this.inventoryUI = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInventory/playerInventory.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.transparentBackground = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.fillableColor = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColor.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.outline = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/outline.png", RenderEngine.TEXTURE_TYPE_2D, 0);
     }
 
     @Override
     public void deleteTextures() {
-        GL46.glDeleteTextures(this.inventoryUI.texID);
-        GL46.glDeleteTextures(this.arrow.texID);
-        GL46.glDeleteTextures(this.transparentBackground.texID);
-        GL46.glDeleteTextures(this.fillableColor.texID);
-        this.inventoryUI = null;
-        this.arrow = null;
-        this.transparentBackground = null;
-        this.fillableColor = null;
+        SpaceGame.instance.renderEngine.deleteTexture(this.inventoryUI);
+        SpaceGame.instance.renderEngine.deleteTexture(this.transparentBackground);
+        SpaceGame.instance.renderEngine.deleteTexture(this.fillableColor);
+        SpaceGame.instance.renderEngine.deleteTexture(this.outline);
+        if(this.recipeOverlay != 0){
+            SpaceGame.instance.renderEngine.deleteTexture(this.recipeOverlay);
+        }
     }
 
     @Override
     public void drawGui() {
         GLFW.glfwSetInputMode(this.sg.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
-        Tessellator tessellator = Tessellator.instance;
+
+        this.close.renderButton();
+        if(this.selectedItemID != -1) {
+            this.renderCraftingMaterials();
+            this.craft.active = this.isOutputComplete();
+            this.craft.renderButton();
+        }
+
+        RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         tessellator.toggleOrtho();
         int backgroundWidth = 1920;
         int backgroundHeight = 1017;
@@ -88,7 +120,7 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
         tessellator.addElements();
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-        tessellator.drawTexture2D(this.transparentBackground.texID, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.transparentBackground, Shader.screen2DTexture, SpaceGame.camera);
         GL46.glDisable(GL46.GL_BLEND);
 
         backgroundWidth = 798;
@@ -101,60 +133,110 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
         tessellator.addVertex2DTexture(16777215, backgroundX - (float) backgroundWidth /2, backgroundY + (float) backgroundHeight /2, backgroundZ, 2);
         tessellator.addVertex2DTexture(16777215, backgroundX + (float) backgroundWidth /2, backgroundY - (float) backgroundHeight /2, backgroundZ, 0);
         tessellator.addElements();
-        tessellator.drawTexture2D(this.inventoryUI.texID, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.inventoryUI, Shader.screen2DTexture, SpaceGame.camera);
 
-        backgroundZ += 10;
-        int arrowX = 64;
-        int arrowY = 0;
-        int arrowWidth = 256;
-        int arrowHeight = 128;
-        tessellator.addVertex2DTexture(0, arrowX - (float)arrowWidth/2, arrowY - (float)arrowHeight/2, backgroundZ, 3);
-        tessellator.addVertex2DTexture(0, arrowX + (float)arrowWidth/2, arrowY + (float)arrowHeight/2, backgroundZ, 1);
-        tessellator.addVertex2DTexture(0, arrowX - (float)arrowWidth/2, arrowY + (float)arrowHeight/2, backgroundZ, 2);
-        tessellator.addVertex2DTexture(0, arrowX + (float)arrowWidth/2, arrowY - (float)arrowHeight/2, backgroundZ, 0);
-        tessellator.addElements();
-        GL46.glEnable(GL46.GL_BLEND);
-        GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-        tessellator.drawTexture2D(this.arrow.texID, Shader.screen2DTexture, SpaceGame.camera);
+        if(this.selectedItemID != -1) {
+            backgroundZ += 10;
+            GL46.glEnable(GL46.GL_BLEND);
+            GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
 
-        int outputSlotX = 315;
-        int outputSlotY = 0;
-        int outputWidth = 128;
-        int outputHeight = 128;
-        tessellator.addVertex2DTexture(0, outputSlotX - (float)outputWidth/2, outputSlotY - (float)outputHeight/2, backgroundZ, 3);
-        tessellator.addVertex2DTexture(0, outputSlotX + (float)outputWidth/2, outputSlotY + (float)outputHeight/2, backgroundZ, 1);
-        tessellator.addVertex2DTexture(0, outputSlotX - (float)outputWidth/2, outputSlotY + (float)outputHeight/2, backgroundZ, 2);
-        tessellator.addVertex2DTexture(0, outputSlotX + (float)outputWidth/2, outputSlotY - (float)outputHeight/2, backgroundZ, 0);
-        tessellator.addElements();
-        tessellator.drawTexture2D(this.transparentBackground.texID, Shader.screen2DTexture, SpaceGame.camera);
+            int outputSlotX = 0;
+            int outputSlotY = 0;
+            int outputWidth = 256;
+            int outputHeight = 256;
 
-        outputSlotX = -250;
-        outputSlotY = 0;
-        outputWidth = 256;
-        outputHeight = 256;
-        tessellator.addVertex2DTexture(0, outputSlotX - (float)outputWidth/2, outputSlotY - (float)outputHeight/2, backgroundZ, 3);
-        tessellator.addVertex2DTexture(0, outputSlotX + (float)outputWidth/2, outputSlotY + (float)outputHeight/2, backgroundZ, 1);
-        tessellator.addVertex2DTexture(0, outputSlotX - (float)outputWidth/2, outputSlotY + (float)outputHeight/2, backgroundZ, 2);
-        tessellator.addVertex2DTexture(0, outputSlotX + (float)outputWidth/2, outputSlotY - (float)outputHeight/2, backgroundZ, 0);
-        tessellator.addElements();
-        tessellator.drawTexture2D(this.transparentBackground.texID, Shader.screen2DTexture, SpaceGame.camera);
-        GL46.glDisable(GL46.GL_BLEND);
+            tessellator.addVertex2DTexture(0, outputSlotX - (float) outputWidth / 2, outputSlotY - (float) outputHeight / 2, backgroundZ, 3);
+            tessellator.addVertex2DTexture(0, outputSlotX + (float) outputWidth / 2, outputSlotY + (float) outputHeight / 2, backgroundZ, 1);
+            tessellator.addVertex2DTexture(0, outputSlotX - (float) outputWidth / 2, outputSlotY + (float) outputHeight / 2, backgroundZ, 2);
+            tessellator.addVertex2DTexture(0, outputSlotX + (float) outputWidth / 2, outputSlotY - (float) outputHeight / 2, backgroundZ, 0);
+            tessellator.addElements();
+            tessellator.drawTexture2D(this.transparentBackground, Shader.screen2DTexture, SpaceGame.camera);
+
+            backgroundZ += 10;
+            tessellator.addVertex2DTexture(16777215, outputSlotX - (float) outputWidth / 2, outputSlotY - (float) outputHeight / 2, backgroundZ, 3);
+            tessellator.addVertex2DTexture(16777215, outputSlotX + (float) outputWidth / 2, outputSlotY + (float) outputHeight / 2, backgroundZ, 1);
+            tessellator.addVertex2DTexture(16777215, outputSlotX - (float) outputWidth / 2, outputSlotY + (float) outputHeight / 2, backgroundZ, 2);
+            tessellator.addVertex2DTexture(16777215, outputSlotX + (float) outputWidth / 2, outputSlotY - (float) outputHeight / 2, backgroundZ, 0);
+            tessellator.addElements();
+
+            GL46.glBlendFunc(GL46.GL_SRC_ALPHA, GL46.GL_ONE_MINUS_SRC_ALPHA);
+            tessellator.drawTexture2D(this.recipeOverlay, Shader.screen2DTexture, SpaceGame.camera);
+
+            GL46.glDisable(GL46.GL_BLEND);
+        }
+
+        if(this.selectedItemID == -1){
+            float selectableZ = -90;
+
+            for(int i = 0; i < this.selectableRecipes.length; i++){
+                tessellator.addVertexTextureArray(16777215, this.selectableRecipes[i].x - (this.selectableRecipes[i].width / 2), this.selectableRecipes[i].y - (this.selectableRecipes[i].height / 2), selectableZ, 3, this.selectableRecipes[i].itemID, RenderBlocks.WEST_FACE);
+                tessellator.addVertexTextureArray(16777215, this.selectableRecipes[i].x + (this.selectableRecipes[i].width / 2), this.selectableRecipes[i].y + (this.selectableRecipes[i].height / 2), selectableZ, 1, this.selectableRecipes[i].itemID, RenderBlocks.WEST_FACE);
+                tessellator.addVertexTextureArray(16777215, this.selectableRecipes[i].x - (this.selectableRecipes[i].width / 2), this.selectableRecipes[i].y + (this.selectableRecipes[i].height / 2), selectableZ, 2, this.selectableRecipes[i].itemID, RenderBlocks.WEST_FACE);
+                tessellator.addVertexTextureArray(16777215, this.selectableRecipes[i].x + (this.selectableRecipes[i].width / 2), this.selectableRecipes[i].y - (this.selectableRecipes[i].height / 2), selectableZ, 0, this.selectableRecipes[i].itemID, RenderBlocks.WEST_FACE);
+                tessellator.addElements();
+            }
+
+
+            GL46.glEnable(GL46.GL_BLEND);
+            GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
+            tessellator.drawVertexArray(Assets.itemTextureArray, Shader.screenTextureArray, SpaceGame.camera);
+
+            selectableZ = -89;
+            for(int i = 0; i < this.selectableRecipes.length; i++){
+                tessellator.addVertex2DTexture(0, this.selectableRecipes[i].x - (this.selectableRecipes[i].width / 2), this.selectableRecipes[i].y - (this.selectableRecipes[i].height / 2), selectableZ, 3);
+                tessellator.addVertex2DTexture(0, this.selectableRecipes[i].x + (this.selectableRecipes[i].width / 2), this.selectableRecipes[i].y + (this.selectableRecipes[i].height / 2), selectableZ, 1);
+                tessellator.addVertex2DTexture(0, this.selectableRecipes[i].x - (this.selectableRecipes[i].width / 2), this.selectableRecipes[i].y + (this.selectableRecipes[i].height / 2), selectableZ, 2);
+                tessellator.addVertex2DTexture(0, this.selectableRecipes[i].x + (this.selectableRecipes[i].width / 2), this.selectableRecipes[i].y - (this.selectableRecipes[i].height / 2), selectableZ, 0);
+                tessellator.addElements();
+            }
+
+
+            tessellator.drawTexture2D(this.outline, Shader.screen2DTexture, SpaceGame.camera);
+
+            selectableZ = -88;
+            for(int i = 0; i < this.selectableRecipes.length; i++){
+                tessellator.addVertex2DTexture(this.selectableRecipes[i].isMouseHoveredOver() ? 6001079 : 0, this.selectableRecipes[i].x - (this.selectableRecipes[i].width / 2), this.selectableRecipes[i].y - (this.selectableRecipes[i].height / 2), selectableZ, 3);
+                tessellator.addVertex2DTexture(this.selectableRecipes[i].isMouseHoveredOver() ? 6001079 : 0, this.selectableRecipes[i].x + (this.selectableRecipes[i].width / 2), this.selectableRecipes[i].y + (this.selectableRecipes[i].height / 2), selectableZ, 1);
+                tessellator.addVertex2DTexture(this.selectableRecipes[i].isMouseHoveredOver() ? 6001079 : 0, this.selectableRecipes[i].x - (this.selectableRecipes[i].width / 2), this.selectableRecipes[i].y + (this.selectableRecipes[i].height / 2), selectableZ, 2);
+                tessellator.addVertex2DTexture(this.selectableRecipes[i].isMouseHoveredOver() ? 6001079 : 0, this.selectableRecipes[i].x + (this.selectableRecipes[i].width / 2), this.selectableRecipes[i].y - (this.selectableRecipes[i].height / 2), selectableZ, 0);
+                tessellator.addElements();
+            }
+
+            tessellator.drawTexture2D(this.transparentBackground, Shader.screen2DTexture, SpaceGame.camera);
+            GL46.glDisable(GL46.GL_BLEND);
+        }
+
         tessellator.toggleOrtho();
 
-        this.craft.renderButton();
-        this.renderCraftingMaterials();
-        this.renderOutput();
+
+        if(this.selectedItemID == -1){
+            FontRenderer fontRenderer = FontRenderer.instance;
+            fontRenderer.drawCenteredString("Select Recipe", 0, 128, -15, 16777215, 50);
+        }
+    }
+
+    public void activateRecipeOverlay(){
+        switch (this.selectedItemID) {
+            case 3 ->
+                    this.recipeOverlay = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/item/recipeTemplates/rockFragmentTemplate.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+            case 4 ->
+                    this.recipeOverlay = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/item/recipeTemplates/handAxeTemplate.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+            case 9 ->
+                    this.recipeOverlay = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/item/recipeTemplates/knifeTemplate.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+            case 10 ->
+                    this.recipeOverlay = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/item/recipeTemplates/shovelHeadTemplate.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        }
     }
 
     private void renderCraftingMaterials(){
-        Tessellator tessellator = Tessellator.instance;
+        RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         tessellator.toggleOrtho();
         int color;
         float x;
         float y;
         float height;
         float width;
-        float z = -80;
+        float z = -95;
         for(int i = 0; i < this.materials.length; i++) {
             if (this.materials[i].active) {
                 color = this.materials[i].getColor();
@@ -169,49 +251,132 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
                 tessellator.addElements();
             }
         }
-        tessellator.drawTexture2D(this.fillableColor.texID, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.fillableColor, Shader.screen2DTexture, SpaceGame.camera);
         tessellator.toggleOrtho();
     }
 
-    private void renderOutput(){
-        if(this.doesInputMatchHandAxeTemplate()){
-            this.setOutputItem(Item.stoneHandAxe.ID);
-        } else {
-            this.setOutputItem(Item.stoneFragments.ID);
+    private boolean isOutputComplete(){
+        switch (this.selectedItemID) {
+            case 4 -> {
+                if (this.doesInputMatchHandAxeTemplate()) {
+                    this.setOutputItem(Item.stoneHandAxe.ID);
+                    return true;
+                }
+            }
+            case 3 -> {
+                if (this.doesInputMatchStoneFragmentsTemplate()) {
+                    this.setOutputItem(Item.stoneFragments.ID);
+                    return true;
+                }
+            }
+            case 9 -> {
+                if (this.doesInputMatchKnifeTemplate()) {
+                    this.setOutputItem(Item.stoneHandKnifeBlade.ID);
+                    return true;
+                }
+            }
+            case 10 -> {
+                if (this.doesInputMatchHandShovelTemplate()) {
+                    this.setOutputItem(Item.stoneHandShovel.ID);
+                    return true;
+                }
+            }
         }
-        this.renderOutputItem();
+
+
+        return false;
+    }
+
+    private boolean doesInputMatchStoneFragmentsTemplate(){
+        short countCorrect = 0;
+        boolean squareActive;
+        for(int i = 0; i < ItemCraftingTemplates.stoneFragments.indices.length; i++) {
+            countCorrect = 0;
+            for (int j = 0; j < this.materials.length; j++) {
+                squareActive = this.materials[j].active;
+                if(squareActive){
+                    if(this.isIndexSupposedToBeFilled(j, ItemCraftingTemplates.stoneFragments.indices)){
+                        countCorrect++;
+                    }
+                } else {
+                    if(!this.isIndexSupposedToBeFilled(j, ItemCraftingTemplates.stoneFragments.indices)){
+                        countCorrect++;
+                    }
+                }
+            }
+            if(countCorrect / 64f == 1f){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean doesInputMatchHandShovelTemplate(){
+        short countCorrect = 0;
+        boolean squareActive;
+        for(int i = 0; i < ItemCraftingTemplates.stoneHandShovel.indices.length; i++) {
+            countCorrect = 0;
+            for (int j = 0; j < this.materials.length; j++) {
+                squareActive = this.materials[j].active;
+                if(squareActive){
+                    if(this.isIndexSupposedToBeFilled(j, ItemCraftingTemplates.stoneHandShovel.indices)){
+                        countCorrect++;
+                    }
+                } else {
+                    if(!this.isIndexSupposedToBeFilled(j, ItemCraftingTemplates.stoneHandShovel.indices)){
+                        countCorrect++;
+                    }
+                }
+            }
+            if(countCorrect / 64f == 1f){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean doesInputMatchKnifeTemplate(){
+        short countCorrect = 0;
+        boolean squareActive;
+        for(int i = 0; i < ItemCraftingTemplates.knifeBlade.indices.length; i++) {
+            countCorrect = 0;
+            for (int j = 0; j < this.materials.length; j++) {
+                squareActive = this.materials[j].active;
+                if(squareActive){
+                    if(this.isIndexSupposedToBeFilled(j, ItemCraftingTemplates.knifeBlade.indices)){
+                        countCorrect++;
+                    }
+                } else {
+                    if(!this.isIndexSupposedToBeFilled(j, ItemCraftingTemplates.knifeBlade.indices)){
+                        countCorrect++;
+                    }
+                }
+            }
+            if(countCorrect / 64f == 1f){
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean doesInputMatchHandAxeTemplate(){
         short countCorrect = 0;
         boolean squareActive;
-        int translateX = -ItemCraftingTemplates.stoneHandAxe.translateLeftLimit;
-        int translateY = -ItemCraftingTemplates.stoneHandAxe.translateUpLimit;
-        short[] indices;
-        for(int i = 0; i < ItemCraftingTemplates.stoneHandAxe.translationCount; i++) {
+        for(int i = 0; i < ItemCraftingTemplates.stoneHandAxe.indices.length; i++) {
             countCorrect = 0;
-            indices = ItemCraftingTemplates.stoneHandAxe.translate(translateX,translateY,ItemCraftingTemplates.stoneHandAxe.indices);
             for (int j = 0; j < this.materials.length; j++) {
                 squareActive = this.materials[j].active;
                 if(squareActive){
-                    if(this.isIndexSupposedToBeFilled(j, indices)){
+                    if(this.isIndexSupposedToBeFilled(j, ItemCraftingTemplates.stoneHandAxe.indices)){
                         countCorrect++;
                     }
                 } else {
-                    if(!this.isIndexSupposedToBeFilled(j, indices)){
+                    if(!this.isIndexSupposedToBeFilled(j, ItemCraftingTemplates.stoneHandAxe.indices)){
                         countCorrect++;
                     }
                 }
             }
-            translateX++;
-            if(translateX == ItemCraftingTemplates.stoneHandAxe.translateRightLimit){
-                translateX = -ItemCraftingTemplates.stoneHandAxe.translateLeftLimit;
-                if(translateY == ItemCraftingTemplates.stoneHandAxe.translateDownLimit){
-                    break;
-                }
-                translateY++;
-            }
-            if(countCorrect / 64f >= 0.9f){
+            if(countCorrect / 64f == 1f){
                 return true;
             }
         }
@@ -228,26 +393,6 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
         return false;
     }
 
-    private void renderOutputItem(){
-        Tessellator tessellator = Tessellator.instance;
-        tessellator.toggleOrtho();
-        float itemID = Item.list[this.outputItemID].getTextureID(this.outputItemID, (byte)0, RenderBlocks.WEST_FACE);
-        float x = 315;
-        float y = 0;
-        float z = -70;
-        float width = 128;
-        float height = 128;
-        tessellator.addVertexTextureArray(16777215, x - width/2, y - height/2, z, 3, itemID, RenderBlocks.WEST_FACE);
-        tessellator.addVertexTextureArray(16777215, x + width/2, y + height/2, z, 1, itemID, RenderBlocks.WEST_FACE);
-        tessellator.addVertexTextureArray(16777215, x - width/2, y + height/2, z, 2, itemID, RenderBlocks.WEST_FACE);
-        tessellator.addVertexTextureArray(16777215, x + width/2, y - height/2, z, 0, itemID, RenderBlocks.WEST_FACE);
-        tessellator.addElements();
-        GL46.glEnable(GL46.GL_BLEND);
-        GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-        tessellator.drawVertexArray(Assets.itemTextureArray.arrayID, Shader.screenTextureArray, SpaceGame.camera);
-        GL46.glDisable(GL46.GL_BLEND);
-        tessellator.toggleOrtho();
-    }
 
     private void setOutputItem(short itemID){
         this.outputItemID = itemID;
@@ -258,6 +403,21 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
         if(this.craft.isMouseHoveredOver() && this.craft.active){
             return this.craft;
         }
+        if(this.close.isMouseHoveredOver() && this.close.active){
+            return this.close;
+        }
         return null;
     }
+
+    public RecipeSelector getSelectedRecipeSelector(){
+        if(this.selectableRecipes == null)return null;
+        for(int i = 0; i < this.selectableRecipes.length; i++){
+            if(this.selectableRecipes[i].isMouseHoveredOver()){
+                return this.selectableRecipes[i];
+            }
+        }
+        return null;
+    }
+
+
 }

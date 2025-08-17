@@ -8,7 +8,7 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
 import spacegame.celestial.CelestialObject;
 import spacegame.core.GameSettings;
-import spacegame.core.MathUtils;
+import spacegame.core.MathUtil;
 import spacegame.core.MouseListener;
 import spacegame.core.SpaceGame;
 import spacegame.render.*;
@@ -22,8 +22,8 @@ public final class GuiUniverseMap extends Gui {
     public static float pitch;
     public static float prevDeltaYaw;
     public static float prevDeltaPitch;
-    public static TextureLoader orbitLine;
-    public static TextureCubeMapLoader skybox;
+    public static int orbitLine;
+    public static int skybox;
     public static float mapScale = 0.00000000000000000000001F;
     public static ArrayList<Vector3f> starPositions = new ArrayList<>();
 
@@ -35,17 +35,16 @@ public final class GuiUniverseMap extends Gui {
 
     @Override
     public void loadTextures() {
-        orbitLine = new TextureLoader("src/spacegame/assets/textures/gui/guiUniverse/orbitLine.png", 2048, 2048);
+        orbitLine = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiUniverse/orbitLine.png", RenderEngine.TEXTURE_TYPE_2D, 0);
     }
 
     public static void initSkyboxTexture(){
-        skybox = new TextureCubeMapLoader("src/spacegame/assets/textures/gui/guiUniverse/skybox");
+        skybox = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiUniverse/skybox", RenderEngine.TEXTURE_TYPE_CUBEMAP, 0);
     }
 
     @Override
     public void deleteTextures() {
-        GL46.glDeleteTextures(orbitLine.texID);
-        orbitLine = null;
+        SpaceGame.instance.renderEngine.deleteTexture(orbitLine);
     }
 
     @Override
@@ -76,7 +75,7 @@ public final class GuiUniverseMap extends Gui {
 
 
     private void renderSkybox(){
-        Tessellator tessellator = Tessellator.instance;
+        RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         float x = 0;
         float y = 0;
         float z = 0;
@@ -100,7 +99,7 @@ public final class GuiUniverseMap extends Gui {
 
         Shader.universeShaderCubeMapTexture.uploadBoolean("skybox", true);
         Shader.universeShaderCubeMapTexture.uploadVec3f("position", new Vector3f());
-        tessellator.drawCubeMapTexture(skybox.texID, Shader.universeShaderCubeMapTexture, GuiUniverseMap.universeCamera);
+        tessellator.drawCubeMapTexture(skybox, Shader.universeShaderCubeMapTexture, GuiUniverseMap.universeCamera);
         Shader.universeShaderCubeMapTexture.uploadBoolean("skybox", false);
     }
 
@@ -108,9 +107,9 @@ public final class GuiUniverseMap extends Gui {
         Vector3f position = new Vector3f();
         float latRad = (float) Math.toRadians(latitude);
         float lonRad = (float) Math.toRadians(longitude);
-        position.x = (float) (R * MathUtils.cos(latRad) * MathUtils.cos(lonRad));
-        position.y = (float) (R * MathUtils.sin(latRad));
-        position.z = (float) (R * MathUtils.cos(latRad) * MathUtils.sin(lonRad));
+        position.x = (float) (R * MathUtil.cos(latRad) * MathUtil.cos(lonRad));
+        position.y = (float) (R * MathUtil.sin(latRad));
+        position.z = (float) (R * MathUtil.cos(latRad) * MathUtil.sin(lonRad));
         return position;
     }
 

@@ -10,8 +10,8 @@ public class WorldGenTree extends WorldGen {
     public ArrayList<int[]> blockPos = new ArrayList<>();
     public boolean decayIntoDirt;
 
-    public WorldGenTree(Chunk chunk, WorldFace worldFace, int index) {
-        this.worldFace = worldFace;
+    public WorldGenTree(Chunk chunk, WorldEarth worldEarth, int index) {
+        this.worldEarth = worldEarth;
         this.index = index;
         this.chunk = chunk;
         this.rand = new Random();
@@ -59,14 +59,14 @@ public class WorldGenTree extends WorldGen {
         int[] blockData;
         for (int i = 0; i < this.blockPos.size(); i++) {
             blockData = this.blockPos.get(i);
-            this.worldFace.setBlock(blockData[0], blockData[1], blockData[2], (short)blockData[3]);
-            chunk = this.worldFace.findChunkFromChunkCoordinates(blockData[0] >> 5, blockData[1] >> 5, blockData[2] >> 5);
+            this.worldEarth.setBlock(blockData[0], blockData[1], blockData[2], (short)blockData[3]);
+            chunk = this.worldEarth.findChunkFromChunkCoordinates(blockData[0] >> 5, blockData[1] >> 5, blockData[2] >> 5);
             this.addChunkToRebuildQueue(chunk);
         }
 
         for (int i = 0; i < this.blockPos.size(); i++) {
             blockData = this.blockPos.get(i);
-            this.worldFace.notifySurroundingBlockWithoutRebuild(blockData[0], blockData[1], blockData[2]);
+            this.worldEarth.notifySurroundingBlockWithoutRebuild(blockData[0], blockData[1], blockData[2]);
         }
         this.blockPos.clear();
         markAllChunksInRebuildQueueDirty();
@@ -119,7 +119,7 @@ public class WorldGenTree extends WorldGen {
         short block;
         for(int i = 0; i < this.blockPos.size(); i++){
             blockPos = this.blockPos.get(i);
-            block = this.worldFace.getBlockID(blockPos[0], blockPos[1], blockPos[2]);
+            block = this.worldEarth.getBlockID(blockPos[0], blockPos[1], blockPos[2]);
             if (block != Block.air.ID && block < Block.oakLogFullSizeNormal.ID && block > Block.oakLogSize1EastWest.ID && block != Block.leaf.ID){
                 return false;
             }

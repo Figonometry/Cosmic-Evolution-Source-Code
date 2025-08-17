@@ -7,21 +7,20 @@ import java.util.List;
 
 
 public final class TextureAtlas {
-    public TextureLoader textureLoader;
     public List<Texture> textures;
 
 
-    public TextureAtlas(TextureLoader textureLoader, int texWidth, int texHeight, int numTex, int spacing) {
+
+    public TextureAtlas(int imageWidth, int imageHeight, int texWidth, int texHeight, int numTex, int spacing) {
         this.textures = new ArrayList<>();
-        this.textureLoader = textureLoader;
         int currentX = 0;
-        int currentY = this.textureLoader.height - texHeight;
+        int currentY = imageHeight - texHeight;
 
         for (int i = 0; i < numTex; i++) {
-            float topY = (currentY + texHeight) / (float) this.textureLoader.height;
-            float rightX = (currentX + texWidth) / (float) this.textureLoader.height;
-            float leftX = currentX / (float) this.textureLoader.height;
-            float bottomY = currentY / (float) this.textureLoader.height;
+            float topY = (currentY + texHeight) / (float) imageHeight;
+            float rightX = (currentX + texWidth) / (float) imageHeight;
+            float leftX = currentX / (float) imageHeight;
+            float bottomY = currentY / (float) imageHeight;
 
             Vector2f[] texCoords = {
                     new Vector2f(rightX, topY),
@@ -29,11 +28,11 @@ public final class TextureAtlas {
                     new Vector2f(leftX, bottomY),
                     new Vector2f(leftX, topY)
             };
-            Texture texture = new Texture(this.textureLoader, texCoords);
+            Texture texture = new Texture(texCoords);
             this.textures.add(texture);
 
             currentX += texWidth + spacing;
-            if (currentX >= this.textureLoader.width) {
+            if (currentX >= imageWidth) {
                 currentX = 0;
                 currentY -= texHeight + spacing;
             }

@@ -1,0 +1,5 @@
+techName:Stone Hand Tools
+unlockedTech:Refined Stone Tools
+requiredTech:Neolithic Era
+era:Neolithic
+infoText:Since the dawn of humanity primitive stone tools have been important for the survival of our species.

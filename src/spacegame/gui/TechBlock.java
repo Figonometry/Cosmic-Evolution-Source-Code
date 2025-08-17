@@ -1,12 +1,11 @@
 package spacegame.gui;
 
 import org.lwjgl.opengl.GL46;
-import spacegame.core.MathUtils;
+import spacegame.core.MathUtil;
 import spacegame.core.MouseListener;
 import spacegame.core.SpaceGame;
+import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
-import spacegame.render.Tessellator;
-import spacegame.world.Tech;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -45,14 +44,14 @@ public final class TechBlock {
 
     public void renderTechBlock(){
         if(this.tech.isRootNode)return;
-        Tessellator tessellator = Tessellator.instance;
+        RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         tessellator.toggleOrtho();
         tessellator.addVertex2DTexture(this.getTechBlockColor(), (this.x - this.width/2) * zoomFactor, (this.y - this.height/2) * zoomFactor, -95,3);
         tessellator.addVertex2DTexture(this.getTechBlockColor(), (this.x + this.width/2) * zoomFactor, (this.y + this.height/2) * zoomFactor, -95,1);
         tessellator.addVertex2DTexture(this.getTechBlockColor(), (this.x - this.width/2) * zoomFactor, (this.y + this.height/2) * zoomFactor, -95,2);
         tessellator.addVertex2DTexture(this.getTechBlockColor(), (this.x + this.width/2) * zoomFactor, (this.y - this.height/2) * zoomFactor, -95,0);
         tessellator.addElements();
-        tessellator.drawTexture2D(this.techTree.techBlock.texID, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.techTree.techBlock, Shader.screen2DTexture, SpaceGame.camera);
         tessellator.toggleOrtho();
         FontRenderer fontRenderer = FontRenderer.instance;
         fontRenderer.drawCenteredString(this.tech.getTechName(), this.x * zoomFactor - (25f * zoomFactor), this.y * zoomFactor - (25f * zoomFactor), (float) -93, 16777215, (int) (35f * zoomFactor));
@@ -64,7 +63,7 @@ public final class TechBlock {
         for(int i = 0; i < this.tech.unlockedTech.size(); i++){
             childrenBlocks.add(this.techTree.getTechBlockFromName(this.tech.unlockedTech.get(i), this.techTree.currentTechsToDisplay));
         }
-        Tessellator tessellator = Tessellator.instance;
+        RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         tessellator.toggleOrtho();
 
 
@@ -77,12 +76,12 @@ public final class TechBlock {
             tessellator.addElements();
         }
 
-        tessellator.drawTexture2D(this.techTree.line.texID, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.techTree.line, Shader.screen2DTexture, SpaceGame.camera);
         tessellator.toggleOrtho();
     }
 
     public void drawInfoBox(){
-        Tessellator tessellator = Tessellator.instance;
+        RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         tessellator.toggleOrtho();
 
         final float topLeftX = -960;
@@ -97,7 +96,7 @@ public final class TechBlock {
         tessellator.addElements();
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-        tessellator.drawTexture2D(this.techTree.transparentBackground.texID, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.techTree.transparentBackground, Shader.screen2DTexture, SpaceGame.camera);
         GL46.glDisable(GL46.GL_BLEND);
         tessellator.toggleOrtho();
 
@@ -109,7 +108,7 @@ public final class TechBlock {
             fontRenderer.drawString("This knowledge is shrouded in mystery", topLeftX, 400,  -49, 16777215, 25);
             fontRenderer.toggleItalics();
         } else {
-            fontRenderer.drawCenteredString(this.tech.techName, topLeftX + width * 0.4f, 460, -49, 16777215, 50);
+            fontRenderer.drawCenteredString(this.tech.techName, topLeftX + width * 0.4f, 460, -49, this.tech.state == Tech.UNLOCKED ? 5046016 : 16766976, 50);
             fontRenderer.toggleItalics();
             int textHeight = 400;
             for(int i = 0; i < this.tech.infoText.size(); i++){
@@ -117,6 +116,29 @@ public final class TechBlock {
                 textHeight -= 30;
             }
             fontRenderer.toggleItalics();
+
+            if(this.tech.state != Tech.UNLOCKED) {
+                int y = 60;
+                for (int i = 0; i < this.tech.unlockDescriptions.size(); i++) {
+                    fontRenderer.drawString("Unlocks: " + this.tech.unlockDescriptions.get(i), topLeftX, y, -49, 16777215, 30);
+                    y -= 30;
+                }
+            }
+
+            if(this.tech.state == Tech.LOCKED_KNOWN){
+                textHeight -= 500;
+                fontRenderer.drawCenteredString(this.tech.techUpdateEvent, topLeftX + width * 0.45f, textHeight, -49, 16766976, 40);
+                textHeight -= 60;
+                fontRenderer.drawCenteredString(this.tech.progressAmountCompleted + " / " + this.tech.unlockRequirementAmount, topLeftX + width * 0.45f, textHeight, -49, 16766976, 40);
+            }
+
+            if(this.tech.state == Tech.LOCKED){
+                textHeight -= 500;
+                fontRenderer.drawCenteredString("???", topLeftX + width * 0.45f, textHeight, -49, 16766976, 40);
+                textHeight -= 60;
+                fontRenderer.drawCenteredString("??? / ???", topLeftX + width * 0.45f, textHeight, -49, 16766976, 40);
+            }
+
         }
     }
 
@@ -157,10 +179,10 @@ public final class TechBlock {
     public boolean isMouseHoveredOver(){
         double x = (MouseListener.instance.xPos - SpaceGame.width/2D);
         double y = ((MouseListener.instance.yPos - SpaceGame.height/2D) * -1);
-        float adjustedButtonX = MathUtils.adjustXPosBasedOnScreenWidth(this.x) * zoomFactor;
-        float adjustedButtonY = MathUtils.adjustYPosBasedOnScreenHeight(this.y) * zoomFactor;
-        float adjustedButtonWidth = MathUtils.adjustWidthBasedOnScreenWidth(this.width) * zoomFactor;
-        float adjustedButtonHeight = MathUtils.adjustHeightBasedOnScreenHeight(this.height) * zoomFactor;
+        float adjustedButtonX = MathUtil.adjustXPosBasedOnScreenWidth(this.x) * zoomFactor;
+        float adjustedButtonY = MathUtil.adjustYPosBasedOnScreenHeight(this.y) * zoomFactor;
+        float adjustedButtonWidth = MathUtil.adjustWidthBasedOnScreenWidth(this.width) * zoomFactor;
+        float adjustedButtonHeight = MathUtil.adjustHeightBasedOnScreenHeight(this.height) * zoomFactor;
         return x > adjustedButtonX - (double) adjustedButtonWidth / 2 && x < adjustedButtonX + (double) adjustedButtonWidth / 2 && y > adjustedButtonY - (double) adjustedButtonHeight / 2 && y < adjustedButtonY + (double) adjustedButtonHeight / 2;
     }
 }

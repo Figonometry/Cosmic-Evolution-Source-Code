@@ -1,0 +1,7 @@
+unlockedTech:Foraging I
+unlockedTech:Hunting I
+unlockedTech:Stone Hand Tools
+unlockedTech:Pottery I
+techName:Neolithic Era
+isRootNode:true
+era:Neolithic

@@ -42,5 +42,11 @@ public enum EnumButtonEffects {
     CREATE_NEW_WORLD,
     RENAME_WORLD,
     RESPAWN,
-    CRAFT;
+    CRAFT,
+    CLOSE,
+    PAGE_LEFT,
+    PAGE_RIGHT,
+    WAVY_WATER,
+    WAVY_LEAVES,
+    TRANSPARENT_LEAVES;
 }

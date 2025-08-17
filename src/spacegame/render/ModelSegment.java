@@ -1,7 +1,7 @@
 package spacegame.render;
 
 import org.joml.Vector3f;
-import spacegame.core.MathUtils;
+import spacegame.core.MathUtil;
 
 public final class ModelSegment {
     public float width;
@@ -166,7 +166,7 @@ public final class ModelSegment {
         angleDeg = angleDeg < 0 ? 360 + angleDeg : angleDeg;
         float angleRad = (float) Math.toRadians(angleDeg);
         for(int i = 0; i < this.childrenSegments.length; i++){
-            this.childrenSegments[i].position.add((float) 0, (float) (MathUtils.sin(angleRad) * -this.height), Math.abs((float) ((MathUtils.sin(angleRad) * 0.125f) * this.depth)));
+            this.childrenSegments[i].position.add((float) 0, (float) (MathUtil.sin(angleRad) * -this.height), Math.abs((float) ((MathUtil.sin(angleRad) * 0.125f) * this.depth)));
         }
     }
 
@@ -175,7 +175,7 @@ public final class ModelSegment {
         angleDeg = angleDeg < 0 ? 360 + angleDeg : angleDeg;
         float angleRad = (float) Math.toRadians(angleDeg);
         for(int i = 0; i < this.childrenSegments.length; i++){ //This is likely some trig function
-            this.childrenSegments[i].position.add((float) (MathUtils.sin(angleRad) * this.width), (float) 0, Math.abs((float) ((MathUtils.sin(angleRad) * 0.4f) * this.depth)));
+            this.childrenSegments[i].position.add((float) (MathUtil.sin(angleRad) * this.width), (float) 0, Math.abs((float) ((MathUtil.sin(angleRad) * 0.4f) * this.depth)));
         }
         //0 deg: width = 0, depth = 0
         //90 deg: width = width, depth = 1/2 depth

@@ -1,0 +1,5 @@
+techName:Foraging I
+unlockedTech:Foraging II
+requiredTech:Neolithic Era
+era:Neolithic
+infoText:Long before the dawn of agriculture and the raising of animals as livestock humanity persisted off of foraging food from plants. Some people still gather food in this way.

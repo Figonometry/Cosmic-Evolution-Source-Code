@@ -1,12 +1,14 @@
 package spacegame.gui;
 
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.opengl.GL46;
+import spacegame.block.Block;
 import spacegame.core.GameSettings;
-import spacegame.core.MathUtils;
+import spacegame.core.MathUtil;
 import spacegame.core.MouseListener;
 import spacegame.core.SpaceGame;
+import spacegame.entity.EntityItem;
 import spacegame.entity.EntityPlayer;
+import spacegame.item.Item;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.render.*;
@@ -28,8 +30,8 @@ public class Button {
     public String name;
     private Gui Gui;
     private SpaceGame sg;
-    public static TextureLoader buttonTextureLoader = new TextureLoader("src/spacegame/assets/textures/gui/button.png", 256, 256);
-    public static TextureAtlas buttonTextureAtlas = new TextureAtlas(buttonTextureLoader, 256, 64, 3, 0);
+    public static int buttonTextureLoader = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/button.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+    public static TextureAtlas buttonTextureAtlas = new TextureAtlas(256,256, 256, 64, 3, 0);
 
 
     public Button(String name, int width, int height, int x, int y, Gui Gui, SpaceGame spaceGame){
@@ -143,34 +145,23 @@ public class Button {
             }
             case CHUNK_VIEW_HORIZONTAL -> {
                 if(this.sideOfButtonBeingClicked() == 0){
-                    GameSettings.renderDistance--;
-                    if(GameSettings.renderDistance < 4){
-                        GameSettings.renderDistance = 4;
-                    }
+                    GameSettings.changeHorizontalViewDistance(false);
                 } else if(this.sideOfButtonBeingClicked() == 1){
-                    GameSettings.renderDistance++;
-                    if(GameSettings.renderDistance > 8){
-                        GameSettings.renderDistance = 8;
-                    }
+                    GameSettings.changeHorizontalViewDistance(true);
                 }
                 if(this.sg.save != null) {
-                    this.sg.save.activeWorld.activeWorldFace.chunkController.resetChunkLoading();
+                    this.sg.save.activeWorld.chunkController.resetChunkLoading();
                 }
+                Shader.terrainShader.uploadFloat("fogDistance", GameSettings.renderDistance * 20f);
             }
             case CHUNK_VIEW_VERTICAL -> {
                 if(this.sideOfButtonBeingClicked() == 0){
-                    GameSettings.chunkColumnHeight--;
-                    if(GameSettings.chunkColumnHeight < 5){
-                        GameSettings.chunkColumnHeight = 5;
-                    }
+                    GameSettings.changeVerticalViewDistance(false);
                 } else if(this.sideOfButtonBeingClicked() == 1){
-                    GameSettings.chunkColumnHeight++;
-                    if(GameSettings.chunkColumnHeight > 10){
-                        GameSettings.chunkColumnHeight = 10;
-                    }
+                    GameSettings.changeVerticalViewDistance(true);
                 }
                 if(this.sg.save != null) {
-                    this.sg.save.activeWorld.activeWorldFace.chunkController.resetChunkLoading();
+                    this.sg.save.activeWorld.chunkController.resetChunkLoading();
                 }
             }
             case SHADOW_MAP -> {
@@ -205,7 +196,7 @@ public class Button {
             }
             case BACK_TO_GAME -> {
                 GLFW.glfwSetInputMode(this.sg.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
-                this.sg.save.activeWorld.activeWorldFace.paused = false;
+                this.sg.save.activeWorld.paused = false;
                 this.sg.setNewGui(new GuiInGame(this.sg));
             }
             case QUIT_TO_MAIN_MENU -> {
@@ -397,7 +388,7 @@ public class Button {
                 this.sg.save.thePlayer.z = this.sg.save.spawnZ;
                 this.sg.save.thePlayer.health = this.sg.save.thePlayer.maxHealth;
                 GLFW.glfwSetInputMode(this.sg.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
-                this.sg.save.activeWorld.activeWorldFace.paused = false;
+                this.sg.save.activeWorld.paused = false;
                 this.sg.setNewGui(new GuiInGame(this.sg));
             }
             case CRAFT -> {
@@ -407,26 +398,60 @@ public class Button {
                     int y = ((GuiCraftingStoneTools) this.Gui).y;
                     int z = ((GuiCraftingStoneTools) this.Gui).z;
                     short outputItem = ((GuiCraftingStoneTools) this.Gui).outputItemID;
-                    this.sg.save.activeWorld.activeWorldFace.modifyItemID(x, y, z, outputItem);
-                    this.sg.save.activeWorld.activeWorldFace.delayWhenExitingUI = 60;
-                    if (this.sg.save.thePlayer.inventory.itemStacks[EntityPlayer.selectedInventorySlot].item != null) {
-                        this.sg.save.thePlayer.inventory.itemStacks[EntityPlayer.selectedInventorySlot].durability--;
-                    }
-                    this.sg.setNewGui(new GuiInGame(this.sg));
+                    this.sg.save.activeWorld.setBlockWithNotify(x,y,z, Block.air.ID);
+                    EntityItem item = new EntityItem(x + 0.5, y + 0.5, z + 0.5, outputItem, (short)0, (byte) 1, Item.list[outputItem].durability);
+                    this.sg.save.activeWorld.chunkController.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).addEntityToList(item);
+                    this.sg.save.thePlayer.removeItemFromInventory();
+                    this.sg.save.activeWorld.delayWhenExitingUI = 60;
+                    Tech.techUpdateEvent(Tech.UPDATE_EVENT_CRAFT_STONE_HAND_TOOL);
                 }
                 if(this.Gui instanceof GuiCraftingStick){
-                    GLFW.glfwSetInputMode(this.sg.window,GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
                     int x = ((GuiCraftingStick)this.Gui).x;
                     int y = ((GuiCraftingStick)this.Gui).y;
                     int z = ((GuiCraftingStick)this.Gui).z;
                     short outputItem = ((GuiCraftingStick)this.Gui).outputItemID;
-                    this.sg.save.activeWorld.activeWorldFace.modifyItemID(x,y,z, outputItem);
-                    this.sg.save.activeWorld.activeWorldFace.delayWhenExitingUI = 60;
+                    this.sg.save.activeWorld.delayWhenExitingUI = 60;
                     if(this.sg.save.thePlayer.inventory.itemStacks[EntityPlayer.selectedInventorySlot].item != null) {
                         this.sg.save.thePlayer.inventory.itemStacks[EntityPlayer.selectedInventorySlot].durability--;
                     }
-                    this.sg.setNewGui(new GuiInGame(this.sg));
                 }
+
+                this.sg.setNewGui(new GuiInGame(this.sg));
+            }
+            case CLOSE -> {
+                GLFW.glfwSetInputMode(this.sg.window,GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
+                this.sg.setNewGui(new GuiInGame(this.sg));
+            }
+            case PAGE_LEFT -> {
+                if(this.Gui instanceof GuiVideoSettingsMainMenu){
+                    ((GuiVideoSettingsMainMenu)this.Gui).page--;
+                }
+                if(this.Gui instanceof GuiVideoSettingsInGame){
+                    ((GuiVideoSettingsInGame)this.Gui).page--;
+                }
+            }
+            case PAGE_RIGHT -> {
+                if(this.Gui instanceof GuiVideoSettingsMainMenu){
+                    ((GuiVideoSettingsMainMenu)this.Gui).page++;
+                }
+                if(this.Gui instanceof GuiVideoSettingsInGame){
+                    ((GuiVideoSettingsInGame)this.Gui).page++;
+                }
+            }
+            case WAVY_WATER -> {
+                GameSettings.wavyWater = !GameSettings.wavyWater;
+                Shader.terrainShader.uploadBoolean("wavyWater", GameSettings.wavyWater);
+                Block.water.canGreedyMesh = !GameSettings.wavyWater;
+            }
+            case WAVY_LEAVES -> {
+                GameSettings.wavyLeaves = !GameSettings.wavyLeaves;
+                Block.leaf.canGreedyMesh = !GameSettings.wavyLeaves;
+                Shader.shadowMapShader.uploadBoolean("wavyLeaves", GameSettings.wavyLeaves);
+                Shader.terrainShader.uploadBoolean("wavyLeaves", GameSettings.wavyLeaves);
+            }
+            case TRANSPARENT_LEAVES -> {
+                GameSettings.transparentLeaves = !GameSettings.transparentLeaves;
+                this.sg.save.activeWorld.chunkController.updateChunksWithLeaves();
             }
         }
         GameSettings.saveOptions();
@@ -445,7 +470,7 @@ public class Button {
     }
 
     public void renderButton(){
-        Tessellator tessellator = Tessellator.instance;
+        RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         tessellator.toggleOrtho();
         Texture buttonTexture;
         float textureID;
@@ -470,57 +495,57 @@ public class Button {
         tessellator.addVertex2DTextureWithAtlas(16777215,this.x - this.width/2, this.y + this.height/2, -20,2, buttonTexture, textureID);
         tessellator.addVertex2DTextureWithAtlas(16777215,this.x + this.width/2, this.y - this.height/2, -20,0, buttonTexture, textureID);
         tessellator.addElements();
-        tessellator.drawTexture2DWithAtlas(buttonTextureLoader.texID, Shader.screen2DTextureAtlas, SpaceGame.camera);
+        tessellator.drawTexture2DWithAtlas(buttonTextureLoader, Shader.screen2DTextureAtlas, SpaceGame.camera);
         tessellator.toggleOrtho();
         this.drawCenteredString();
 
         if((this.name.equals(EnumButtonEffects.SINGLE_PLAYER.name()) || this.name.equals(EnumButtonEffects.QUIT_GAME.name())) && this.active && this.isMouseHoveredOver() || this.name.equals(EnumButtonEffects.SETTINGS.name()) && this.active && this.isMouseHoveredOver() && this.Gui instanceof GuiMainMenu){
-            TextureLoader texture = new TextureLoader("src/spacegame/assets/textures/gui/guiMainMenu/star.png", 64,  64);
+            int texture = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/star.png", RenderEngine.TEXTURE_TYPE_2D, 0);
             tessellator.toggleOrtho();
             tessellator.addVertex2DTexture(16711680,this.x - 350, this.y - 50, -10,3);
             tessellator.addVertex2DTexture(16711680,this.x - 250, this.y + 50, -10,1);
             tessellator.addVertex2DTexture(16711680,this.x - 350, this.y + 50, -10,2);
             tessellator.addVertex2DTexture(16711680,this.x - 250, this.y -50, -10,0);
             tessellator.addElements();
-            tessellator.drawTexture2D(texture.texID, Shader.screen2DTexture, SpaceGame.camera);
+            tessellator.drawTexture2D(texture, Shader.screen2DTexture, SpaceGame.camera);
             tessellator.toggleOrtho();
-            GL46.glDeleteTextures(texture.texID);
+            SpaceGame.instance.renderEngine.deleteTexture(texture);
         }
 
         if(this.name.equals(EnumButtonEffects.BUG_REPORT.name())){
-            TextureLoader wrench = new TextureLoader("src/spacegame/assets/textures/gui/guiMainMenu/wrench.png", 64,  64);
+            int wrench = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/wrench.png", RenderEngine.TEXTURE_TYPE_2D, 0);
             tessellator.toggleOrtho();
             tessellator.addVertex2DTexture(16777215,this.x - 30, this.y - 30, -9,3);
             tessellator.addVertex2DTexture(16777215,this.x + 30, this.y + 30, -9,1);
             tessellator.addVertex2DTexture(16777215,this.x - 30, this.y + 30, -9,2);
             tessellator.addVertex2DTexture(16777215,this.x + 30, this.y - 30, -9,0);
             tessellator.addElements();
-            tessellator.drawTexture2D(wrench.texID, Shader.screen2DTexture, SpaceGame.camera);
+            tessellator.drawTexture2D(wrench, Shader.screen2DTexture, SpaceGame.camera);
             tessellator.toggleOrtho();
-            GL46.glDeleteTextures(wrench.texID);
+            SpaceGame.instance.renderEngine.deleteTexture(wrench);
         }
 
         if(this.name.equals(EnumButtonEffects.INFORMATION.name())){
-            TextureLoader info = new TextureLoader("src/spacegame/assets/textures/gui/guiMainMenu/info.png", 64,  64);
+            int info = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/info.png", RenderEngine.TEXTURE_TYPE_2D, 0);
             tessellator.toggleOrtho();
             tessellator.addVertex2DTexture(16711680,this.x - 30, this.y - 30, -9,3);
             tessellator.addVertex2DTexture(16711680,this.x + 30, this.y + 30, -9,1);
             tessellator.addVertex2DTexture(16711680,this.x - 30, this.y + 30, -9,2);
             tessellator.addVertex2DTexture(16711680,this.x + 30, this.y - 30, -9,0);
             tessellator.addElements();
-            tessellator.drawTexture2D(info.texID, Shader.screen2DTexture, SpaceGame.camera);
+            tessellator.drawTexture2D(info, Shader.screen2DTexture, SpaceGame.camera);
             tessellator.toggleOrtho();
-            GL46.glDeleteTextures(info.texID);
+            SpaceGame.instance.renderEngine.deleteTexture(info);
         }
     }
 
     public boolean isMouseHoveredOver(){
         double x = MouseListener.instance.xPos - SpaceGame.width/2D;
         double y = (MouseListener.instance.yPos - SpaceGame.height/2D) * -1;
-        float adjustedButtonX = MathUtils.adjustXPosBasedOnScreenWidth(this.x);
-        float adjustedButtonY = MathUtils.adjustYPosBasedOnScreenHeight(this.y);
-        float adjustedButtonWidth = MathUtils.adjustWidthBasedOnScreenWidth(this.width);
-        float adjustedButtonHeight = MathUtils.adjustHeightBasedOnScreenHeight(this.height);
+        float adjustedButtonX = MathUtil.adjustXPosBasedOnScreenWidth(this.x);
+        float adjustedButtonY = MathUtil.adjustYPosBasedOnScreenHeight(this.y);
+        float adjustedButtonWidth = MathUtil.adjustWidthBasedOnScreenWidth(this.width);
+        float adjustedButtonHeight = MathUtil.adjustHeightBasedOnScreenHeight(this.height);
         return x > adjustedButtonX - (double) adjustedButtonWidth / 2 && x < adjustedButtonX + (double) adjustedButtonWidth / 2 && y > adjustedButtonY - (double) adjustedButtonHeight / 2 && y < adjustedButtonY + (double) adjustedButtonHeight / 2;
     }
 
@@ -724,7 +749,25 @@ public class Button {
                 string = "Respawn";
             }
             case CRAFT -> {
-                string = "Craft";
+                string = " Craft";
+            }
+            case CLOSE -> {
+                string = " X";
+            }
+            case PAGE_LEFT -> {
+                string = "<---";
+            }
+            case PAGE_RIGHT -> {
+                string = "--->";
+            }
+            case WAVY_WATER -> {
+                string = "Water Waves: " + GameSettings.wavyWater;
+            }
+            case WAVY_LEAVES -> {
+                string = "Leaf Movement: " + GameSettings.wavyLeaves;
+            }
+            case TRANSPARENT_LEAVES -> {
+                string = "Transparent Leaves: " + GameSettings.transparentLeaves;
             }
 
             default -> string = "";

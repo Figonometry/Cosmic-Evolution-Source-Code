@@ -2,7 +2,7 @@ package spacegame.item;
 
 import spacegame.core.MouseListener;
 import spacegame.entity.EntityPlayer;
-import spacegame.world.WorldFace;
+import spacegame.world.World;
 
 public final class ItemBerry extends Item {
 
@@ -12,7 +12,7 @@ public final class ItemBerry extends Item {
     }
 
     @Override
-    public void onRightClick(int x, int y, int z, WorldFace worldFace, EntityPlayer player){
+    public void onRightClick(int x, int y, int z, World world, EntityPlayer player){
         if(MouseListener.rightClickReleased) {
             if (player.health < player.maxHealth) {
                 player.health += 5;

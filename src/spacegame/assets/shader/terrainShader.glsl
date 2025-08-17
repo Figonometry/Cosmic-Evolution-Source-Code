@@ -17,6 +17,8 @@ uniform float baseLight;
 uniform vec3 playerPositionInChunk;
 uniform vec4 lightColor;
 uniform bool performNormals;
+uniform bool wavyWater;
+uniform bool wavyLeaves;
 
 out vec4 fColor;
 out vec2 fTexCoords;
@@ -58,7 +60,7 @@ float halfToFloat(int f16) {
     if (exponent == 0) {
         return sign == 0? 0 : -0.0f;
     } else if (exponent == 31) {
-        return sign == 0 ? 0x7f800000 : 0xff800000;
+        return intBitsToFloat(sign == 0 ? 0x7f800000 : 0xff800000);
     } else {
         exponent += 112;
         mantissa <<= 13;
@@ -155,6 +157,17 @@ vec4 decompressSkyLightValue(vec2 normalAndSkyLightValue){
 
 vec4 setFinalColor(vec4 skyLightColor, vec4 vertexColor){
     vec4 finalColor = vec4(1.0, 1.0, 1.0, 1.0);
+
+    int texID = int(fTexId);
+    if(texID == 0 || texID == 2 || texID == 10 || texID == 24){//Grass top and grass side textures, leaf, transparent and opaque
+        int upperByte = (floatBitsToInt(aColor) >> 24) & 255;
+        int lowerByte = (floatBitsToInt(aTexCoords) >> 24) & 255;
+        float colorMultiplier = halfToFloat((upperByte << 8) | lowerByte);
+        vec4 grassColor = vec4(vertexColor.x * colorMultiplier, vertexColor.y * colorMultiplier, vertexColor.z * colorMultiplier, 1.0);
+        skyLightColor *= grassColor;
+    }
+
+
     if(skyLightColor.x > vertexColor.x){
         finalColor.x = skyLightColor.x;
     } else {
@@ -173,7 +186,13 @@ vec4 setFinalColor(vec4 skyLightColor, vec4 vertexColor){
         finalColor.z = vertexColor.z;
     }
 
+
     return finalColor;
+
+    //Reconstruct the color of the grass/ whatever grayscale image needs to be colored by multiplying the vertex color by a precalculated value on the CPU side, the value's formula is 1 / vertexColor = y.
+    //This value can be converted from a float to half, split into two bytes and stuck onto aColor and aTexCoords, they are seperated on the CPU side. Reconstruct using those two to return it back to a float
+    //Take this float and multiply it by the vertex color to get the grass color value (some form of green). Take this value and multiply it by the skylightcolor vec4. Then perform the comparison to determine which color is brighter for lighting calcs
+    //This code should only run when doing any kind of grayscale coloring, this is worthless to do on dirt stone snow, etc.
 }
 
 void main()
@@ -186,14 +205,18 @@ void main()
     vec3 correctPosRelativeToSun = vec3(sunChunkOffset + decompressPosition(aPos, aTexId));
         switch(int(fTexId)){
             case 4://water
-            correctPos.y -= 0.1F;
-            correctPos.y = sinY(correctPos.x, correctPos.y, correctPos.z);
-            fColor.xyz -= 0.5F;
-            fColor.w = max(fColor.w, 0.5f);
-            fTexCoords.xy += sin(float(time/150));
+            if (wavyWater){
+                correctPos.y -= 0.1F;
+                correctPos.y = sinY(correctPos.x, correctPos.y, correctPos.z);
+                fColor.xyz -= 0.5F;
+                fColor.w = max(fColor.w, 0.5f);
+                fTexCoords.xy += sin(float(time/150));
+            }
             break;
             case 10://leaves
-            correctPos.x = sinX(correctPos.x, correctPos.y, correctPos.z);
+            if(wavyLeaves){
+                correctPos.x = sinX(correctPos.x, correctPos.y, correctPos.z);
+            }
             break;
             case 18://fire
             fTexCoords.xy += vec2(sin(correctPos.x * 2.0 + float(time) * 0.1) * 0.05, cos(correctPos.y * 3.0 + float(time) * 0.15)  * 0.20);
@@ -245,10 +268,11 @@ uniform float fogBlue;
 out vec4 color;
 
 vec4 setFog(vec4 color){
-    float fogStart = (fogDistance - 128) * gl_FragCoord.w;
-    float fogEnd = (fogDistance - 64) * gl_FragCoord.w;
-    if(gl_FragCoord.z > fogStart){
-        float fogDepth = (gl_FragCoord.z / fogEnd) - fogStart;
+    float fogStart = (fogDistance - 128);
+    float fogEnd = (fogDistance - 64);
+    float distanceFromPlayer = distance(fragPosInWorldSpace, fPlayerPositionInChunk);
+    if(distanceFromPlayer > fogStart){
+        float fogDepth = ((distanceFromPlayer - fogStart) / fogEnd);
         if (fogDepth < 0){
             fogDepth = 0;
         }

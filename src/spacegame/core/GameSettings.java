@@ -1,6 +1,7 @@
 package spacegame.core;
 
 import org.lwjgl.glfw.GLFW;
+import spacegame.block.Block;
 
 import java.io.*;
 
@@ -18,6 +19,9 @@ public abstract class GameSettings {
     public static boolean invertMouse = false;
     public static boolean shadowMap = true;
     public static boolean viewBob = true;
+    public static boolean wavyLeaves = true;
+    public static boolean wavyWater = true;
+    public static boolean transparentLeaves;
     public static KeyBinding keyBeingModified;
     public static KeyBinding forwardKey = new KeyBinding("Forward", "W", GLFW.GLFW_KEY_W);
     public static KeyBinding backwardKey = new KeyBinding("Backward", "S", GLFW.GLFW_KEY_S);
@@ -85,6 +89,17 @@ public abstract class GameSettings {
                     if(options[0].equals("viewBob")){
                         viewBob = options[1].equals("true");
                     }
+                    if(options[0].equals("wavyWater")){
+                        wavyWater = options[1].equals("true");
+                        Block.water.canGreedyMesh = !wavyWater;
+                    }
+                    if(options[0].equals("wavyLeaves")){
+                        wavyLeaves = options[1].equals("true");
+                        Block.leaf.canGreedyMesh = !wavyLeaves;
+                    }
+                    if(options[0].equals("transparentLeaves")){
+                        transparentLeaves = options[1].equals("true");
+                    }
                     if(options[0].equals("forwardKey")){
                         forwardKey.key = options[1];
                         forwardKey.keyCode = KeyMappings.getKeyCodeFromMap(forwardKey.key, forwardKey.keyCode);
@@ -139,6 +154,9 @@ public abstract class GameSettings {
             writer.println("chunkColumnHeight:" + chunkColumnHeight);
             writer.println("shadowMap:" + shadowMap);
             writer.println("viewBob:" + viewBob);
+            writer.println("wavyWater:" + wavyWater);
+            writer.println("wavyLeaves:" + wavyLeaves);
+            writer.println("transparentLeaves:" + transparentLeaves);
             writer.println("forwardKey:" + forwardKey.key);
             writer.println("backwardKey:" + backwardKey.key);
             writer.println("leftKey:" + leftKey.key);
@@ -201,6 +219,18 @@ public abstract class GameSettings {
         if(fov <= 0.3F){
             fov = 0.3F;
         }
+    }
+
+    public static void changeHorizontalViewDistance(boolean increase){
+        renderDistance = increase ? renderDistance + 1 : renderDistance - 1;
+        renderDistance = renderDistance > 20 ? 20 : renderDistance;
+        renderDistance = renderDistance < 4 ? 4 : renderDistance;
+    }
+
+    public static void changeVerticalViewDistance(boolean increase){
+        chunkColumnHeight = increase ? chunkColumnHeight + 1 : chunkColumnHeight - 1;
+        chunkColumnHeight = chunkColumnHeight > 10 ? 10 : chunkColumnHeight;
+        chunkColumnHeight = chunkColumnHeight < 5 ? 5 : chunkColumnHeight;
     }
 
 

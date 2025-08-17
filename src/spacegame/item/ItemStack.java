@@ -10,10 +10,7 @@ import spacegame.gui.FontRenderer;
 import spacegame.gui.GuiInGame;
 import spacegame.gui.GuiInventory;
 import spacegame.gui.GuiPlayerInventory;
-import spacegame.render.Assets;
-import spacegame.render.RenderBlocks;
-import spacegame.render.Shader;
-import spacegame.render.Tessellator;
+import spacegame.render.*;
 
 import java.awt.*;
 
@@ -51,7 +48,7 @@ public final class ItemStack {
 
 
     public void renderItemStack(boolean renderWithBackground){
-        Tessellator tessellator = Tessellator.instance;
+        RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         if(renderWithBackground) {
             tessellator.toggleOrtho();
             int z = -80;
@@ -62,7 +59,7 @@ public final class ItemStack {
             tessellator.addVertex2DTexture(0, this.x - (float) this.width / 2, this.y + (float) this.height / 2, z, 2);
             tessellator.addVertex2DTexture(0, this.x + (float) this.width / 2, this.y - (float) this.height / 2, z, 0);
             tessellator.addElements();
-            tessellator.drawTexture2D(GuiPlayerInventory.transparentBackground.texID, Shader.screen2DTexture, SpaceGame.camera);
+            tessellator.drawTexture2D(GuiPlayerInventory.transparentBackground, Shader.screen2DTexture, SpaceGame.camera);
             GL46.glDisable(GL46.GL_BLEND);
             tessellator.toggleOrtho();
         }
@@ -76,7 +73,7 @@ public final class ItemStack {
                 Vector3f vertex3 = new Vector3f(-50,125,-70).mul(0.25F).add(position);
                 Vector3f vertex4 = new Vector3f(50,-50,-70).mul(0.25F).add(position);
 
-                Shader.screenTextureArray.uploadInt("textureArray", Assets.blockTextureArray.arrayID);
+                Shader.screenTextureArray.uploadInt("textureArray", Assets.blockTextureArray);
 
                 short currentBlock = this.metadata;
                 float blockID = Block.list[currentBlock].getBlockTexture(currentBlock, 5);
@@ -111,7 +108,7 @@ public final class ItemStack {
                 tessellator.addVertexTextureArray(16777215, vertex3.x, vertex3.y, vertex3.z, 2, blockID, 0);
                 tessellator.addVertexTextureArray(16777215, vertex4.x, vertex4.y, vertex4.z, 0, blockID, 0);
                 tessellator.addElements();
-                tessellator.drawVertexArray(Assets.blockTextureArray.arrayID, Shader.screenTextureArray, SpaceGame.camera);
+                tessellator.drawVertexArray(Assets.blockTextureArray, Shader.screenTextureArray, SpaceGame.camera);
             } else {
                 int z = -70;
                 GL46.glEnable(GL46.GL_BLEND);
@@ -122,7 +119,7 @@ public final class ItemStack {
                 tessellator.addVertexTextureArray(16777215, this.x + (float) this.width / 2, this.y - (float) this.height / 2, z, 0, this.item.getTextureID(this.item.ID, (byte)1, RenderBlocks.WEST_FACE), RenderBlocks.WEST_FACE);
                 tessellator.addElements();
                 Shader.screenTextureArray.uploadInt("textureArray", 0);
-                tessellator.drawVertexArray(Assets.itemTextureArray.arrayID, Shader.screenTextureArray, SpaceGame.camera);
+                tessellator.drawVertexArray(Assets.itemTextureArray, Shader.screenTextureArray, SpaceGame.camera);
                 GL46.glDisable(GL46.GL_BLEND);
             }
             tessellator.toggleOrtho();
@@ -136,7 +133,7 @@ public final class ItemStack {
     }
 
     public void renderItemStackOnHotbar(){
-        Tessellator tessellator = Tessellator.instance;
+        RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
 
         if(this.item != null){
             tessellator.toggleOrtho();
@@ -147,7 +144,7 @@ public final class ItemStack {
                 Vector3f vertex3 = new Vector3f(-50,125,-70).mul(0.35F).add(position);
                 Vector3f vertex4 = new Vector3f(50,-50,-70).mul(0.35F).add(position);
 
-                Shader.screenTextureArray.uploadInt("textureArray", Assets.blockTextureArray.arrayID);
+                Shader.screenTextureArray.uploadInt("textureArray", Assets.blockTextureArray);
 
                 short currentBlock = this.metadata;
                 float blockID = Block.list[currentBlock].getBlockTexture(currentBlock, 5);
@@ -182,7 +179,7 @@ public final class ItemStack {
                 tessellator.addVertexTextureArray(16777215, vertex3.x, vertex3.y, vertex3.z, 2, blockID, 0);
                 tessellator.addVertexTextureArray(16777215, vertex4.x, vertex4.y, vertex4.z, 0, blockID, 0);
                 tessellator.addElements();
-                tessellator.drawVertexArray(Assets.blockTextureArray.arrayID, Shader.screenTextureArray, SpaceGame.camera);
+                tessellator.drawVertexArray(Assets.blockTextureArray, Shader.screenTextureArray, SpaceGame.camera);
             } else {
                 int z = -70;
                 GL46.glEnable(GL46.GL_BLEND);
@@ -193,7 +190,7 @@ public final class ItemStack {
                 tessellator.addVertexTextureArray(16777215, this.x + (float) this.width / 2 + 5, this.y - (float) this.height / 2 - 2, z, 0, this.item.getTextureID(this.item.ID, (byte)1, RenderBlocks.WEST_FACE), RenderBlocks.WEST_FACE);
                 tessellator.addElements();
                 Shader.screenTextureArray.uploadInt("textureArray", 0);
-                tessellator.drawVertexArray(Assets.itemTextureArray.arrayID, Shader.screenTextureArray, SpaceGame.camera);
+                tessellator.drawVertexArray(Assets.itemTextureArray, Shader.screenTextureArray, SpaceGame.camera);
                 GL46.glDisable(GL46.GL_BLEND);
             }
             tessellator.toggleOrtho();
@@ -222,7 +219,7 @@ public final class ItemStack {
     public ItemStack splitStack(){
         ItemStack newStack =  new ItemStack(this.item, this.count, this.x, this.y);
         newStack.setMetadata(this.metadata);
-        if(this.count % 2 == 1){
+        if((this.count & 1) == 1){
             newStack.count = (byte) (this.count/2);
             newStack.count++;
             this.count /= 2;
@@ -245,9 +242,9 @@ public final class ItemStack {
         if(ratio == 1 || this.durability <= 0){return;}
         int texID = 0;
         if(SpaceGame.instance.currentGui instanceof GuiInGame){
-            texID = GuiInGame.fillableColor.texID;
+            texID = GuiInGame.fillableColor;
         } else if(SpaceGame.instance.currentGui instanceof GuiInventory){
-            texID = GuiInventory.fillableColor.texID;
+            texID = GuiInventory.fillableColor;
         }
         float x = this.x - 32;
         float y = this.y - 32;
@@ -265,7 +262,7 @@ public final class ItemStack {
         int finalG = (int) (minG + (gDif * ratio));
         int finalB = (int) (minB + (bDif * ratio));
         int color = new Color(finalR, finalG, finalB, 0).getRGB();
-        Tessellator tessellator = Tessellator.instance;
+        RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         tessellator.toggleOrtho();
         tessellator.addVertex2DTexture(0, x, y, z, 3);
         tessellator.addVertex2DTexture(0, x + (64), y + 5, z, 1);
