@@ -1,0 +1,6 @@
+techName:Animal Hide Preservation
+techUpdateEvent:Berry Collection
+unlockedTech:Leatherworking I
+unlockRequirementAmount:50
+requiredTech:Hunting III
+era:Neolithic

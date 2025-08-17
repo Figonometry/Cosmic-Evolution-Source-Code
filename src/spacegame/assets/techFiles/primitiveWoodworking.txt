@@ -1,0 +1,6 @@
+techName:Primitive Woodworking
+techUpdateEvent:Berry Collection
+unlockedTech:Basic Woodworking
+unlockRequirementAmount:50
+requiredTech:Foraging III
+era:Neolithic

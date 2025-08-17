@@ -1,0 +1,72 @@
+<component name="libraryTable">
+  <library name="LWGJL PC">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/jar/lwjgl-openal.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/jar/lwjgl-opencl.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/jar/lwjgl-opengl.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/jar/lwjgl-stb.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/jar/lwjgl.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/joml-1.10.5.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/natives/lwjgl-glfw-natives-linux-arm32.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/natives/lwjgl-glfw-natives-linux-arm64.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/natives/lwjgl-glfw-natives-linux.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/natives/lwjgl-glfw-natives-macos-arm64.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/natives/lwjgl-glfw-natives-macos.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/natives/lwjgl-glfw-natives-windows-arm64.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/natives/lwjgl-glfw-natives-windows-x86.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/natives/lwjgl-glfw-natives-windows.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/natives/lwjgl-natives-linux-arm32.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/natives/lwjgl-natives-linux-arm64.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/natives/lwjgl-natives-linux.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/natives/lwjgl-natives-macos-arm64.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/natives/lwjgl-natives-macos.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/natives/lwjgl-natives-windows-arm64.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/natives/lwjgl-natives-windows-x86.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/natives/lwjgl-natives-windows.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/natives/lwjgl-openal-natives-linux-arm32.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/natives/lwjgl-openal-natives-linux-arm64.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/natives/lwjgl-openal-natives-linux.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/natives/lwjgl-openal-natives-macos-arm64.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/natives/lwjgl-openal-natives-macos.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/natives/lwjgl-openal-natives-windows-arm64.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/natives/lwjgl-openal-natives-windows-x86.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/natives/lwjgl-openal-natives-windows.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/natives/lwjgl-opengl-natives-linux-arm32.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/natives/lwjgl-opengl-natives-linux-arm64.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/natives/lwjgl-opengl-natives-linux.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/natives/lwjgl-opengl-natives-macos-arm64.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/natives/lwjgl-opengl-natives-macos.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/natives/lwjgl-opengl-natives-windows-arm64.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/natives/lwjgl-opengl-natives-windows-x86.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/natives/lwjgl-opengl-natives-windows.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/natives/lwjgl-stb-natives-linux-arm32.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/natives/lwjgl-stb-natives-linux-arm64.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/natives/lwjgl-stb-natives-linux.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/natives/lwjgl-stb-natives-macos-arm64.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/natives/lwjgl-stb-natives-macos.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/natives/lwjgl-stb-natives-windows-arm64.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/natives/lwjgl-stb-natives-windows-x86.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/natives/lwjgl-stb-natives-windows.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/jar/lwjgl-opengles.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/jar/lwjgl-glfw.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/javadocs/lwjgl-glfw-javadoc.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/javadocs/lwjgl-javadoc.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/javadocs/lwjgl-openal-javadoc.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/javadocs/lwjgl-opencl-javadoc.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/javadocs/lwjgl-opengl-javadoc.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/javadocs/lwjgl-stb-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/sources/lwjgl-glfw-sources.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/sources/lwjgl-openal-sources.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/sources/lwjgl-opencl-sources.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/sources/lwjgl-opengl-sources.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/sources/lwjgl-sources.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/sources/lwjgl-stb-sources.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/joml-1.10.5-sources.jar!/" />
+      <root url="jar://$USER_HOME$/Documents/lwjgl - Copy/lib - Copy/joml-1.10.5-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

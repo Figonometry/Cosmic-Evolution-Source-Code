@@ -1,0 +1,9 @@
+techName:Hunting II
+techUpdateEvent:Berry Collection
+unlockedTech:Hunting III
+unlockedTech:Trapping I
+unlockedTech:Wolf Domestication
+unlockedTech:Animal Husbandry
+unlockRequirementAmount:50
+requiredTech:Hunting I
+era:Neolithic

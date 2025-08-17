@@ -1,0 +1,7 @@
+techName:Grass Domestication
+techUpdateEvent:Grass Seed Collection
+unlockRequirementAmount:50
+unlockedTech:Wheat I
+unlockedTech:Bread I
+requiredTech:Foraging II
+era:Neolithic

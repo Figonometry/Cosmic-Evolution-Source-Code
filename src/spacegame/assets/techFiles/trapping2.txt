@@ -1,0 +1,6 @@
+techName:Trapping II
+techUpdateEvent:Berry Collection
+unlockedTech:Trapping III
+unlockRequirementAmount:50
+requiredTech:Trapping I
+era:Neolithic

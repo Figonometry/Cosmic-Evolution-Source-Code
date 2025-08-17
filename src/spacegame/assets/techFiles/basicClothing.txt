@@ -1,0 +1,8 @@
+techName:Basic Clothing
+techUpdateEvent:Berry Collection
+unlockedTech:Leather Armor
+unlockedTech:Backpacks
+unlockRequirementAmount:50
+requiredTech:Primitive Clothing
+requiredTech:Leatherworking I
+era:Neolithic
