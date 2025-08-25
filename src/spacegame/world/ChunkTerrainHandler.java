@@ -11,8 +11,14 @@ import java.util.Random;
 public final class ChunkTerrainHandler {
     public ChunkController controller;
     public double solidNoiseThreshold = 0D;
-    public ChunkTerrainHandler(ChunkController controller){
+    public World world;
+    public WorldEarth earth;
+    public ChunkTerrainHandler(ChunkController controller, World world){
         this.controller = controller;
+        this.world = world;
+        if(this.world instanceof WorldEarth){
+            this.earth = (WorldEarth) this.world;
+        }
     }
 
     public void setTerrain(short[] blocks, Chunk chunk) {
@@ -130,66 +136,66 @@ public final class ChunkTerrainHandler {
 
 
     public double getTerrainNoise(int x, int y, int z){
-        return  (WorldEarth.terrainNoise.getNoise(x,y,z,4, this.getContinentalNoise(x,z), this.getYScaleNoise(x,z)) + WorldEarth.secondaryTerrainNoise.getNoise(x,y,z, WorldEarth.sampleNoise.getNoise(x >> 5, z >> 5), this.getContinentalNoise(x,z), this.getYScaleNoise(x,z))) / 2;
+        return  (this.earth.terrainNoise.getNoise(x,y,z,4, this.getContinentalNoise(x,z), this.getYScaleNoise(x,z)) + this.earth.secondaryTerrainNoise.getNoise(x,y,z, this.earth.sampleNoise.getNoise(x >> 5, z >> 5), this.getContinentalNoise(x,z), this.getYScaleNoise(x,z))) / 2;
     }
 
 
     public int getDirtHeight(int x, int z){
-        return WorldEarth.dirtNoise.getNoise(x,z);
+        return this.earth.dirtNoise.getNoise(x,z);
     }
 
     public double getContinentalNoise(int x, int z){
-        return (WorldEarth.continentalNoise.getNoiseRaw(x >> 5, z >> 5) + WorldEarth.secondaryContinentalNoise.getNoiseRaw(x >> 5, z >> 5)) / 2;
+        return (this.earth.continentalNoise.getNoiseRaw(x >> 5, z >> 5) + this.earth.secondaryContinentalNoise.getNoiseRaw(x >> 5, z >> 5)) / 2;
     }
 
     public double getYScaleNoise(int x, int z){
-        return (WorldEarth.scaleNoise.getNoiseRaw(x >> 5,z >> 5) + WorldEarth.secondaryScaleNoise.getNoiseRaw(x >> 5, z >> 5)) / 2;
+        return (this.earth.scaleNoise.getNoiseRaw(x >> 5,z >> 5) + this.earth.secondaryScaleNoise.getNoiseRaw(x >> 5, z >> 5)) / 2;
     }
 
     public void populateChunk(Chunk chunk) {
-        int safetyThreshold = 0;
-        Random rand = new Random(SpaceGame.instance.save.seed & (chunk.x + chunk.y * chunk.z));
-        WorldGenTree worldGenTree;
-        boolean containsGrass = false;
-        int treeCount = 2 + WorldEarth.treeNoise.getNoise(chunk.x, chunk.z);
-        int rockCount = 2 + WorldEarth.treeNoise.getNoise(chunk.z, chunk.x);
-        int berryClusterCount = rand.nextInt(100) == 0 ? 1 : 0;
-        populate:
-        while ((treeCount > 0 || rockCount > 0 || berryClusterCount > 0) && safetyThreshold < 10) {
-            if(chunk.blocks == null){
-                chunk.initChunk();
-            }
-            for (int i = 0; i < chunk.blocks.length; i++) {
-                if (Block.list[chunk.blocks[i]].ID == Block.grass.ID) {
-                    containsGrass = true;
-                    if(rand.nextInt(100) == 0 && treeCount > 0) {
-                        worldGenTree = new WorldGenTree(chunk, this.controller.parentWorldFace, i);
-                        if (worldGenTree.willGenerate) {
-                            treeCount--;
-                            if(worldGenTree.decayIntoDirt){
-                                chunk.blocks[i] = Block.dirt.ID;
-                            }
-                        }
-                    }
-                    if(rand.nextInt(100) == 0 && berryClusterCount > 0){
-                        new WorldGenBerryBush(chunk, this.controller.parentWorldFace, i);
-                        berryClusterCount--;
-                    }
-
-                    if(rand.nextInt(100) == 0 && rockCount > 0) {
-                        chunk.addRenderableItem(chunk.getBlockXFromIndex(i),chunk.getBlockYFromIndex(i),chunk.getBlockZFromIndex(i), Item.stone.ID, Item.stone.durability);
-                        rockCount--;
-                    }
-                    if(rockCount <= 0 && treeCount <= 0 && berryClusterCount <= 0){
-                        break populate;
-                    }
-                }
-            }
-            if(!containsGrass){
-                break;
-            }
-            safetyThreshold++;
-        }
+       // int safetyThreshold = 0;
+       // Random rand = new Random(SpaceGame.instance.save.seed & (chunk.x + chunk.y * chunk.z));
+       // WorldGenTree worldGenTree;
+       // boolean containsGrass = false;
+       // int treeCount = 2 + WorldEarth.treeNoise.getNoise(chunk.x, chunk.z);
+       // int rockCount = 2 + WorldEarth.treeNoise.getNoise(chunk.z, chunk.x);
+       // int berryClusterCount = rand.nextInt(100) == 0 ? 1 : 0;
+       // populate:
+       // while ((treeCount > 0 || rockCount > 0 || berryClusterCount > 0) && safetyThreshold < 10) {
+       //     if(chunk.blocks == null){
+       //         chunk.initChunk();
+       //     }
+       //     for (int i = 0; i < chunk.blocks.length; i++) {
+       //         if (Block.list[chunk.blocks[i]].ID == Block.grass.ID) {
+       //             containsGrass = true;
+       //             if(rand.nextInt(100) == 0 && treeCount > 0) {
+       //                 worldGenTree = new WorldGenTree(chunk, this.controller.parentWorldFace, i);
+       //                 if (worldGenTree.willGenerate) {
+       //                     treeCount--;
+       //                     if(worldGenTree.decayIntoDirt){
+       //                         chunk.blocks[i] = Block.dirt.ID;
+       //                     }
+       //                 }
+       //             }
+       //             if(rand.nextInt(100) == 0 && berryClusterCount > 0){
+       //                 new WorldGenBerryBush(chunk, this.controller.parentWorldFace, i);
+       //                 berryClusterCount--;
+       //             }
+//
+       //             if(rand.nextInt(100) == 0 && rockCount > 0) {
+       //                 chunk.addRenderableItem(chunk.getBlockXFromIndex(i),chunk.getBlockYFromIndex(i),chunk.getBlockZFromIndex(i), Item.stone.ID, Item.stone.durability);
+       //                 rockCount--;
+       //             }
+       //             if(rockCount <= 0 && treeCount <= 0 && berryClusterCount <= 0){
+       //                 break populate;
+       //             }
+       //         }
+       //     }
+       //     if(!containsGrass){
+       //         break;
+       //     }
+       //     safetyThreshold++;
+       // }
         chunk.populated = true;
     }
 }

@@ -154,6 +154,7 @@ public class Block {
     public static final Block campFireLitLight2 = new BlockCampFireLit((short)80, 17, "src/spacegame/assets/blockFiles/campFireLitLight2.txt");
     public static final Block campFireLitLight1 = new BlockCampFireLit((short)81, 17, "src/spacegame/assets/blockFiles/campFireLitLight1.txt");
     public static final Block campFireBurnedOut = new Block((short)82, 19, "src/spacegame/assets/blockFiles/campFireBurnedOut.txt");
+    public static final Block grassBlockLower = new Block((short)83, 20, "src/spacegame/assets/blockFiles/grassBlockLower.txt");
     public final short ID;
     public final int textureID;
     public static int facingDirection;

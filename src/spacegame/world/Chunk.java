@@ -580,6 +580,7 @@ public final class Chunk implements Comparable<Chunk> {
             secondBlock = this.blocks[index + 1024];
         } else {
             Chunk chunk = this.worldFace.findChunkFromChunkCoordinates(this.x, this.y + 1, this.z);
+            if(chunk == null)return true;
             firstBlock = this.blocks[index];
             if(chunk.blocks != null) {
                 secondBlock = chunk.blocks[index - 31744];
@@ -603,6 +604,7 @@ public final class Chunk implements Comparable<Chunk> {
             secondBlock = this.blocks[index - 1024];
         } else {
             Chunk chunk = this.worldFace.findChunkFromChunkCoordinates(this.x, this.y - 1, this.z);
+            if(chunk == null)return true;
             firstBlock = this.blocks[index];
             if(chunk.blocks != null) {
                 secondBlock = chunk.blocks[index + 31744];
@@ -624,6 +626,7 @@ public final class Chunk implements Comparable<Chunk> {
             secondBlock = this.blocks[index - 1];
         } else {
             Chunk chunk = this.worldFace.findChunkFromChunkCoordinates(this.x - 1, this.y, this.z);
+            if(chunk == null)return true;
             firstBlock = this.blocks[index];
             if(chunk.blocks != null) {
                 secondBlock = chunk.blocks[index + 31];
@@ -645,6 +648,7 @@ public final class Chunk implements Comparable<Chunk> {
             secondBlock = this.blocks[index + 1];
         } else {
             Chunk chunk = this.worldFace.findChunkFromChunkCoordinates(this.x + 1, this.y, this.z);
+            if(chunk == null)return true;
             firstBlock = this.blocks[index];
             if(chunk.blocks != null) {
                 secondBlock = chunk.blocks[index - 31];
@@ -666,6 +670,7 @@ public final class Chunk implements Comparable<Chunk> {
             secondBlock = this.blocks[index - 32];
         } else {
             Chunk chunk = this.worldFace.findChunkFromChunkCoordinates(this.x, this.y, this.z - 1);
+            if(chunk == null)return true;
             firstBlock = this.blocks[index];
             if(chunk.blocks != null) {
                 secondBlock = chunk.blocks[index + 992];
@@ -687,6 +692,7 @@ public final class Chunk implements Comparable<Chunk> {
             secondBlock = this.blocks[index + 32];
         } else {
             Chunk chunk = this.worldFace.findChunkFromChunkCoordinates(this.x, this.y, this.z + 1);
+            if(chunk == null)return true;
             firstBlock = this.blocks[index];
             if(chunk.blocks != null) {
                 secondBlock = chunk.blocks[index - 992];

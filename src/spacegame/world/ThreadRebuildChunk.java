@@ -194,6 +194,7 @@ public final class ThreadRebuildChunk implements Runnable {
             case "WATER", "BERRY_BUSH", "CAMPFIRE" ->
                     renderBlocks.renderTransparentBlock(this.workingChunk, this.worldFace, block, index, face, greedyMeshSize);
             case "CAMPFIRE_LIT" -> renderBlocks.renderCampFire(this.workingChunk, this.worldFace, block, index, face);
+            case "GRASS" -> renderBlocks.renderGrassBlock(this.workingChunk, this.worldFace, block, index, face, greedyMeshSize);
             default ->
                     renderBlocks.renderStandardBlock(this.workingChunk, this.worldFace, block, index, face, greedyMeshSize);
         }

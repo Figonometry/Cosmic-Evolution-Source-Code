@@ -92,6 +92,8 @@ public final class GuiInGame extends Gui {
             fontRenderer.drawString("Thread Count: " + Thread.activeCount(), leftSide, 160,-15, 16777215, 50);
             fontRenderer.drawString("Thread Queue Size: " + SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.threadQueue.size(), leftSide, 130,-15, 16777215, 50);
             fontRenderer.drawString("Sky Light Level: " + SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockSkyLightValue((int) SpaceGame.instance.save.thePlayer.x, (int) SpaceGame.instance.save.thePlayer.y, (int) SpaceGame.instance.save.thePlayer.z), leftSide, 100,-15, 16777215, 50);
+            fontRenderer.drawString("Temperature: " + SpaceGame.instance.save.activeWorld.activeWorldFace.getTemperature((int) SpaceGame.instance.save.thePlayer.x, (int) SpaceGame.instance.save.thePlayer.y, (int) SpaceGame.instance.save.thePlayer.z), leftSide, 70,-15, 16777215, 50);
+            fontRenderer.drawString("Rainfall: " + SpaceGame.instance.save.activeWorld.activeWorldFace.getRainfall((int) SpaceGame.instance.save.thePlayer.x, (int) SpaceGame.instance.save.thePlayer.z), leftSide, 40,-15, 16777215, 50);
         }
     }
 

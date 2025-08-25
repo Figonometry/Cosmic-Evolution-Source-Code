@@ -775,7 +775,7 @@ public final class WorldFace {
     public synchronized byte getBlockLightValue(int x, int y, int z) {
         Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
         if(chunk != null) {
-            if (chunk.skyLight != null) {
+            if (chunk.lighting != null) {
                 return chunk.getBlockLightValue(x, y, z);
             } else {
                 return 0;
@@ -783,6 +783,20 @@ public final class WorldFace {
         } else {
             return 0;
         }
+    }
+
+    public double getTemperature(int x, int y, int z){
+        if(this.parentWorld instanceof WorldEarth){
+            return ((WorldEarth) this.parentWorld).getTemperature(x,y,z);
+        }
+        return 0;
+    }
+
+    public double getRainfall(int x, int z){
+        if(this.parentWorld instanceof WorldEarth){
+            return ((WorldEarth) this.parentWorld).getRainfall(x,z);
+        }
+        return 0;
     }
 
 

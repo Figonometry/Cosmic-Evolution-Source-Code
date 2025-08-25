@@ -203,6 +203,18 @@ public abstract class GameSettings {
         }
     }
 
+    public static void changeHorizontalViewDistance(boolean increase){
+        renderDistance = increase ? renderDistance + 1 : renderDistance - 1;
+        renderDistance = renderDistance > 20 ? 20 : renderDistance;
+        renderDistance = renderDistance < 4 ? 4 : renderDistance;
+    }
+
+    public static void changeVerticalViewDistance(boolean increase){
+        chunkColumnHeight = increase ? chunkColumnHeight + 1 : chunkColumnHeight - 1;
+        chunkColumnHeight = chunkColumnHeight > 10 ? 10 : chunkColumnHeight;
+        chunkColumnHeight = chunkColumnHeight < 5 ? 5 : chunkColumnHeight;
+    }
+
 
     public static void increaseSensitivity(){
         sensitivity += 0.01F;

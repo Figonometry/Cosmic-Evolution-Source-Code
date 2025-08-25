@@ -70,7 +70,7 @@ public final class TextureArrayLoader {
            return switch (textureNumber) {
                case 0 -> "grass";
                case 1 -> "dirt";
-               case 2 -> "grassSide";
+               case 2 -> "grassSideTop";
                case 3 -> "torch";
                case 4 -> "water";
                case 5 -> "sand";
@@ -88,6 +88,7 @@ public final class TextureArrayLoader {
                case 17 -> "campFireLit";
                case 18 -> "fire";
                case 19 -> "campFireBurnedOut";
+               case 20 -> "grassSideBottom";
                default -> "missing";
            };
        } else if(textureFolderpath.contains("item")){

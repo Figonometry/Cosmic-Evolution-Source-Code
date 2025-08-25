@@ -142,13 +142,13 @@ public final class GuiMainMenu extends Gui {
             fontRenderer.drawString(this.sg.title, x, y, depth, 16711875, 50);
             y -= 60;
             fontRenderer.toggleItalics();
-            fontRenderer.drawString("Added in a tech tree system, menu accessible by pressing the ~ key, system not currently implemented", x, y, depth, green, 50);
+            fontRenderer.drawString("Fixed a crash bug in chunk mesh threads", x, y, depth, yellow, 50);
             y -= 30;
-            fontRenderer.drawString("Added variable sizes and italics to fonts", x, y, depth, green, 50);
+            fontRenderer.drawString("Altered the world loading pattern to reduce chunk volume", x, y, depth, yellow, 50);
             y -= 30;
-            fontRenderer.drawString("Fixed a bug where you fell through blocks at Y 64", x, y, depth, yellow, 50);
+            fontRenderer.drawString("Render distance is now capped at 20, it is recommended to stay below 15", x, y, depth, yellow, 50);
             y -= 30;
-            fontRenderer.drawString("Fixed a bug where dropped items shoot up really high", x, y, depth, yellow, 50);
+            fontRenderer.drawString("Fixed a bug where block faces wouldn't shade correctly if shadows were turned off", x, y, depth, yellow, 50);
             y -= 30;
             fontRenderer.toggleItalics();
 

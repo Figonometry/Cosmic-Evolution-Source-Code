@@ -143,15 +143,9 @@ public class Button {
             }
             case CHUNK_VIEW_HORIZONTAL -> {
                 if(this.sideOfButtonBeingClicked() == 0){
-                    GameSettings.renderDistance--;
-                    if(GameSettings.renderDistance < 4){
-                        GameSettings.renderDistance = 4;
-                    }
+                    GameSettings.changeHorizontalViewDistance(false);
                 } else if(this.sideOfButtonBeingClicked() == 1){
-                    GameSettings.renderDistance++;
-                    if(GameSettings.renderDistance > 8){
-                        GameSettings.renderDistance = 8;
-                    }
+                    GameSettings.changeHorizontalViewDistance(true);
                 }
                 if(this.sg.save != null) {
                     this.sg.save.activeWorld.activeWorldFace.chunkController.resetChunkLoading();
@@ -159,15 +153,9 @@ public class Button {
             }
             case CHUNK_VIEW_VERTICAL -> {
                 if(this.sideOfButtonBeingClicked() == 0){
-                    GameSettings.chunkColumnHeight--;
-                    if(GameSettings.chunkColumnHeight < 5){
-                        GameSettings.chunkColumnHeight = 5;
-                    }
+                    GameSettings.changeVerticalViewDistance(false);
                 } else if(this.sideOfButtonBeingClicked() == 1){
-                    GameSettings.chunkColumnHeight++;
-                    if(GameSettings.chunkColumnHeight > 10){
-                        GameSettings.chunkColumnHeight = 10;
-                    }
+                    GameSettings.changeVerticalViewDistance(true);
                 }
                 if(this.sg.save != null) {
                     this.sg.save.activeWorld.activeWorldFace.chunkController.resetChunkLoading();

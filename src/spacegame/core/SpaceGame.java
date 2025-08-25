@@ -24,6 +24,7 @@ import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.render.Assets;
 import spacegame.render.Camera;
+import spacegame.render.PlantColorizer;
 import spacegame.render.Shader;
 import spacegame.world.Save;
 import spacegame.world.Tech;
@@ -38,7 +39,7 @@ import java.util.Random;
 public final class SpaceGame implements Runnable {
     public static SpaceGame instance;
     public final File launcherDirectory;
-    public static final boolean DEBUG_MODE = false;
+    public static final boolean DEBUG_MODE = true;
     public volatile boolean running;
     public String title;
     public boolean vsync;
@@ -97,7 +98,7 @@ public final class SpaceGame implements Runnable {
     }
 
     private void startGame() {
-        this.title = "Cosmic Evolution Alpha v0.19";
+        this.title = "Cosmic Evolution Alpha v0.20 WIP";
         this.clearLogFiles(new File(this.launcherDirectory + "/crashReports"));
         this.initLWJGL();
         this.initAllBufferObjects();
@@ -625,7 +626,7 @@ public final class SpaceGame implements Runnable {
                 this.save.activeWorld.activeWorldFace.chunkController.update();
             }
             if(this.currentGui instanceof GuiWorldLoadingScreen){
-                if(((double) this.save.activeWorld.activeWorldFace.chunkController.numberOfLoadedChunks / ((GameSettings.renderDistance * 2 + 1) * (GameSettings.renderDistance * 2 + 1) * (GameSettings.chunkColumnHeight * 2))) >= 0.9D && Thread.activeCount() < 5){
+                if(Thread.activeCount() < 5){
                     GLFW.glfwSetInputMode(this.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
                     if(Assets.blockTextureArray == null) {
                         Assets.enableBlockTextureArray();

@@ -4,13 +4,13 @@ import org.joml.SimplexNoise;
 
 import java.util.Random;
 
-public final class NoiseMap {
+public final class NoiseMap2D {
     public int width;
     public int height;
     public double[][] elevation;
     public int octaves;
 
-    public NoiseMap(int width, int height, int octaves, double scalingFactor, double exponent, int floor, long seed) {
+    public NoiseMap2D(int width, int height, int octaves, double scalingFactor, double exponent, double floor, long seed) {
         Random rand = new Random(seed);
         double[] offset = new double[octaves];
         for (int i = 0; i < offset.length; i++) {

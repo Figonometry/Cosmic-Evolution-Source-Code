@@ -82,7 +82,7 @@ public final class RenderWorldScene {
         Shader.terrainShader.uploadMat4d("uView", SpaceGame.camera.viewMatrix);
         Shader.terrainShader.uploadInt("textureArray", 0);
         Shader.terrainShader.uploadBoolean("useFog", true);
-        Shader.terrainShader.uploadFloat("fogDistance", GameSettings.renderDistance << 5);
+        Shader.terrainShader.uploadFloat("fogDistance", GameSettings.renderDistance * 20f);
         Shader.terrainShader.uploadFloat("fogRed", this.controller.parentWorldFace.parentWorld.skyColor[0]);
         Shader.terrainShader.uploadFloat("fogGreen", this.controller.parentWorldFace.parentWorld.skyColor[1]);
         Shader.terrainShader.uploadFloat("fogBlue", this.controller.parentWorldFace.parentWorld.skyColor[2]);
@@ -180,78 +180,81 @@ public final class RenderWorldScene {
     }
 
     private void setShadowMap(Sun sun, Vector3f dir){
-        if(this.hasTickPassed && GameSettings.shadowMap) {
+        if(this.hasTickPassed) {
             Vector3f normalizedDir = dir.normalize();
-            float lightDist = 3000f;
-            float orthoSize = 256;
-            Matrix4f sunProjectionMatrix = new Matrix4f().setOrtho(-orthoSize, orthoSize, -orthoSize, orthoSize, 1, 10000);
-            Matrix4f sunViewMatrix = new Matrix4f();
-            Vector3d sunPosition = new Vector3d(normalizedDir.x, normalizedDir.y, normalizedDir.z);
-            sunPosition.mul(lightDist);
-            float texelSize = ((orthoSize * 2)) / (float) sun.shadowMap.width;
-            sunPosition.x = MathUtils.floorDouble(sunPosition.x / texelSize) * texelSize; //a smaller texel size is needed to reduce the jitter of the shadow as the sun moves. The tradeoff being the frustum of the projection matrix can only see a very small part of the world
-            sunPosition.y = MathUtils.floorDouble(sunPosition.y / texelSize) * texelSize;
-            sunPosition.z = MathUtils.floorDouble(sunPosition.z / texelSize) * texelSize;
+            Shader.terrainShader.uploadVec3f("normalizedLightVector", dir); //This needs be called in order to set the direction vector even if shadows are turned off otherwise vertex normals will not work
+            if (GameSettings.shadowMap) {
+                float lightDist = 3000f;
+                float orthoSize = 256;
+                Matrix4f sunProjectionMatrix = new Matrix4f().setOrtho(-orthoSize, orthoSize, -orthoSize, orthoSize, 1, 10000);
+                Matrix4f sunViewMatrix = new Matrix4f();
+                Vector3d sunPosition = new Vector3d(normalizedDir.x, normalizedDir.y, normalizedDir.z);
+                sunPosition.mul(lightDist);
+                float texelSize = ((orthoSize * 2)) / (float) sun.shadowMap.width;
+                sunPosition.x = MathUtils.floorDouble(sunPosition.x / texelSize) * texelSize; //a smaller texel size is needed to reduce the jitter of the shadow as the sun moves. The tradeoff being the frustum of the projection matrix can only see a very small part of the world
+                sunPosition.y = MathUtils.floorDouble(sunPosition.y / texelSize) * texelSize;
+                sunPosition.z = MathUtils.floorDouble(sunPosition.z / texelSize) * texelSize;
 
 
-            sunViewMatrix.identity();
-            sunViewMatrix = sunViewMatrix.lookAt(new Vector3f((float) sunPosition.x, (float) sunPosition.y, (float) sunPosition.z), new Vector3f(), new Vector3f(0.0f, 1.0f, 0.0f));
-            sunPosition.add(new Vector3d(SpaceGame.instance.save.thePlayer.x, SpaceGame.instance.save.thePlayer.y, SpaceGame.instance.save.thePlayer.z));
+                sunViewMatrix.identity();
+                sunViewMatrix = sunViewMatrix.lookAt(new Vector3f((float) sunPosition.x, (float) sunPosition.y, (float) sunPosition.z), new Vector3f(), new Vector3f(0.0f, 1.0f, 0.0f));
+                sunPosition.add(new Vector3d(SpaceGame.instance.save.thePlayer.x, SpaceGame.instance.save.thePlayer.y, SpaceGame.instance.save.thePlayer.z));
 
-            int sunX = MathUtils.floorDouble(sunPosition.x) >> 5;
-            int sunY = MathUtils.floorDouble(sunPosition.y) >> 5;
-            int sunZ = MathUtils.floorDouble(sunPosition.z) >> 5;
+                int sunX = MathUtils.floorDouble(sunPosition.x) >> 5;
+                int sunY = MathUtils.floorDouble(sunPosition.y) >> 5;
+                int sunZ = MathUtils.floorDouble(sunPosition.z) >> 5;
 
-            Matrix4f frustum = new Matrix4f();
-            frustum.set(sunProjectionMatrix);
-            frustum.mul(sunViewMatrix);
-            FrustumIntersection frustumInt = new FrustumIntersection();
-            frustumInt.set(frustum);
+                Matrix4f frustum = new Matrix4f();
+                frustum.set(sunProjectionMatrix);
+                frustum.mul(sunViewMatrix);
+                FrustumIntersection frustumInt = new FrustumIntersection();
+                frustumInt.set(frustum);
 
-            Matrix4f lightViewProjectionMatrix = sunProjectionMatrix.mul(sunViewMatrix);
-            Shader.terrainShader.uploadMat4f("lightViewProjectionMatrix", lightViewProjectionMatrix);
-            Shader.terrainShader.uploadVec3f("normalizedLightVector", dir);
-            Shader.worldShaderTextureArray.uploadMat4f("lightViewProjectionMatrix", lightViewProjectionMatrix);
-            Shader.worldShaderTextureArray.uploadVec3f("normalizedLightVector", dir);
-            Shader.worldShader2DTexture.uploadMat4f("lightViewProjectionMatrix", lightViewProjectionMatrix);
-            Shader.worldShader2DTexture.uploadVec3f("normalizedLightVector", dir);
-
-
-            this.sunX = sunX;
-            this.sunY = sunY;
-            this.sunZ = sunZ;
-
-            Shader.shadowMapShader.uploadDouble("time", (double) Timer.elapsedTime % 8388608);
-            GL46.glBindFramebuffer(GL46.GL_FRAMEBUFFER, sun.shadowMap.fboID);
-            GL46.glViewport(0, 0, sun.shadowMap.width, sun.shadowMap.height);
-            GL46.glClear(GL46.GL_DEPTH_BUFFER_BIT);
-            Shader.shadowMapShader.uploadMat4f("combinedViewProjectionMatrix", lightViewProjectionMatrix);
-            GL46.glUseProgram(Shader.shadowMapShader.shaderProgramID);
+                Matrix4f lightViewProjectionMatrix = sunProjectionMatrix.mul(sunViewMatrix);
+                Shader.terrainShader.uploadMat4f("lightViewProjectionMatrix", lightViewProjectionMatrix);
+                Shader.worldShaderTextureArray.uploadMat4f("lightViewProjectionMatrix", lightViewProjectionMatrix);
+                Shader.worldShaderTextureArray.uploadVec3f("normalizedLightVector", dir);
+                Shader.worldShader2DTexture.uploadMat4f("lightViewProjectionMatrix", lightViewProjectionMatrix);
+                Shader.worldShader2DTexture.uploadVec3f("normalizedLightVector", dir);
 
 
-            int xOffset;
-            int yOffset;
-            int zOffset;
-            for (int i = 0; i < this.controller.regions.length; i++) {
-                if (this.controller.regions[i] == null) continue;
-                for (int j = 0; j < this.controller.regions[i].chunks.length; j++) {
-                    if (this.controller.regions[i].chunks[j] == null) continue;
-                    if (!this.controller.regions[i].chunks[j].shouldRender) continue;
-                    xOffset = (this.controller.regions[i].chunks[j].x - sunX) << 5;
-                    yOffset = (this.controller.regions[i].chunks[j].y - sunY) << 5;
-                    zOffset = (this.controller.regions[i].chunks[j].z - sunZ) << 5;
-                    if(!this.doesChunkIntersectSunFrustum(frustumInt, xOffset, yOffset, zOffset, ((xOffset + 31)), ((yOffset + 31)), ((zOffset + 31))))continue;
+                this.sunX = sunX;
+                this.sunY = sunY;
+                this.sunZ = sunZ;
 
-                    this.controller.regions[i].chunks[j].renderShadowMap(sunX, sunY, sunZ);
+                Shader.shadowMapShader.uploadDouble("time", (double) Timer.elapsedTime % 8388608);
+                GL46.glBindFramebuffer(GL46.GL_FRAMEBUFFER, sun.shadowMap.fboID);
+                GL46.glViewport(0, 0, sun.shadowMap.width, sun.shadowMap.height);
+                GL46.glClear(GL46.GL_DEPTH_BUFFER_BIT);
+                Shader.shadowMapShader.uploadMat4f("combinedViewProjectionMatrix", lightViewProjectionMatrix);
+                GL46.glUseProgram(Shader.shadowMapShader.shaderProgramID);
+
+
+                int xOffset;
+                int yOffset;
+                int zOffset;
+                for (int i = 0; i < this.controller.regions.length; i++) {
+                    if (this.controller.regions[i] == null) continue;
+                    for (int j = 0; j < this.controller.regions[i].chunks.length; j++) {
+                        if (this.controller.regions[i].chunks[j] == null) continue;
+                        if (!this.controller.regions[i].chunks[j].shouldRender) continue;
+                        xOffset = (this.controller.regions[i].chunks[j].x - sunX) << 5;
+                        yOffset = (this.controller.regions[i].chunks[j].y - sunY) << 5;
+                        zOffset = (this.controller.regions[i].chunks[j].z - sunZ) << 5;
+                        if (!this.doesChunkIntersectSunFrustum(frustumInt, xOffset, yOffset, zOffset, ((xOffset + 31)), ((yOffset + 31)), ((zOffset + 31))))
+                            continue;
+
+                        this.controller.regions[i].chunks[j].renderShadowMap(sunX, sunY, sunZ);
+                    }
                 }
+
+                GL46.glUseProgram(0);
+                GL46.glBindVertexArray(0);
+
+                GL46.glBindFramebuffer(GL46.GL_FRAMEBUFFER, 0);
+                GL46.glViewport(0, 0, SpaceGame.width, SpaceGame.height);
+                this.hasTickPassed = false;
             }
-
-            GL46.glUseProgram(0);
-            GL46.glBindVertexArray(0);
-
-            GL46.glBindFramebuffer(GL46.GL_FRAMEBUFFER, 0);
-            GL46.glViewport(0, 0, SpaceGame.width, SpaceGame.height);
-            this.hasTickPassed = false;
         }
     }
 

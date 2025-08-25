@@ -1838,6 +1838,16 @@ public final class ModelLoader{
         return alteredModel;
     }
 
+    //meant for the default block model
+    public ModelFace getModelFace(int face){
+        for(int i = 0; i < this.modelFaces.length; i++){
+            if(this.modelFaces[i].faceType == face){
+                return this.modelFaces[i];
+            }
+        }
+        return null;
+    }
+
 
 }
 

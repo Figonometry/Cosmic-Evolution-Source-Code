@@ -89,7 +89,7 @@ public abstract class Entity {
         double blockCeil = MathUtils.ceilDouble(this.boundingBox.minY);
         double threshold = 0.001;
         if(Math.abs(blockCeil - this.boundingBox.minY) < threshold){
-            this.boundingBox.minY = blockCeil; //This is to catch rounding errors when setting the entity's bounding box, more may have to be implemented
+            this.boundingBox.minY = blockCeil;
         }
     }
 

@@ -56,11 +56,12 @@ public final class ChunkController {
     public int drawCalls;
     public int timer = 2400;
     public RenderWorldScene renderWorldScene = new RenderWorldScene(this);
-    public ChunkTerrainHandler chunkTerrainHandler = new ChunkTerrainHandler(this);
+    public ChunkTerrainHandler chunkTerrainHandler;
     static int test = 0;
 
     public ChunkController(WorldFace worldFace) {
         this.parentWorldFace = worldFace;
+        this.chunkTerrainHandler = new ChunkTerrainHandler(this, this.parentWorldFace.parentWorld);
     }
 
 
@@ -615,7 +616,7 @@ public final class ChunkController {
         this.unloadChunks();
         this.generateChunksDistance = 1;
         this.generateChunksX = this.playerChunkX - this.generateChunksDistance;
-        this.generateChunksZ = this.playerChunkZ - this.generateChunksDistance;
+        this.generateChunksZ = this.playerChunkZ;
         this.sideOfLoop = 0;
     }
 
@@ -649,28 +650,32 @@ public final class ChunkController {
             switch (this.sideOfLoop) {
                 case 0 -> {
                     this.generateChunksX++;
-                    if (this.generateChunksX == this.playerChunkX + this.generateChunksDistance) {
+                    this.generateChunksZ--;
+                    if (this.generateChunksX == this.playerChunkX) {
                         this.sideOfLoop = 1;
                     }
                 }
                 case 1 -> {
                     this.generateChunksZ++;
-                    if (this.generateChunksZ == this.playerChunkZ + this.generateChunksDistance) {
+                    this.generateChunksX++;
+                    if (this.generateChunksZ == this.playerChunkZ) {
                         this.sideOfLoop = 2;
                     }
                 }
                 case 2 -> {
                     this.generateChunksX--;
-                    if (this.generateChunksX == this.playerChunkX - this.generateChunksDistance) {
+                    this.generateChunksZ++;
+                    if (this.generateChunksX == this.playerChunkX) {
                         this.sideOfLoop = 3;
                     }
                 }
                 case 3 -> {
                     this.generateChunksZ--;
-                    if (this.generateChunksZ == this.playerChunkZ - this.generateChunksDistance) {
+                    this.generateChunksX--;
+                    if (this.generateChunksZ == this.playerChunkZ) {
                         this.generateChunksDistance++;
                         this.generateChunksX = this.playerChunkX - this.generateChunksDistance;
-                        this.generateChunksZ = this.playerChunkZ - this.generateChunksDistance;
+                        this.generateChunksZ = this.playerChunkZ;
                         this.sideOfLoop = 0;
                     }
                 }
