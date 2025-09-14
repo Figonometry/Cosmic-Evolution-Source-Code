@@ -1,5 +1,0 @@
-techName:Cat Domestication
-techUpdateEvent:Berry Collection
-unlockRequirementAmount:50
-requiredTech:Wheat I
-era:Neolithic

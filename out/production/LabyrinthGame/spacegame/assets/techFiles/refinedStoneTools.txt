@@ -1,6 +1,0 @@
-techName:Refined Stone Tools
-techUpdateEvent:Berry Collection
-unlockedTech:Polished Stone Tools
-unlockRequirementAmount:50
-requiredTech:Stone Hand Tools
-era:Neolithic

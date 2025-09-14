@@ -1,6 +1,0 @@
-techName:Pottery II
-techUpdateEvent:Berry Collection
-unlockedTech:Pottery III
-unlockRequirementAmount:50
-requiredTech:Pottery I
-era:Neolithic

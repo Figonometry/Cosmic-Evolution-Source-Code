@@ -1,5 +1,0 @@
-blockName:SAND
-blockModel:standardBlockModel
-stepSound:sand
-breakTimer:60
-hardness:0.05

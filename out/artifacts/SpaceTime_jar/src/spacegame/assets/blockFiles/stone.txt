@@ -1,7 +1,0 @@
-blockName:STONE
-blockModel:standardBlockModel
-stepSound:stone 
-breakTimer:180
-hardness:0.2
-requiresTool:true
-toolType:pickaxe

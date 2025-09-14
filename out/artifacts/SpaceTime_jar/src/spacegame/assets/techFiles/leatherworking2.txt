@@ -1,7 +1,0 @@
-techName:Leatherworking II
-techUpdateEvent:Berry Collection
-unlockedTech:Leatherworking III
-unlockedTech:Backpacks
-unlockRequirementAmount:50
-requiredTech:Leatherworking I
-era:Neolithic

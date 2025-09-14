@@ -1,7 +1,0 @@
-techName:Leatherworking I
-techUpdateEvent:Berry Collection
-unlockedTech:Leatherworking II
-unlockedTech:Basic Clothing
-unlockRequirementAmount:50
-requiredTech:Animal Hide Preservation
-era:Neolithic

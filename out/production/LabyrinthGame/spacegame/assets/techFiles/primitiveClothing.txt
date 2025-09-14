@@ -1,6 +1,0 @@
-techName:Primitive Clothing
-techUpdateEvent:Berry Collection
-unlockedTech:Basic Clothing
-unlockRequirementAmount:50
-requiredTech:Animal Hide Preservation
-era:Neolithic

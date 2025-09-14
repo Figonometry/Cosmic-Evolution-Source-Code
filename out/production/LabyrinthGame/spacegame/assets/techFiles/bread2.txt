@@ -1,6 +1,0 @@
-techName:Bread II
-techUpdateEvent:Berry Collection
-unlockedTech:Bread III
-unlockRequirementAmount:50
-requiredTech:Bread I
-era:Neolithic

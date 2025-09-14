@@ -1,5 +1,0 @@
-techName:Trapping III
-techUpdateEvent:Berry Collection
-unlockRequirementAmount:50
-requiredTech:Trapping II
-era:Neolithic

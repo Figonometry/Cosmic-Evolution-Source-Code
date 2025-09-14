@@ -1,7 +1,0 @@
-techName:Wheat I
-techUpdateEvent:Berry Collection
-unlockedTech:Wheat II
-unlockedTech:Cat Domestication
-unlockRequirementAmount:50
-requiredTech:Grass Domestication
-era:Neolithic

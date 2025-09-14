@@ -1,2 +1,0 @@
-itemName:WOOD_SHARDS
-canPlaceOnGround:true

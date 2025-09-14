@@ -1,2 +1,0 @@
-itemName:BERRY
-stackLimit:20

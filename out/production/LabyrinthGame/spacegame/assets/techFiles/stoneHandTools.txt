@@ -1,6 +1,0 @@
-techName:Stone Hand Tools
-techUpdateEvent:Berry Collection
-unlockedTech:Refined Stone Tools
-unlockRequirementAmount:50
-requiredTech:Neolithic Era
-era:Neolithic

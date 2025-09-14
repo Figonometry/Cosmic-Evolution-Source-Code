@@ -1,6 +1,0 @@
-techName:Pottery III
-techUpdateEvent:Berry Collection
-unlockedTech:Chalcolithic Pottery
-unlockRequirementAmount:50
-requiredTech:Pottery II
-era:Neolithic

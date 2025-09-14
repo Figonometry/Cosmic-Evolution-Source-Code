@@ -1,5 +1,0 @@
-techName:Animal Husbandry
-techUpdateEvent:Berry Collection
-unlockRequirementAmount:50
-requiredTech:Hunting II
-era:Neolithic

@@ -1,5 +1,0 @@
-techName:Carpentry II
-techUpdateEvent:Berry Collection
-unlockRequirementAmount:50
-requiredTech:Carpentry I
-era:Neolithic

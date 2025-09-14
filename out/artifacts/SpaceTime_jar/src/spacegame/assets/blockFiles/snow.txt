@@ -1,5 +1,0 @@
-blockName:SNOW  
-blockModel:standardBlockModel
-stepSound:snow 
-breakTimer:60
-hardness:0.05

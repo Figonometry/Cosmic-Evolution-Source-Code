@@ -1,5 +1,0 @@
-techName:Leatherworking III
-techUpdateEvent:Berry Collection
-unlockRequirementAmount:50
-requiredTech:Leatherworking II
-era:Neolithic

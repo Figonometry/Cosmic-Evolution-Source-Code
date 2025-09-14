@@ -1,7 +1,0 @@
-techName:Foraging II
-techUpdateEvent:Berry Collection
-unlockedTech:Foraging III
-unlockedTech:Grass Domestication
-unlockRequirementAmount:150
-requiredTech:Foraging I
-era:Neolithic

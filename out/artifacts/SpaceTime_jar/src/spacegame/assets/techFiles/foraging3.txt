@@ -1,7 +1,0 @@
-techName:Foraging III
-techUpdateEvent:Berry Collection
-unlockRequirementAmount:500
-unlockedTech:Polished Stone Tools
-unlockedTech:Primitive Woodworking
-requiredTech:Foraging II
-era:Neolithic

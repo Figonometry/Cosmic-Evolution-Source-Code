@@ -1,6 +1,0 @@
-techName:Bread I
-techUpdateEvent:Berry Collection
-unlockedTech:Bread II
-unlockRequirementAmount:50
-requiredTech:Grass Domestication
-era:Neolithic

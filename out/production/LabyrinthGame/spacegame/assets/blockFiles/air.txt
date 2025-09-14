@@ -1,4 +1,0 @@
-isSolid:false
-blockName:AIR
-canBeBroken:false
-canGreedyMesh:false

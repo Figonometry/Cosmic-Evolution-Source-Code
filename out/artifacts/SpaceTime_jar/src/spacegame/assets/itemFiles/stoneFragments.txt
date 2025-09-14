@@ -1,2 +1,0 @@
-itemName:STONE_FRAGMENTS
-canPlaceOnGround:true

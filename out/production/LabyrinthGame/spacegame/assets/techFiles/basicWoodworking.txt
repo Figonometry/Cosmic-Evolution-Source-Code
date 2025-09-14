@@ -1,6 +1,0 @@
-techName:Basic Woodworking
-techUpdateEvent:Berry Collection
-unlockedTech:Carpentry I
-unlockRequirementAmount:50
-requiredTech:Primitive Woodworking
-era:Neolithic

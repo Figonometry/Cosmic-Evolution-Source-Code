@@ -1,4 +1,0 @@
-itemName:STONE_HAND_AXE
-toolType:axe 
-stackLimit:1
-canPlaceOnGround:true
