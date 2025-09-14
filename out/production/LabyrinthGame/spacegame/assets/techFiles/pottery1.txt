@@ -1,0 +1,7 @@
+techName:Pottery I
+techUpdateEvent:Berry Collection
+unlockedTech:Pottery II
+unlockRequirementAmount:50
+requiredTech:Neolithic Era
+era:Neolithic
+infoText:I am testing the splitting of strings by typing a lot of words to see if this works, Hopefully it does and I can incorporate this elsewhere in the code

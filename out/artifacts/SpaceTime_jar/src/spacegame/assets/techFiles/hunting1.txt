@@ -1,0 +1,6 @@
+techName:Hunting I
+techUpdateEvent:Animal Killing
+unlockedTech:Hunting II
+unlockRequirementAmount:50
+requiredTech:Neolithic Era
+era:Neolithic

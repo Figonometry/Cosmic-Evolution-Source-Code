@@ -1,0 +1,8 @@
+blockName:CAMPFIRE_LIT
+droppedItemID:-1
+blockModel:topFaceBlockModel
+isSolid:false
+isLightBlock:true
+lightBlockValue:9
+breakTimer:60
+lightColor:16760877

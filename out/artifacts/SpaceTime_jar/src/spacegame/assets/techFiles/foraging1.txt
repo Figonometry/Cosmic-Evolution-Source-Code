@@ -1,0 +1,6 @@
+techName:Foraging I
+techUpdateEvent:Berry Collection
+unlockedTech:Foraging II
+unlockRequirementAmount:50
+requiredTech:Neolithic Era
+era:Neolithic

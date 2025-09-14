@@ -1,0 +1,6 @@
+techName:Hunting III
+techUpdateEvent:Berry Collection
+unlockedTech:Animal Hide Preservation
+unlockRequirementAmount:50
+requiredTech:Hunting II
+era:Neolithic

@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ArtifactsWorkspaceSettings">
+    <artifacts-to-build>
+      <artifact name="SpaceTime:jar" />
+    </artifacts-to-build>
+  </component>
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="12e9372d-54c1-4b3f-abd1-5f72800eafb6" name="Changes" comment="Merged WorldFace into World and removed the WorldFace class. Added coloration for grass and leaves, changed the sun/moon cycle to be closer to reality. Added a temperature and rainfall noisemap across the world which varies based on latitude and altitude" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="GLSL Shader" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="UPDATE_TYPE" value="REBASE" />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="ProjectErrors" />
+  </component>
+  <component name="ProjectId" id="2zQuAHWyJUbNOy8YFynUH5TNxg3" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/Jarrett/IdeaProjects/RamGenerator&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
+  }
+}</component>
+  <component name="RunManager">
+    <configuration name="SpaceGame" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="spacegame.core.SpaceGame" />
+      <module name="LabyrinthGame" />
+      <option name="PROGRAM_PARAMETERS" value="C:\Users\Jarrett\AppData\Roaming\CosmicEvolution" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="spacegame.core.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Application.SpaceGame" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="12e9372d-54c1-4b3f-abd1-5f72800eafb6" name="Changes" comment="" />
+      <created>1751675524040</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1751675524040</updated>
+    </task>
+    <task id="LOCAL-00001" summary="Compressed vertices on world rendering and improved lighting calculations">
+      <option name="closed" value="true" />
+      <created>1752188290787</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1752188290787</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Improved rendering speed using VAO and VBO instancing">
+      <option name="closed" value="true" />
+      <created>1752534091034</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1752534091034</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Fixed multithreading sync issues and bugs with involving terrain rendering">
+      <option name="closed" value="true" />
+      <created>1752617809360</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1752617809360</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Reformated crash logging to a centralized class&#10;Updated existing threads to catch to the logger&#10;Added a class for setting up shadowmaps and altered RenderWorldScene to prep utilizaiton.">
+      <option name="closed" value="true" />
+      <created>1752709171308</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1752709171308</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Added shadow pass to the render loop">
+      <option name="closed" value="true" />
+      <created>1752795362853</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1752795362853</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Fully fixed bugs related to the shadowmapper">
+      <option name="closed" value="true" />
+      <created>1753245388317</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1753245388317</updated>
+    </task>
+    <task id="LOCAL-00007" summary="Implemented a fix to the Shadow Mapper and vertex normals to calculate light intensity from the sun">
+      <option name="closed" value="true" />
+      <created>1753798069937</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1753798069937</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Fixed vertex normals calculated">
+      <option name="closed" value="true" />
+      <created>1753850345753</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1753850345753</updated>
+    </task>
+    <task id="LOCAL-00009" summary="Unified old lighting system with skylight lighting system">
+      <option name="closed" value="true" />
+      <created>1754532160795</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1754532160795</updated>
+    </task>
+    <task id="LOCAL-00010" summary="Added in View Bobbing and Shadows to Video Settings, moved Sounds and Music volume out to Options Menu">
+      <option name="closed" value="true" />
+      <created>1754703383445</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1754703383445</updated>
+    </task>
+    <task id="LOCAL-00011" summary="Added Tech tree and associated UI elements, modified font rendering to support various font sizes and italics">
+      <option name="closed" value="true" />
+      <created>1755059252521</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1755059252521</updated>
+    </task>
+    <task id="LOCAL-00012" summary="Added Tech tree and associated UI elements, modified font rendering to support various font sizes and italics, fixed two bugs with collision detection and dropped items flying up too high">
+      <option name="closed" value="true" />
+      <created>1755452577354</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1755452577354</updated>
+    </task>
+    <task id="LOCAL-00013" summary="Added Tech tree and associated UI elements, modified font rendering to support various font sizes and italics, fixed two bugs with collision detection and dropped items flying up too high">
+      <option name="closed" value="true" />
+      <created>1755452716962</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1755452716962</updated>
+    </task>
+    <task id="LOCAL-00014" summary="Merged WorldFace into World and removed the WorldFace class. Added coloration for grass and leaves, changed the sun/moon cycle to be closer to reality. Added a temperature and rainfall noisemap across the world which varies based on latitude and altitude">
+      <option name="closed" value="true" />
+      <created>1757870688933</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1757870688933</updated>
+    </task>
+    <task id="LOCAL-00015" summary="Merged WorldFace into World and removed the WorldFace class. Added coloration for grass and leaves, changed the sun/moon cycle to be closer to reality. Added a temperature and rainfall noisemap across the world which varies based on latitude and altitude">
+      <option name="closed" value="true" />
+      <created>1757870739366</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1757870739366</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
+    <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Compressed vertices on world rendering and improved lighting calculations" />
+    <MESSAGE value="Improved rendering speed using VAO and VBO instancing" />
+    <MESSAGE value="Fixed multithreading sync issues and bugs with involving terrain rendering" />
+    <MESSAGE value="Reformated crash logging to a centralized class&#10;Updated existing threads to catch to the logger&#10;Added a class for setting up shadowmaps and altered RenderWorldScene to prep utilizaiton." />
+    <MESSAGE value="Added shadow pass to the render loop" />
+    <MESSAGE value="Fully fixed bugs related to the shadowmapper" />
+    <MESSAGE value="Implemented a fix to the Shadow Mapper and vertex normals to calculate light intensity from the sun" />
+    <MESSAGE value="Fixed vertex normals calculated" />
+    <MESSAGE value="Unified old lighting system with skylight lighting system" />
+    <MESSAGE value="Added in View Bobbing and Shadows to Video Settings, moved Sounds and Music volume out to Options Menu" />
+    <MESSAGE value="Added Tech tree and associated UI elements, modified font rendering to support various font sizes and italics" />
+    <MESSAGE value="Added Tech tree and associated UI elements, modified font rendering to support various font sizes and italics, fixed two bugs with collision detection and dropped items flying up too high" />
+    <MESSAGE value="Merged WorldFace into World and removed the WorldFace class. Added coloration for grass and leaves, changed the sun/moon cycle to be closer to reality. Added a temperature and rainfall noisemap across the world which varies based on latitude and altitude" />
+    <option name="LAST_COMMIT_MESSAGE" value="Merged WorldFace into World and removed the WorldFace class. Added coloration for grass and leaves, changed the sun/moon cycle to be closer to reality. Added a temperature and rainfall noisemap across the world which varies based on latitude and altitude" />
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/LabyrinthGame$LabyrinthGame.ic" NAME="LabyrinthGame Coverage Results" MODIFIED="1734474899143" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false">
+      <FILTER>labyrinthgame.*</FILTER>
+    </SUITE>
+    <SUITE FILE_PATH="coverage/LabyrinthGame$spacegame_SpaceGame.ic" NAME="spacegame.SpaceGame Coverage Results" MODIFIED="1742670088124" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false">
+      <FILTER>spacegame.*</FILTER>
+    </SUITE>
+    <SUITE FILE_PATH="coverage/SpaceTime$spacegame_SpaceGame.ic" NAME="spacegame.SpaceGame Coverage Results" MODIFIED="1744416868478" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false">
+      <FILTER>spacegame.*</FILTER>
+    </SUITE>
+    <SUITE FILE_PATH="coverage/SpaceTime$spacegame_core_SpaceGame.ic" NAME="spacegame.core.SpaceGame Coverage Results" MODIFIED="1749001849910" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false">
+      <FILTER>spacegame.*</FILTER>
+    </SUITE>
+    <SUITE FILE_PATH="coverage/SpaceTime$SpaceGame.ic" NAME="SpaceGame Coverage Results" MODIFIED="1752708913257" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false">
+      <FILTER>spacegame.core.*</FILTER>
+    </SUITE>
+  </component>
+</project>

@@ -1,0 +1,8 @@
+blockName:BERRY_BUSH
+droppedItemID:6
+blockModel:xCrossBlockModel
+stepSound:grass
+breakTimer:0
+hardness:0.01
+isSolid:false
+itemDropChance:0.05

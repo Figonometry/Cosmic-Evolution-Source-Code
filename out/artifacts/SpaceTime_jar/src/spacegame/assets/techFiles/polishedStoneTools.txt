@@ -1,0 +1,7 @@
+techName:Polished Stone Tools
+techUpdateEvent:Berry Collection
+unlockedTech:Chalcolithic Pottery
+unlockRequirementAmount:50
+requiredTech:Refined Stone Tools
+requiredTech:Foraging III
+era:Neolithic

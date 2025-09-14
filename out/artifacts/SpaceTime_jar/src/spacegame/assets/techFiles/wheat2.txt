@@ -1,0 +1,6 @@
+techName:Wheat II
+techUpdateEvent:Berry Collection
+unlockedTech:Wheat III
+unlockRequirementAmount:50
+requiredTech:Wheat I
+era:Neolithic

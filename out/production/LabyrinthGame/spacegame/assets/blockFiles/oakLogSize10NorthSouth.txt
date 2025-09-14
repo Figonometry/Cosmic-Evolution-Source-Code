@@ -1,0 +1,7 @@
+blockName:OAK_LOG
+blockModel:oakLogSize10NorthSouthModel
+stepSound:wood
+breakTimer:120
+requiresTool:true
+toolType:axe
+hardness:0.11

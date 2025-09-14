@@ -1,0 +1,5 @@
+techName:Wolf Domestication
+techUpdateEvent:Berry Collection
+unlockRequirementAmount:50
+requiredTech:Hunting II
+era:Neolithic

@@ -1,0 +1,5 @@
+blockName:CAMPFIRE
+droppedItemID:-1
+blockModel:topFaceBlockModel
+isSolid:false
+breakTimer:60

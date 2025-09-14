@@ -1,0 +1,2 @@
+itemName:BLOCK
+renderItemWithBlockModel:true
