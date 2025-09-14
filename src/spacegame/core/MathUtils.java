@@ -1,7 +1,5 @@
 package spacegame.core;
 
-import org.joml.Vector3f;
-
 public abstract class MathUtils {
     private static float[] SIN_TABLE = new float[65536];
 

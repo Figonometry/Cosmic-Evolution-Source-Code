@@ -157,10 +157,10 @@ vec4 setFinalColor(vec4 skyLightColor, vec4 vertexColor){
     vec4 finalColor = vec4(1.0, 1.0, 1.0, 1.0);
 
     int texID = int(fTexId);
-    if(texID == 0 || texID == 2){
+    if(texID == 0 || texID == 2 || texID == 10){//Grass top and grass side textures, leaf
         int upperByte = (floatBitsToInt(aColor) >> 24) & 255;
         int lowerByte = (floatBitsToInt(aTexCoords) >> 24) & 255;
-        float colorMultiplier = halfToFloat((upperByte << 8) | lowerByte) * 2;
+        float colorMultiplier = halfToFloat((upperByte << 8) | lowerByte);
         vec4 grassColor = vec4(vertexColor.x * colorMultiplier, vertexColor.y * colorMultiplier, vertexColor.z * colorMultiplier, 1.0);
         skyLightColor *= grassColor;
     }

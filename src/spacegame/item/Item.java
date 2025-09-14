@@ -2,7 +2,7 @@ package spacegame.item;
 
 import spacegame.core.SpaceGame;
 import spacegame.entity.EntityPlayer;
-import spacegame.world.WorldFace;
+import spacegame.world.World;
 
 import java.io.*;
 
@@ -95,11 +95,11 @@ public class Item {
         return list[ID].textureID;
     }
 
-    public void onLeftClick(int x, int y, int z, WorldFace worldFace, EntityPlayer player){
+    public void onLeftClick(int x, int y, int z, World world, EntityPlayer player){
 
     }
 
-    public void onRightClick(int x, int y, int z, WorldFace worldFace, EntityPlayer player){
+    public void onRightClick(int x, int y, int z, World world, EntityPlayer player){
 
     }
 

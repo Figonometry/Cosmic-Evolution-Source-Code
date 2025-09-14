@@ -98,7 +98,7 @@ public abstract class Entity {
         int y = MathUtils.floorDouble(this.y - (this.height/2) - 0.1);
         int z = MathUtils.floorDouble(this.z);
 
-        if(Block.list[SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockID(x,y,z)].isSolid) {
+        if(Block.list[SpaceGame.instance.save.activeWorld.getBlockID(x,y,z)].isSolid) {
             Shader.worldShader2DTexture.uploadBoolean("useFog", true);
             Shader.worldShader2DTexture.uploadFloat("fogRed", SpaceGame.instance.save.activeWorld.skyColor[0]);
             Shader.worldShader2DTexture.uploadFloat("fogGreen", SpaceGame.instance.save.activeWorld.skyColor[1]);
@@ -179,7 +179,7 @@ public abstract class Entity {
     protected void moveAndHandleCollision(){
         this.updateAxisAlignedBB();
         surroundingBlocks.clear();
-        surroundingBlocks = SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockBoundingBoxes(this.boundingBox.expand(this.deltaX, this.deltaY, this.deltaZ), surroundingBlocks);
+        surroundingBlocks = SpaceGame.instance.save.activeWorld.getBlockBoundingBoxes(this.boundingBox.expand(this.deltaX, this.deltaY, this.deltaZ), surroundingBlocks);
 
         AxisAlignedBB block;
         for(int i = 0; i < surroundingBlocks.size(); i++) {

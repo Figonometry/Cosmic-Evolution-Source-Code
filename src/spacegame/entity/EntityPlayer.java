@@ -10,7 +10,6 @@ import spacegame.block.Block;
 import spacegame.core.*;
 import spacegame.gui.GuiDeathScreen;
 import spacegame.gui.GuiInGame;
-import spacegame.gui.GuiWorldLoadingScreen;
 import spacegame.item.Inventory;
 import spacegame.item.Item;
 import spacegame.item.ItemStack;
@@ -240,7 +239,7 @@ public final class EntityPlayer extends EntityLiving {
                 Vector3d difVector = new Vector3d(vector[0] - this.x, (vector[1] - this.y) + this.height/2, vector[2] - this.z);
                 difVector.normalize();
                 droppedBlock.setMovementVector(new Vector3f((float) difVector.x, (float) difVector.y, (float) difVector.z));
-                this.sg.save.activeWorld.activeWorldFace.findChunkFromChunkCoordinates(this.chunkX, this.chunkY, this.chunkZ).addEntityToList(droppedBlock);
+                this.sg.save.activeWorld.findChunkFromChunkCoordinates(this.chunkX, this.chunkY, this.chunkZ).addEntityToList(droppedBlock);
             }
         } else if(itemID != -1) {
             EntityItem droppedItem = new EntityItem(this.x, this.y, this.z, itemID, (byte)1,(byte) 1, this.getHeldItemDurability());
@@ -249,14 +248,14 @@ public final class EntityPlayer extends EntityLiving {
             Vector3d difVector = new Vector3d(vector[0] - this.x, (vector[1] - this.y) + this.height/2, vector[2] - this.z);
             difVector.normalize();
             droppedItem.setMovementVector(new Vector3f((float) difVector.x, (float) difVector.y, (float) difVector.z));
-            this.sg.save.activeWorld.activeWorldFace.findChunkFromChunkCoordinates(this.chunkX, this.chunkY, this.chunkZ).addEntityToList(droppedItem);
+            this.sg.save.activeWorld.findChunkFromChunkCoordinates(this.chunkX, this.chunkY, this.chunkZ).addEntityToList(droppedItem);
         }
     }
 
 
     @Override
     public void tick() {
-        if (this.sg.save.activeWorld.activeWorldFace.chunkController.findChunkFromChunkCoordinates((int) (this.x) >> 5, (int) (this.y) >> 5, (int) (this.z) >> 5) != null && !this.sg.save.activeWorld.activeWorldFace.paused) {
+        if (this.sg.save.activeWorld.chunkController.findChunkFromChunkCoordinates((int) (this.x) >> 5, (int) (this.y) >> 5, (int) (this.z) >> 5) != null && !this.sg.save.activeWorld.paused) {
             if(this.sg.currentGui instanceof GuiInGame) {
                 this.updateYawAndPitch();
             }
@@ -303,7 +302,7 @@ public final class EntityPlayer extends EntityLiving {
             this.yaw -= rawDeltaYaw;
             SpaceGame.camera.viewMatrix.rotateAround(new Quaterniond(0, 0, 0, 1).rotationAxis(new AxisAngle4f(-deltaYaw, 0.0F, 1.0F, 0.0F)), this.x - (this.chunkX * 32), this.y - (this.chunkY * 32), this.z - (this.chunkZ * 32)); //This needs to be fixed
             if(SpaceGame.instance.save.activeWorld != null) {
-                SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.renderWorldScene.recalculateQueries = true;
+                SpaceGame.instance.save.activeWorld.chunkController.renderWorldScene.recalculateQueries = true;
             }
         }
 
@@ -311,7 +310,7 @@ public final class EntityPlayer extends EntityLiving {
             this.pitch += rawDeltaPitch;
             SpaceGame.camera.viewMatrix.rotateLocalX(-deltaPitch);
             if(SpaceGame.instance.save.activeWorld != null) {
-                SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.renderWorldScene.recalculateQueries = true;
+                SpaceGame.instance.save.activeWorld.chunkController.renderWorldScene.recalculateQueries = true;
             }
         }
 
@@ -360,9 +359,9 @@ public final class EntityPlayer extends EntityLiving {
             this.speed = 0.05D;
         }
 
-        if(KeyListener.isKeyPressed(GameSettings.dropKey.keyCode) && KeyListener.dropKeyReleased){
+        if(KeyListener.isKeyPressed(GameSettings.dropKey.keyCode) && KeyListener.keyReleased[GameSettings.dropKey.keyCode]){
             this.dropItemFromInventory();
-            KeyListener.dropKeyReleased = false;
+            KeyListener.setKeyReleased(GameSettings.dropKey.keyCode);
         }
 
         //this.developerDebugMovement();
@@ -401,16 +400,16 @@ public final class EntityPlayer extends EntityLiving {
     private void setEntityState(){
         int playerX = MathUtils.floorDouble(this.x);
         int playerY = MathUtils.floorDouble(this.y);
-        int playerYHead = MathUtils.floorDouble(this.y + this.height/4);
-        int playerYFoot = MathUtils.floorDouble(this.y - this.height/4);
+        int playerYHead = MathUtils.floorDouble(this.y + (this.height * 0.25));
+        int playerYFoot = MathUtils.floorDouble(this.y - (this.height * 0.25));
         int playerZ = MathUtils.floorDouble(this.z);
-        this.blockUnderPlayer = this.sg.save.activeWorld.activeWorldFace.getBlockID(playerX, MathUtils.floorDouble(this.y - (this.height/2) - 0.1), playerZ);
+        this.blockUnderPlayer = this.sg.save.activeWorld.getBlockID(playerX, MathUtils.floorDouble(this.y - (this.height/2) - 0.1), playerZ);
         if(Block.list[this.blockUnderPlayer].isSolid && !this.inWater){
             this.handleFallDamage();
             this.lastYOnGround = this.y;
         }
-        this.inWater = Block.list[this.sg.save.activeWorld.activeWorldFace.getBlockID(playerX, playerY, playerZ)].ID == Block.water.ID;
-        short headBlock = Block.list[this.sg.save.activeWorld.activeWorldFace.getBlockID(playerX, playerYHead, playerZ)].ID;
+        this.inWater = Block.list[this.sg.save.activeWorld.getBlockID(playerX, playerY, playerZ)].ID == Block.water.ID;
+        short headBlock = Block.list[this.sg.save.activeWorld.getBlockID(playerX, playerYHead, playerZ)].ID;
         if(headBlock == Block.water.ID){
             Shader.worldShaderTextureArray.uploadBoolean("underwater", true);
             this.drowningTimer++;
@@ -529,7 +528,7 @@ public final class EntityPlayer extends EntityLiving {
 
         if(this.x != this.prevX || this.y != this.prevY || this.z != this.prevZ){
             if(SpaceGame.instance.save.activeWorld != null) {
-                SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.renderWorldScene.recalculateQueries = true;
+                SpaceGame.instance.save.activeWorld.chunkController.renderWorldScene.recalculateQueries = true;
             }
         }
 
@@ -578,7 +577,7 @@ public final class EntityPlayer extends EntityLiving {
         this.prevChunkZ = 0;
         SpaceGame.camera.resetViewMatrix();
         this.setPlayerActualPos(x, y, z);
-        if(!this.sg.save.activeWorld.activeWorldFace.paused && GameSettings.viewBob) {
+        if(!this.sg.save.activeWorld.paused && GameSettings.viewBob) {
             double xShift = 0.25 * ((MathUtils.sin((float) (((this.sg.save.thePlayer.viewBobTimer / 60f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
             double yShift = 0.125 * ((MathUtils.sin((float) (((this.sg.save.thePlayer.viewBobTimer / 60f) - 0.125f) * (Math.PI * 4f))) * 0.5) + 0.5f);
             SpaceGame.camera.viewMatrix.translateLocal(-xShift, -yShift, 0);
@@ -608,7 +607,7 @@ public final class EntityPlayer extends EntityLiving {
     }
 
     public void setBlockPlayerLookingAt(){
-        if (!this.sg.save.activeWorld.activeWorldFace.paused) {
+        if (!this.sg.save.activeWorld.paused) {
             double[] rayCast = SpaceGame.camera.rayCast(3);
             final double multiplier = 0.05D;
             final double xDif = (rayCast[0] - this.sg.save.thePlayer.x);
@@ -623,7 +622,7 @@ public final class EntityPlayer extends EntityLiving {
                 blockY = MathUtils.floorDouble(this.sg.save.thePlayer.y  + this.sg.save.thePlayer.height/2 + yDif * multiplier * loopPass);
                 blockZ = MathUtils.floorDouble(this.sg.save.thePlayer.z + zDif * multiplier * loopPass);
 
-                if (GuiInGame.isBlockVisible(blockX, blockY, blockZ) && (Block.list[this.sg.save.activeWorld.activeWorldFace.getBlockID(blockX, blockY, blockZ)].ID != Block.air.ID && Block.list[this.sg.save.activeWorld.activeWorldFace.getBlockID(blockX, blockY, blockZ)].ID != Block.water.ID)) {
+                if (GuiInGame.isBlockVisible(blockX, blockY, blockZ) && (Block.list[this.sg.save.activeWorld.getBlockID(blockX, blockY, blockZ)].ID != Block.air.ID && Block.list[this.sg.save.activeWorld.getBlockID(blockX, blockY, blockZ)].ID != Block.water.ID)) {
                     this.blockLookingAt[0] = blockX;
                     this.blockLookingAt[1] = blockY;
                     this.blockLookingAt[2] = blockZ;
@@ -646,7 +645,7 @@ public final class EntityPlayer extends EntityLiving {
         int x = MathUtils.floorDouble(this.x);
         int y = MathUtils.floorDouble(this.y - (this.height/2) - 0.1);
         int z = MathUtils.floorDouble(this.z);
-        if(Block.list[this.sg.save.activeWorld.activeWorldFace.getBlockID(x,y,z)].isSolid) {
+        if(Block.list[this.sg.save.activeWorld.getBlockID(x,y,z)].isSolid) {
             Shader.worldShader2DTexture.uploadBoolean("useFog", true);
             Shader.worldShader2DTexture.uploadFloat("fogRed", SpaceGame.instance.save.activeWorld.skyColor[0]);
             Shader.worldShader2DTexture.uploadFloat("fogGreen", SpaceGame.instance.save.activeWorld.skyColor[1]);
@@ -678,7 +677,7 @@ public final class EntityPlayer extends EntityLiving {
     public void handleDeath() {
         this.clearInventory();
         this.sg.setNewGui(new GuiDeathScreen(this.sg));
-        this.sg.save.activeWorld.activeWorldFace.paused = true;
+        this.sg.save.activeWorld.paused = true;
     }
 
     @Override
@@ -702,7 +701,7 @@ public final class EntityPlayer extends EntityLiving {
     }
 
     private void clearInventory(){
-        Chunk chunk = this.sg.save.activeWorld.activeWorldFace.chunkController.findChunkFromChunkCoordinates(this.chunkX, this.chunkY, this.chunkZ);
+        Chunk chunk = this.sg.save.activeWorld.chunkController.findChunkFromChunkCoordinates(this.chunkX, this.chunkY, this.chunkZ);
         Random rand = new Random();
         for(int i = 0; i < this.inventory.itemStacks.length; i++) {
             if(this.inventory.itemStacks[i].item == Item.block) {

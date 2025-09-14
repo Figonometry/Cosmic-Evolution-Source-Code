@@ -1,6 +1,5 @@
 package spacegame.gui;
 
-import spacegame.core.MathUtils;
 import spacegame.core.SpaceGame;
 import spacegame.render.Assets;
 import spacegame.render.Shader;

@@ -1,7 +1,5 @@
 package spacegame.world;
 
-import spacegame.gui.TechBlock;
-
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;

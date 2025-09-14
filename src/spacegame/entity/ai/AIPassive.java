@@ -1,9 +1,7 @@
 package spacegame.entity.ai;
 
 import org.joml.Vector2f;
-import org.joml.Vector2i;
 import spacegame.core.MathUtils;
-import spacegame.entity.Entity;
 import spacegame.entity.EntityLiving;
 
 import java.util.Random;

@@ -1,7 +1,7 @@
 package spacegame.world;
 
-import spacegame.core.Logger;
 import spacegame.core.GameSettings;
+import spacegame.core.Logger;
 import spacegame.core.SpaceGame;
 import spacegame.entity.Entity;
 import spacegame.entity.EntityBlock;
@@ -33,14 +33,14 @@ public final class ThreadChunkColumnLoader implements Runnable {
         for (int y = this.controller.playerChunkY - GameSettings.chunkColumnHeight; y < this.controller.playerChunkY + GameSettings.chunkColumnHeight; y++) {
             if (!this.controller.doesChunkExitAtPos(x, y, z)) {
                 Chunk chunk = null;
-                File file = new File(SpaceGame.instance.save.activeWorld.activeWorldFace.parentWorld.worldFolder + "/Chunk." + x + "." + y + "." + z + ".dat");
+                File file = new File(SpaceGame.instance.save.activeWorld.worldFolder + "/Chunk." + x + "." + y + "." + z + ".dat");
                 try {
                     if(file.exists()) {
                         FileInputStream inputStream = new FileInputStream(file);
                         NBTTagCompound chunkTag = NBTIO.readCompressed(inputStream);
                         NBTTagCompound chunkData = chunkTag.getCompoundTag("Chunk");
                         NBTTagCompound entity = chunkData.getCompoundTag("Entity");
-                        chunk = new Chunk(x, y, z, SpaceGame.instance.save.activeWorld.activeWorldFace);
+                        chunk = new Chunk(x, y, z, SpaceGame.instance.save.activeWorld);
 
                         chunk.containsWater = chunkData.getBoolean("containsWater");
                         chunk.containsAir = chunkData.getBoolean("containsAir");
@@ -97,7 +97,7 @@ public final class ThreadChunkColumnLoader implements Runnable {
                 if(chunk != null){
                     this.controller.addChunkFromFile(chunk);
                 } else {
-                    this.controller.addChunk(new Chunk(x, y, z, this.controller.parentWorldFace));
+                    this.controller.addChunk(new Chunk(x, y, z, this.controller.parentWorld));
                 }
             }
         }

@@ -1,14 +1,10 @@
 package spacegame.entity;
 
-import org.lwjgl.opengl.GL46;
 import spacegame.core.Sound;
-import spacegame.core.SpaceGame;
 import spacegame.entity.ai.AIPassive;
-import spacegame.gui.FontRenderer;
 import spacegame.render.Model;
 import spacegame.render.ModelDeer;
 import spacegame.render.TextureLoader;
-import spacegame.world.AxisAlignedBB;
 
 import java.io.File;
 import java.util.Random;

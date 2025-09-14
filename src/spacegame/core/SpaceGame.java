@@ -2,7 +2,6 @@ package spacegame.core;
 
 import org.joml.Vector3d;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWImage;
@@ -24,14 +23,15 @@ import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.render.Assets;
 import spacegame.render.Camera;
-import spacegame.render.PlantColorizer;
 import spacegame.render.Shader;
 import spacegame.world.Save;
 import spacegame.world.Tech;
 import spacegame.world.World;
 import spacegame.world.WorldEarth;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.Random;
@@ -39,7 +39,8 @@ import java.util.Random;
 public final class SpaceGame implements Runnable {
     public static SpaceGame instance;
     public final File launcherDirectory;
-    public static final boolean DEBUG_MODE = true;
+    public static final boolean DEBUG_MODE = false;
+    public static final Random globalRand = new Random();
     public volatile boolean running;
     public String title;
     public boolean vsync;
@@ -98,7 +99,7 @@ public final class SpaceGame implements Runnable {
     }
 
     private void startGame() {
-        this.title = "Cosmic Evolution Alpha v0.20 WIP";
+        this.title = "Cosmic Evolution Alpha v0.20";
         this.clearLogFiles(new File(this.launcherDirectory + "/crashReports"));
         this.initLWJGL();
         this.initAllBufferObjects();
@@ -251,7 +252,7 @@ public final class SpaceGame implements Runnable {
         this.save.thePlayer.setPlayerActualPos(x,2, z);
         this.save.setActiveWorld(new WorldEarth(this, 4006976));
         this.setNewGui(new GuiWorldLoadingScreen(this));
-        this.save.activeWorld.activeWorldFace.paused = true;
+        this.save.activeWorld.paused = true;
     }
 
     public void startSave(File saveFile) {
@@ -272,7 +273,7 @@ public final class SpaceGame implements Runnable {
         this.save.thePlayer.setPlayerActualPos(x, y, z); //This needs to read and set the position using the player's actual location read from file
         this.save.setActiveWorld(new WorldEarth(this, 4006976));
         this.setNewGui(new GuiWorldLoadingScreen(this));
-        this.save.activeWorld.activeWorldFace.paused = true;
+        this.save.activeWorld.paused = true;
     }
 
     private void tick() {
@@ -316,58 +317,59 @@ public final class SpaceGame implements Runnable {
         this.checkKeyBindStates();
 
         if(this.currentGui instanceof GuiUniverseMap) {
-            if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_CAPS_LOCK) && KeyListener.capsLockReleased) {
+            if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_CAPS_LOCK) && KeyListener.keyReleased[GLFW.GLFW_KEY_CAPS_LOCK]) {
                 ((GuiUniverseMap)this.currentGui).switchObject();
-                KeyListener.capsLockReleased = false;
+                KeyListener.setKeyReleased(GLFW.GLFW_KEY_CAPS_LOCK);
             }
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_CAPS_LOCK) && KeyListener.capsLockReleased){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_CAPS_LOCK) && KeyListener.keyReleased[GLFW.GLFW_KEY_CAPS_LOCK]){
             KeyListener.capsLockEnabled = !KeyListener.capsLockEnabled;
-            KeyListener.capsLockReleased = false;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_CAPS_LOCK);
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_G) && KeyListener.gKeyReleased){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_G) && KeyListener.keyReleased[GLFW.GLFW_KEY_G]){
             if(this.save != null){
                 if(this.save.thePlayer != null && this.save.activeWorld != null){
                     EntityDeer deer =  new EntityDeer(this.save.thePlayer.x,this.save.thePlayer.y - 0.5, this.save.thePlayer.z, false, false);
-                    this.save.activeWorld.activeWorldFace.addEntity(deer);
+                    this.save.activeWorld.addEntity(deer);
                 }
             }
-            KeyListener.gKeyReleased = false;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_G);
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_MINUS)){
-            this.save.time = 98500;
-        }
+    //   if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_MINUS)){
+    //       this.save.time -= 216000;
+    //       KeyListener.setKeyReleased(GLFW.GLFW_KEY_MINUS);
+    //   }
 
+    //   if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_EQUAL)){
+    //       this.save.time += 216000;
+    //       KeyListener.setKeyReleased(GLFW.GLFW_KEY_EQUAL);
+    //   }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_SLASH)){
-            this.save.time = 109000;
-        }
+    //   if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_COMMA)){
+    //       this.save.time -= 1000;
+    //       KeyListener.setKeyReleased(GLFW.GLFW_KEY_COMMA);
+    //   }
 
+    //   if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_PERIOD)){
+    //       this.save.time += 1000;
+    //       KeyListener.setKeyReleased(GLFW.GLFW_KEY_PERIOD);
+    //   }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_EQUAL)){
-            this.save.time = 116000;
-        }
-
-
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_BACKSLASH)){
-            this.save.time = 55000;
-        }
-
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_GRAVE_ACCENT) && KeyListener.graveKeyReleased){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_GRAVE_ACCENT) && KeyListener.keyReleased[GLFW.GLFW_KEY_GRAVE_ACCENT]){
             if(this.currentGui instanceof GuiInGame){
-                this.save.activeWorld.activeWorldFace.toggleWorldPause();
+                this.save.activeWorld.toggleWorldPause();
                 GLFW.glfwSetInputMode(this.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
                 this.setNewGui(new GuiTechTree(this));
                 ((GuiTechTree)this.currentGui).switchEraDisplayed(Tech.NEOLITHIC_ERA);
             } else if(this.currentGui instanceof GuiTechTree){
-                this.save.activeWorld.activeWorldFace.toggleWorldPause();
+                this.save.activeWorld.toggleWorldPause();
                 GLFW.glfwSetInputMode(this.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
                 this.setNewGui(new GuiInGame(this));
             }
-            KeyListener.graveKeyReleased = false;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_GRAVE_ACCENT);
         }
 
 
@@ -384,24 +386,24 @@ public final class SpaceGame implements Runnable {
             this.rightClick();
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_TAB) && KeyListener.tabReleased){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_TAB) && KeyListener.keyReleased[GLFW.GLFW_KEY_TAB]){
             if(this.currentGui instanceof GuiInGame){
                 this.setNewGui(new GuiUniverseMap(this));
                 setGLClearColor(0,0,0,0);
             } else if(this.currentGui instanceof GuiUniverseMap){
                 this.setNewGui(new GuiInGame(this));
             }
-            KeyListener.tabReleased = false;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_TAB);
         }
 
-        if(KeyListener.isKeyPressed(GameSettings.inventoryKey.keyCode) && KeyListener.inventoryKeyReleased){
+        if(KeyListener.isKeyPressed(GameSettings.inventoryKey.keyCode) && KeyListener.keyReleased[GameSettings.inventoryKey.keyCode]){
             if(this.currentGui instanceof GuiInGame){
                 this.setNewGui(new GuiPlayerInventory(this, this.save.thePlayer.inventory));
             } else if(this.currentGui instanceof GuiInventory){
                 this.setNewGui(new GuiInGame(this));
                 GLFW.glfwSetInputMode(this.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
             }
-            KeyListener.inventoryKeyReleased = false;
+            KeyListener.setKeyReleased(GameSettings.inventoryKey.keyCode);
         }
 
         if(this.currentGui instanceof GuiUniverseMap){
@@ -435,7 +437,7 @@ public final class SpaceGame implements Runnable {
 
     private void checkKeyBindStates() {
         if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_ESCAPE) && this.save != null && this.currentGui instanceof GuiInGame) {
-            this.save.activeWorld.activeWorldFace.paused = true;
+            this.save.activeWorld.paused = true;
             this.setNewGui(new GuiPauseInGame(this));
             this.save.saveDataToFileWithoutChunkUnload();
             this.save.thePlayer.savePlayerToFile();
@@ -447,34 +449,7 @@ public final class SpaceGame implements Runnable {
         if (!MouseListener.mouseButtonDown(GLFW.GLFW_MOUSE_BUTTON_RIGHT)) {
             MouseListener.rightClickReleased = true;
         }
-
-        if(!KeyListener.isKeyPressed(GLFW.GLFW_KEY_CAPS_LOCK)){
-            KeyListener.capsLockReleased = true;
-        }
-
-        if(!KeyListener.isKeyPressed(GLFW.GLFW_KEY_TAB)){
-            KeyListener.tabReleased = true;
-        }
-
-        if(!KeyListener.isKeyPressed(GLFW.GLFW_KEY_BACKSPACE)){
-            KeyListener.backSpaceReleased = true;
-        }
-
-        if(!KeyListener.isKeyPressed(GLFW.GLFW_KEY_G)){
-            KeyListener.gKeyReleased = true;
-        }
-
-        if(!KeyListener.isKeyPressed(GLFW.GLFW_KEY_GRAVE_ACCENT)){
-            KeyListener.graveKeyReleased = true;
-        }
-
-        if(!KeyListener.isKeyPressed(GameSettings.inventoryKey.keyCode)){
-            KeyListener.inventoryKeyReleased = true;
-        }
-
-        if(!KeyListener.isKeyPressed(GameSettings.dropKey.keyCode)){
-            KeyListener.dropKeyReleased = true;
-        }
+        KeyListener.checkIfKeysArePressed();
     }
 
     private void leftClick() {
@@ -623,7 +598,7 @@ public final class SpaceGame implements Runnable {
         if(this.save != null) {
             this.save.thePlayer.resetCamera();
             if(World.worldLoadPhase >= 1) {
-                this.save.activeWorld.activeWorldFace.chunkController.update();
+                this.save.activeWorld.chunkController.update();
             }
             if(this.currentGui instanceof GuiWorldLoadingScreen){
                 if(Thread.activeCount() < 5){
@@ -632,8 +607,8 @@ public final class SpaceGame implements Runnable {
                         Assets.enableBlockTextureArray();
                         Assets.enableItemTextureArray();
                     }
-                    this.save.activeWorld.activeWorldFace.chunkController.addChunkToRebuildQueue(this.save.activeWorld.activeWorldFace.chunkController.findChunkFromChunkCoordinates(this.save.activeWorld.activeWorldFace.chunkController.playerChunkX, this.save.activeWorld.activeWorldFace.chunkController.playerChunkY, this.save.activeWorld.activeWorldFace.chunkController.playerChunkZ));
-                    this.save.activeWorld.activeWorldFace.paused = false;
+                    this.save.activeWorld.chunkController.addChunkToRebuildQueue(this.save.activeWorld.chunkController.findChunkFromChunkCoordinates(this.save.activeWorld.chunkController.playerChunkX, this.save.activeWorld.chunkController.playerChunkY, this.save.activeWorld.chunkController.playerChunkZ));
+                    this.save.activeWorld.paused = false;
                     this.setNewGui(new GuiInGame(this));
                 }
             }

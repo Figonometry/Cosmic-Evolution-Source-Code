@@ -55,7 +55,7 @@ public final class RenderWorldScene {
 
         this.renderNearbyCelestialObjects();
 
-        if (this.controller.parentWorldFace.sg.currentGui instanceof GuiInGame) {
+        if (SpaceGame.instance.currentGui instanceof GuiInGame) {
             GuiInGame.renderBlockOutline();
             GuiInGame.renderBlockBreakingOutline();
         }
@@ -83,9 +83,9 @@ public final class RenderWorldScene {
         Shader.terrainShader.uploadInt("textureArray", 0);
         Shader.terrainShader.uploadBoolean("useFog", true);
         Shader.terrainShader.uploadFloat("fogDistance", GameSettings.renderDistance * 20f);
-        Shader.terrainShader.uploadFloat("fogRed", this.controller.parentWorldFace.parentWorld.skyColor[0]);
-        Shader.terrainShader.uploadFloat("fogGreen", this.controller.parentWorldFace.parentWorld.skyColor[1]);
-        Shader.terrainShader.uploadFloat("fogBlue", this.controller.parentWorldFace.parentWorld.skyColor[2]);
+        Shader.terrainShader.uploadFloat("fogRed", this.controller.parentWorld.skyColor[0]);
+        Shader.terrainShader.uploadFloat("fogGreen", this.controller.parentWorld.skyColor[1]);
+        Shader.terrainShader.uploadFloat("fogBlue", this.controller.parentWorld.skyColor[2]);
         Shader.terrainShader.uploadDouble("time", (double) Timer.elapsedTime % 8388608);
 
         Chunk chunk;
@@ -95,6 +95,9 @@ public final class RenderWorldScene {
         int playerChunkX = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.x) >> 5;
         int playerChunkY = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.y) >> 5;
         int playerChunkZ = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.z) >> 5;
+
+        GL46.glEnable(GL46.GL_ALPHA_TEST);
+        GL46.glAlphaFunc(GL46.GL_GREATER, 0.1F);
 
         for (int i = 0; i < sortedChunks.length; i++) {
             chunk = sortedChunks[i];
@@ -139,8 +142,6 @@ public final class RenderWorldScene {
             chunk.checkIfEntitiesAreStillInChunk();
         }
 
-        GL46.glEnable(GL46.GL_ALPHA_TEST);
-        GL46.glAlphaFunc(GL46.GL_GREATER, 0.1F);
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_SRC_ALPHA, GL46.GL_ONE_MINUS_SRC_ALPHA);
 
@@ -173,7 +174,7 @@ public final class RenderWorldScene {
         this.chunksThatContainItems.clear();
         this.chunksThatContainEntities.clear();
         this.chunksToRender.clear();
-        this.renderSkybox(SpaceGame.instance.everything.getObjectAssociatedWithWorld(this.controller.parentWorldFace.parentWorld), playerLon, playerLat);
+        this.renderSkybox(SpaceGame.instance.everything.getObjectAssociatedWithWorld(this.controller.parentWorld), playerLon, playerLat);
         for(int i = 0; i < this.nearbyStarPos.size(); i++) {
             this.renderSunrise(new Vector3f(this.nearbyStarPos.get(i)).normalize().y, this.nearbyStarPos.get(i));
         }
@@ -271,20 +272,13 @@ public final class RenderWorldScene {
         int worldSizeRadius = SpaceGame.instance.save.activeWorld.size / 2;
         double playerLat = 0;
         double playerLon = 0;
-        double xThreshold = (double) worldSizeRadius / 90;
-        double xAbs = Math.abs(SpaceGame.instance.save.thePlayer.x);
         double zThreshold = (double) (worldSizeRadius * 2) / 360;
 
-        if(SpaceGame.instance.save.thePlayer.x < 0){
-            playerLat = (xAbs / xThreshold);
-        } else if(SpaceGame.instance.save.thePlayer.x >= 0){
-            playerLat = -(xAbs / xThreshold);
-        }
-
-        playerLon = (worldSizeRadius + SpaceGame.instance.save.thePlayer.z) / zThreshold;
+        playerLat = -(SpaceGame.instance.save.thePlayer.x / (double)worldSizeRadius) * 90;
+        playerLon = ((worldSizeRadius + SpaceGame.instance.save.thePlayer.z) / zThreshold);
 
         ArrayList<Vector3f> starPositions = new ArrayList<>();
-        CelestialObject currentCelestialObject = SpaceGame.instance.everything.getObjectAssociatedWithWorld(this.controller.parentWorldFace.parentWorld);
+        CelestialObject currentCelestialObject = SpaceGame.instance.everything.getObjectAssociatedWithWorld(this.controller.parentWorld);
         this.playerLat = playerLat;
         this.playerLon = playerLon;
         for(int i = 0; i < SpaceGame.instance.everything.objects.length; i++) {
@@ -318,15 +312,35 @@ public final class RenderWorldScene {
 
                 Vector3f celestialObjectPosition = new Vector3f((float) positionDifference.y, (float) positionDifference.z, (float) positionDifference.x);
                 celestialObjectPosition.rotateX((float) (Math.toRadians(playerLon) + Math.toRadians((360 * ((double) SpaceGame.instance.save.time / currentCelestialObject.rotationPeriod)) % 360)));
-                celestialObjectPosition.rotateZ((float) ((float)  Math.toRadians(playerLat) + Math.toRadians((currentCelestialObject.axialTiltX * MathUtils.sin(((double) (SpaceGame.instance.save.time % currentCelestialObject.orbitalPeriod) / currentCelestialObject.orbitalPeriod) * 2 * Math.PI)))));
 
+                float zRotation = (float) ((float)  Math.toRadians(playerLat) + Math.toRadians((currentCelestialObject.axialTiltX)));
+                float orbitRatio = (float) MathUtils.sin(((double) (SpaceGame.instance.save.time % currentCelestialObject.orbitalPeriod) / currentCelestialObject.orbitalPeriod) * 2 * Math.PI);
+
+                zRotation *= orbitRatio;
+                // MathUtils.sin(((double) (SpaceGame.instance.save.time % currentCelestialObject.orbitalPeriod) / currentCelestialObject.orbitalPeriod) * 2 * Math.PI)))
+                SpaceGame.instance.save.activeWorld.sunAngle = zRotation;
+                celestialObjectPosition.rotateZ(zRotation);
+
+                float absoluteDistance = celestialObjectPosition.distance(new Vector3f());
+                float latRatio = (float) (playerLat / 90f);
+
+                celestialObjectPosition.y += ((absoluteDistance * latRatio) * orbitRatio);
+                orbitRatio = (float) MathUtils.sin(((double) ((SpaceGame.instance.save.time % currentCelestialObject.orbitalPeriod) / currentCelestialObject.orbitalPeriod) * 2 * Math.PI) + (0.5f * Math.PI));
+
+                if(playerLat > 0.0){
+                    celestialObjectPosition.x += (celestialObjectPosition.x * ((latRatio) * orbitRatio));
+                    celestialObjectPosition.z += (celestialObjectPosition.z *  ((latRatio) * orbitRatio));
+                } else {
+                    celestialObjectPosition.x -= (celestialObjectPosition.x * ((latRatio) * orbitRatio));
+                    celestialObjectPosition.z -= (celestialObjectPosition.z *  ((latRatio) * orbitRatio));
+                }
+
+                //Take the value for calculating the rotation z and use it to determine the angle of the sun relative to being directly overhead, use to determine temp falloff, logarithm function
                 if(renderingObject instanceof Sun){
                     starPositions.add(new Vector3f(celestialObjectPosition));
                     this.nearbyStarPos.add(new Vector3f(celestialObjectPosition));
                     this.nearbyStars.add((Sun) renderingObject);
                 }
-
-
 
                 Vector3f vertex1;
                 Vector3f vertex2;
@@ -427,7 +441,7 @@ public final class RenderWorldScene {
             Vector3f vertex4;
             Matrix4f modelMatrix = new Matrix4f();
             modelMatrix.rotateX((float) -(Math.toRadians(playerLon) + Math.toRadians((360 * ((double) SpaceGame.instance.save.time / currentCelestialObject.rotationPeriod)) % 360)));
-            modelMatrix.rotateZ((float) ((float)  Math.toRadians(playerLat) + Math.toRadians((-currentCelestialObject.axialTiltX * MathUtils.sin(((double) (SpaceGame.instance.save.time % currentCelestialObject.orbitalPeriod) / currentCelestialObject.orbitalPeriod) * 2 * Math.PI)))));
+            modelMatrix.rotateZ(-(float) ((float)  Math.toRadians(playerLat) + Math.toRadians(currentCelestialObject.axialTiltX)));
             for (int latitude = -90; latitude < 90; latitude += 45) {
                 for (int longitude = 0; longitude < 360; longitude += 45) {
                     vertex1 = this.getPositionOnSphere(latitude + 45, longitude, 400000);
@@ -466,7 +480,7 @@ public final class RenderWorldScene {
         }
 
         if(closestStar == null){
-            this.controller.parentWorldFace.parentWorld.skyLightLevel = 0;
+            this.controller.parentWorld.skyLightLevel = 0;
             return;
         }
 
@@ -485,7 +499,7 @@ public final class RenderWorldScene {
         Shader.worldShader2DTexture.uploadBoolean("renderShadows", this.shouldShadowsRender);
         this.setBaseLight(closestStar.y);
         this.setLightColorInShader(closestStar.y);
-        this.controller.parentWorldFace.parentWorld.skyLightLevel = calculatedSkyLightLevel;
+        this.controller.parentWorld.skyLightLevel = calculatedSkyLightLevel;
     }
 
     private boolean shouldSkyboxRender(float yVecComponent){
@@ -636,9 +650,9 @@ public final class RenderWorldScene {
         float lowerColorB = 1;
 
         if(yVecComponent <= 0.15 && yVecComponent > 0.08){
-            upperColorR = this.controller.parentWorldFace.parentWorld.defaultSkyColor[0];
-            upperColorG = this.controller.parentWorldFace.parentWorld.defaultSkyColor[1];
-            upperColorB = this.controller.parentWorldFace.parentWorld.defaultSkyColor[2];
+            upperColorR = this.controller.parentWorld.defaultSkyColor[0];
+            upperColorG = this.controller.parentWorld.defaultSkyColor[1];
+            upperColorB = this.controller.parentWorld.defaultSkyColor[2];
             lowerColorR = 255f / 255f;
             lowerColorG = 233f / 255f;
             lowerColorB = 127f / 255f;
@@ -671,12 +685,12 @@ public final class RenderWorldScene {
             lowerColorG = 0;
             lowerColorB = 0;
         } else if(yVecComponent > 0.15){
-            upperColorR = this.controller.parentWorldFace.parentWorld.defaultSkyColor[0];
-            upperColorG = this.controller.parentWorldFace.parentWorld.defaultSkyColor[1];
-            upperColorB = this.controller.parentWorldFace.parentWorld.defaultSkyColor[2];
-            lowerColorR = this.controller.parentWorldFace.parentWorld.defaultSkyColor[0];
-            lowerColorG = this.controller.parentWorldFace.parentWorld.defaultSkyColor[1];
-            lowerColorB = this.controller.parentWorldFace.parentWorld.defaultSkyColor[2];
+            upperColorR = this.controller.parentWorld.defaultSkyColor[0];
+            upperColorG = this.controller.parentWorld.defaultSkyColor[1];
+            upperColorB = this.controller.parentWorld.defaultSkyColor[2];
+            lowerColorR = this.controller.parentWorld.defaultSkyColor[0];
+            lowerColorG = this.controller.parentWorld.defaultSkyColor[1];
+            lowerColorB = this.controller.parentWorld.defaultSkyColor[2];
         } else if(yVecComponent < -0.2){
             upperColorR = 0;
             upperColorG = 0;
@@ -698,10 +712,10 @@ public final class RenderWorldScene {
         float interpolatedR = (lowerColorR + (colorDifR * ratio)) * this.baseLight;
         float interpolatedG = (lowerColorG + (colorDifG * ratio)) * this.baseLight;
         float interpolatedB = (lowerColorB + (colorDifB * ratio)) * this.baseLight;
-        this.controller.parentWorldFace.parentWorld.skyColor[0] = interpolatedR;
-        this.controller.parentWorldFace.parentWorld.skyColor[1] = interpolatedG;
-        this.controller.parentWorldFace.parentWorld.skyColor[2] = interpolatedB;
-        SpaceGame.setGLClearColor( this.controller.parentWorldFace.parentWorld.skyColor[0],  this.controller.parentWorldFace.parentWorld.skyColor[1],  this.controller.parentWorldFace.parentWorld.skyColor[2], 0.0f);
+        this.controller.parentWorld.skyColor[0] = interpolatedR;
+        this.controller.parentWorld.skyColor[1] = interpolatedG;
+        this.controller.parentWorld.skyColor[2] = interpolatedB;
+        SpaceGame.setGLClearColor( this.controller.parentWorld.skyColor[0],  this.controller.parentWorld.skyColor[1],  this.controller.parentWorld.skyColor[2], 0.0f);
     }
 
     private void renderSunrise(float yVecComponent, Vector3f starPosition){

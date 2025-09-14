@@ -3,7 +3,7 @@ package spacegame.item;
 import spacegame.core.SpaceGame;
 import spacegame.entity.EntityPlayer;
 import spacegame.gui.GuiCraftingStoneTools;
-import spacegame.world.WorldFace;
+import spacegame.world.World;
 
 public final class ItemStone extends Item{
     public ItemStone(short ID, int textureID, String filepath, Material material) {
@@ -13,8 +13,8 @@ public final class ItemStone extends Item{
     }
 
     @Override
-    public void onRightClick(int x, int y, int z, WorldFace worldFace, EntityPlayer player){
-        if(worldFace.getItemInChunk(x,y,z) == this.ID){
+    public void onRightClick(int x, int y, int z, World world, EntityPlayer player){
+        if(world.getItemInChunk(x,y,z) == this.ID){
             SpaceGame.instance.setNewGui(new GuiCraftingStoneTools(SpaceGame.instance,x,y,z));
         }
     }

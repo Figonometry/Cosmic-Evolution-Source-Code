@@ -142,14 +142,19 @@ public final class GuiMainMenu extends Gui {
             fontRenderer.drawString(this.sg.title, x, y, depth, 16711875, 50);
             y -= 60;
             fontRenderer.toggleItalics();
-            fontRenderer.drawString("Fixed a crash bug in chunk mesh threads", x, y, depth, yellow, 50);
+            fontRenderer.drawString("Added deserts", x, y, depth, green, 50);
             y -= 30;
-            fontRenderer.drawString("Altered the world loading pattern to reduce chunk volume", x, y, depth, yellow, 50);
+            fontRenderer.drawString("Added cactus blocks and cactuses to deserts", x, y, depth, green, 50);
             y -= 30;
-            fontRenderer.drawString("Render distance is now capped at 20, it is recommended to stay below 15", x, y, depth, yellow, 50);
+            fontRenderer.drawString("Grass and Oak trees are now colored according to the temperature and rainfall values", x, y, depth, green, 50);
             y -= 30;
-            fontRenderer.drawString("Fixed a bug where block faces wouldn't shade correctly if shadows were turned off", x, y, depth, yellow, 50);
+            fontRenderer.drawString("Added temperature and rainfall, temperature varies over a year in game", x, y, depth, green, 50);
+            y -=30;
+            fontRenderer.drawString("Updated the sun and moon's movement to better reflect high latitude movements, ", x, y, depth, yellow, 50);
             y -= 30;
+            fontRenderer.drawString( "days will now be shorter in winter and longer in summer", x, y, depth, yellow, 50);
+            y -= 30;
+            fontRenderer.drawString("Improved worldgen structure efficiency when loading into worlds", x, y, depth, yellow, 50);
             fontRenderer.toggleItalics();
 
 

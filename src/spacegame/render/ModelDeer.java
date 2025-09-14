@@ -261,9 +261,9 @@ public final class ModelDeer extends Model {
         int xInt = MathUtils.floorDouble(x);
         int yInt = MathUtils.floorDouble(y);
         int zInt = MathUtils.floorDouble(z);
-        float[] lightColor =  !associatedEntity.canDamage ? new float[]{1,0.65f,0.65f}  : SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockLightColor(xInt, yInt, zInt);
-        this.setVertexLight1Arg(SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockLightValue(xInt, yInt, zInt), x, y, z, lightColor);
-        this.skyLightValue = GuiInGame.getLightValueFromMap(SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockSkyLightValue(xInt, yInt, zInt));
+        float[] lightColor =  !associatedEntity.canDamage ? new float[]{1,0.65f,0.65f}  : SpaceGame.instance.save.activeWorld.getBlockLightColor(xInt, yInt, zInt);
+        this.setVertexLight1Arg(SpaceGame.instance.save.activeWorld.getBlockLightValue(xInt, yInt, zInt), x, y, z, lightColor);
+        this.skyLightValue = GuiInGame.getLightValueFromMap(SpaceGame.instance.save.activeWorld.getBlockSkyLightValue(xInt, yInt, zInt));
         Color color = new Color(this.red, this.green, this.blue, 0);
         return color.getRGB();
     }

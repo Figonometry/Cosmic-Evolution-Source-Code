@@ -7,7 +7,7 @@ public abstract class Assets {
     public static TextureArrayLoader itemTextureArray;
 
     public static void enableBlockTextureArray(){
-        blockTextureArray = new TextureArrayLoader("src/spacegame/assets/textures/blocks/", 21);
+        blockTextureArray = new TextureArrayLoader("src/spacegame/assets/textures/blocks/", 24);
     }
 
     public static void enableItemTextureArray(){

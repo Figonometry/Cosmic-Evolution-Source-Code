@@ -1,13 +1,11 @@
 package spacegame.render;
 
 import org.joml.Matrix4d;
-import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL46;
 import spacegame.core.SpaceGame;
 
 import java.awt.*;
-import java.nio.Buffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
@@ -388,9 +386,9 @@ public final class WorldTessellator {
 
         GL46.glBindTexture(GL46.GL_TEXTURE_2D, this.boundTexture);
 
-        if(SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.renderWorldScene.nearbyStars.size() > 0) {
+        if(SpaceGame.instance.save.activeWorld.chunkController.renderWorldScene.nearbyStars.size() > 0) {
             GL46.glActiveTexture(GL46.GL_TEXTURE1);
-            GL46.glBindTexture(GL46.GL_TEXTURE_2D, SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.renderWorldScene.nearbyStars.get(0).shadowMap.depthMap);
+            GL46.glBindTexture(GL46.GL_TEXTURE_2D, SpaceGame.instance.save.activeWorld.chunkController.renderWorldScene.nearbyStars.get(0).shadowMap.depthMap);
         }
 
         //bind shader program
@@ -478,9 +476,9 @@ public final class WorldTessellator {
 
         GL46.glBindTexture(GL46.GL_TEXTURE_2D_ARRAY, this.boundTexture);
 
-        if(SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.renderWorldScene.nearbyStars.size() > 0) {
+        if(SpaceGame.instance.save.activeWorld.chunkController.renderWorldScene.nearbyStars.size() > 0) {
             GL46.glActiveTexture(GL46.GL_TEXTURE1);
-            GL46.glBindTexture(GL46.GL_TEXTURE_2D, SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.renderWorldScene.nearbyStars.get(0).shadowMap.depthMap);
+            GL46.glBindTexture(GL46.GL_TEXTURE_2D, SpaceGame.instance.save.activeWorld.chunkController.renderWorldScene.nearbyStars.get(0).shadowMap.depthMap);
         }
 
         //bind shader program

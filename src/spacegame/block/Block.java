@@ -7,7 +7,7 @@ import spacegame.entity.EntityPlayer;
 import spacegame.item.Item;
 import spacegame.render.ModelLoader;
 import spacegame.world.Chunk;
-import spacegame.world.WorldFace;
+import spacegame.world.World;
 
 import java.io.*;
 import java.util.Random;
@@ -155,6 +155,7 @@ public class Block {
     public static final Block campFireLitLight1 = new BlockCampFireLit((short)81, 17, "src/spacegame/assets/blockFiles/campFireLitLight1.txt");
     public static final Block campFireBurnedOut = new Block((short)82, 19, "src/spacegame/assets/blockFiles/campFireBurnedOut.txt");
     public static final Block grassBlockLower = new Block((short)83, 20, "src/spacegame/assets/blockFiles/grassBlockLower.txt");
+    public static final Block cactus = new BlockCactus((short)84, 21, "src/spacegame/assets/blockFiles/cactus.txt");
     public final short ID;
     public final int textureID;
     public static int facingDirection;
@@ -352,17 +353,17 @@ public class Block {
         return this.textureID;
     }
 
-    public void onLeftClick(int x, int y, int z, WorldFace worldFace, EntityPlayer player) {
+    public void onLeftClick(int x, int y, int z, World world, EntityPlayer player) {
         if (!this.canBeBroken) {return;}
-        worldFace.setBlockWithNotify(x, y, z, Block.air.ID);
+        world.setBlockWithNotify(x, y, z, Block.air.ID);
         new SoundPlayer(SpaceGame.instance).playSound(x, y, z, new Sound(this.stepSound, false), new Random().nextFloat(0.6F, 1));
         if (player.inventory.itemStacks[selectedInventorySlot].durability != -1) {
             player.inventory.itemStacks[selectedInventorySlot].durability--;
         }
     }
 
-    public void onRightClick(int x, int y, int z, WorldFace worldFace, EntityPlayer player) {
-        Chunk chunk = worldFace.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
+    public void onRightClick(int x, int y, int z, World world, EntityPlayer player) {
+        Chunk chunk = world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
         if (chunk.blocks == null) {chunk.initChunk();}
         if (chunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)] != air.ID && chunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)] != water.ID) {return;}
 
@@ -381,16 +382,16 @@ public class Block {
                 default -> Block.torchStandard.ID;
             };
         } else if (Item.list[heldItem].canPlaceOnGround) {
-            if (!worldFace.isItemAtLocation(x, y - 1, z) && worldFace.getBlockID(x, y - 1, z) != Block.air.ID) {
-                worldFace.setItemOnGround(x, y - 1, z, player.getHeldItem(), player.getHeldItemDurability());
+            if (!world.isItemAtLocation(x, y - 1, z) && world.getBlockID(x, y - 1, z) != Block.air.ID) {
+                world.setItemOnGround(x, y - 1, z, player.getHeldItem(), player.getHeldItemDurability());
                 new SoundPlayer(SpaceGame.instance).playSound(x, y, z, new Sound(Sound.itemPickup, false), new Random().nextFloat(0.5F, 0.9F));
                 player.removeItemFromInventory();
                 player.isSwinging = true;
-            } else if (worldFace.getBlockID(x, y - 1, z) != Block.air.ID) {
-                Item.list[player.getHeldItem()].onRightClick(x, y - 1, z, worldFace, player);
-                if (worldFace.getItemInChunk(x, y - 1, z) == Item.rawStick.ID && heldItem == Item.rawStick.ID) {
-                    worldFace.setBlockWithNotify(x, y, z, campfireUnLit2Sticks.ID);
-                    worldFace.removeItemFromGround(x, y - 1, z);
+            } else if (world.getBlockID(x, y - 1, z) != Block.air.ID) {
+                Item.list[player.getHeldItem()].onRightClick(x, y - 1, z, world, player);
+                if (world.getItemInChunk(x, y - 1, z) == Item.rawStick.ID && heldItem == Item.rawStick.ID) {
+                    world.setBlockWithNotify(x, y, z, campfireUnLit2Sticks.ID);
+                    world.removeItemFromGround(x, y - 1, z);
                     player.removeItemFromInventory();
                 }
             }
@@ -398,7 +399,7 @@ public class Block {
         }
         new SoundPlayer(SpaceGame.instance).playSound(x, y, z, new Sound(list[player.getHeldBlock()].stepSound, false), new Random().nextFloat(0.6F, 1));
         player.removeItemFromInventory();
-        worldFace.setBlockWithNotify(x, y, z, heldBlock);
+        world.setBlockWithNotify(x, y, z, heldBlock);
         player.isSwinging = true;
     }
 

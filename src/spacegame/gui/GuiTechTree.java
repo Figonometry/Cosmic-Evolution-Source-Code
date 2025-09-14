@@ -2,7 +2,6 @@ package spacegame.gui;
 
 import org.lwjgl.opengl.GL46;
 import spacegame.core.SpaceGame;
-import spacegame.item.ItemStack;
 import spacegame.render.Shader;
 import spacegame.render.Tessellator;
 import spacegame.render.TextureLoader;

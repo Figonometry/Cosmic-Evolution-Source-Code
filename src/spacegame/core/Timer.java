@@ -34,7 +34,7 @@ public final class Timer {
         this.ticks = (int) this.passedTime;
         elapsedTime += this.ticks;
         if(SpaceGame.instance.save != null){
-            if(!SpaceGame.instance.save.activeWorld.activeWorldFace.paused){
+            if(!SpaceGame.instance.save.activeWorld.paused){
                 SpaceGame.instance.save.time += this.ticks;
             }
         }

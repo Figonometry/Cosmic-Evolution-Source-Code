@@ -1,4 +1,4 @@
-package spacegame.world;
+package spacegame.render;
 
 import spacegame.block.Block;
 import spacegame.block.BlockLog;

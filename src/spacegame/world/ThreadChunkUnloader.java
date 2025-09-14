@@ -100,8 +100,8 @@ public final class ThreadChunkUnloader implements Runnable {
         } catch (IOException e){
             new Logger(e);
         }
-        synchronized (SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.removeChunks) {
-            SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.removeChunks.add(this.chunk);
+        synchronized (SpaceGame.instance.save.activeWorld.chunkController.removeChunks) {
+            SpaceGame.instance.save.activeWorld.chunkController.removeChunks.add(this.chunk);
         }
     }
 }

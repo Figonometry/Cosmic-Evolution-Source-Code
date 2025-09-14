@@ -3,8 +3,6 @@ package spacegame.render;
 import org.joml.Matrix4d;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL46;
-import spacegame.core.MathUtils;
-import spacegame.core.SpaceGame;
 
 import java.awt.*;
 import java.nio.FloatBuffer;

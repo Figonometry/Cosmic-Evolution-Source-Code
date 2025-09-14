@@ -79,13 +79,13 @@ public final class TextField implements Runnable {
                     }
                 }
             }
-            if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_BACKSPACE) && KeyListener.backSpaceReleased && this.text.length() > 0) {
+            if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_BACKSPACE) && KeyListener.keyReleased[GLFW.GLFW_KEY_BACKSPACE] && this.text.length() > 0) {
                 char[] newTextCharacters = new char[this.text.length() - 1];
                 for (int i = 0; i < this.text.length() - 1; i++) {
                     newTextCharacters[i] = this.text.charAt(i);
                 }
                 this.text = new String(newTextCharacters);
-                KeyListener.backSpaceReleased = false;
+                KeyListener.setKeyReleased(GLFW.GLFW_KEY_BACKSLASH);
             }
         }
     }

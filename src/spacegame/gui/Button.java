@@ -148,7 +148,7 @@ public class Button {
                     GameSettings.changeHorizontalViewDistance(true);
                 }
                 if(this.sg.save != null) {
-                    this.sg.save.activeWorld.activeWorldFace.chunkController.resetChunkLoading();
+                    this.sg.save.activeWorld.chunkController.resetChunkLoading();
                 }
             }
             case CHUNK_VIEW_VERTICAL -> {
@@ -158,7 +158,7 @@ public class Button {
                     GameSettings.changeVerticalViewDistance(true);
                 }
                 if(this.sg.save != null) {
-                    this.sg.save.activeWorld.activeWorldFace.chunkController.resetChunkLoading();
+                    this.sg.save.activeWorld.chunkController.resetChunkLoading();
                 }
             }
             case SHADOW_MAP -> {
@@ -193,7 +193,7 @@ public class Button {
             }
             case BACK_TO_GAME -> {
                 GLFW.glfwSetInputMode(this.sg.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
-                this.sg.save.activeWorld.activeWorldFace.paused = false;
+                this.sg.save.activeWorld.paused = false;
                 this.sg.setNewGui(new GuiInGame(this.sg));
             }
             case QUIT_TO_MAIN_MENU -> {
@@ -385,7 +385,7 @@ public class Button {
                 this.sg.save.thePlayer.z = this.sg.save.spawnZ;
                 this.sg.save.thePlayer.health = this.sg.save.thePlayer.maxHealth;
                 GLFW.glfwSetInputMode(this.sg.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
-                this.sg.save.activeWorld.activeWorldFace.paused = false;
+                this.sg.save.activeWorld.paused = false;
                 this.sg.setNewGui(new GuiInGame(this.sg));
             }
             case CRAFT -> {
@@ -395,8 +395,8 @@ public class Button {
                     int y = ((GuiCraftingStoneTools) this.Gui).y;
                     int z = ((GuiCraftingStoneTools) this.Gui).z;
                     short outputItem = ((GuiCraftingStoneTools) this.Gui).outputItemID;
-                    this.sg.save.activeWorld.activeWorldFace.modifyItemID(x, y, z, outputItem);
-                    this.sg.save.activeWorld.activeWorldFace.delayWhenExitingUI = 60;
+                    this.sg.save.activeWorld.modifyItemID(x, y, z, outputItem);
+                    this.sg.save.activeWorld.delayWhenExitingUI = 60;
                     if (this.sg.save.thePlayer.inventory.itemStacks[EntityPlayer.selectedInventorySlot].item != null) {
                         this.sg.save.thePlayer.inventory.itemStacks[EntityPlayer.selectedInventorySlot].durability--;
                     }
@@ -408,8 +408,8 @@ public class Button {
                     int y = ((GuiCraftingStick)this.Gui).y;
                     int z = ((GuiCraftingStick)this.Gui).z;
                     short outputItem = ((GuiCraftingStick)this.Gui).outputItemID;
-                    this.sg.save.activeWorld.activeWorldFace.modifyItemID(x,y,z, outputItem);
-                    this.sg.save.activeWorld.activeWorldFace.delayWhenExitingUI = 60;
+                    this.sg.save.activeWorld.modifyItemID(x,y,z, outputItem);
+                    this.sg.save.activeWorld.delayWhenExitingUI = 60;
                     if(this.sg.save.thePlayer.inventory.itemStacks[EntityPlayer.selectedInventorySlot].item != null) {
                         this.sg.save.thePlayer.inventory.itemStacks[EntityPlayer.selectedInventorySlot].durability--;
                     }

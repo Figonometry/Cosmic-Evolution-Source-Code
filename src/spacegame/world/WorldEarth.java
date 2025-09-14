@@ -23,7 +23,6 @@ public final class WorldEarth extends World {
 
     public WorldEarth(SpaceGame spaceGame, int size) {
         super(spaceGame,size);
-        this.activeWorldFace = new WorldFace(this.sg, this);
         this.skyLightLevel = 15;
         this.skyColor = new float[]{0.52734375F, 0.8046875F, 0.91796875F};
         this.defaultSkyColor = new float[]{0.52734375F, 0.8046875F, 0.91796875F};
@@ -61,18 +60,18 @@ public final class WorldEarth extends World {
         World.noiseMapsCompleted++;
         this.temperatureNoise1 = new NoiseMap2D(715, 715, 1, 0.5, 1, 0.5, this.sg.save.seed);
         World.noiseMapsCompleted++;
-        this.temperatureNoise2 = new NoiseMap2D(1379, 1379, 1, 0.5, 1, 0.5, this.sg.save.seed);
+        this.temperatureNoise2 = new NoiseMap2D(1379, 1379, 1, 0.5, 1, 0, this.sg.save.seed);
         World.noiseMapsCompleted++;
         this.rainfallNoise1 = new NoiseMap2D(937, 937, 1, 0.5, 1, 0.5, this.sg.save.seed);
         World.noiseMapsCompleted++;
-        this.rainfallNoise2 = new NoiseMap2D(1579, 1579, 1, 0.5, 1, 0.5, this.sg.save.seed);
+        this.rainfallNoise2 = new NoiseMap2D(1579, 1579, 1, 0.5, 1, 0, this.sg.save.seed);
         World.noiseMapsCompleted++;
         World.worldLoadPhase = 1;
     }
 
     @Override
     public void saveWorld() {
-        this.activeWorldFace.chunkController.saveAllRegions();
+        this.chunkController.saveAllRegions();
     }
 
     @Override
@@ -82,16 +81,17 @@ public final class WorldEarth extends World {
 
     @Override
     public void saveWorldWithoutUnload(){
-        this.activeWorldFace.chunkController.saveAllRegionsWithoutUnload();
+        this.chunkController.saveAllRegionsWithoutUnload();
     }
 
-    public double getRainfall(int x, int z){
-        return ((this.rainfallNoise1.getNoiseRaw(x,z) + this.rainfallNoise2.getNoiseRaw(x,z)) * 0.5);
+    public void tick() {
+        this.chunkController.tick();
+        if(this.delayWhenExitingUI > 0) {
+            this.delayWhenExitingUI--;
+        }
     }
 
-    public double getTemperature(int x, int y, int z){
-        //This will have to be modulated by the vertical distance when above sea level and based on the distance north/south of the equator, it should be subtle enough that the player does not notice it
-        return ((this.temperatureNoise1.getNoiseRaw(x,z) + this.temperatureNoise2.getNoiseRaw(x,z)) * 0.5);
-    }
+
+
 
 }

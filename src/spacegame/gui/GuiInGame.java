@@ -80,20 +80,31 @@ public final class GuiInGame extends Gui {
             fontRenderer.drawString(SpaceGame.instance.title, leftSide, 460,-15, 16777215, 50);
         }
         if (SpaceGame.DEBUG_MODE) {
+            int playerX = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.x);
+            int playerY = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.y);
+            int playerZ = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.z);
             fontRenderer.drawString("X: " + SpaceGame.instance.save.thePlayer.x, leftSide, 430,-15, 16777215, 50);
             fontRenderer.drawString("Y: " + (SpaceGame.instance.save.thePlayer.y), leftSide, 400,-15, 16777215, 50);
             fontRenderer.drawString("Z: " + SpaceGame.instance.save.thePlayer.z, leftSide, 370,-15, 16777215, 50);
             fontRenderer.drawString("Pitch: " + SpaceGame.instance.save.thePlayer.pitch, leftSide, 340,-15, 16777215, 50);
             fontRenderer.drawString("Yaw: " + SpaceGame.instance.save.thePlayer.yaw, leftSide, 310,-15, 16777215, 50);
-            fontRenderer.drawString("Chunks Loaded " + SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.numberOfLoadedChunks(), leftSide, 280,-15, 16777215, 50);
-            fontRenderer.drawString("Block Light Level: " + SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockLightValue((int) SpaceGame.instance.save.thePlayer.x, (int) SpaceGame.instance.save.thePlayer.y, (int) SpaceGame.instance.save.thePlayer.z), leftSide, 250,-15, 16777215, 50);
-            fontRenderer.drawString("Regions Loaded: " + SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.numberOfLoadedRegions(), leftSide, 220,-15, 16777215, 50);
-            fontRenderer.drawString("Draw Calls: " +  SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.drawCalls, leftSide, 190,-15, 16777215, 50);
+            fontRenderer.drawString("Chunks Loaded " + SpaceGame.instance.save.activeWorld.chunkController.numberOfLoadedChunks(), leftSide, 280,-15, 16777215, 50);
+            fontRenderer.drawString("Block Light Level: " + SpaceGame.instance.save.activeWorld.getBlockLightValue(playerX, playerY, playerZ), leftSide, 250,-15, 16777215, 50);
+            fontRenderer.drawString("Regions Loaded: " + SpaceGame.instance.save.activeWorld.chunkController.numberOfLoadedRegions(), leftSide, 220,-15, 16777215, 50);
+            fontRenderer.drawString("Draw Calls: " +  SpaceGame.instance.save.activeWorld.chunkController.drawCalls, leftSide, 190,-15, 16777215, 50);
             fontRenderer.drawString("Thread Count: " + Thread.activeCount(), leftSide, 160,-15, 16777215, 50);
-            fontRenderer.drawString("Thread Queue Size: " + SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.threadQueue.size(), leftSide, 130,-15, 16777215, 50);
-            fontRenderer.drawString("Sky Light Level: " + SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockSkyLightValue((int) SpaceGame.instance.save.thePlayer.x, (int) SpaceGame.instance.save.thePlayer.y, (int) SpaceGame.instance.save.thePlayer.z), leftSide, 100,-15, 16777215, 50);
-            fontRenderer.drawString("Temperature: " + SpaceGame.instance.save.activeWorld.activeWorldFace.getTemperature((int) SpaceGame.instance.save.thePlayer.x, (int) SpaceGame.instance.save.thePlayer.y, (int) SpaceGame.instance.save.thePlayer.z), leftSide, 70,-15, 16777215, 50);
-            fontRenderer.drawString("Rainfall: " + SpaceGame.instance.save.activeWorld.activeWorldFace.getRainfall((int) SpaceGame.instance.save.thePlayer.x, (int) SpaceGame.instance.save.thePlayer.z), leftSide, 40,-15, 16777215, 50);
+            fontRenderer.drawString("Thread Queue Size: " + SpaceGame.instance.save.activeWorld.chunkController.threadQueue.size(), leftSide, 130,-15, 16777215, 50);
+            fontRenderer.drawString("Sky Light Level: " + SpaceGame.instance.save.activeWorld.getBlockSkyLightValue(playerX, playerY, playerZ), leftSide, 100,-15, 16777215, 50);
+            fontRenderer.drawString("Temperature: " + SpaceGame.instance.save.activeWorld.getDisplayTemperature(playerX, playerY, playerZ) + "F", leftSide, 70,-15, 16777215, 50);
+            fontRenderer.drawString("Rainfall: " + SpaceGame.instance.save.activeWorld.getRainfall(playerX, playerZ), leftSide, 40,-15, 16777215, 50);
+            fontRenderer.drawString("Time: " + SpaceGame.instance.save.time, leftSide, 10, -15, 16777215, 50);
+            fontRenderer.drawString("SunAngle: " + SpaceGame.instance.save.activeWorld.sunAngle, leftSide, -20, -15, 16777215, 50);
+        } else {
+            int playerX = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.x);
+            int playerY = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.y);
+            int playerZ = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.z);
+            fontRenderer.drawString("Temperature: " + SpaceGame.instance.save.activeWorld.getDisplayTemperature(playerX, playerY, playerZ) + "F", leftSide, 400,-15, 16777215, 50);
+            fontRenderer.drawString("Rainfall: " + SpaceGame.instance.save.activeWorld.getRainfall(playerX, playerZ), leftSide, 370,-15, 16777215, 50);
         }
     }
 
@@ -105,7 +116,7 @@ public final class GuiInGame extends Gui {
 
         Tessellator tessellator = Tessellator.instance;
 
-        short blockPlayerHeadIsIn = this.sg.save.activeWorld.activeWorldFace.getBlockID((int) this.sg.save.thePlayer.x, (int) (this.sg.save.thePlayer.y + this.sg.save.thePlayer.height/2), (int) this.sg.save.thePlayer.z);
+        short blockPlayerHeadIsIn = this.sg.save.activeWorld.getBlockID(MathUtils.floorDouble(this.sg.save.thePlayer.x), MathUtils.floorDouble(this.sg.save.thePlayer.y+  this.sg.save.thePlayer.height/2), MathUtils.floorDouble(this.sg.save.thePlayer.z));
         if(blockPlayerHeadIsIn == Block.water.ID){
             GL46.glEnable(GL46.GL_BLEND);
             GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
@@ -342,8 +353,8 @@ public final class GuiInGame extends Gui {
                 int playerX = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.x);
                 int playerY = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.y);
                 int playerZ = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.z);
-                float blockLight = getLightValueFromMap(SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockLightValue(playerX, playerY, playerZ));
-                float lightLevelFloat = SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.renderWorldScene.baseLight > blockLight ? SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.renderWorldScene.baseLight : blockLight;
+                float blockLight = getLightValueFromMap(SpaceGame.instance.save.activeWorld.getBlockLightValue(playerX, playerY, playerZ));
+                float lightLevelFloat = SpaceGame.instance.save.activeWorld.chunkController.renderWorldScene.baseLight > blockLight ? SpaceGame.instance.save.activeWorld.chunkController.renderWorldScene.baseLight : blockLight;
                 lightLevelFloat -=  0.1 * (MathUtils.sin(SpaceGame.instance.save.thePlayer.yaw / 45) + 1);
                 lightLevelFloat -=  0.1 * (MathUtils.sin(SpaceGame.instance.save.thePlayer.pitch / 45) + 1);
                 if(lightLevelFloat < 0.1){
@@ -459,8 +470,8 @@ public final class GuiInGame extends Gui {
                 int playerX = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.x);
                 int playerY = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.y);
                 int playerZ = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.z);
-                float blockLight = getLightValueFromMap(SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockLightValue(playerX, playerY, playerZ));
-                float lightLevelFloat = SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.renderWorldScene.baseLight > blockLight ? SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.renderWorldScene.baseLight : blockLight;
+                float blockLight = getLightValueFromMap(SpaceGame.instance.save.activeWorld.getBlockLightValue(playerX, playerY, playerZ));
+                float lightLevelFloat = SpaceGame.instance.save.activeWorld.chunkController.renderWorldScene.baseLight > blockLight ? SpaceGame.instance.save.activeWorld.chunkController.renderWorldScene.baseLight : blockLight;
                 lightLevelFloat -=  0.1 * (MathUtils.sin(SpaceGame.instance.save.thePlayer.yaw / 45) + 1);
                 lightLevelFloat -=  0.1 * (MathUtils.sin(SpaceGame.instance.save.thePlayer.pitch / 45) + 1);
                 if(lightLevelFloat < 0.1f){
@@ -708,7 +719,7 @@ public final class GuiInGame extends Gui {
             int locationZ = Integer.MIN_VALUE;
             short block = Short.MIN_VALUE;
             ModelLoader modelLoader;
-            if (!SpaceGame.instance.save.activeWorld.activeWorldFace.paused) {
+            if (!SpaceGame.instance.save.activeWorld.paused) {
                 double[] rayCast = SpaceGame.camera.rayCast(3);
                 final double multiplier = 0.05D;
                 final double xDif = (rayCast[0] - SpaceGame.instance.save.thePlayer.x);
@@ -723,30 +734,27 @@ public final class GuiInGame extends Gui {
                     blockY = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.y  + SpaceGame.instance.save.thePlayer.height/2 + yDif * multiplier * loopPass);
                     blockZ = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.z + zDif * multiplier * loopPass);
 
-                    Block checkedBlock = Block.list[SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockID(blockX, blockY, blockZ)];
+                    Block checkedBlock = Block.list[SpaceGame.instance.save.activeWorld.getBlockID(blockX, blockY, blockZ)];
                     if (isBlockVisible(blockX, blockY, blockZ)) {
                         if (checkedBlock.ID != Block.air.ID && checkedBlock.ID != Block.water.ID) {
                             locationX = blockX;
                             locationY = blockY;
                             locationZ = blockZ;
-                            block = SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockID(blockX, blockY, blockZ);
+                            block = SpaceGame.instance.save.activeWorld.getBlockID(blockX, blockY, blockZ);
                             break;
                         }
                     }
                 }
 
                 if (locationX != Integer.MIN_VALUE && locationY != Integer.MIN_VALUE && locationZ != Integer.MIN_VALUE && block != Short.MIN_VALUE) {
-                    Chunk chunk = SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.findChunkFromChunkCoordinates(locationX >> 5, locationY >> 5, locationZ >> 5);
+                    Chunk chunk = SpaceGame.instance.save.activeWorld.chunkController.findChunkFromChunkCoordinates(locationX >> 5, locationY >> 5, locationZ >> 5);
                     if (chunk != null) {
-                        int playerChunkX = (int) (SpaceGame.instance.save.thePlayer.x / 32);
-                        int playerChunkY = (int) (SpaceGame.instance.save.thePlayer.y / 32);
-                        int playerChunkZ = (int) (SpaceGame.instance.save.thePlayer.z / 32);
-                        int xOffset = chunk.x - playerChunkX;
-                        int yOffset = chunk.y - playerChunkY;
-                        int zOffset = chunk.z - playerChunkZ;
-                        xOffset *= 32;
-                        yOffset *= 32;
-                        zOffset *= 32;
+                        int playerChunkX = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.x) >> 5;
+                        int playerChunkY = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.y) >> 5;
+                        int playerChunkZ = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.z) >> 5;
+                        int xOffset = (chunk.x - playerChunkX) << 5;
+                        int yOffset = (chunk.y - playerChunkY) << 5;
+                        int zOffset = (chunk.z - playerChunkZ) << 5;
                         Vector3f chunkOffset = new Vector3f(xOffset, yOffset, zOffset);
                         Shader.worldShader2DTextureWithAtlas.uploadVec3f("chunkOffset", chunkOffset);
                         Shader.worldShader2DTextureWithAtlas.uploadBoolean("useFog", true);
@@ -782,7 +790,7 @@ public final class GuiInGame extends Gui {
         int locationZ = Integer.MIN_VALUE;
         short block = Short.MIN_VALUE;
         ModelLoader modelLoader;
-        if (!SpaceGame.instance.save.activeWorld.activeWorldFace.paused) {
+        if (!SpaceGame.instance.save.activeWorld.paused) {
             double[] rayCast = SpaceGame.camera.rayCast(3);
             final double multiplier = 0.05F;
             final double xDif = (rayCast[0] - SpaceGame.instance.save.thePlayer.x);
@@ -797,30 +805,27 @@ public final class GuiInGame extends Gui {
                 blockY = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.y  + SpaceGame.instance.save.thePlayer.height/2 + yDif * multiplier * loopPass);
                 blockZ = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.z + zDif * multiplier * loopPass);
 
-                Block checkedBlock = Block.list[SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockID(blockX, blockY, blockZ)];
+                Block checkedBlock = Block.list[SpaceGame.instance.save.activeWorld.getBlockID(blockX, blockY, blockZ)];
                 if (isBlockVisible(blockX, blockY, blockZ)) {
                     if(checkedBlock.ID != Block.air.ID && checkedBlock.ID != Block.water.ID){
                             locationX = blockX;
                             locationY = blockY;
                             locationZ = blockZ;
-                            block = SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockID(blockX, blockY, blockZ);
+                            block = SpaceGame.instance.save.activeWorld.getBlockID(blockX, blockY, blockZ);
                             break;
                     }
                 }
             }
 
             if(locationX != Integer.MIN_VALUE && locationY != Integer.MIN_VALUE && locationZ != Integer.MIN_VALUE && block != Short.MIN_VALUE){
-                Chunk chunk = SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.findChunkFromChunkCoordinates(locationX >> 5, locationY >> 5, locationZ >> 5);
+                Chunk chunk = SpaceGame.instance.save.activeWorld.chunkController.findChunkFromChunkCoordinates(locationX >> 5, locationY >> 5, locationZ >> 5);
                 if(chunk != null) {
-                    int playerChunkX = (int) (SpaceGame.instance.save.thePlayer.x / 32);
-                    int playerChunkY = (int) (SpaceGame.instance.save.thePlayer.y / 32);
-                    int playerChunkZ = (int) (SpaceGame.instance.save.thePlayer.z / 32);
-                    int xOffset = chunk.x - playerChunkX;
-                    int yOffset = chunk.y - playerChunkY;
-                    int zOffset = chunk.z - playerChunkZ;
-                    xOffset *= 32;
-                    yOffset *= 32;
-                    zOffset *= 32;
+                    int playerChunkX = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.x) >> 5;
+                    int playerChunkY = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.y) >> 5;
+                    int playerChunkZ = MathUtils.floorDouble(SpaceGame.instance.save.thePlayer.z) >> 5;
+                    int xOffset = (chunk.x - playerChunkX) << 5;
+                    int yOffset = (chunk.y - playerChunkY) << 5;
+                    int zOffset = (chunk.z - playerChunkZ) << 5;
                     Vector3f chunkOffset = new Vector3f(xOffset, yOffset, zOffset);
                     Shader.worldShader2DTexture.uploadVec3f("chunkOffset", chunkOffset);
                     Shader.worldShader2DTexture.uploadBoolean("useFog", true);
@@ -846,12 +851,12 @@ public final class GuiInGame extends Gui {
     public static boolean isBlockVisible(int blockX, int blockY, int blockZ) {
         boolean exposed = false;
 //This does not work if any of the exposed faces are air, this should be AND
-        exposed |= !Block.list[SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockID(blockX + 1, blockY, blockZ)].isSolid;
-        exposed |= !Block.list[SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockID(blockX - 1, blockY, blockZ)].isSolid;
-        exposed |= !Block.list[SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockID(blockX, blockY + 1, blockZ)].isSolid;
-        exposed |= !Block.list[SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockID(blockX, blockY - 1, blockZ)].isSolid;
-        exposed |= !Block.list[SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockID(blockX, blockY, blockZ + 1)].isSolid;
-        exposed |= !Block.list[SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockID(blockX, blockY, blockZ - 1)].isSolid;
+        exposed |= !Block.list[SpaceGame.instance.save.activeWorld.getBlockID(blockX + 1, blockY, blockZ)].isSolid;
+        exposed |= !Block.list[SpaceGame.instance.save.activeWorld.getBlockID(blockX - 1, blockY, blockZ)].isSolid;
+        exposed |= !Block.list[SpaceGame.instance.save.activeWorld.getBlockID(blockX, blockY + 1, blockZ)].isSolid;
+        exposed |= !Block.list[SpaceGame.instance.save.activeWorld.getBlockID(blockX, blockY - 1, blockZ)].isSolid;
+        exposed |= !Block.list[SpaceGame.instance.save.activeWorld.getBlockID(blockX, blockY, blockZ + 1)].isSolid;
+        exposed |= !Block.list[SpaceGame.instance.save.activeWorld.getBlockID(blockX, blockY, blockZ - 1)].isSolid;
 
         return exposed;
     }

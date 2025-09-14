@@ -9,7 +9,6 @@ import spacegame.entity.ai.AIPassive;
 import spacegame.gui.GuiWorldLoadingScreen;
 import spacegame.world.AxisAlignedBB;
 
-import java.util.ArrayList;
 import java.util.Random;
 
 public abstract class EntityLiving extends Entity {
@@ -63,7 +62,7 @@ public abstract class EntityLiving extends Entity {
             int prevZ = MathUtils.floorDouble(this.prevZ);
             if ((x != prevX || z != prevZ) && this.stepTimer <= 0) {
                 int lowerY = MathUtils.floorDouble(this.y - (this.height/2) - 0.1);
-                new SoundPlayer(SpaceGame.instance).playSound(this.x, lowerY, this.z, new Sound(Block.list[SpaceGame.instance.save.activeWorld.activeWorldFace.getBlockID(x, lowerY, z)].stepSound, false), new Random().nextFloat(0.6F, 1));
+                new SoundPlayer(SpaceGame.instance).playSound(this.x, lowerY, this.z, new Sound(Block.list[SpaceGame.instance.save.activeWorld.getBlockID(x, lowerY, z)].stepSound, false), new Random().nextFloat(0.6F, 1));
                 this.stepTimer = 30;
             } else {
                 this.stepTimer--;

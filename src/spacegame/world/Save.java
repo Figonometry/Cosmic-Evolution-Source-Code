@@ -41,7 +41,6 @@ public final class Save {
         }
         this.seed = seed;
         this.saveName = saveName;
-        this.time += 7200;
         this.savedSkyLightLevel = 15;
         this.spawnX = x;
         this.spawnZ = z;
@@ -154,7 +153,7 @@ public final class Save {
     public void tick() {
         this.activeWorld.tick();
         this.thePlayer.tick();
-        this.activeWorld.activeWorldFace.chunkController.renderWorldScene.hasTickPassed = true;
+        this.activeWorld.chunkController.renderWorldScene.hasTickPassed = true;
     }
 
     public void setActiveWorld(World world) {

@@ -1,7 +1,6 @@
 package spacegame.render;
 
 import org.lwjgl.opengl.GL46;
-import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
 

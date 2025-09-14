@@ -101,10 +101,10 @@ public final class GuiWorldLoadingScreen extends Gui {
                 return (double) World.noiseMapsCompleted / (double)World.totalMaps;
             }
             case 1 -> {
-                return ((double)(this.sg.save.activeWorld.activeWorldFace.chunkController.numberOfLoadedChunks / (double)((GameSettings.renderDistance * 2 + 1) * (GameSettings.renderDistance * 2 + 1) * (GameSettings.chunkColumnHeight * 2))));
+                return ((double)(this.sg.save.activeWorld.chunkController.numberOfLoadedChunks / (double)((GameSettings.renderDistance * 2 + 1) * (GameSettings.renderDistance * 2 + 1) * (GameSettings.chunkColumnHeight * 2))));
             }
             case 2 -> {
-                return (double) 1 / this.sg.save.activeWorld.activeWorldFace.chunkController.threadQueue.size();
+                return (double) 1 / this.sg.save.activeWorld.chunkController.threadQueue.size();
             }
         }
         return 0;
@@ -133,10 +133,10 @@ public final class GuiWorldLoadingScreen extends Gui {
             }
             case 2 -> {
                 switch ((int) second) {
-                    case 0 -> fontRenderer.drawCenteredString("Finalizing Chunk Threads: " + this.sg.save.activeWorld.activeWorldFace.chunkController.threadQueue.size() + " Threads Remaining", 0, 128,-15, 16777215, 50);
-                    case 1 -> fontRenderer.drawCenteredString("Finalizing Chunk Threads: " + this.sg.save.activeWorld.activeWorldFace.chunkController.threadQueue.size() + " Threads Remaining.", 0, 128, -15,16777215, 50);
-                    case 2 -> fontRenderer.drawCenteredString("Finalizing Chunk Threads: " + this.sg.save.activeWorld.activeWorldFace.chunkController.threadQueue.size() + " Threads Remaining..", 0, 128,-15, 16777215, 50);
-                    case 3 -> fontRenderer.drawCenteredString("Finalizing Chunk Threads: " + this.sg.save.activeWorld.activeWorldFace.chunkController.threadQueue.size() + " Threads Remaining...", 0, 128, -15,16777215, 50);
+                    case 0 -> fontRenderer.drawCenteredString("Finalizing Chunk Threads: " + this.sg.save.activeWorld.chunkController.threadQueue.size() + " Threads Remaining", 0, 128,-15, 16777215, 50);
+                    case 1 -> fontRenderer.drawCenteredString("Finalizing Chunk Threads: " + this.sg.save.activeWorld.chunkController.threadQueue.size() + " Threads Remaining.", 0, 128, -15,16777215, 50);
+                    case 2 -> fontRenderer.drawCenteredString("Finalizing Chunk Threads: " + this.sg.save.activeWorld.chunkController.threadQueue.size() + " Threads Remaining..", 0, 128,-15, 16777215, 50);
+                    case 3 -> fontRenderer.drawCenteredString("Finalizing Chunk Threads: " + this.sg.save.activeWorld.chunkController.threadQueue.size() + " Threads Remaining...", 0, 128, -15,16777215, 50);
                 }
             }
         }

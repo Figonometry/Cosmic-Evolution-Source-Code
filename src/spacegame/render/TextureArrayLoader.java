@@ -89,6 +89,9 @@ public final class TextureArrayLoader {
                case 18 -> "fire";
                case 19 -> "campFireBurnedOut";
                case 20 -> "grassSideBottom";
+               case 21 -> "cactus";
+               case 22 -> "cactusTop";
+               case 23 -> "cactusBottom";
                default -> "missing";
            };
        } else if(textureFolderpath.contains("item")){

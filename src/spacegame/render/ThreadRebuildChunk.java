@@ -1,4 +1,4 @@
-package spacegame.world;
+package spacegame.render;
 
 import org.lwjgl.BufferUtils;
 import spacegame.block.Block;
@@ -6,14 +6,16 @@ import spacegame.block.ITickable;
 import spacegame.core.Logger;
 import spacegame.core.SpaceGame;
 import spacegame.render.RenderBlocks;
+import spacegame.world.Chunk;
+import spacegame.world.World;
 
 public final class ThreadRebuildChunk implements Runnable {
     public Chunk workingChunk;
-    public WorldFace worldFace;
+    public World parentWorld;
 
-    public ThreadRebuildChunk(Chunk chunk, WorldFace worldFace){
+    public ThreadRebuildChunk(Chunk chunk, World world){
         this.workingChunk = chunk;
-        this.worldFace = worldFace;
+        this.parentWorld = world;
     }
 
     @Override
@@ -39,10 +41,10 @@ public final class ThreadRebuildChunk implements Runnable {
         if (this.workingChunk.updateSkylight) {
             this.workingChunk.setSkyLight();
             this.workingChunk.updateSkylight = false;
-            //  this.worldFace.updateSkyLightMapChunks(this.x, this.y, this.z);
+            //  this.parentWorld.updateSkyLightMapChunks(this.x, this.y, this.z);
         }
         int faceNumber = this.workingChunk.calculateFaceNumber();
-        int size = (int) (faceNumber * 1.2F);
+        int size = (int) (faceNumber * 1.5F);
         this.workingChunk.vertexArrayOpaque = new float[size * 24];
         this.workingChunk.vertexArrayTransparent = new float[size * 24];
         this.workingChunk.vertexBufferOpaque = BufferUtils.createFloatBuffer(size * 24);
@@ -60,6 +62,7 @@ public final class ThreadRebuildChunk implements Runnable {
         int blockZ = 0;
         int tickableIndex = 0;
         this.workingChunk.tickableBlockIndex = new short[32768];
+        boolean needsToSetUpdateTime = false;
         for (int block = 0; block < this.workingChunk.blocks.length; block++) {
             if (Block.list[this.workingChunk.blocks[block]].ID == Block.air.ID) {continue;}
             if(Block.list[this.workingChunk.blocks[block]] instanceof ITickable){
@@ -69,6 +72,7 @@ public final class ThreadRebuildChunk implements Runnable {
             blockX = this.workingChunk.getBlockXFromIndex(block);
             blockY = this.workingChunk.getBlockYFromIndex(block);
             blockZ = this.workingChunk.getBlockZFromIndex(block);
+            needsToSetUpdateTime = Block.list[this.workingChunk.blocks[block]].ID == Block.grass.ID || Block.list[this.workingChunk.blocks[block]].ID == Block.leaf.ID;
             for (int face = 0; face < 6; face++) {
                 switch (face) {
                     case 0 -> {
@@ -128,12 +132,14 @@ public final class ThreadRebuildChunk implements Runnable {
                 }
             }
         }
+
         float[] truncatedVertexArrayOpaque = new float[this.workingChunk.vertexIndexOpaque];
         for (int i = 0; i < truncatedVertexArrayOpaque.length; i++) {
             truncatedVertexArrayOpaque[i] = this.workingChunk.vertexArrayOpaque[i];
         }
         this.workingChunk.vertexArrayOpaque = truncatedVertexArrayOpaque;
         this.workingChunk.elementArrayOpaque = new int[(this.workingChunk.vertexArrayOpaque.length / 24) * 6];
+
         int elementOffset = 0;
         int index = 0;
         for (int i = 0; i < this.workingChunk.elementArrayOpaque.length / 6; i++) {
@@ -146,6 +152,7 @@ public final class ThreadRebuildChunk implements Runnable {
             elementOffset += 4;
             index += 6;
         }
+
         this.workingChunk.vertexBufferOpaque.put(this.workingChunk.vertexArrayOpaque);
         this.workingChunk.elementBufferOpaque.put(this.workingChunk.elementArrayOpaque);
         this.workingChunk.vertexBufferOpaque.flip();
@@ -157,6 +164,7 @@ public final class ThreadRebuildChunk implements Runnable {
         }
         this.workingChunk.vertexArrayTransparent = truncatedVertexArrayTransparent;
         this.workingChunk.elementArrayTransparent = new int[(this.workingChunk.vertexArrayTransparent.length / 24) * 6];
+
         elementOffset = 0;
         index = 0;
         for (int i = 0; i < this.workingChunk.elementArrayTransparent.length / 6; i++) {
@@ -169,12 +177,15 @@ public final class ThreadRebuildChunk implements Runnable {
             elementOffset += 4;
             index += 6;
         }
+
         this.workingChunk.vertexBufferTransparent.put(this.workingChunk.vertexArrayTransparent);
         this.workingChunk.elementBufferTransparent.put(this.workingChunk.elementArrayTransparent);
         this.workingChunk.vertexBufferTransparent.flip();
         this.workingChunk.elementBufferTransparent.flip();
+
         boolean empty = tickableIndex == 0;
         this.workingChunk.truncateTickableIndexArray(tickableIndex + 1, empty);
+
         this.workingChunk.excludeTopFace = null;
         this.workingChunk.excludeBottomFace = null;
         this.workingChunk.excludeNorthFace = null;
@@ -182,21 +193,25 @@ public final class ThreadRebuildChunk implements Runnable {
         this.workingChunk.excludeEastFace = null;
         this.workingChunk.excludeWestFace = null;
         this.workingChunk.needsToUpdate = false;
-        synchronized (SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.bindingChunks) {
-            SpaceGame.instance.save.activeWorld.activeWorldFace.chunkController.bindingChunks.add(this.workingChunk);
+
+        if(needsToSetUpdateTime) {
+            this.workingChunk.updateTime = SpaceGame.globalRand.nextLong(SpaceGame.instance.save.time + SpaceGame.instance.everything.getObjectAssociatedWithWorld(SpaceGame.instance.save.activeWorld).rotationPeriod / 2, SpaceGame.instance.save.time + SpaceGame.instance.everything.getObjectAssociatedWithWorld(SpaceGame.instance.save.activeWorld).rotationPeriod);
+        }
+        synchronized (this.parentWorld.chunkController.bindingChunks) {
+           this.parentWorld.chunkController.bindingChunks.add(this.workingChunk);
         }
         this.workingChunk.updating = false;
     }
 
     private void addBlockToRenderData(short block, int index, int face, int[] greedyMeshSize, RenderBlocks renderBlocks) {
         switch (Block.list[block].blockName) {
-            case "TORCH" -> renderBlocks.renderTorch(this.workingChunk, this.worldFace, block, index, face);
+            case "TORCH" -> renderBlocks.renderTorch(this.workingChunk, this.parentWorld, block, index, face);
             case "WATER", "BERRY_BUSH", "CAMPFIRE" ->
-                    renderBlocks.renderTransparentBlock(this.workingChunk, this.worldFace, block, index, face, greedyMeshSize);
-            case "CAMPFIRE_LIT" -> renderBlocks.renderCampFire(this.workingChunk, this.worldFace, block, index, face);
-            case "GRASS" -> renderBlocks.renderGrassBlock(this.workingChunk, this.worldFace, block, index, face, greedyMeshSize);
+                    renderBlocks.renderTransparentBlock(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);
+            case "CAMPFIRE_LIT" -> renderBlocks.renderCampFire(this.workingChunk, this.parentWorld, block, index, face);
+            case "GRASS" -> renderBlocks.renderGrassBlock(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);
             default ->
-                    renderBlocks.renderStandardBlock(this.workingChunk, this.worldFace, block, index, face, greedyMeshSize);
+                    renderBlocks.renderStandardBlock(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);
         }
     }
 
@@ -233,7 +248,7 @@ public final class ThreadRebuildChunk implements Runnable {
         int returnZ = 31 - (z % 32);
 
         for (int i = 0; i <= returnX; i++) {
-            if (!this.canBlockFaceGreedyMesh(this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)], this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x + i, y, z)], this.workingChunk.topFaceBitMask[Chunk.calculateBitMaskIndex(x + i, z)], this.workingChunk.excludeTopFace[Chunk.calculateBitMaskIndex(x + i, z)], y, this.worldFace.getBlockLightValue(x, y + 1, z), this.worldFace.getBlockLightValue(x + i, y + 1, z), this.worldFace.getBlockLightColorAsInt(x, y + 1, z), this.worldFace.getBlockLightColorAsInt(x + i, y + 1, z), this.worldFace.getBlockSkyLightValue(x, y + 1, z), this.worldFace.getBlockSkyLightValue(x + i, y + 1, z)) || !this.areCornersClear(x + i, y, z, 0)) {
+            if (!this.canBlockFaceGreedyMesh(this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)], this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x + i, y, z)], this.workingChunk.topFaceBitMask[Chunk.calculateBitMaskIndex(x + i, z)], this.workingChunk.excludeTopFace[Chunk.calculateBitMaskIndex(x + i, z)], y, this.parentWorld.getBlockLightValue(x, y + 1, z), this.parentWorld.getBlockLightValue(x + i, y + 1, z), this.parentWorld.getBlockLightColorAsInt(x, y + 1, z), this.parentWorld.getBlockLightColorAsInt(x + i, y + 1, z), this.parentWorld.getBlockSkyLightValue(x, y + 1, z), this.parentWorld.getBlockSkyLightValue(x + i, y + 1, z)) || !this.areCornersClear(x + i, y, z, 0)) {
                 returnX = i - 1;
                 break;
             }
@@ -246,7 +261,7 @@ public final class ThreadRebuildChunk implements Runnable {
         loop:
         for (int j = 0; j <= returnZ; j++) {
             for (int i = 0; i <= returnX; i++) {
-                if (!this.canBlockFaceGreedyMesh(this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)], this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x + i, y, z + j)], this.workingChunk.topFaceBitMask[Chunk.calculateBitMaskIndex(x + i, z + j)], this.workingChunk.excludeTopFace[Chunk.calculateBitMaskIndex(x + i, z + j)], y, this.worldFace.getBlockLightValue(x, y + 1, z), this.worldFace.getBlockLightValue(x + i, y + 1, z + j), this.worldFace.getBlockLightColorAsInt(x, y + 1, z), this.worldFace.getBlockLightColorAsInt(x + i, y + 1, z + j), this.worldFace.getBlockSkyLightValue(x, y + 1, z), this.worldFace.getBlockSkyLightValue(x + i, y + 1, z + j)) || !this.areCornersClear(x + i, y, z + j, 0)) {
+                if (!this.canBlockFaceGreedyMesh(this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)], this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x + i, y, z + j)], this.workingChunk.topFaceBitMask[Chunk.calculateBitMaskIndex(x + i, z + j)], this.workingChunk.excludeTopFace[Chunk.calculateBitMaskIndex(x + i, z + j)], y, this.parentWorld.getBlockLightValue(x, y + 1, z), this.parentWorld.getBlockLightValue(x + i, y + 1, z + j), this.parentWorld.getBlockLightColorAsInt(x, y + 1, z), this.parentWorld.getBlockLightColorAsInt(x + i, y + 1, z + j), this.parentWorld.getBlockSkyLightValue(x, y + 1, z), this.parentWorld.getBlockSkyLightValue(x + i, y + 1, z + j)) || !this.areCornersClear(x + i, y, z + j, 0)) {
                     returnZ = j - 1;
                     break loop;
                 }
@@ -274,7 +289,7 @@ public final class ThreadRebuildChunk implements Runnable {
         int returnZ = 31 - (z % 32);
 
         for (int i = 0; i <= returnX; i++) {
-            if (!this.canBlockFaceGreedyMesh(this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)], this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x + i, y, z)], this.workingChunk.bottomFaceBitMask[Chunk.calculateBitMaskIndex(x + i, z)], this.workingChunk.excludeBottomFace[Chunk.calculateBitMaskIndex(x + i, z)], y, this.worldFace.getBlockLightValue(x, y - 1, z), this.worldFace.getBlockLightValue(x + i, y - 1, z), this.worldFace.getBlockLightColorAsInt(x, y - 1, z), this.worldFace.getBlockLightColorAsInt(x + i, y - 1, z), this.worldFace.getBlockSkyLightValue(x, y - 1, z), this.worldFace.getBlockSkyLightValue(x + i, y - 1, z)) || !this.areCornersClear(x + i, y, z, 1)) {
+            if (!this.canBlockFaceGreedyMesh(this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)], this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x + i, y, z)], this.workingChunk.bottomFaceBitMask[Chunk.calculateBitMaskIndex(x + i, z)], this.workingChunk.excludeBottomFace[Chunk.calculateBitMaskIndex(x + i, z)], y, this.parentWorld.getBlockLightValue(x, y - 1, z), this.parentWorld.getBlockLightValue(x + i, y - 1, z), this.parentWorld.getBlockLightColorAsInt(x, y - 1, z), this.parentWorld.getBlockLightColorAsInt(x + i, y - 1, z), this.parentWorld.getBlockSkyLightValue(x, y - 1, z), this.parentWorld.getBlockSkyLightValue(x + i, y - 1, z)) || !this.areCornersClear(x + i, y, z, 1)) {
                 returnX = i - 1;
                 break;
             }
@@ -287,7 +302,7 @@ public final class ThreadRebuildChunk implements Runnable {
         loop:
         for (int j = 0; j <= returnZ; j++) {
             for (int i = 0; i <= returnX; i++) {
-                if (!this.canBlockFaceGreedyMesh(this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)], this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x + i, y, z + j)], this.workingChunk.bottomFaceBitMask[Chunk.calculateBitMaskIndex(x + i, z + j)], this.workingChunk.excludeBottomFace[Chunk.calculateBitMaskIndex(x + i, z + j)], y, this.worldFace.getBlockLightValue(x, y - 1, z + j), this.worldFace.getBlockLightValue(x + i, y - 1, z + j), this.worldFace.getBlockLightColorAsInt(x, y - 1, z + j), this.worldFace.getBlockLightColorAsInt(x + i, y - 1, z + j), this.worldFace.getBlockSkyLightValue(x, y - 1, z + j), this.worldFace.getBlockSkyLightValue(x + i, y - 1, z + j)) || !this.areCornersClear(x + i, y, z + j, 1)) {
+                if (!this.canBlockFaceGreedyMesh(this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)], this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x + i, y, z + j)], this.workingChunk.bottomFaceBitMask[Chunk.calculateBitMaskIndex(x + i, z + j)], this.workingChunk.excludeBottomFace[Chunk.calculateBitMaskIndex(x + i, z + j)], y, this.parentWorld.getBlockLightValue(x, y - 1, z + j), this.parentWorld.getBlockLightValue(x + i, y - 1, z + j), this.parentWorld.getBlockLightColorAsInt(x, y - 1, z + j), this.parentWorld.getBlockLightColorAsInt(x + i, y - 1, z + j), this.parentWorld.getBlockSkyLightValue(x, y - 1, z + j), this.parentWorld.getBlockSkyLightValue(x + i, y - 1, z + j)) || !this.areCornersClear(x + i, y, z + j, 1)) {
                     returnZ = j - 1;
                     break loop;
                 }
@@ -313,7 +328,7 @@ public final class ThreadRebuildChunk implements Runnable {
         int returnY = 31 - (y % 32);
 
         for (int i = 0; i <= returnZ; i++) {
-            if (!this.canBlockFaceGreedyMesh(this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)], this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z + i)], this.workingChunk.northFaceBitMask[Chunk.calculateBitMaskIndex(z + i, y)], this.workingChunk.excludeNorthFace[Chunk.calculateBitMaskIndex(z + i, y)], x, this.worldFace.getBlockLightValue(x - 1, y, z), this.worldFace.getBlockLightValue(x - 1, y, z + i), this.worldFace.getBlockLightColorAsInt(x - 1, y, z), this.worldFace.getBlockLightColorAsInt(x - 1, y, z + i), this.worldFace.getBlockSkyLightValue(x - 1, y, z), this.worldFace.getBlockSkyLightValue(x - 1, y, z + i)) || !this.areCornersClear(x, y, z + i, 2)) {
+            if (!this.canBlockFaceGreedyMesh(this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)], this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z + i)], this.workingChunk.northFaceBitMask[Chunk.calculateBitMaskIndex(z + i, y)], this.workingChunk.excludeNorthFace[Chunk.calculateBitMaskIndex(z + i, y)], x, this.parentWorld.getBlockLightValue(x - 1, y, z), this.parentWorld.getBlockLightValue(x - 1, y, z + i), this.parentWorld.getBlockLightColorAsInt(x - 1, y, z), this.parentWorld.getBlockLightColorAsInt(x - 1, y, z + i), this.parentWorld.getBlockSkyLightValue(x - 1, y, z), this.parentWorld.getBlockSkyLightValue(x - 1, y, z + i)) || !this.areCornersClear(x, y, z + i, 2)) {
                 returnZ = i - 1;
                 break;
             }
@@ -326,7 +341,7 @@ public final class ThreadRebuildChunk implements Runnable {
         loop:
         for (int j = 0; j <= returnY; j++) {
             for (int i = 0; i <= returnZ; i++) {
-                if (!this.canBlockFaceGreedyMesh(this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)], this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y + j, z + i)], this.workingChunk.northFaceBitMask[Chunk.calculateBitMaskIndex(z + i, y + j)], this.workingChunk.excludeNorthFace[Chunk.calculateBitMaskIndex(z + i, y + j)], x, this.worldFace.getBlockLightValue(x - 1, y, z), this.worldFace.getBlockLightValue(x - 1, y + j, z + i), this.worldFace.getBlockLightColorAsInt(x - 1, y, z), this.worldFace.getBlockLightColorAsInt(x - 1, y + j, z + i), this.worldFace.getBlockSkyLightValue(x - 1, y, z), this.worldFace.getBlockSkyLightValue(x - 1, y + j, z + i)) || !this.areCornersClear(x, y + j, z + i, 2)) {
+                if (!this.canBlockFaceGreedyMesh(this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)], this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y + j, z + i)], this.workingChunk.northFaceBitMask[Chunk.calculateBitMaskIndex(z + i, y + j)], this.workingChunk.excludeNorthFace[Chunk.calculateBitMaskIndex(z + i, y + j)], x, this.parentWorld.getBlockLightValue(x - 1, y, z), this.parentWorld.getBlockLightValue(x - 1, y + j, z + i), this.parentWorld.getBlockLightColorAsInt(x - 1, y, z), this.parentWorld.getBlockLightColorAsInt(x - 1, y + j, z + i), this.parentWorld.getBlockSkyLightValue(x - 1, y, z), this.parentWorld.getBlockSkyLightValue(x - 1, y + j, z + i)) || !this.areCornersClear(x, y + j, z + i, 2)) {
                     returnY = j - 1;
                     break loop;
                 }
@@ -353,7 +368,7 @@ public final class ThreadRebuildChunk implements Runnable {
         int returnY = 31 - (y % 32);
 
         for (int i = 0; i <= returnZ; i++) {
-            if (!this.canBlockFaceGreedyMesh(this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)], this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z + i)], this.workingChunk.southFaceBitMask[Chunk.calculateBitMaskIndex(z + i, y)], this.workingChunk.excludeSouthFace[Chunk.calculateBitMaskIndex(z + i, y)], x, this.worldFace.getBlockLightValue(x + 1, y, z), this.worldFace.getBlockLightValue(x + 1, y, z + i), this.worldFace.getBlockLightColorAsInt(x + 1, y, z), this.worldFace.getBlockLightColorAsInt(x + 1, y, z + i), this.worldFace.getBlockSkyLightValue(x + 1, y, z), this.worldFace.getBlockSkyLightValue(x + 1, y, z + i)) || !this.areCornersClear(x, y, z + i, 3)) {
+            if (!this.canBlockFaceGreedyMesh(this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)], this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z + i)], this.workingChunk.southFaceBitMask[Chunk.calculateBitMaskIndex(z + i, y)], this.workingChunk.excludeSouthFace[Chunk.calculateBitMaskIndex(z + i, y)], x, this.parentWorld.getBlockLightValue(x + 1, y, z), this.parentWorld.getBlockLightValue(x + 1, y, z + i), this.parentWorld.getBlockLightColorAsInt(x + 1, y, z), this.parentWorld.getBlockLightColorAsInt(x + 1, y, z + i), this.parentWorld.getBlockSkyLightValue(x + 1, y, z), this.parentWorld.getBlockSkyLightValue(x + 1, y, z + i)) || !this.areCornersClear(x, y, z + i, 3)) {
                 returnZ = i - 1;
                 break;
             }
@@ -366,7 +381,7 @@ public final class ThreadRebuildChunk implements Runnable {
         loop:
         for (int j = 0; j <= returnY; j++) {
             for (int i = 0; i <= returnZ; i++) {
-                if (!this.canBlockFaceGreedyMesh(this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)], this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y + j, z + i)], this.workingChunk.southFaceBitMask[Chunk.calculateBitMaskIndex(z + i, y + j)], this.workingChunk.excludeSouthFace[Chunk.calculateBitMaskIndex(z + i, y + j)], x, this.worldFace.getBlockLightValue(x + 1, y, z), this.worldFace.getBlockLightValue(x + 1, y + j, z + i), this.worldFace.getBlockLightColorAsInt(x + 1, y, z), this.worldFace.getBlockLightColorAsInt(x + 1, y + j, z + i), this.worldFace.getBlockSkyLightValue(x + 1, y, z), this.worldFace.getBlockSkyLightValue(x + 1, y + j, z + i)) || !this.areCornersClear(x, y + j, z + i, 3)) {
+                if (!this.canBlockFaceGreedyMesh(this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)], this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y + j, z + i)], this.workingChunk.southFaceBitMask[Chunk.calculateBitMaskIndex(z + i, y + j)], this.workingChunk.excludeSouthFace[Chunk.calculateBitMaskIndex(z + i, y + j)], x, this.parentWorld.getBlockLightValue(x + 1, y, z), this.parentWorld.getBlockLightValue(x + 1, y + j, z + i), this.parentWorld.getBlockLightColorAsInt(x + 1, y, z), this.parentWorld.getBlockLightColorAsInt(x + 1, y + j, z + i), this.parentWorld.getBlockSkyLightValue(x + 1, y, z), this.parentWorld.getBlockSkyLightValue(x + 1, y + j, z + i)) || !this.areCornersClear(x, y + j, z + i, 3)) {
                     returnY = j - 1;
                     break loop;
                 }
@@ -392,7 +407,7 @@ public final class ThreadRebuildChunk implements Runnable {
         int returnY = 31 - (y % 32);
 
         for (int i = 0; i <= returnX; i++) {
-            if (!this.canBlockFaceGreedyMesh(this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)], this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x + i, y, z)], this.workingChunk.eastFaceBitMask[Chunk.calculateBitMaskIndex(x + i, y)], this.workingChunk.excludeEastFace[Chunk.calculateBitMaskIndex(x + i, y)], z, this.worldFace.getBlockLightValue(x, y, z - 1), this.worldFace.getBlockLightValue(x + i, y, z - 1), this.worldFace.getBlockLightColorAsInt(x, y, z - 1), this.worldFace.getBlockLightColorAsInt(x + i, y, z - 1), this.worldFace.getBlockSkyLightValue(x, y, z - 1), this.worldFace.getBlockSkyLightValue(x + i, y, z - 1)) || !this.areCornersClear(x + i, y, z, 4)) {
+            if (!this.canBlockFaceGreedyMesh(this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)], this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x + i, y, z)], this.workingChunk.eastFaceBitMask[Chunk.calculateBitMaskIndex(x + i, y)], this.workingChunk.excludeEastFace[Chunk.calculateBitMaskIndex(x + i, y)], z, this.parentWorld.getBlockLightValue(x, y, z - 1), this.parentWorld.getBlockLightValue(x + i, y, z - 1), this.parentWorld.getBlockLightColorAsInt(x, y, z - 1), this.parentWorld.getBlockLightColorAsInt(x + i, y, z - 1), this.parentWorld.getBlockSkyLightValue(x, y, z - 1), this.parentWorld.getBlockSkyLightValue(x + i, y, z - 1)) || !this.areCornersClear(x + i, y, z, 4)) {
                 returnX = i - 1;
                 break;
             }
@@ -405,7 +420,7 @@ public final class ThreadRebuildChunk implements Runnable {
         loop:
         for (int j = 0; j <= returnY; j++) {
             for (int i = 0; i <= returnX; i++) {
-                if (!this.canBlockFaceGreedyMesh(this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)], this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x + i, y + j, z)], this.workingChunk.eastFaceBitMask[Chunk.calculateBitMaskIndex(x + i, y + j)], this.workingChunk.excludeEastFace[Chunk.calculateBitMaskIndex(x + i, y + j)], z, this.worldFace.getBlockLightValue(x, y, z - 1), this.worldFace.getBlockLightValue(x + i, y + j, z - 1), this.worldFace.getBlockLightColorAsInt(x, y, z - 1), this.worldFace.getBlockLightColorAsInt(x + i, y + j, z - 1), this.worldFace.getBlockSkyLightValue(x, y, z - 1), this.worldFace.getBlockSkyLightValue(x + i, y + j, z - 1)) || !this.areCornersClear(x + i, y + j, z, 4)) {
+                if (!this.canBlockFaceGreedyMesh(this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)], this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x + i, y + j, z)], this.workingChunk.eastFaceBitMask[Chunk.calculateBitMaskIndex(x + i, y + j)], this.workingChunk.excludeEastFace[Chunk.calculateBitMaskIndex(x + i, y + j)], z, this.parentWorld.getBlockLightValue(x, y, z - 1), this.parentWorld.getBlockLightValue(x + i, y + j, z - 1), this.parentWorld.getBlockLightColorAsInt(x, y, z - 1), this.parentWorld.getBlockLightColorAsInt(x + i, y + j, z - 1), this.parentWorld.getBlockSkyLightValue(x, y, z - 1), this.parentWorld.getBlockSkyLightValue(x + i, y + j, z - 1)) || !this.areCornersClear(x + i, y + j, z, 4)) {
                     returnY = j - 1;
                     break loop;
                 }
@@ -431,7 +446,7 @@ public final class ThreadRebuildChunk implements Runnable {
         int returnY = 31 - (y % 32);
 
         for (int i = 0; i <= returnX; i++) {
-            if (!this.canBlockFaceGreedyMesh(this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)], this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x + i, y, z)], this.workingChunk.westFaceBitMask[Chunk.calculateBitMaskIndex(x + i, y)], this.workingChunk.excludeWestFace[Chunk.calculateBitMaskIndex(x + i, y)], z, this.worldFace.getBlockLightValue(x, y, z + 1), this.worldFace.getBlockLightValue(x + i, y, z + 1), this.worldFace.getBlockLightColorAsInt(x, y, z + 1), this.worldFace.getBlockLightColorAsInt(x + i, y, z + 1), this.worldFace.getBlockSkyLightValue(x, y, z + 1), this.worldFace.getBlockSkyLightValue(x + i, y, z + 1)) || !this.areCornersClear(x + i, y, z, 5)) {
+            if (!this.canBlockFaceGreedyMesh(this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)], this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x + i, y, z)], this.workingChunk.westFaceBitMask[Chunk.calculateBitMaskIndex(x + i, y)], this.workingChunk.excludeWestFace[Chunk.calculateBitMaskIndex(x + i, y)], z, this.parentWorld.getBlockLightValue(x, y, z + 1), this.parentWorld.getBlockLightValue(x + i, y, z + 1), this.parentWorld.getBlockLightColorAsInt(x, y, z + 1), this.parentWorld.getBlockLightColorAsInt(x + i, y, z + 1), this.parentWorld.getBlockSkyLightValue(x, y, z + 1), this.parentWorld.getBlockSkyLightValue(x + i, y, z + 1)) || !this.areCornersClear(x + i, y, z, 5)) {
                 returnX = i - 1;
                 break;
             }
@@ -444,7 +459,7 @@ public final class ThreadRebuildChunk implements Runnable {
         loop:
         for (int j = 0; j <= returnY; j++) {
             for (int i = 0; i <= returnX; i++) {
-                if (!this.canBlockFaceGreedyMesh(this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)], this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x + i, y + j, z)], this.workingChunk.westFaceBitMask[Chunk.calculateBitMaskIndex(x + i, y + j)], this.workingChunk.excludeWestFace[Chunk.calculateBitMaskIndex(x + i, y + j)], z, this.worldFace.getBlockLightValue(x, y, z + 1), this.worldFace.getBlockLightValue(x + i, y + j, z + 1), this.worldFace.getBlockLightColorAsInt(x, y, z + 1), this.worldFace.getBlockLightColorAsInt(x + i, y + j, z + 1), this.worldFace.getBlockSkyLightValue(x, y, z + 1), this.worldFace.getBlockSkyLightValue(x + i, y + j, z + 1)) || !this.areCornersClear(x + i, y + j, z, 5)) {
+                if (!this.canBlockFaceGreedyMesh(this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)], this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x + i, y + j, z)], this.workingChunk.westFaceBitMask[Chunk.calculateBitMaskIndex(x + i, y + j)], this.workingChunk.excludeWestFace[Chunk.calculateBitMaskIndex(x + i, y + j)], z, this.parentWorld.getBlockLightValue(x, y, z + 1), this.parentWorld.getBlockLightValue(x + i, y + j, z + 1), this.parentWorld.getBlockLightColorAsInt(x, y, z + 1), this.parentWorld.getBlockLightColorAsInt(x + i, y + j, z + 1), this.parentWorld.getBlockSkyLightValue(x, y, z + 1), this.parentWorld.getBlockSkyLightValue(x + i, y + j, z + 1)) || !this.areCornersClear(x + i, y + j, z, 5)) {
                     returnY = j - 1;
                     break loop;
                 }
@@ -468,22 +483,22 @@ public final class ThreadRebuildChunk implements Runnable {
     private boolean areCornersClear(int x, int y, int z, int faceType) {
         switch (faceType) {
             case RenderBlocks.TOP_FACE -> {
-                return (!Block.list[this.worldFace.getBlockID(x, y + 1, z + 1)].isSolid && !Block.list[this.worldFace.getBlockID(x + 1, y + 1, z)].isSolid && !Block.list[this.worldFace.getBlockID(x + 1, y + 1, z + 1)].isSolid) && (Block.list[this.worldFace.getBlockID(x + 1, y, z)].isSolid && Block.list[this.worldFace.getBlockID(x, y, z + 1)].isSolid && Block.list[this.worldFace.getBlockID(x + 1, y, z + 1)].isSolid) && (!Block.list[this.worldFace.getBlockID(x, y + 1, z + 1)].isSolid && !Block.list[this.worldFace.getBlockID(x - 1, y + 1, z)].isSolid && !Block.list[this.worldFace.getBlockID(x - 1, y + 1, z + 1)].isSolid) && (Block.list[this.worldFace.getBlockID(x, y, z + 1)].isSolid && Block.list[this.worldFace.getBlockID(x - 1, y, z)].isSolid && Block.list[this.worldFace.getBlockID(x - 1, y, z + 1)].isSolid) && (!Block.list[this.worldFace.getBlockID(x + 1, y + 1, z)].isSolid && !Block.list[this.worldFace.getBlockID(x + 1, y + 1, z - 1)].isSolid && !Block.list[this.worldFace.getBlockID(x, y + 1, z - 1)].isSolid) && (Block.list[this.worldFace.getBlockID(x + 1, y, z)].isSolid && Block.list[this.worldFace.getBlockID(x + 1, y, z - 1)].isSolid && Block.list[this.worldFace.getBlockID(x, y, z - 1)].isSolid);
+                return (!Block.list[this.parentWorld.getBlockID(x, y + 1, z + 1)].isSolid && !Block.list[this.parentWorld.getBlockID(x + 1, y + 1, z)].isSolid && !Block.list[this.parentWorld.getBlockID(x + 1, y + 1, z + 1)].isSolid) && (Block.list[this.parentWorld.getBlockID(x + 1, y, z)].isSolid && Block.list[this.parentWorld.getBlockID(x, y, z + 1)].isSolid && Block.list[this.parentWorld.getBlockID(x + 1, y, z + 1)].isSolid) && (!Block.list[this.parentWorld.getBlockID(x, y + 1, z + 1)].isSolid && !Block.list[this.parentWorld.getBlockID(x - 1, y + 1, z)].isSolid && !Block.list[this.parentWorld.getBlockID(x - 1, y + 1, z + 1)].isSolid) && (Block.list[this.parentWorld.getBlockID(x, y, z + 1)].isSolid && Block.list[this.parentWorld.getBlockID(x - 1, y, z)].isSolid && Block.list[this.parentWorld.getBlockID(x - 1, y, z + 1)].isSolid) && (!Block.list[this.parentWorld.getBlockID(x + 1, y + 1, z)].isSolid && !Block.list[this.parentWorld.getBlockID(x + 1, y + 1, z - 1)].isSolid && !Block.list[this.parentWorld.getBlockID(x, y + 1, z - 1)].isSolid) && (Block.list[this.parentWorld.getBlockID(x + 1, y, z)].isSolid && Block.list[this.parentWorld.getBlockID(x + 1, y, z - 1)].isSolid && Block.list[this.parentWorld.getBlockID(x, y, z - 1)].isSolid);
             }
             case RenderBlocks.BOTTOM_FACE -> {
-                return (!Block.list[this.worldFace.getBlockID(x, y - 1, z + 1)].isSolid && !Block.list[this.worldFace.getBlockID(x + 1, y - 1, z)].isSolid && !Block.list[this.worldFace.getBlockID(x + 1, y - 1, z + 1)].isSolid) && (Block.list[this.worldFace.getBlockID(x + 1, y, z)].isSolid && Block.list[this.worldFace.getBlockID(x, y, z + 1)].isSolid && Block.list[this.worldFace.getBlockID(x + 1, y, z + 1)].isSolid) && (!Block.list[this.worldFace.getBlockID(x, y - 1, z + 1)].isSolid && !Block.list[this.worldFace.getBlockID(x - 1, y - 1, z)].isSolid && !Block.list[this.worldFace.getBlockID(x - 1, y - 1, z + 1)].isSolid) && (Block.list[this.worldFace.getBlockID(x, y, z + 1)].isSolid && Block.list[this.worldFace.getBlockID(x - 1, y, z)].isSolid && Block.list[this.worldFace.getBlockID(x - 1, y, z + 1)].isSolid) && (!Block.list[this.worldFace.getBlockID(x + 1, y - 1, z)].isSolid && !Block.list[this.worldFace.getBlockID(x + 1, y - 1, z - 1)].isSolid && !Block.list[this.worldFace.getBlockID(x, y - 1, z - 1)].isSolid) && (Block.list[this.worldFace.getBlockID(x + 1, y, z)].isSolid && Block.list[this.worldFace.getBlockID(x + 1, y, z - 1)].isSolid && Block.list[this.worldFace.getBlockID(x, y, z - 1)].isSolid);
+                return (!Block.list[this.parentWorld.getBlockID(x, y - 1, z + 1)].isSolid && !Block.list[this.parentWorld.getBlockID(x + 1, y - 1, z)].isSolid && !Block.list[this.parentWorld.getBlockID(x + 1, y - 1, z + 1)].isSolid) && (Block.list[this.parentWorld.getBlockID(x + 1, y, z)].isSolid && Block.list[this.parentWorld.getBlockID(x, y, z + 1)].isSolid && Block.list[this.parentWorld.getBlockID(x + 1, y, z + 1)].isSolid) && (!Block.list[this.parentWorld.getBlockID(x, y - 1, z + 1)].isSolid && !Block.list[this.parentWorld.getBlockID(x - 1, y - 1, z)].isSolid && !Block.list[this.parentWorld.getBlockID(x - 1, y - 1, z + 1)].isSolid) && (Block.list[this.parentWorld.getBlockID(x, y, z + 1)].isSolid && Block.list[this.parentWorld.getBlockID(x - 1, y, z)].isSolid && Block.list[this.parentWorld.getBlockID(x - 1, y, z + 1)].isSolid) && (!Block.list[this.parentWorld.getBlockID(x + 1, y - 1, z)].isSolid && !Block.list[this.parentWorld.getBlockID(x + 1, y - 1, z - 1)].isSolid && !Block.list[this.parentWorld.getBlockID(x, y - 1, z - 1)].isSolid) && (Block.list[this.parentWorld.getBlockID(x + 1, y, z)].isSolid && Block.list[this.parentWorld.getBlockID(x + 1, y, z - 1)].isSolid && Block.list[this.parentWorld.getBlockID(x, y, z - 1)].isSolid);
             }
             case RenderBlocks.NORTH_FACE -> {
-                return (!Block.list[this.worldFace.getBlockID(x - 1, y - 1, z + 1)].isSolid && !Block.list[this.worldFace.getBlockID(x - 1, y - 1, z)].isSolid && !Block.list[this.worldFace.getBlockID(x - 1, y, z + 1)].isSolid) && (Block.list[this.worldFace.getBlockID(x, y - 1, z + 1)].isSolid && Block.list[this.worldFace.getBlockID(x, y - 1, z)].isSolid && Block.list[this.worldFace.getBlockID(x, y, z + 1)].isSolid) && (!Block.list[this.worldFace.getBlockID(x - 1, y, z - 1)].isSolid && !Block.list[this.worldFace.getBlockID(x - 1, y + 1, z)].isSolid && !Block.list[this.worldFace.getBlockID(x - 1, y + 1, z - 1)].isSolid) && (Block.list[this.worldFace.getBlockID(x, y, z - 1)].isSolid && Block.list[this.worldFace.getBlockID(x, y + 1, z)].isSolid && Block.list[this.worldFace.getBlockID(x, y + 1, z - 1)].isSolid) && (!Block.list[this.worldFace.getBlockID(x - 1, y + 1, z)].isSolid && !Block.list[this.worldFace.getBlockID(x - 1, y, z + 1)].isSolid && !Block.list[this.worldFace.getBlockID(x - 1, y + 1, z + 1)].isSolid) && (Block.list[this.worldFace.getBlockID(x, y + 1, z)].isSolid && Block.list[this.worldFace.getBlockID(x, y, z + 1)].isSolid && Block.list[this.worldFace.getBlockID(x, y + 1, z + 1)].isSolid);
+                return (!Block.list[this.parentWorld.getBlockID(x - 1, y - 1, z + 1)].isSolid && !Block.list[this.parentWorld.getBlockID(x - 1, y - 1, z)].isSolid && !Block.list[this.parentWorld.getBlockID(x - 1, y, z + 1)].isSolid) && (Block.list[this.parentWorld.getBlockID(x, y - 1, z + 1)].isSolid && Block.list[this.parentWorld.getBlockID(x, y - 1, z)].isSolid && Block.list[this.parentWorld.getBlockID(x, y, z + 1)].isSolid) && (!Block.list[this.parentWorld.getBlockID(x - 1, y, z - 1)].isSolid && !Block.list[this.parentWorld.getBlockID(x - 1, y + 1, z)].isSolid && !Block.list[this.parentWorld.getBlockID(x - 1, y + 1, z - 1)].isSolid) && (Block.list[this.parentWorld.getBlockID(x, y, z - 1)].isSolid && Block.list[this.parentWorld.getBlockID(x, y + 1, z)].isSolid && Block.list[this.parentWorld.getBlockID(x, y + 1, z - 1)].isSolid) && (!Block.list[this.parentWorld.getBlockID(x - 1, y + 1, z)].isSolid && !Block.list[this.parentWorld.getBlockID(x - 1, y, z + 1)].isSolid && !Block.list[this.parentWorld.getBlockID(x - 1, y + 1, z + 1)].isSolid) && (Block.list[this.parentWorld.getBlockID(x, y + 1, z)].isSolid && Block.list[this.parentWorld.getBlockID(x, y, z + 1)].isSolid && Block.list[this.parentWorld.getBlockID(x, y + 1, z + 1)].isSolid);
             }
             case RenderBlocks.SOUTH_FACE -> {
-                return (!Block.list[this.worldFace.getBlockID(x + 1, y - 1, z + 1)].isSolid && !Block.list[this.worldFace.getBlockID(x + 1, y - 1, z)].isSolid && !Block.list[this.worldFace.getBlockID(x + 1, y, z + 1)].isSolid) && (Block.list[this.worldFace.getBlockID(x, y - 1, z + 1)].isSolid && Block.list[this.worldFace.getBlockID(x, y - 1, z)].isSolid && Block.list[this.worldFace.getBlockID(x, y, z + 1)].isSolid) && (!Block.list[this.worldFace.getBlockID(x + 1, y, z - 1)].isSolid && !Block.list[this.worldFace.getBlockID(x + 1, y + 1, z)].isSolid && !Block.list[this.worldFace.getBlockID(x + 1, y + 1, z - 1)].isSolid) && (Block.list[this.worldFace.getBlockID(x, y, z - 1)].isSolid && Block.list[this.worldFace.getBlockID(x, y + 1, z)].isSolid && Block.list[this.worldFace.getBlockID(x, y + 1, z - 1)].isSolid) && (!Block.list[this.worldFace.getBlockID(x + 1, y + 1, z)].isSolid && !Block.list[this.worldFace.getBlockID(x + 1, y, z + 1)].isSolid && !Block.list[this.worldFace.getBlockID(x + 1, y + 1, z + 1)].isSolid) && (Block.list[this.worldFace.getBlockID(x, y + 1, z)].isSolid && Block.list[this.worldFace.getBlockID(x, y, z + 1)].isSolid && Block.list[this.worldFace.getBlockID(x, y + 1, z + 1)].isSolid);
+                return (!Block.list[this.parentWorld.getBlockID(x + 1, y - 1, z + 1)].isSolid && !Block.list[this.parentWorld.getBlockID(x + 1, y - 1, z)].isSolid && !Block.list[this.parentWorld.getBlockID(x + 1, y, z + 1)].isSolid) && (Block.list[this.parentWorld.getBlockID(x, y - 1, z + 1)].isSolid && Block.list[this.parentWorld.getBlockID(x, y - 1, z)].isSolid && Block.list[this.parentWorld.getBlockID(x, y, z + 1)].isSolid) && (!Block.list[this.parentWorld.getBlockID(x + 1, y, z - 1)].isSolid && !Block.list[this.parentWorld.getBlockID(x + 1, y + 1, z)].isSolid && !Block.list[this.parentWorld.getBlockID(x + 1, y + 1, z - 1)].isSolid) && (Block.list[this.parentWorld.getBlockID(x, y, z - 1)].isSolid && Block.list[this.parentWorld.getBlockID(x, y + 1, z)].isSolid && Block.list[this.parentWorld.getBlockID(x, y + 1, z - 1)].isSolid) && (!Block.list[this.parentWorld.getBlockID(x + 1, y + 1, z)].isSolid && !Block.list[this.parentWorld.getBlockID(x + 1, y, z + 1)].isSolid && !Block.list[this.parentWorld.getBlockID(x + 1, y + 1, z + 1)].isSolid) && (Block.list[this.parentWorld.getBlockID(x, y + 1, z)].isSolid && Block.list[this.parentWorld.getBlockID(x, y, z + 1)].isSolid && Block.list[this.parentWorld.getBlockID(x, y + 1, z + 1)].isSolid);
             }
             case RenderBlocks.EAST_FACE -> {
-                return (!Block.list[this.worldFace.getBlockID(x + 1, y, z - 1)].isSolid && !Block.list[this.worldFace.getBlockID(x, y - 1, z - 1)].isSolid && !Block.list[this.worldFace.getBlockID(x + 1, y - 1, z - 1)].isSolid) && (Block.list[this.worldFace.getBlockID(x + 1, y, z)].isSolid && Block.list[this.worldFace.getBlockID(x, y - 1, z)].isSolid && Block.list[this.worldFace.getBlockID(x + 1, y - 1, z)].isSolid) && (!Block.list[this.worldFace.getBlockID(x - 1, y, z - 1)].isSolid && !Block.list[this.worldFace.getBlockID(x, y + 1, z - 1)].isSolid && !Block.list[this.worldFace.getBlockID(x - 1, y + 1, z - 1)].isSolid) && (Block.list[this.worldFace.getBlockID(x - 1, y, z)].isSolid && Block.list[this.worldFace.getBlockID(x, y + 1, z)].isSolid && Block.list[this.worldFace.getBlockID(x - 1, y + 1, z)].isSolid) && (!Block.list[this.worldFace.getBlockID(x + 1, y, z - 1)].isSolid && !Block.list[this.worldFace.getBlockID(x, y + 1, z - 1)].isSolid && !Block.list[this.worldFace.getBlockID(x + 1, y + 1, z - 1)].isSolid) && (Block.list[this.worldFace.getBlockID(x + 1, y, z)].isSolid && Block.list[this.worldFace.getBlockID(x, y + 1, z)].isSolid && Block.list[this.worldFace.getBlockID(x + 1, y + 1, z)].isSolid);
+                return (!Block.list[this.parentWorld.getBlockID(x + 1, y, z - 1)].isSolid && !Block.list[this.parentWorld.getBlockID(x, y - 1, z - 1)].isSolid && !Block.list[this.parentWorld.getBlockID(x + 1, y - 1, z - 1)].isSolid) && (Block.list[this.parentWorld.getBlockID(x + 1, y, z)].isSolid && Block.list[this.parentWorld.getBlockID(x, y - 1, z)].isSolid && Block.list[this.parentWorld.getBlockID(x + 1, y - 1, z)].isSolid) && (!Block.list[this.parentWorld.getBlockID(x - 1, y, z - 1)].isSolid && !Block.list[this.parentWorld.getBlockID(x, y + 1, z - 1)].isSolid && !Block.list[this.parentWorld.getBlockID(x - 1, y + 1, z - 1)].isSolid) && (Block.list[this.parentWorld.getBlockID(x - 1, y, z)].isSolid && Block.list[this.parentWorld.getBlockID(x, y + 1, z)].isSolid && Block.list[this.parentWorld.getBlockID(x - 1, y + 1, z)].isSolid) && (!Block.list[this.parentWorld.getBlockID(x + 1, y, z - 1)].isSolid && !Block.list[this.parentWorld.getBlockID(x, y + 1, z - 1)].isSolid && !Block.list[this.parentWorld.getBlockID(x + 1, y + 1, z - 1)].isSolid) && (Block.list[this.parentWorld.getBlockID(x + 1, y, z)].isSolid && Block.list[this.parentWorld.getBlockID(x, y + 1, z)].isSolid && Block.list[this.parentWorld.getBlockID(x + 1, y + 1, z)].isSolid);
             }
             case RenderBlocks.WEST_FACE -> {
-                return (!Block.list[this.worldFace.getBlockID(x + 1, y, z + 1)].isSolid && !Block.list[this.worldFace.getBlockID(x, y - 1, z + 1)].isSolid && !Block.list[this.worldFace.getBlockID(x + 1, y - 1, z + 1)].isSolid) && (Block.list[this.worldFace.getBlockID(x + 1, y, z)].isSolid && Block.list[this.worldFace.getBlockID(x, y - 1, z)].isSolid && Block.list[this.worldFace.getBlockID(x + 1, y - 1, z)].isSolid) && (!Block.list[this.worldFace.getBlockID(x - 1, y, z + 1)].isSolid && !Block.list[this.worldFace.getBlockID(x, y + 1, z + 1)].isSolid && !Block.list[this.worldFace.getBlockID(x - 1, y + 1, z + 1)].isSolid) && (Block.list[this.worldFace.getBlockID(x - 1, y, z)].isSolid && Block.list[this.worldFace.getBlockID(x, y + 1, z)].isSolid && Block.list[this.worldFace.getBlockID(x - 1, y + 1, z)].isSolid) && (!Block.list[this.worldFace.getBlockID(x + 1, y, z + 1)].isSolid && !Block.list[this.worldFace.getBlockID(x, y + 1, z + 1)].isSolid && !Block.list[this.worldFace.getBlockID(x + 1, y + 1, z + 1)].isSolid) && (Block.list[this.worldFace.getBlockID(x + 1, y, z)].isSolid && Block.list[this.worldFace.getBlockID(x, y + 1, z)].isSolid && Block.list[this.worldFace.getBlockID(x + 1, y + 1, z)].isSolid);
+                return (!Block.list[this.parentWorld.getBlockID(x + 1, y, z + 1)].isSolid && !Block.list[this.parentWorld.getBlockID(x, y - 1, z + 1)].isSolid && !Block.list[this.parentWorld.getBlockID(x + 1, y - 1, z + 1)].isSolid) && (Block.list[this.parentWorld.getBlockID(x + 1, y, z)].isSolid && Block.list[this.parentWorld.getBlockID(x, y - 1, z)].isSolid && Block.list[this.parentWorld.getBlockID(x + 1, y - 1, z)].isSolid) && (!Block.list[this.parentWorld.getBlockID(x - 1, y, z + 1)].isSolid && !Block.list[this.parentWorld.getBlockID(x, y + 1, z + 1)].isSolid && !Block.list[this.parentWorld.getBlockID(x - 1, y + 1, z + 1)].isSolid) && (Block.list[this.parentWorld.getBlockID(x - 1, y, z)].isSolid && Block.list[this.parentWorld.getBlockID(x, y + 1, z)].isSolid && Block.list[this.parentWorld.getBlockID(x - 1, y + 1, z)].isSolid) && (!Block.list[this.parentWorld.getBlockID(x + 1, y, z + 1)].isSolid && !Block.list[this.parentWorld.getBlockID(x, y + 1, z + 1)].isSolid && !Block.list[this.parentWorld.getBlockID(x + 1, y + 1, z + 1)].isSolid) && (Block.list[this.parentWorld.getBlockID(x + 1, y, z)].isSolid && Block.list[this.parentWorld.getBlockID(x, y + 1, z)].isSolid && Block.list[this.parentWorld.getBlockID(x + 1, y + 1, z)].isSolid);
             }
             default -> {
                 return false;
@@ -497,22 +512,22 @@ public final class ThreadRebuildChunk implements Runnable {
         int z = this.workingChunk.getBlockZFromIndex(index);
         switch (faceType) {
             case RenderBlocks.TOP_FACE -> {
-                return (!Block.list[this.worldFace.getBlockID(x, y + 1, z - 1)].isSolid && !Block.list[this.worldFace.getBlockID(x - 1, y + 1, z)].isSolid && !Block.list[this.worldFace.getBlockID(x - 1, y + 1, z - 1)].isSolid) && (Block.list[this.worldFace.getBlockID(x - 1, y, z)].isSolid && Block.list[this.worldFace.getBlockID(x, y, z - 1)].isSolid && Block.list[this.worldFace.getBlockID(x - 1, y, z - 1)].isSolid);
+                return (!Block.list[this.parentWorld.getBlockID(x, y + 1, z - 1)].isSolid && !Block.list[this.parentWorld.getBlockID(x - 1, y + 1, z)].isSolid && !Block.list[this.parentWorld.getBlockID(x - 1, y + 1, z - 1)].isSolid) && (Block.list[this.parentWorld.getBlockID(x - 1, y, z)].isSolid && Block.list[this.parentWorld.getBlockID(x, y, z - 1)].isSolid && Block.list[this.parentWorld.getBlockID(x - 1, y, z - 1)].isSolid);
             }
             case RenderBlocks.BOTTOM_FACE -> {
-                return (!Block.list[this.worldFace.getBlockID(x, y - 1, z - 1)].isSolid && !Block.list[this.worldFace.getBlockID(x - 1, y - 1, z)].isSolid && !Block.list[this.worldFace.getBlockID(x - 1, y - 1, z - 1)].isSolid) && (Block.list[this.worldFace.getBlockID(x - 1, y, z)].isSolid && Block.list[this.worldFace.getBlockID(x, y, z - 1)].isSolid && Block.list[this.worldFace.getBlockID(x - 1, y, z - 1)].isSolid);
+                return (!Block.list[this.parentWorld.getBlockID(x, y - 1, z - 1)].isSolid && !Block.list[this.parentWorld.getBlockID(x - 1, y - 1, z)].isSolid && !Block.list[this.parentWorld.getBlockID(x - 1, y - 1, z - 1)].isSolid) && (Block.list[this.parentWorld.getBlockID(x - 1, y, z)].isSolid && Block.list[this.parentWorld.getBlockID(x, y, z - 1)].isSolid && Block.list[this.parentWorld.getBlockID(x - 1, y, z - 1)].isSolid);
             }
             case RenderBlocks.NORTH_FACE -> {
-                return (!Block.list[this.worldFace.getBlockID(x - 1, y - 1, z)].isSolid && !Block.list[this.worldFace.getBlockID(x - 1, y, z - 1)].isSolid && !Block.list[this.worldFace.getBlockID(x - 1, y - 1, z - 1)].isSolid) && (Block.list[this.worldFace.getBlockID(x, y - 1, z)].isSolid && Block.list[this.worldFace.getBlockID(x, y, z - 1)].isSolid && Block.list[this.worldFace.getBlockID(x, y - 1, z - 1)].isSolid);
+                return (!Block.list[this.parentWorld.getBlockID(x - 1, y - 1, z)].isSolid && !Block.list[this.parentWorld.getBlockID(x - 1, y, z - 1)].isSolid && !Block.list[this.parentWorld.getBlockID(x - 1, y - 1, z - 1)].isSolid) && (Block.list[this.parentWorld.getBlockID(x, y - 1, z)].isSolid && Block.list[this.parentWorld.getBlockID(x, y, z - 1)].isSolid && Block.list[this.parentWorld.getBlockID(x, y - 1, z - 1)].isSolid);
             }
             case RenderBlocks.SOUTH_FACE -> {
-                return (!Block.list[this.worldFace.getBlockID(x + 1, y - 1, z)].isSolid && !Block.list[this.worldFace.getBlockID(x + 1, y, z - 1)].isSolid && !Block.list[this.worldFace.getBlockID(x + 1, y - 1, z - 1)].isSolid) && (Block.list[this.worldFace.getBlockID(x, y - 1, z)].isSolid && Block.list[this.worldFace.getBlockID(x, y, z - 1)].isSolid && Block.list[this.worldFace.getBlockID(x, y - 1, z - 1)].isSolid);
+                return (!Block.list[this.parentWorld.getBlockID(x + 1, y - 1, z)].isSolid && !Block.list[this.parentWorld.getBlockID(x + 1, y, z - 1)].isSolid && !Block.list[this.parentWorld.getBlockID(x + 1, y - 1, z - 1)].isSolid) && (Block.list[this.parentWorld.getBlockID(x, y - 1, z)].isSolid && Block.list[this.parentWorld.getBlockID(x, y, z - 1)].isSolid && Block.list[this.parentWorld.getBlockID(x, y - 1, z - 1)].isSolid);
             }
             case RenderBlocks.EAST_FACE -> {
-                return (!Block.list[this.worldFace.getBlockID(x, y - 1, z - 1)].isSolid && !Block.list[this.worldFace.getBlockID(x - 1, y, z - 1)].isSolid && !Block.list[this.worldFace.getBlockID(x - 1, y - 1, z - 1)].isSolid) && (Block.list[this.worldFace.getBlockID(x, y - 1, z)].isSolid && Block.list[this.worldFace.getBlockID(x - 1, y, z)].isSolid && Block.list[this.worldFace.getBlockID(x - 1, y - 1, z)].isSolid);
+                return (!Block.list[this.parentWorld.getBlockID(x, y - 1, z - 1)].isSolid && !Block.list[this.parentWorld.getBlockID(x - 1, y, z - 1)].isSolid && !Block.list[this.parentWorld.getBlockID(x - 1, y - 1, z - 1)].isSolid) && (Block.list[this.parentWorld.getBlockID(x, y - 1, z)].isSolid && Block.list[this.parentWorld.getBlockID(x - 1, y, z)].isSolid && Block.list[this.parentWorld.getBlockID(x - 1, y - 1, z)].isSolid);
             }
             case RenderBlocks.WEST_FACE -> {
-                return (!Block.list[this.worldFace.getBlockID(x, y - 1, z + 1)].isSolid && !Block.list[this.worldFace.getBlockID(x - 1, y, z + 1)].isSolid && !Block.list[this.worldFace.getBlockID(x - 1, y - 1, z + 1)].isSolid) && (Block.list[this.worldFace.getBlockID(x, y - 1, z)].isSolid && Block.list[this.worldFace.getBlockID(x - 1, y, z)].isSolid && Block.list[this.worldFace.getBlockID(x - 1, y - 1, z)].isSolid);
+                return (!Block.list[this.parentWorld.getBlockID(x, y - 1, z + 1)].isSolid && !Block.list[this.parentWorld.getBlockID(x - 1, y, z + 1)].isSolid && !Block.list[this.parentWorld.getBlockID(x - 1, y - 1, z + 1)].isSolid) && (Block.list[this.parentWorld.getBlockID(x, y - 1, z)].isSolid && Block.list[this.parentWorld.getBlockID(x - 1, y, z)].isSolid && Block.list[this.parentWorld.getBlockID(x - 1, y - 1, z)].isSolid);
             }
             default -> {
                 return false;
