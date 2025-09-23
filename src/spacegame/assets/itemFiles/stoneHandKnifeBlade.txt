@@ -1,0 +1,3 @@
+itemName:STONE_HAND_KNIFE_BLADE
+toolType:knife
+stackLimit:1
