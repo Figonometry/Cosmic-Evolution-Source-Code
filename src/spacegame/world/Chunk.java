@@ -1010,6 +1010,7 @@ public final class Chunk implements Comparable<Chunk> {
     public void addEntityToList(Entity entity){
         for(int i = 0; i < this.entities.size(); i++){
             if(entity.equals(this.entities.get(i))){
+                System.out.println("Test Test ");
                 return;
             }
         }

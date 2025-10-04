@@ -5,6 +5,7 @@ import spacegame.core.Logger;
 import spacegame.core.SpaceGame;
 import spacegame.entity.Entity;
 import spacegame.entity.EntityBlock;
+import spacegame.entity.EntityDeer;
 import spacegame.entity.EntityItem;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
@@ -68,6 +69,11 @@ public final class ThreadChunkColumnLoader implements Runnable {
                                 }
                                 case "EntityItem" -> {
                                     entityLoaded = new EntityItem(entityLoadedTag.getDouble("x"), entityLoadedTag.getDouble("y"), entityLoadedTag.getDouble("z"), entityLoadedTag.getShort("itemType"), (byte) 1, entityLoadedTag.getByte("count"), entityLoadedTag.getShort("durability"));
+                                    chunk.addEntityToList(entityLoaded);
+                                }
+                                case "EntityDeer" -> {
+                                    entityLoaded = new EntityDeer(entityLoadedTag.getDouble("x"), entityLoadedTag.getDouble("y"), entityLoadedTag.getDouble("z"), false, false);
+                                    entityLoaded.despawnTime = entityLoadedTag.getLong("despawnTime");
                                     chunk.addEntityToList(entityLoaded);
                                 }
                             }

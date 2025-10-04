@@ -128,15 +128,17 @@ public final class RenderWorldScene {
                 chunk.renderOpaque(xOffset, yOffset, zOffset,this.sunX,this.sunY,this.sunZ);
                 GL46.glEndQuery(GL46.GL_ANY_SAMPLES_PASSED);
 
-                if (chunk.doesChunkContainEntities()) {
-                    chunksThatContainEntities.add(chunk);
-                }
+
             }
 
             if (chunk.vertexBufferTransparent != null && chunk.vertexBufferTransparent.limit() != 0) {
                 chunksToRender.add(chunk);
             }
         }
+        for (Chunk entityChunk : chunksThatContainEntities) {
+            entityChunk.renderEntities(this.sunX, this.sunY, this.sunZ);
+        }
+
 
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_SRC_ALPHA, GL46.GL_ONE_MINUS_SRC_ALPHA);
@@ -159,9 +161,6 @@ public final class RenderWorldScene {
         GL46.glDisable(GL46.GL_CULL_FACE);
         GL46.glUseProgram(0);
 
-        for (Chunk entityChunk : chunksThatContainEntities) {
-            entityChunk.renderEntities(this.sunX, this.sunY, this.sunZ);
-        }
 
         this.chunksToRender.clear();
         this.renderSkybox(SpaceGame.instance.everything.getObjectAssociatedWithWorld(this.controller.parentWorld), playerLon, playerLat);
@@ -294,9 +293,9 @@ public final class RenderWorldScene {
             GL46.glDrawElements(GL46.GL_TRIANGLES, this.opaqueChunks[i + 8], GL46.GL_UNSIGNED_INT, 0);
             this.controller.drawCalls++;
         }
-
+        
         for(int i = 0; i < this.chunksThatContainEntities.size(); i++){
-            chunksThatContainEntities.get(i).renderEntities(this.sunX, this.sunY, this.sunZ);
+            this.chunksThatContainEntities.get(i).renderEntities(this.sunX, this.sunY, this.sunZ);
         }
 
         GL46.glEnable(GL46.GL_BLEND);
@@ -339,9 +338,9 @@ public final class RenderWorldScene {
             Vector3f normalizedDir = dir.normalize();
             Shader.terrainShader.uploadVec3f("normalizedLightVector", dir); //This needs be called in order to set the direction vector even if shadows are turned off otherwise vertex normals will not work
             if (GameSettings.shadowMap) {
-                float lightDist = 3000f;
+                float lightDist = 256;
                 float orthoSize = 256;
-                Matrix4f sunProjectionMatrix = new Matrix4f().setOrtho(-orthoSize, orthoSize, -orthoSize, orthoSize, 1, 10000);
+                Matrix4f sunProjectionMatrix = new Matrix4f().setOrtho(-orthoSize, orthoSize, -orthoSize, orthoSize, 1, 1024);
                 Matrix4f sunViewMatrix = new Matrix4f();
                 Vector3d sunPosition = new Vector3d(normalizedDir.x, normalizedDir.y, normalizedDir.z);
                 sunPosition.mul(lightDist);

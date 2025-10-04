@@ -166,6 +166,7 @@ public final class ThreadRebuildChunk implements Runnable {
             case "CAMPFIRE_LIT" -> renderBlocks.renderCampFire(this.workingChunk, this.parentWorld, block, index, face);
             case "GRASS" -> renderBlocks.renderGrassBlock(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);
             case "ITEM_STONE" -> renderBlocks.renderItemStone(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);
+            case "ITEM_STICK" -> renderBlocks.renderItemStick(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);
             case "LEAF" -> {
                 if(GameSettings.transparentLeaves){
                     renderBlocks.renderTransparentBlock(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);

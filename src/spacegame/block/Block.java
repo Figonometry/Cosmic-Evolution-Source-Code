@@ -27,6 +27,7 @@ public class Block {
     public static final ModelLoader fireBlockModel = new ModelLoader("src/spacegame/assets/models/blockModels/fire.obj");
     public static final ModelLoader itemStoneModel = new ModelLoader("src/spacegame/assets/models/blockModels/itemStone.obj");
     public static final ModelLoader berryBushModel = new ModelLoader("src/spacegame/assets/models/blockModels/berryBush.obj");
+    public static final ModelLoader itemStickModel = new ModelLoader("src/spacegame/assets/models/blockModels/itemStick.obj");
     public static final ModelLoader size15NormalModel = standardBlockModel.alterStandardBlockModel(1,0,1);
     public static final ModelLoader size14NormalModel = standardBlockModel.alterStandardBlockModel(2,0,2);
     public static final ModelLoader size13NormalModel = standardBlockModel.alterStandardBlockModel(3,0,3);
@@ -162,6 +163,7 @@ public class Block {
     public static final Block cactus = new BlockCactus((short)84, 21, "src/spacegame/assets/blockFiles/cactus.txt");
     public static final Block itemStone = new Block((short)85, stone.textureID, "src/spacegame/assets/blockFiles/itemStone.txt");
     public static final Block berryBushFlower = new BlockBerryBush((short)86, 27, "src/spacegame/assets/blockFiles/berryBush.txt");
+    public static final Block itemStick = new Block((short)87, 29, "src/spacegame/assets/blockFiles/itemStick.txt");
     public final short ID;
     public final int textureID;
     public static int facingDirection;
@@ -267,6 +269,7 @@ public class Block {
                     case "fireBlockModel" -> this.blockModel = fireBlockModel;
                     case "itemStoneModel" -> this.blockModel = itemStoneModel;
                     case "berryBushModel" -> this.blockModel = berryBushModel;
+                    case "itemStickModel" -> this.blockModel = itemStickModel;
                     case "size15NormalModel" -> this.blockModel = size15NormalModel;
                     case "size14NormalModel" -> this.blockModel = size14NormalModel;
                     case "size13NormalModel" -> this.blockModel = size13NormalModel;
@@ -383,7 +386,8 @@ public class Block {
         if (chunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)] != air.ID && chunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)] != water.ID) {return;}
 
         short heldItem = player.getHeldItem();
-        if (heldItem == -1 || heldItem == Item.berry.ID) {return;}
+        if (heldItem == -1 || heldItem == Item.berry.ID || heldItem == Item.stoneHandShovel.ID || heldItem == Item.stoneHandAxe.ID || heldItem == Item.stoneFragments.ID || heldItem == Item.stoneHandKnifeBlade.ID
+        || heldItem == Item.unlitTorch.ID) {return;}
 
         short heldBlock = 0;
         if (player.isHoldingBlock()) {
@@ -398,11 +402,11 @@ public class Block {
             };
         }
 
-        switch (Item.list[heldItem].itemName){
-           case "RAW_STONE":
-               heldBlock = itemStone.ID;
-               break;
-        }
+        heldBlock = switch (Item.list[heldItem].itemName) {
+            case "RAW_STONE" -> itemStone.ID;
+            case "RAW_STICK" -> itemStick.ID;
+            default -> heldBlock;
+        };
 
 
 

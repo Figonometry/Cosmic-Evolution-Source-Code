@@ -30,6 +30,7 @@ public final class EntityBlock extends EntityNonLiving {
         this.block = block;
         this.speed = 0.1;
         this.count = count;
+        this.despawnTime = SpaceGame.instance.save.time + 54000;
     }
 
 

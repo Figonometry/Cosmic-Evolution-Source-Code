@@ -53,6 +53,7 @@ public final class EntityPlayer extends EntityLiving {
     public float hardnessThreshold = 0.1f;
 
     public EntityPlayer(SpaceGame spaceGame, double x, double y, double z) {
+        super(Integer.MAX_VALUE);
         this.sg = spaceGame;
         this.x = x;
         this.y = y;
@@ -68,6 +69,7 @@ public final class EntityPlayer extends EntityLiving {
         this.playerFile = new File(this.sg.save.saveFolder + "/player.dat");
     }
     public EntityPlayer(SpaceGame spaceGame, File playerFile, double x, double y, double z) {
+        super(Integer.MAX_VALUE);
         this.sg = spaceGame;
         this.x = x;
         this.y = y;

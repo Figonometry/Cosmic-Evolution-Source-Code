@@ -53,6 +53,7 @@ public abstract class Entity {
     public boolean canMoveWithVector = false;
     public Vector3f movementVector = new Vector3f();
     public static int shadow;
+    public long despawnTime;
     public static ArrayList<AxisAlignedBB> surroundingBlocks = new ArrayList<>();
 
     public void tick() {
@@ -61,6 +62,12 @@ public abstract class Entity {
 
     public void render() {
         return;
+    }
+
+    protected void checkToDespawn(){
+        if(SpaceGame.instance.save.time >= this.despawnTime){
+            this.despawn = true;
+        }
     }
 
     public void damage(Vector3f movementVector, float damage){

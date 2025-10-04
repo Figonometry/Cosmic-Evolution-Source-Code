@@ -34,6 +34,18 @@ public final class ChunkColumnSkylightMap {
         this.lightMap[(x % 32) + ((z % 32) << 5)] = y;
     }
 
+    public int getHeightValue(int x, int z){
+        if (x < 0) {
+            x %= 32;
+            x += 32;
+        }
+        if (z < 0) {
+            z %= 32;
+            z += 32;
+        }
+       return this.lightMap[(x % 32) + ((z % 32) << 5)];
+    }
+
     public boolean isHeight(int x, int y, int z) {
         if (x < 0) {
             x %= 32;

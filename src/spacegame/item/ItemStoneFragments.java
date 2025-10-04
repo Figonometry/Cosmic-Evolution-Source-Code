@@ -3,7 +3,6 @@ package spacegame.item;
 import spacegame.block.Block;
 import spacegame.core.SpaceGame;
 import spacegame.entity.EntityPlayer;
-import spacegame.gui.GuiCraftingStick;
 import spacegame.gui.GuiLightFire;
 import spacegame.world.World;
 

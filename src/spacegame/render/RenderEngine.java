@@ -350,6 +350,7 @@ public final class RenderEngine {
                 case 26 -> "berryBushTop";
                 case 27 -> "berryBushFlowerSide";
                 case 28 -> "berryBushFlowerTop";
+                case 29 -> "itemStick";
                 default -> "missing";
             };
         } else if(textureFolderpath.contains("item")){

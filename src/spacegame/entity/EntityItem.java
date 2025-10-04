@@ -35,6 +35,7 @@ public final class EntityItem extends EntityNonLiving {
         this.speed = 0.1;
         this.count = count;
         this.itemDurability = itemDurability;
+        this.despawnTime = SpaceGame.instance.save.time + 54000;
     }
 
     private void setEntityState() {

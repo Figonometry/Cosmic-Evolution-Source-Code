@@ -139,25 +139,27 @@ public final class GuiMainMenu extends Gui {
             fontRenderer.drawString(this.sg.title, x, y, depth, 16711875, 50);
             y -= 60;
             fontRenderer.toggleItalics();
-            fontRenderer.drawString("Improved performance", x, y, depth, yellow, 50);
+            fontRenderer.drawString("Fixed depth precision issues related to shadows", x, y, depth, yellow, 50);
             y -= 30;
-            fontRenderer.drawString("Added descriptions to the Foraging I and Stone Hand Tools techs", x, y, depth, green, 50);
+            fontRenderer.drawString("Updated textures for stone hand tools and stone fragments", x, y, depth, yellow, 50);
             y -= 30;
-            fontRenderer.drawString("Added a progress indicator on known techs", x, y, depth, green, 50);
+            fontRenderer.drawString("Added stick block models", x, y, depth, green, 50);
             y -= 30;
-            fontRenderer.drawString("Added lines to show what features a tech unlocks", x, y, depth, green, 50);
+            fontRenderer.drawString("Unlit torches can now be made by right clicking stone fragments on a ground stick", x, y, depth, yellow, 50);
             y -= 30;
-            fontRenderer.drawString("Added tech logging events for crafting stone tools and harvesting berries", x, y, depth, green, 50);
+            fontRenderer.drawString("Fixed items unintentionally being consumed if right clicking on a block", x, y, depth, yellow, 50);
             y -= 30;
-            fontRenderer.drawString("Tech progress along with tech states are saved/loaded from disk", x, y, depth,yellow, 50);
+            fontRenderer.drawString("Deer can no longer be spawned by pressing G", x, y, depth, yellow, 50);
             y -= 30;
-            fontRenderer.drawString("Updated the block model for berry bushes", x, y, depth, yellow, 50);
+            fontRenderer.drawString("Deer now spawn in naturally in groups of 1 to 4", x, y, depth, yellow, 50);
             y -= 30;
-            fontRenderer.drawString("Added a flowering stage to berry bushes", x, y, depth, green, 50);
+            fontRenderer.drawString("Dropped items will now despawn after 15 minutes on the ground", x, y, depth, yellow, 50);
             y -= 30;
-            fontRenderer.drawString("Berry bushes now drop themselves when broken, this will change later", x, y, depth, yellow, 50);
+            fontRenderer.drawString("Deer will now despawn after a random length of time up to 15 minutes", x, y, depth, yellow, 50);
             y -= 30;
-            fontRenderer.drawString("Berry bushes no longer break instantly", x, y, depth, yellow, 50);
+            fontRenderer.drawString("Deer now save/load to disk", x, y, depth, yellow, 50);
+            y -= 30;
+            fontRenderer.drawString("Deer now drop berries on death", x, y, depth, yellow, 50);
             fontRenderer.toggleItalics();
 
 

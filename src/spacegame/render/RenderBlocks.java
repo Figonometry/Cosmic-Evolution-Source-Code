@@ -517,6 +517,187 @@ public class RenderBlocks {
             }
         }
     }
+    public void renderItemStick(Chunk chunk, World world, short block, int index, int face, int[] greedyMeshSize) {
+        Random rand = new Random(index);
+        float rotation = rand.nextFloat((float) 0, (float) (2 * Math.PI));
+        float stickScale = rand.nextFloat(0.5f, 0.9f);
+        float translateX = rand.nextFloat(0.25f, 0.75f);
+        float translateZ = rand.nextFloat(0.25f, 0.75f);
+        Vector3f offset = new Vector3f(translateX, 0f, translateZ);
+
+        boolean secondStick = rand.nextBoolean();
+        float secondStickRotation = rand.nextFloat((float)0, (float) (2 * Math.PI));
+        float secondStickScale = rand.nextFloat(0.5f, 0.9f);
+        float secondTranslateX = rand.nextBoolean() ? translateX - 0.25f : translateX + 0.25f;
+        float secondTranslateZ = rand.nextBoolean() ? translateZ - 0.25f : translateZ + 0.25f;
+        Vector3f secondOffset = new Vector3f(secondTranslateX, 0f, secondTranslateZ);
+
+        switch (face) {
+            case TOP_FACE -> {
+                for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
+                    if (Block.list[block].blockModel.modelFaces[i].faceType == TOP_FACE) {
+                        ModelFace modelFace = Block.list[block].blockModel.copyModel().getScaledModel(stickScale).modelFaces[i];
+                        modelFace.normal.rotateY(rotation);
+                        for(int j = 0; j < modelFace.vertices.length; j++){
+                            modelFace.vertices[j].rotateY(rotation);
+                        }
+                        for(int j = 0; j < modelFace.vertices.length; j++){
+                            modelFace.vertices[j].add(offset);
+                        }
+                        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0,0.4375f,0,-0.4375f,0,-0.4375f,0,0.4375f, 3, 1, 2, 0, greedyMeshSize);
+
+                        if(secondStick){
+                            modelFace = Block.list[block].blockModel.copyModel().getScaledModel(secondStickScale).modelFaces[i];
+                            modelFace.normal.rotateY(rotation);
+                            for(int j = 0; j < modelFace.vertices.length; j++){
+                                modelFace.vertices[j].rotateY(secondStickRotation);
+                            }
+                            for(int j = 0; j < modelFace.vertices.length; j++){
+                                modelFace.vertices[j].add(secondOffset);
+                            }
+                            renderOpaqueFace(chunk, world, block, index, face, modelFace, 0,0.4375f,0,-0.4375f,0,-0.4375f,0,0.4375f, 3, 1, 2, 0, greedyMeshSize);
+                        }
+                    }
+                }
+            }
+            case BOTTOM_FACE -> {
+                for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
+                    if (Block.list[block].blockModel.modelFaces[i].faceType == BOTTOM_FACE) {
+                        ModelFace modelFace = Block.list[block].blockModel.copyModel().getScaledModel(stickScale).modelFaces[i];
+                        modelFace.normal.rotateY(rotation);
+                        for(int j = 0; j < modelFace.vertices.length; j++){
+                            modelFace.vertices[j].rotateY(rotation);
+                        }
+                        for(int j = 0; j < modelFace.vertices.length; j++){
+                            modelFace.vertices[j].add(offset);
+                        };
+                        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0,0.4375f,0,-0.4375f,0,-0.4375f,0,0.4375f, 3, 1, 2, 0, greedyMeshSize);
+
+                        if(secondStick){
+                            modelFace = Block.list[block].blockModel.copyModel().getScaledModel(secondStickScale).modelFaces[i];
+                            modelFace.normal.rotateY(rotation);
+                            for(int j = 0; j < modelFace.vertices.length; j++){
+                                modelFace.vertices[j].rotateY(secondStickRotation);
+                            }
+                            for(int j = 0; j < modelFace.vertices.length; j++){
+                                modelFace.vertices[j].add(secondOffset);
+                            }
+                            renderOpaqueFace(chunk, world, block, index, face, modelFace, 0,0.4375f,0,-0.4375f,0,-0.4375f,0,0.4375f, 3, 1, 2, 0, greedyMeshSize);
+                        }
+                    }
+                }
+            }
+            case NORTH_FACE -> {
+                for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
+                    if (Block.list[block].blockModel.modelFaces[i].faceType == NORTH_FACE) {
+                        ModelFace modelFace = Block.list[block].blockModel.copyModel().getScaledModel(stickScale).modelFaces[i];
+                        modelFace.normal.rotateY(rotation);
+                        for(int j = 0; j < modelFace.vertices.length; j++){
+                            modelFace.vertices[j].rotateY(rotation);
+                        }
+                        for(int j = 0; j < modelFace.vertices.length; j++){
+                            modelFace.vertices[j].add(offset);
+                        }
+                        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0,-0.4375f,-0.875f,0.4375f,0,0.4375f,-0.875f,-0.4375f, 3, 1, 2, 0, greedyMeshSize);
+
+                        if(secondStick){
+                            modelFace = Block.list[block].blockModel.copyModel().getScaledModel(secondStickScale).modelFaces[i];
+                            modelFace.normal.rotateY(rotation);
+                            for(int j = 0; j < modelFace.vertices.length; j++){
+                                modelFace.vertices[j].rotateY(secondStickRotation);
+                            }
+                            for(int j = 0; j < modelFace.vertices.length; j++){
+                                modelFace.vertices[j].add(secondOffset);
+                            }
+                            renderOpaqueFace(chunk, world, block, index, face, modelFace, 0,-0.4375f,-0.875f,0.4375f,0,0.4375f,-0.875f,-0.4375f, 3, 1, 2, 0, greedyMeshSize);
+                        }
+                    }
+                }
+            }
+            case SOUTH_FACE -> {
+                for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
+                    if (Block.list[block].blockModel.modelFaces[i].faceType == SOUTH_FACE) {
+                        ModelFace modelFace = Block.list[block].blockModel.copyModel().getScaledModel(stickScale).modelFaces[i];
+                        modelFace.normal.rotateY(rotation);
+                        for(int j = 0; j < modelFace.vertices.length; j++){
+                            modelFace.vertices[j].rotateY(rotation);
+                        }
+                        for(int j = 0; j < modelFace.vertices.length; j++){
+                            modelFace.vertices[j].add(offset);
+                        }
+                        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0,-0.4375f,-0.875f,0.4375f,0,0.4375f,-0.875f,-0.4375f, 3, 1, 2, 0, greedyMeshSize);
+
+                        if(secondStick){
+                            modelFace = Block.list[block].blockModel.copyModel().getScaledModel(secondStickScale).modelFaces[i];
+                            modelFace.normal.rotateY(rotation);
+                            for(int j = 0; j < modelFace.vertices.length; j++){
+                                modelFace.vertices[j].rotateY(secondStickRotation);
+                            }
+                            for(int j = 0; j < modelFace.vertices.length; j++){
+                                modelFace.vertices[j].add(secondOffset);
+                            }
+                            renderOpaqueFace(chunk, world, block, index, face, modelFace, 0,-0.4375f,-0.875f,0.4375f,0,0.4375f,-0.875f,-0.4375f, 3, 1, 2, 0, greedyMeshSize);
+                        }
+                    }
+                }
+            }
+            case EAST_FACE -> {
+                for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
+                    if (Block.list[block].blockModel.modelFaces[i].faceType == EAST_FACE) {
+                        ModelFace modelFace = Block.list[block].blockModel.copyModel().getScaledModel(stickScale).modelFaces[i];
+                        modelFace.normal.rotateY(rotation);
+                        for(int j = 0; j < modelFace.vertices.length; j++){
+                            modelFace.vertices[j].rotateY(rotation);
+                        }
+                        for(int j = 0; j < modelFace.vertices.length; j++){
+                            modelFace.vertices[j].add(offset);
+                        }
+                        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0,-0.4375f,0,0.4375f,0,0.4375f,0,-0.4375f, 3, 1, 2, 0, greedyMeshSize);
+
+                        if(secondStick){
+                            modelFace = Block.list[block].blockModel.copyModel().getScaledModel(secondStickScale).modelFaces[i];
+                            modelFace.normal.rotateY(rotation);
+                            for(int j = 0; j < modelFace.vertices.length; j++){
+                                modelFace.vertices[j].rotateY(secondStickRotation);
+                            }
+                            for(int j = 0; j < modelFace.vertices.length; j++){
+                                modelFace.vertices[j].add(secondOffset);
+                            }
+                            renderOpaqueFace(chunk, world, block, index, face, modelFace, 0,-0.4375f,0,0.4375f,0,0.4375f,0,-0.4375f, 3, 1, 2, 0, greedyMeshSize);
+                        }
+                    }
+                }
+            }
+            case WEST_FACE -> {
+                for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
+                    if (Block.list[block].blockModel.modelFaces[i].faceType == WEST_FACE) {
+                        ModelFace modelFace = Block.list[block].blockModel.copyModel().getScaledModel(stickScale).modelFaces[i];
+                        modelFace.normal.rotateY(rotation);
+                        for(int j = 0; j < modelFace.vertices.length; j++){
+                            modelFace.vertices[j].rotateY(rotation);
+                        }
+                        for(int j = 0; j < modelFace.vertices.length; j++){
+                            modelFace.vertices[j].add(offset);
+                        }
+                        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0,-0.4375f,0,0.4375f,0,0.4375f,0,-0.4375f, 3, 1, 2, 0, greedyMeshSize);
+
+                        if(secondStick){
+                            modelFace = Block.list[block].blockModel.copyModel().getScaledModel(secondStickScale).modelFaces[i];
+                            modelFace.normal.rotateY(rotation);
+                            for(int j = 0; j < modelFace.vertices.length; j++){
+                                modelFace.vertices[j].rotateY(secondStickRotation);
+                            }
+                            for(int j = 0; j < modelFace.vertices.length; j++){
+                                modelFace.vertices[j].add(secondOffset);
+                            }
+                            renderOpaqueFace(chunk, world, block, index, face, modelFace, 0,-0.4375f,0,0.4375f,0,0.4375f,0,-0.4375f, 3, 1, 2, 0, greedyMeshSize);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
 
 
 
@@ -1866,7 +2047,8 @@ public class RenderBlocks {
             }
         }
 
-        if(block != Block.itemStone.ID) {
+
+        if(block != Block.itemStone.ID && block != Block.itemStick.ID) {
             switch (blockFace.faceType) {
                 case TOP_FACE -> {
                     for (int i = 0; i < modelLoader.modelFaces.length; i++) {

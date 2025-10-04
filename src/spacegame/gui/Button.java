@@ -405,16 +405,6 @@ public class Button {
                     this.sg.save.activeWorld.delayWhenExitingUI = 60;
                     Tech.techUpdateEvent(Tech.UPDATE_EVENT_CRAFT_STONE_HAND_TOOL);
                 }
-                if(this.Gui instanceof GuiCraftingStick){
-                    int x = ((GuiCraftingStick)this.Gui).x;
-                    int y = ((GuiCraftingStick)this.Gui).y;
-                    int z = ((GuiCraftingStick)this.Gui).z;
-                    short outputItem = ((GuiCraftingStick)this.Gui).outputItemID;
-                    this.sg.save.activeWorld.delayWhenExitingUI = 60;
-                    if(this.sg.save.thePlayer.inventory.itemStacks[EntityPlayer.selectedInventorySlot].item != null) {
-                        this.sg.save.thePlayer.inventory.itemStacks[EntityPlayer.selectedInventorySlot].durability--;
-                    }
-                }
 
                 this.sg.setNewGui(new GuiInGame(this.sg));
             }

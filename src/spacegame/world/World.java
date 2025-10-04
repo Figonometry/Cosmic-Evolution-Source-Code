@@ -1039,6 +1039,13 @@ public abstract class World {
             }
         }
 
+        if(block.ID == Block.itemStick.ID){
+            if(this.sg.save.thePlayer.getHeldItem() == Item.stoneFragments.ID){
+                this.setBlockWithNotify(x,y,z, Block.air.ID);
+                this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).addEntityToList(new EntityItem(x + 0.5, y + 0.1, z + 0.5, Item.unlitTorch.ID, (short) 0, (byte) 1, (short) -1));
+            }
+        }
+
 
     }
 
