@@ -318,36 +318,71 @@ public final class FontRenderer {
     }
 
 
-    public void drawString(boolean value, int x, int y, int depth, int color, int font) {
-        drawString(Boolean.toString(value), x, y, color, font, depth);
+    public void drawString(boolean value, float x, float y, float depth, int color, int font) {
+        drawString(Boolean.toString(value), x, y, depth, font, color);
     }
 
-    public void drawString(char character, int x, int y, int depth, int color, int font) {
-        drawString(Character.toString(character), x, y, color, font, depth);
+    public void drawString(char character, float x, float y, float depth, int color, int font) {
+        drawString(Character.toString(character), x, y, depth, font, color);
     }
 
-    public void drawString(byte value, int x, int y, int depth,  int color, int font) {
-        drawString(Byte.toString(value), x, y, color, font, depth);
+    public void drawString(byte value, float x, float y, float depth,  int color, int font) {
+        drawString(Byte.toString(value), x, y, depth, font, color);
     }
 
-    public void drawString(short value, int x, int y, int depth,  int color, int font) {
-        drawString(Short.toString(value), x, y, color, font, depth);
+    public void drawString(short value, float x, float y, float depth,  int color, int font) {
+        drawString(Short.toString(value), x, y, depth, font, color);
     }
 
-    public void drawString(int value, int x, int y, int depth,  int color, int font) {
-        drawString(Integer.toString(value), x, y, color, font, depth);
+    public void drawString(int value, float x, float y, float depth,  int color, int font) {
+        drawString(Integer.toString(value), x, y, depth, font, color);
     }
 
-    public void drawString(long value, int x, int y, int depth,  int color, int font) {
-        drawString(Long.toString(value), x, y, color, font, depth);
+    public void drawString(long value, float x, float y, float depth,  int color, int font) {
+        drawString(Long.toString(value), x, y, depth, font, color);
     }
 
-    public void drawString(double value, int x, int y, int depth,  int color, int font) {
-        drawString(Double.toString(value), x, y, color, font, depth);
+    public void drawString(double value, float x, float y, float depth,  int color, int font) {
+        drawString(Double.toString(value), x, y, depth, font, color);
     }
 
-    public void drawString(float value, int x, int y, int depth,  int color, int font) {
-        drawString(Float.toString(value), x, y, color, font, depth);
+    public void drawString(float value, float x, float y, float depth,  int color, int font) {
+        drawString(Float.toString(value), x, y, depth, font, color);
+    }
+
+
+
+
+    public void drawCenteredString(boolean value, float x, float y, float depth, int color, int font) {
+        drawCenteredString(Boolean.toString(value), x, y, depth, font, color);
+    }
+
+    public void drawCenteredString(char character, float x, float y, float depth, int color, int font) {
+        drawCenteredString(Character.toString(character), x, y, depth, font, color);
+    }
+
+    public void drawCenteredString(byte value, float x, float y, float depth,  int color, int font) {
+        drawCenteredString(Byte.toString(value), x, y, depth, font, color);
+    }
+
+    public void drawCenteredString(short value, float x, float y, float depth,  int color, int font) {
+        drawCenteredString(Short.toString(value), x, y, depth, font, color);
+    }
+
+    public void drawCenteredString(int value, float x, float y, float depth,  int color, int font) {
+        drawCenteredString(Integer.toString(value), x, y, depth, font, color);
+    }
+
+    public void drawCenteredString(long value, float x, float y, float depth,  int color, int font) {
+        drawCenteredString(Long.toString(value), x, y, depth, font, color);
+    }
+
+    public void drawCenteredString(double value, float x, float y, float depth,  int color, int font) {
+        drawCenteredString(Double.toString(value), x, y, depth, font, color);
+    }
+
+    public void drawCenteredString(float value, float x, float y, float depth,  int color, int font) {
+        drawCenteredString(Float.toString(value), x, y, depth, font, color);
     }
 
 

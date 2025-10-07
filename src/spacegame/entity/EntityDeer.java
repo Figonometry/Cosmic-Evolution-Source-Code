@@ -1,11 +1,14 @@
 package spacegame.entity;
 
+import spacegame.core.MathUtil;
 import spacegame.core.Sound;
 import spacegame.core.SpaceGame;
 import spacegame.entity.ai.AIPassive;
+import spacegame.item.Item;
 import spacegame.render.Model;
 import spacegame.render.ModelDeer;
 import spacegame.render.RenderEngine;
+import spacegame.world.Tech;
 
 import java.io.File;
 import java.util.Random;
@@ -24,6 +27,7 @@ public final class EntityDeer extends EntityLiving {
     public Model model = new ModelDeer();
 
     public EntityDeer(double x, double y, double z, boolean isChild, boolean isMale){
+        super(54000);
         this.x = x;
         this.y = y;
         this.z = z;
@@ -37,9 +41,6 @@ public final class EntityDeer extends EntityLiving {
         this.rawDeltaX = -0.1f;
     }
 
-    public EntityDeer(double x, double y, double z, File entityFile){
-        //Load from file
-    }
 
     public static void loadTexture(){
         texture = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/entity/deer.png", RenderEngine.TEXTURE_TYPE_2D, 0);
@@ -47,6 +48,7 @@ public final class EntityDeer extends EntityLiving {
 
     @Override
     public void tick(){
+        this.checkToDespawn();
         this.updateAI();
         this.updateYawAndPitch();
         this.setMovementAmount();
@@ -179,8 +181,11 @@ public final class EntityDeer extends EntityLiving {
 
     @Override
     public void handleDeath() {
-        //Either disperse item or create a corpse, either way the entity needs to be nulled
         this.despawn = true;
+        SpaceGame.instance.save.activeWorld.addEntity(new EntityItem(this.x, this.y, this.z, Item.rawVenison.ID, Item.NULL_ITEM_METADATA, (byte) 1, Item.NULL_ITEM_DURABILITY));
+        if(this.lastEntityToHit instanceof EntityPlayer){
+            Tech.techUpdateEvent(Tech.UPDATE_EVENT_HUNT_ANIMAL);
+        }
     }
 
     @Override

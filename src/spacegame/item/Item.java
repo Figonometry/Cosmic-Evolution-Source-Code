@@ -13,12 +13,14 @@ public class Item {
     public static final Item stone = new Item((short)2, 2, "src/spacegame/assets/itemFiles/stone.txt");
     public static final Item stoneFragments = new ItemStoneFragments((short)3, 3, "src/spacegame/assets/itemFiles/stoneFragments.txt");
     public static final Item stoneHandAxe = new ItemAxe((short)4, 4, "src/spacegame/assets/itemFiles/stoneHandAxe.txt", Material.RAW_STONE);
-    public static final Item berry = new ItemBerry((short)5, 5, "src/spacegame/assets/itemFiles/berry.txt");
+    public static final Item berry = new ItemFood((short)5, 5, "src/spacegame/assets/itemFiles/berry.txt", 5f);
     public static final Item rawStick = new Item((short)6, 6, "src/spacegame/assets/itemFiles/rawStick.txt");
     public static final Item unlitTorch = new Item((short)7, 7, "src/spacegame/assets/itemFiles/unlitTorch.txt");
-    public static final Item woodShards = new Item((short)8, 8, "src/spacegame/assets/itemFiles/woodShards.txt");
+    public static final Item fireWood = new Item((short)8, 8, "src/spacegame/assets/itemFiles/fireWood.txt");
     public static final Item stoneHandKnifeBlade = new ItemKnife((short)9, 9, "src/spacegame/assets/itemFiles/stoneHandKnifeBlade.txt", Material.RAW_STONE);
     public static final Item stoneHandShovel = new ItemShovel((short)10, 10, "src/spacegame/assets/itemFiles/stoneHandShovel.txt", Material.RAW_STONE);
+    public static final Item rawVenison = new ItemFood((short)11, 11, "src/spacegame/assets/itemFiles/rawVenison.txt", 5f);
+    public static final Item straw = new Item((short)12, 12, "src/spacegame/assets/itemFiles/straw.txt");
     public final short ID;
     public final int textureID;
     public short metadata;
@@ -26,9 +28,14 @@ public class Item {
     public float hardness = 0;
     public boolean renderItemWithBlockModel;
     public byte stackLimit = 100;
+    public float attackDamage;
+    public boolean canPlaceOnGround = false;
     public String itemName;
     public String toolType = "";
     public Material material;
+    public static final short NULL_ITEM_REFERENCE = -1;
+    public static final short NULL_ITEM_DURABILITY = -1;
+    public static final short NULL_ITEM_METADATA = 0;
 
     public Item(short ID, int textureID, String filepath){
         if (list[ID] != null) {
@@ -65,8 +72,16 @@ public class Item {
                 this.hardness = Float.parseFloat(properties[1]);
             }
 
+            if (properties[0].equals("attackDamage")) {
+                this.attackDamage = Float.parseFloat(properties[1]);
+            }
+
             if (properties[0].equals("renderItemWithBlockModel")) {
                 this.renderItemWithBlockModel = Boolean.parseBoolean(properties[1]);
+            }
+
+            if(properties[0].equals("canPlaceOnGround")){
+                this.canPlaceOnGround = Boolean.parseBoolean(properties[1]);
             }
 
             if (properties[0].equals("stackLimit")) {

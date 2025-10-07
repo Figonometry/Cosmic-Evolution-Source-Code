@@ -6,6 +6,7 @@ import spacegame.core.MouseListener;
 import spacegame.core.SpaceGame;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
+import spacegame.world.Tech;
 
 import java.awt.*;
 import java.util.ArrayList;

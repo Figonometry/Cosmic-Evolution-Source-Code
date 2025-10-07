@@ -5,8 +5,10 @@ import spacegame.block.ITickable;
 import spacegame.core.GameSettings;
 import spacegame.core.MathUtil;
 import spacegame.core.SpaceGame;
+import spacegame.core.Timer;
 import spacegame.entity.Entity;
 import spacegame.entity.EntityBlock;
+import spacegame.entity.EntityDeer;
 import spacegame.entity.EntityItem;
 import spacegame.gui.GuiWorldLoadingScreen;
 import spacegame.nbt.NBTIO;
@@ -58,7 +60,8 @@ public final class ChunkController {
     public int timer = 2400;
     public RenderWorldScene renderWorldScene = new RenderWorldScene(this);
     public ChunkTerrainHandler chunkTerrainHandler;
-    static int test = 0;
+    public int entityCap;
+    public int numLoadedEntities;
 
     public ChunkController(World parentWorld) {
         this.parentWorld = parentWorld;
@@ -67,13 +70,13 @@ public final class ChunkController {
 
 
     public void update() {
-        this.playerChunkX = (int) (this.parentWorld.sg.save.thePlayer.x) >> 5;
-        this.playerChunkY = (int) (this.parentWorld.sg.save.thePlayer.y) >> 5;
-        this.playerChunkZ = (int) (this.parentWorld.sg.save.thePlayer.z) >> 5;
+        this.playerChunkX = MathUtil.floorDouble(this.parentWorld.sg.save.thePlayer.x) >> 5;
+        this.playerChunkY = MathUtil.floorDouble(this.parentWorld.sg.save.thePlayer.y) >> 5;
+        this.playerChunkZ = MathUtil.floorDouble(this.parentWorld.sg.save.thePlayer.z) >> 5;
         if (!this.loadedInitialColumn) {
             this.loadChunkColumn(this.playerChunkX, this.playerChunkZ);
             if(!this.parentWorld.sg.save.thePlayer.loadedFromFile) {
-                while (Block.list[this.parentWorld.getBlockID((int) this.parentWorld.sg.save.thePlayer.x, (int) parentWorld.sg.save.thePlayer.y, (int) this.parentWorld.sg.save.thePlayer.z)].isSolid) {
+                while (Block.list[this.parentWorld.getBlockID(MathUtil.floorDouble(this.parentWorld.sg.save.thePlayer.x), MathUtil.floorDouble(parentWorld.sg.save.thePlayer.y), MathUtil.floorDouble(this.parentWorld.sg.save.thePlayer.z))].isSolid) {
                     this.parentWorld.sg.save.thePlayer.y++;
                 }
                 this.parentWorld.sg.save.thePlayer.y += 3;
@@ -84,7 +87,8 @@ public final class ChunkController {
             this.loadedInitialColumn = true;
         }
         this.loadOrUnloadChunks();
-        if(this.numberOfLoadedChunks() != this.prevNumberOfLoadedChunks) {
+        this.numberOfLoadedChunks = this.numberOfLoadedChunks();
+        if(this.numberOfLoadedChunks != this.prevNumberOfLoadedChunks) {
             this.populateChunks();
         }
         this.rebuildDirtyChunks();
@@ -106,8 +110,14 @@ public final class ChunkController {
 
     public void tick(){
         if(!this.parentWorld.paused) {
+            this.renderWorldScene.chunksThatContainEntities.clear();
+            this.entityCap = this.numberOfLoadedChunks / 500;
+            this.numLoadedEntities = 0;
             ChunkRegion region;
             Chunk chunk;
+            int xOffset;
+            int yOffset;
+            int zOffset;
             for (int i = 0; i < this.regions.length; i++) {
                 region = this.regions[i];
                 if (region != null) {
@@ -115,11 +125,43 @@ public final class ChunkController {
                         chunk = region.chunks[k];
                         if (chunk != null) {
                             if (chunk.doesChunkContainEntities()) {
+                                chunk.checkIfEntitiesAreStillInChunk();
                                 chunk.tickEntities();
+                                xOffset = (chunk.x - this.playerChunkX) << 5;
+                                yOffset = (chunk.y - this.playerChunkY) << 5;
+                                zOffset = (chunk.z - this.playerChunkZ) << 5;
+                                if(SpaceGame.camera.doesBoundingBoxIntersectFrustum(xOffset, yOffset, zOffset, ((xOffset + 31)), ((yOffset + 31)), ((zOffset + 31))) && chunk.doesChunkContainEntities()){
+                                    this.renderWorldScene.chunksThatContainEntities.add(chunk);
+                                }
                             }
                             chunk.tick();
+                            this.numLoadedEntities += chunk.entities.size();
                         }
                     }
+                }
+            }
+            //Set target to spawn entities
+            if (this.numLoadedEntities < this.entityCap) {
+                if(SpaceGame.instance.save.time % 2400 == 0) { //Roughly every 40 seconds
+                    int x = MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.x + (SpaceGame.globalRand.nextBoolean() ? SpaceGame.globalRand.nextInt(32, 64) : SpaceGame.globalRand.nextInt(-64, -32)));
+                    int z = MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.z + (SpaceGame.globalRand.nextBoolean() ? SpaceGame.globalRand.nextInt(32, 64) : SpaceGame.globalRand.nextInt(-64, -32)));
+
+                    int spawnX;
+                    int spawnY;
+                    int spawnZ;
+                    int numberDeer = SpaceGame.globalRand.nextInt(2, 5);
+                    for (int i = 0; i <= numberDeer; i++) {
+                        spawnX = x + (SpaceGame.globalRand.nextBoolean() ? SpaceGame.globalRand.nextInt(5, 10) : SpaceGame.globalRand.nextInt(-10, -5));
+                        spawnZ = z + (SpaceGame.globalRand.nextBoolean() ? SpaceGame.globalRand.nextInt(5, 10) : SpaceGame.globalRand.nextInt(-10, -5));
+                        spawnY = this.findChunkSkyLightMap(spawnX >> 5, spawnZ >> 5).getHeightValue(spawnX, spawnZ);
+                        if (this.parentWorld.getBlockID(spawnX, spawnY, spawnZ) == Block.grass.ID && this.parentWorld.getBlockID(spawnX, spawnY + 1, spawnZ) == Block.air.ID) {
+                            Chunk chunk1 = this.findChunkFromChunkCoordinates(spawnX >> 5, spawnY >> 5, spawnZ >> 5);
+                            if (chunk1 != null) {
+                                chunk1.addEntityToList(new EntityDeer(spawnX + 0.5, spawnY + 1.5, spawnZ + 0.5, false, true));
+                            }
+                        }
+                    }
+
                 }
             }
         }
@@ -225,25 +267,14 @@ public final class ChunkController {
     }
 
     public void checkForMissedChunksAndCheckForUpdateTime(){
-        this.renderWorldScene.chunksThatContainEntities.clear();
         ChunkRegion region;
         Chunk chunk;
-        int playerChunkX = MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.x) >> 5;
-        int playerChunkY = MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.y) >> 5;
-        int playerChunkZ = MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.z) >> 5;
-        int xOffset;
-        int yOffset;
-        int zOffset;
         for(int i = 0; i < this.regions.length; i++){
             region = this.regions[i];
             if(region != null){
                 for(int j = 0; j < region.chunks.length; j++){
                     chunk = region.chunks[j];
                     if(chunk != null){
-                        chunk.checkIfEntitiesAreStillInChunk();
-                        xOffset = (chunk.x - playerChunkX) << 5;
-                        yOffset = (chunk.y - playerChunkY) << 5;
-                        zOffset = (chunk.z - playerChunkZ) << 5;
                         if(!chunk.shouldRender && !chunk.empty && this.parentWorld.chunkFullySurrounded(chunk.x, chunk.y ,chunk.z) && chunk.populated && (chunk.containsAir || chunk.containsWater)){
                             if(chunk.blocks != null) {
                                 chunk.notifyAllBlocks();
@@ -252,9 +283,6 @@ public final class ChunkController {
                         if(chunk.updateTime <= SpaceGame.instance.save.time && chunk.updateTime != 0){
                             chunk.markDirty();
                             chunk.updateTime = 0;
-                        }
-                        if(chunk.doesChunkContainEntities() && SpaceGame.camera.doesBoundingBoxIntersectFrustum(xOffset, yOffset, zOffset, ((xOffset + 31)), ((yOffset + 31)), ((zOffset + 31)))){
-                            this.renderWorldScene.chunksThatContainEntities.add(chunk);
                         }
                     }
                 }

@@ -4,6 +4,7 @@ import org.lwjgl.opengl.GL46;
 import spacegame.core.SpaceGame;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
+import spacegame.world.Tech;
 
 import java.util.ArrayList;
 

@@ -1851,6 +1851,19 @@ public final class ModelLoader{
         return null;
     }
 
+    public ModelFace[] getModelFaceOfType(int face){
+        ModelFace[] faces = new ModelFace[this.modelFaces.length];
+        int index = 0;
+        for(int i = 0; i < this.modelFaces.length; i++){
+            if(this.modelFaces[i].faceType == face){
+                faces[index] = this.modelFaces[i];
+                index++;
+            }
+        }
+
+        return faces;
+    }
+
 
     public ModelLoader copyModel(){
         ModelLoader returnModel = new ModelLoader();
@@ -1875,15 +1888,6 @@ public final class ModelLoader{
     }
 
 
-    //meant for the default block model
-    public ModelFace getModelFace(int face){
-        for(int i = 0; i < this.modelFaces.length; i++){
-            if(this.modelFaces[i].faceType == face){
-                return this.modelFaces[i];
-            }
-        }
-        return null;
-    }
 
 
 }

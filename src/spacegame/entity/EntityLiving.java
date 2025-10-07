@@ -29,6 +29,12 @@ public abstract class EntityLiving extends Entity {
     public AxisAlignedBB eastBlock = new AxisAlignedBB();
     public AxisAlignedBB westBlock = new AxisAlignedBB();
 
+    public EntityLiving(int maxTimeAlive){
+        if(!(this instanceof EntityPlayer)) {
+            this.despawnTime = SpaceGame.instance.save.time + SpaceGame.globalRand.nextLong(maxTimeAlive);
+        }
+    }
+
     public abstract void checkHealth();
 
     public abstract void handleDeath();

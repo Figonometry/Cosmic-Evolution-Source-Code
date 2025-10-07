@@ -4,7 +4,8 @@ import spacegame.core.SpaceGame;
 import spacegame.entity.EntityItem;
 import spacegame.entity.EntityPlayer;
 import spacegame.item.Item;
-import spacegame.gui.Tech;
+import spacegame.render.RenderBlocks;
+import spacegame.world.Tech;
 import spacegame.world.World;
 
 public final class BlockBerryBush extends Block implements ITickable {
@@ -37,26 +38,6 @@ public final class BlockBerryBush extends Block implements ITickable {
 
     @Override
     public int getBlockTexture(int face){
-        switch (this.ID) {
-            case 62 -> { //No berries?
-                return switch (face) {
-                    case 0 -> this.textureID + 13;
-                    default -> this.textureID;
-                };
-            }
-            case 61 -> { //Berries
-                return switch (face){
-                    case 0 -> this.textureID + 15;
-                    default -> this.textureID;
-                };
-            }
-            case 86 -> { //Berries with flowers
-                return switch (face){
-                    case 0 -> this.textureID + 1;
-                    default -> this.textureID;
-                };
-            }
-        }
-        return this.textureID;
+        return face == RenderBlocks.TOP_FACE ? this.textureID + 1 : this.textureID;
     }
 }

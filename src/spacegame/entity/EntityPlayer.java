@@ -53,6 +53,7 @@ public final class EntityPlayer extends EntityLiving {
     public float hardnessThreshold = 0.1f;
 
     public EntityPlayer(SpaceGame spaceGame, double x, double y, double z) {
+        super(Integer.MAX_VALUE);
         this.sg = spaceGame;
         this.x = x;
         this.y = y;
@@ -68,6 +69,7 @@ public final class EntityPlayer extends EntityLiving {
         this.playerFile = new File(this.sg.save.saveFolder + "/player.dat");
     }
     public EntityPlayer(SpaceGame spaceGame, File playerFile, double x, double y, double z) {
+        super(Integer.MAX_VALUE);
         this.sg = spaceGame;
         this.x = x;
         this.y = y;
@@ -192,14 +194,14 @@ public final class EntityPlayer extends EntityLiving {
         if(this.inventory.itemStacks[selectedInventorySlot].item != null) {
             return this.inventory.itemStacks[selectedInventorySlot].item.ID;
         }
-        return -1;
+        return Item.NULL_ITEM_REFERENCE;
     }
 
     public short getHeldItemDurability(){
         if(this.inventory.itemStacks[selectedInventorySlot].item != null) {
             return this.inventory.itemStacks[selectedInventorySlot].durability;
         }
-        return -1;
+        return Item.NULL_ITEM_DURABILITY;
     }
 
     public boolean isHoldingBlock(){
@@ -241,7 +243,7 @@ public final class EntityPlayer extends EntityLiving {
                 droppedBlock.setMovementVector(new Vector3f((float) difVector.x, (float) difVector.y, (float) difVector.z));
                 this.sg.save.activeWorld.findChunkFromChunkCoordinates(this.chunkX, this.chunkY, this.chunkZ).addEntityToList(droppedBlock);
             }
-        } else if(itemID != -1) {
+        } else if(itemID != Item.NULL_ITEM_REFERENCE) {
             EntityItem droppedItem = new EntityItem(this.x, this.y, this.z, itemID, (byte)1,(byte) 1, this.getHeldItemDurability());
             this.removeItemFromInventory();
             double[] vector = SpaceGame.camera.rayCast(1);
@@ -603,7 +605,12 @@ public final class EntityPlayer extends EntityLiving {
     }
 
     public float getAttackDamageValue(){
-        return 5f;
+       short heldItem = this.getHeldItem();
+       if(heldItem == Item.NULL_ITEM_REFERENCE){
+           return 5f;
+       } else {
+           return 5f + Item.list[heldItem].attackDamage;
+       }
     }
 
     public void setBlockPlayerLookingAt(){
@@ -717,6 +724,15 @@ public final class EntityPlayer extends EntityLiving {
             this.inventory.itemStacks[i].count = 0;
             this.inventory.itemStacks[i].durability = 0;
             this.inventory.itemStacks[i].metadata = 0;
+        }
+    }
+
+    public void reduceHeldItemDurability(){
+        if (this.inventory.itemStacks[selectedInventorySlot].durability != -1) {
+            this.inventory.itemStacks[selectedInventorySlot].durability--;
+            if(this.inventory.itemStacks[selectedInventorySlot].durability == 0){
+                this.removeItemFromInventory();
+            }
         }
     }
 

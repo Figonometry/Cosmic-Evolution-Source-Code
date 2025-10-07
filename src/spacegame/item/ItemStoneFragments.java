@@ -3,7 +3,6 @@ package spacegame.item;
 import spacegame.block.Block;
 import spacegame.core.SpaceGame;
 import spacegame.entity.EntityPlayer;
-import spacegame.gui.GuiCraftingStick;
 import spacegame.gui.GuiLightFire;
 import spacegame.world.World;
 
@@ -14,7 +13,7 @@ public final class ItemStoneFragments extends Item {
 
     @Override
     public void onRightClick(int x, int y, int z, World world, EntityPlayer player){
-        if(world.getBlockID(x,y,z) == Block.campfireUnLit.ID){
+        if(world.getBlockID(x,y,z) == Block.campFireNoFirewood.ID){
             SpaceGame.instance.setNewGui(new GuiLightFire(SpaceGame.instance, x, y, z));
         }
     }

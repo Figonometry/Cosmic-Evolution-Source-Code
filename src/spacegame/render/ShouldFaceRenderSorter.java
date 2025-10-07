@@ -14,7 +14,7 @@ public final class ShouldFaceRenderSorter {
         String secondBlockName = Block.list[secondBlock].blockName;
         return switch (firstBlockName) {
             case "AIR" -> false; //DO NOT EVER MAKE THIS TRUE UNDER ANY CIRCUMSTANCE
-            case "TORCH", "BERRY_BUSH", "CAMPFIRE", "CAMPFIRE_LIT", "FIRE", "ITEM_STONE" -> true;
+            case "TORCH", "BERRY_BUSH", "CAMPFIRE", "CAMPFIRE_LIT", "FIRE", "ITEM_STONE", "ITEM_STICK", "TALL_GRASS" -> true;
             case "WATER" -> this.shouldFaceRenderWater(secondBlockName, face);
             case "OAK_LOG" -> this.shouldFaceRenderLog(firstBlock,secondBlock, face);
             case "LEAF" -> this.shouldFaceRenderLeaf(firstBlock, secondBlock, face);
@@ -26,7 +26,8 @@ public final class ShouldFaceRenderSorter {
     private boolean shouldFaceRenderStandard(short secondBlock, int face){
         String secondBlockName = Block.list[secondBlock].blockName;
         return switch (secondBlockName) {
-            case "AIR", "TORCH", "WATER", "BERRY_BUSH", "CAMPFIRE", "CAMPFIRE_LIT", "FIRE", "ITEM_STONE" -> true;
+            case "AIR", "TORCH", "WATER", "BERRY_BUSH", "CAMPFIRE", "CAMPFIRE_LIT", "FIRE", "ITEM_STONE", "ITEM_STICK", "TALL_GRASS" -> true;
+            case "LEAF" -> GameSettings.transparentLeaves;
             case "OAK_LOG" ->
                     (secondBlock != Block.oakLogFullSizeNormal.ID && secondBlock != Block.oakLogFullSizeNorthSouth.ID && secondBlock != Block.oakLogFullSizeEastWest.ID);
             default -> false;
@@ -36,9 +37,10 @@ public final class ShouldFaceRenderSorter {
     private boolean shouldFaceRenderLog(short firstBlock, short secondBlock, int face){
         String secondBlockName = Block.list[secondBlock].blockName;
         return switch (secondBlockName) {
-            case "AIR", "TORCH", "WATER", "LEAF", "BERRY_BUSH",  "CAMPFIRE", "CAMPFIRE_LIT", "FIRE", "ITEM_STONE" -> true;
+            case "AIR", "TORCH", "WATER", "BERRY_BUSH",  "CAMPFIRE", "CAMPFIRE_LIT", "FIRE", "ITEM_STONE", "ITEM_STICK", "TALL_GRASS" -> true;
             case "OAK_LOG" ->
                     firstBlock != secondBlock && BlockLog.facingDirectionOfLog(firstBlock) == BlockLog.facingDirectionOfLog(secondBlock);
+            case "LEAF" -> GameSettings.transparentLeaves;
             default ->
                     firstBlock != secondBlock;
         };
@@ -56,7 +58,7 @@ public final class ShouldFaceRenderSorter {
     private boolean shouldFaceRenderLeaf(short firstBlock, short secondBlock, int face) {
         String secondBlockName = Block.list[secondBlock].blockName;
         return switch (secondBlockName) {
-            case "AIR", "TORCH", "WATER", "BERRY_BUSH", "CAMPFIRE", "CAMPFIRE_LIT", "FIRE", "ITEM_STONE" -> true;
+            case "AIR", "TORCH", "WATER", "BERRY_BUSH", "CAMPFIRE", "CAMPFIRE_LIT", "FIRE", "ITEM_STONE", "ITEM_STICK", "TALL_GRASS" -> true;
             case "LEAF" -> GameSettings.transparentLeaves;
             default -> firstBlock != secondBlock;
         };

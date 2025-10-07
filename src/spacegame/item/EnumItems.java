@@ -10,5 +10,7 @@ public enum EnumItems {
     BERRY,
     RAW_STICK,
     UNLIT_TORCH,
-    WOOD_SHARDS;
+    FIRE_WOOD,
+    VENISON,
+    STRAW;
 }

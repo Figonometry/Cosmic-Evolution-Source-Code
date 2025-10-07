@@ -4,6 +4,7 @@ import spacegame.core.Logger;
 import spacegame.core.SpaceGame;
 import spacegame.entity.Entity;
 import spacegame.entity.EntityBlock;
+import spacegame.entity.EntityDeer;
 import spacegame.entity.EntityItem;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
@@ -67,6 +68,10 @@ public final class ThreadChunkUnloader implements Runnable {
                         entities[i].setString("entityType", "EntityItem");
                         entities[i].setShort("itemType", ((EntityItem) savingEntity).item);
                         entities[i].setByte("count", ((EntityItem)savingEntity).count);
+                    } else if(savingEntity instanceof EntityDeer){
+                        entities[i].setString("entityType", "EntityDeer");
+                        entities[i].setLong("despawnTime", savingEntity.despawnTime);
+                        entities[i].setByte("count", (byte)1);
                     }
                     entity.setTag("entity" + entityCount, entities[i]);
                     entityCount++;

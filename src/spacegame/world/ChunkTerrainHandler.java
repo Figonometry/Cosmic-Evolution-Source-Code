@@ -171,10 +171,15 @@ public final class ChunkTerrainHandler {
         }
         int berryClusterCount = rand.nextInt(40) == 0 ? 1 : 0;
         int cactusCount = rand.nextInt(10) == 0 ? 4 : 1;
+        int tallGrassCount = rand.nextInt(10, 20);
         short[] grassIndicesRaw = new short[32768];
         short[] surfaceSandIndices = new short[32768];
         int grassIndex = 0;
         int sandIndex = 0;
+        int x = 0;
+        int y = 0;
+        int z = 0;
+
         for(int i = 0; i < chunk.blocks.length; i++){
             if(chunk.blocks[i] == Block.grass.ID){
                 grassIndicesRaw[grassIndex] = (short) i;
@@ -185,6 +190,7 @@ public final class ChunkTerrainHandler {
                 sandIndex++;
             }
         }
+
         short[] grassIndices = new short[grassIndex + 1];
         for(int i = 0; i < grassIndices.length; i++){
             grassIndices[i] = grassIndicesRaw[i];
@@ -195,30 +201,46 @@ public final class ChunkTerrainHandler {
             sandIndices[i] = surfaceSandIndices[i];
         }
 
-        while (cactusCount > 0 && sandIndex != 0){ //Should not generate outside of desert regions
+        while (cactusCount > 0 && sandIndex > 0){ //Should not generate outside of desert regions
             WorldGenCactus worldGenCactus = new WorldGenCactus(chunk, (WorldEarth)chunk.parentWorld, sandIndices[rand.nextInt(sandIndices.length)]);
             cactusCount--;
         }
 
-        while (treeCount > 0 && grassIndex != 0){
-            worldGenTree = new WorldGenTree(chunk, (WorldEarth)chunk.parentWorld, grassIndices[rand.nextInt(grassIndices.length)]);
-            if(worldGenTree.willGenerate){
-                treeCount--;
-            }
+        while (treeCount > 0 && grassIndex > 0) {
+            worldGenTree = new WorldGenTree(chunk, (WorldEarth) chunk.parentWorld, grassIndices[rand.nextInt(grassIndices.length)]);
+            treeCount--;
         }
 
-        while (berryClusterCount > 0 && grassIndex != 0){
+        while (berryClusterCount > 0 && grassIndex > 0){
             new WorldGenBerryBush(chunk, (WorldEarth)chunk.parentWorld, grassIndices[rand.nextInt(grassIndices.length)]);
             berryClusterCount--;
         }
 
         int stonePlacementIndex = 0;
-        while(rockCount > 0 && grassIndex != 0) {
+        while(rockCount > 0 && grassIndex > 0) {
             stonePlacementIndex = grassIndices[rand.nextInt(grassIndices.length)];
-            if(this.world.getBlockID(chunk.getBlockXFromIndex(stonePlacementIndex), chunk.getBlockYFromIndex(stonePlacementIndex) + 1, chunk.getBlockZFromIndex(stonePlacementIndex)) == Block.air.ID){
-                this.world.setBlockWithNotify(chunk.getBlockXFromIndex(stonePlacementIndex), chunk.getBlockYFromIndex(stonePlacementIndex) + 1, chunk.getBlockZFromIndex(stonePlacementIndex), Block.itemStone.ID);
+            x = chunk.getBlockXFromIndex(stonePlacementIndex);
+            y = chunk.getBlockYFromIndex(stonePlacementIndex) + 1;
+            z = chunk.getBlockZFromIndex(stonePlacementIndex);
+
+            if(this.world.getBlockID(x,y,z) == Block.air.ID && this.world.getBlockID(x, y - 1, z) == Block.grass.ID){
+                this.world.setBlockWithNotify(x,y,z, Block.itemStone.ID);
             }
             rockCount--;
+        }
+
+        int tallGrassPlacementIndex = 0;
+        while (tallGrassCount > 0 && grassIndex > 0){
+            tallGrassPlacementIndex = grassIndices[rand.nextInt(grassIndices.length)];
+            x = chunk.getBlockXFromIndex(tallGrassPlacementIndex);
+            y = chunk.getBlockYFromIndex(tallGrassPlacementIndex) + 1;
+            z = chunk.getBlockZFromIndex(tallGrassPlacementIndex);
+
+            if(this.world.getBlockID(x,y,z) == Block.air.ID && this.world.getBlockID(x, y - 1, z) == Block.grass.ID){
+                this.world.setBlockWithNotify(x,y,z, Block.tallGrass.ID);
+            }
+
+            tallGrassCount--;
         }
 
         chunk.populated = true;

@@ -5,7 +5,7 @@ import spacegame.entity.EntityParticle;
 import spacegame.world.Chunk;
 import spacegame.world.World;
 
-public final class BlockCampFireLit extends Block implements ITickable, IParticleGenerator {
+public final class BlockCampFireLit extends BlockCampFire implements ITickable, IParticleGenerator {
     public BlockCampFireLit(short ID, int textureID, String filepath) {
         super(ID, textureID, filepath);
     }
@@ -31,6 +31,9 @@ public final class BlockCampFireLit extends Block implements ITickable, IParticl
     }
 
     private void reduceFireLightLevel(int x, int y, int z){
+        if(true){
+            return;
+        }
         if(SpaceGame.instance.save.time % 7200 != 0){return;}
         SpaceGame.instance.save.activeWorld.setBlockWithNotify(x, y, z, air.ID);
         switch (this.lightBlockValue) {

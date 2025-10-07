@@ -15,5 +15,7 @@ public enum EnumBlocks {
     CAMPFIRE,
     CAMPFIRE_LIT,
     FIRE,
-    ITEM_STONE;
+    ITEM_STONE,
+    ITEM_STICK,
+    TALL_GRASS;
 }

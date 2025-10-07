@@ -2,7 +2,6 @@ package spacegame.world;
 
 import spacegame.core.SpaceGame;
 import spacegame.entity.EntityPlayer;
-import spacegame.gui.Tech;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
 

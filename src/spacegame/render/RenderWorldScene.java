@@ -128,9 +128,7 @@ public final class RenderWorldScene {
                 chunk.renderOpaque(xOffset, yOffset, zOffset,this.sunX,this.sunY,this.sunZ);
                 GL46.glEndQuery(GL46.GL_ANY_SAMPLES_PASSED);
 
-                if (chunk.doesChunkContainEntities()) {
-                    chunksThatContainEntities.add(chunk);
-                }
+
             }
 
             if (chunk.vertexBufferTransparent != null && chunk.vertexBufferTransparent.limit() != 0) {
@@ -138,8 +136,23 @@ public final class RenderWorldScene {
             }
         }
 
+        GL46.glActiveTexture(GL46.GL_TEXTURE0);
+        GL46.glBindVertexArray(0);
+
+        for (Chunk entityChunk : chunksThatContainEntities) {
+            entityChunk.renderEntities(this.sunX, this.sunY, this.sunZ);
+        }
+        GL46.glEnable(GL46.GL_ALPHA_TEST);
+        GL46.glAlphaFunc(GL46.GL_GREATER, 0.1F);
+
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_SRC_ALPHA, GL46.GL_ONE_MINUS_SRC_ALPHA);
+
+        GL46.glActiveTexture(GL46.GL_TEXTURE0);
+        GL46.glBindTexture(GL46.GL_TEXTURE_2D_ARRAY, Assets.blockTextureArray);
+
+        GL46.glEnable(GL46.GL_CULL_FACE);
+        GL46.glCullFace(GL46.GL_FRONT);
 
         for (Chunk transparentChunk : chunksToRender) {
             this.controller.drawCalls++;
@@ -159,9 +172,6 @@ public final class RenderWorldScene {
         GL46.glDisable(GL46.GL_CULL_FACE);
         GL46.glUseProgram(0);
 
-        for (Chunk entityChunk : chunksThatContainEntities) {
-            entityChunk.renderEntities(this.sunX, this.sunY, this.sunZ);
-        }
 
         this.chunksToRender.clear();
         this.renderSkybox(SpaceGame.instance.everything.getObjectAssociatedWithWorld(this.controller.parentWorld), playerLon, playerLat);
@@ -272,6 +282,7 @@ public final class RenderWorldScene {
         GL46.glEnable(GL46.GL_CULL_FACE);
         GL46.glCullFace(GL46.GL_FRONT);
         //The block array is bound to texture 0, all shadowmaps are bound from texture unit 1 up, they must all be properly active and unbound during cleanup
+        GL46.glActiveTexture(GL46.GL_TEXTURE0);
         GL46.glBindTexture(GL46.GL_TEXTURE_2D_ARRAY, Assets.blockTextureArray);
 
         GL46.glUseProgram(Shader.terrainShader.shaderProgramID);
@@ -295,14 +306,33 @@ public final class RenderWorldScene {
             this.controller.drawCalls++;
         }
 
+        GL46.glBindTexture(GL46.GL_TEXTURE_2D_ARRAY, 0);
+
         for(int i = 0; i < this.chunksThatContainEntities.size(); i++){
-            chunksThatContainEntities.get(i).renderEntities(this.sunX, this.sunY, this.sunZ);
+            this.chunksThatContainEntities.get(i).renderEntities(this.sunX, this.sunY, this.sunZ);
         }
+
+        GL46.glEnable(GL46.GL_ALPHA_TEST);
+        GL46.glAlphaFunc(GL46.GL_GREATER, 0.1F);
 
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_SRC_ALPHA, GL46.GL_ONE_MINUS_SRC_ALPHA);
 
+        GL46.glEnable(GL46.GL_CULL_FACE);
+        GL46.glCullFace(GL46.GL_FRONT);
+
         //transparent
+        GL46.glActiveTexture(GL46.GL_TEXTURE0);
+        GL46.glBindTexture(GL46.GL_TEXTURE_2D_ARRAY, Assets.blockTextureArray);
+
+        if(this.nearbyStars.size() > 0) {
+            GL46.glActiveTexture(GL46.GL_TEXTURE1);
+            GL46.glBindTexture(GL46.GL_TEXTURE_2D, this.nearbyStars.get(0).shadowMap.depthMap);
+        }
+
+
+        GL46.glUseProgram(Shader.terrainShader.shaderProgramID);
+
         for(int i = 0 ; i < this.transparentChunks.length; i += 10){
             Shader.terrainShader.uploadVec3f("chunkOffset", this.transparentChunks[i + 2], this.transparentChunks[i + 3], this.transparentChunks[i + 4]);
             Shader.terrainShader.uploadVec3f("sunChunkOffset", this.transparentChunks[i + 5], this.transparentChunks[i + 6], this.transparentChunks[i + 7]);
@@ -319,11 +349,12 @@ public final class RenderWorldScene {
         GL46.glDisable(GL46.GL_ALPHA_TEST);
 
         //Texture unit 1 is still the active texture from the shadowmap
+        GL46.glActiveTexture(GL46.GL_TEXTURE1);
         GL46.glBindTexture(GL46.GL_TEXTURE_2D, 0);
 
         GL46.glActiveTexture(GL46.GL_TEXTURE0);
-
         GL46.glBindTexture(GL46.GL_TEXTURE_2D_ARRAY, 0);
+
         GL46.glDisable(GL46.GL_CULL_FACE);
 
 
@@ -339,9 +370,9 @@ public final class RenderWorldScene {
             Vector3f normalizedDir = dir.normalize();
             Shader.terrainShader.uploadVec3f("normalizedLightVector", dir); //This needs be called in order to set the direction vector even if shadows are turned off otherwise vertex normals will not work
             if (GameSettings.shadowMap) {
-                float lightDist = 3000f;
+                float lightDist = 256;
                 float orthoSize = 256;
-                Matrix4f sunProjectionMatrix = new Matrix4f().setOrtho(-orthoSize, orthoSize, -orthoSize, orthoSize, 1, 10000);
+                Matrix4f sunProjectionMatrix = new Matrix4f().setOrtho(-orthoSize, orthoSize, -orthoSize, orthoSize, 1, 1024);
                 Matrix4f sunViewMatrix = new Matrix4f();
                 Vector3d sunPosition = new Vector3d(normalizedDir.x, normalizedDir.y, normalizedDir.z);
                 sunPosition.mul(lightDist);

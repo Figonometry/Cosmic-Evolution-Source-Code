@@ -139,25 +139,17 @@ public final class GuiMainMenu extends Gui {
             fontRenderer.drawString(this.sg.title, x, y, depth, 16711875, 50);
             y -= 60;
             fontRenderer.toggleItalics();
-            fontRenderer.drawString("Improved performance", x, y, depth, yellow, 50);
+            fontRenderer.drawString("Berry bushes are now colored according to biome", x, y, depth, yellow, 50);
             y -= 30;
-            fontRenderer.drawString("Added descriptions to the Foraging I and Stone Hand Tools techs", x, y, depth, green, 50);
+            fontRenderer.drawString("Updated leaf texture", x, y, depth, yellow, 50);
             y -= 30;
-            fontRenderer.drawString("Added a progress indicator on known techs", x, y, depth, green, 50);
+            fontRenderer.drawString("Fixed a bug where trees, rocks, cacti, and tall grass would spawn incorrectly", x, y, depth, yellow, 50);
             y -= 30;
-            fontRenderer.drawString("Added lines to show what features a tech unlocks", x, y, depth, green, 50);
+            fontRenderer.drawString("Sticks now generate when trees generate", x, y ,depth, yellow, 50);
             y -= 30;
-            fontRenderer.drawString("Added tech logging events for crafting stone tools and harvesting berries", x, y, depth, green, 50);
+            fontRenderer.drawString("Campfires can now be lit by right clicking with a stone fragment", x, y, yellow, depth, 50);
             y -= 30;
-            fontRenderer.drawString("Tech progress along with tech states are saved/loaded from disk", x, y, depth,yellow, 50);
-            y -= 30;
-            fontRenderer.drawString("Updated the block model for berry bushes", x, y, depth, yellow, 50);
-            y -= 30;
-            fontRenderer.drawString("Added a flowering stage to berry bushes", x, y, depth, green, 50);
-            y -= 30;
-            fontRenderer.drawString("Berry bushes now drop themselves when broken, this will change later", x, y, depth, yellow, 50);
-            y -= 30;
-            fontRenderer.drawString("Berry bushes no longer break instantly", x, y, depth, yellow, 50);
+            fontRenderer.drawString("Torches can be created by right clicking a lit campfire with an unlit torch item", x, y, yellow, depth, 50);
             fontRenderer.toggleItalics();
 
 

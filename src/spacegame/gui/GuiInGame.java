@@ -44,7 +44,7 @@ public final class GuiInGame extends Gui {
         this.water = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/waterOverlay.png", RenderEngine.TEXTURE_TYPE_2D, 0);
         outline = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInGame/outline.png", RenderEngine.TEXTURE_TYPE_2D, 0);
         blockBreaking = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInGame/blockBreaking.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        blockBreakingAtlas = new TextureAtlas(96,96, 32, 32, 9, 0);
+        blockBreakingAtlas = SpaceGame.instance.renderEngine.createTextureAtlas(96,96, 32, 32, 9, 0);
         this.hotbar = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInGame/hotbarSlot.png", RenderEngine.TEXTURE_TYPE_2D, 0);
         this.transparentBackground = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
         this.fillableColorWithShadedBottom = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColorWithShadedBottom.png", RenderEngine.TEXTURE_TYPE_2D, 0);
@@ -91,6 +91,7 @@ public final class GuiInGame extends Gui {
             fontRenderer.drawString("Temperature: " + SpaceGame.instance.save.activeWorld.getDisplayTemperature(playerX, playerY, playerZ) + "F", leftSide, 70,-15, 16777215, 50);
             fontRenderer.drawString("Rainfall: " + SpaceGame.instance.save.activeWorld.getRainfall(playerX, playerZ), leftSide, 40,-15, 16777215, 50);
             fontRenderer.drawString("Time: " + SpaceGame.instance.save.time, leftSide, 10, -15, 16777215, 50);
+            fontRenderer.drawString("Entities: " + SpaceGame.instance.save.activeWorld.chunkController.numLoadedEntities + " / " + SpaceGame.instance.save.activeWorld.chunkController.entityCap, leftSide,-20, -15, 16777215, 50);
         } else {
             fontRenderer.drawString("Temperature: " + SpaceGame.instance.save.activeWorld.getDisplayTemperature(playerX, playerY, playerZ) + "F", leftSide, 400,-15, 16777215, 50);
             fontRenderer.drawString("Rainfall: " + SpaceGame.instance.save.activeWorld.getRainfall(playerX, playerZ), leftSide, 370,-15, 16777215, 50);
@@ -754,6 +755,10 @@ public final class GuiInGame extends Gui {
                         modelLoader = Block.list[block].blockModel;
                         Random rand = new Random(Chunk.getBlockIndexFromCoordinates(locationX, locationY, locationZ));
                         float rotation = rand.nextFloat((float) 0, (float) (2 * Math.PI));
+                        float stickScale = 0;
+                        if(block == Block.itemStick.ID){
+                           stickScale = rand.nextFloat(0.5f, 0.9f);
+                        }
                         float translateX = rand.nextFloat(0.25f, 0.75f);
                         float translateZ = rand.nextFloat(0.25f, 0.75f);
                         Vector3f offset = new Vector3f(translateX, 0f, translateZ);
@@ -763,6 +768,17 @@ public final class GuiInGame extends Gui {
 
                             if(Block.list[block].ID == Block.itemStone.ID){
                                 modelFace = Block.list[block].blockModel.copyModel().modelFaces[i];
+                                for(int j = 0; j < modelFace.vertices.length; j++){
+                                    modelFace.vertices[j].rotateY(rotation);
+                                }
+                                for(int j = 0; j < modelFace.vertices.length; j++){
+                                    modelFace.vertices[j].add(offset);
+                                }
+                            }
+
+                            if(Block.list[block].ID == Block.itemStick.ID){
+                                modelFace = Block.list[block].blockModel.copyModel().getScaledModel(stickScale).modelFaces[i];
+                                modelFace.normal.rotateY(rotation);
                                 for(int j = 0; j < modelFace.vertices.length; j++){
                                     modelFace.vertices[j].rotateY(rotation);
                                 }
@@ -841,6 +857,10 @@ public final class GuiInGame extends Gui {
                     modelLoader = Block.list[block].blockModel;
                     Random rand = new Random(Chunk.getBlockIndexFromCoordinates(locationX, locationY, locationZ));
                     float rotation = rand.nextFloat((float) 0, (float) (2 * Math.PI));
+                    float stickScale = 0;
+                    if(block == Block.itemStick.ID){
+                       stickScale = rand.nextFloat(0.5f, 0.9f);
+                    }
                     float translateX = rand.nextFloat(0.25f, 0.75f);
                     float translateZ = rand.nextFloat(0.25f, 0.75f);
                     Vector3f offset = new Vector3f(translateX, 0f, translateZ);
@@ -849,6 +869,17 @@ public final class GuiInGame extends Gui {
 
                         if(Block.list[block].ID == Block.itemStone.ID){
                             modelFace = Block.list[block].blockModel.copyModel().modelFaces[i];
+                            for(int j = 0; j < modelFace.vertices.length; j++){
+                                modelFace.vertices[j].rotateY(rotation);
+                            }
+                            for(int j = 0; j < modelFace.vertices.length; j++){
+                                modelFace.vertices[j].add(offset);
+                            }
+                        }
+
+                        if(Block.list[block].ID == Block.itemStick.ID){
+                            modelFace = Block.list[block].blockModel.copyModel().getScaledModel(stickScale).modelFaces[i];
+                            modelFace.normal.rotateY(rotation);
                             for(int j = 0; j < modelFace.vertices.length; j++){
                                 modelFace.vertices[j].rotateY(rotation);
                             }
@@ -939,10 +970,9 @@ public final class GuiInGame extends Gui {
         }
 
 
-        Color color = new Color(colorValue);
-        float red = color.getRed() / 255F;
-        float green = color.getGreen() / 255F;
-        float blue = color.getBlue() / 255F;
+        float red = ((colorValue >> 16) & 255) / 255f;
+        float green = ((colorValue >> 8) & 255) / 255f;
+        float blue = (colorValue & 255) / 255f;
         float alpha = 1F;
 
         Vector3f blockPosition = new Vector3f(x, y, z);

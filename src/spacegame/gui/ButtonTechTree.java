@@ -3,6 +3,7 @@ package spacegame.gui;
 import spacegame.core.SpaceGame;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
+import spacegame.world.Tech;
 
 public final class ButtonTechTree extends Button {
     public int texture;

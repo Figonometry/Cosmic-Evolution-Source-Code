@@ -1,4 +1,4 @@
-package spacegame.gui;
+package spacegame.world;
 
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
@@ -54,7 +54,7 @@ public final class Tech {
     public boolean isRootNode;
     public final int techID;
     public String techName;
-    public String techUpdateEvent;
+    public int techUpdateEvent;
     public String era;
     public ArrayList<String> requiredTechs = new ArrayList<>();
     public ArrayList<String> unlockedTech = new ArrayList<>();
@@ -65,8 +65,9 @@ public final class Tech {
     public static final int LOCKED_KNOWN = 2;
     public static final int UNLOCKED = 3;
     public static final int NEOLITHIC_ERA = 1;
-    public static final String UPDATE_EVENT_BERRY_COLLECTION = "Berry Collection";
-    public static final String UPDATE_EVENT_CRAFT_STONE_HAND_TOOL = "Crafting Stone Hand Tools";
+    public static final int UPDATE_EVENT_BERRY_COLLECTION = 0;
+    public static final int UPDATE_EVENT_CRAFT_STONE_HAND_TOOL = 1;
+    public static final int UPDATE_EVENT_HUNT_ANIMAL = 2;
 
 
     private Tech(int techID, String filepath) {
@@ -108,7 +109,11 @@ public final class Tech {
             }
 
             if (properties[0].equals("techUpdateEvent")) {
-                this.techUpdateEvent = properties[1];
+                switch (properties[1]) {
+                    case "Crafting Stone Hand Tools" -> this.techUpdateEvent = UPDATE_EVENT_CRAFT_STONE_HAND_TOOL;
+                    case "Berry Collection" -> this.techUpdateEvent = UPDATE_EVENT_BERRY_COLLECTION;
+                    case "Hunt Animals" -> this.techUpdateEvent = UPDATE_EVENT_HUNT_ANIMAL;
+                }
             }
 
             if (properties[0].equals("requiredTech")) {
@@ -204,11 +209,11 @@ public final class Tech {
     }
 
 
-    public static void techUpdateEvent(String event){
+    public static void techUpdateEvent(int event){
         for(int i = 0; i < list.length; i++){
             if(list[i] == null)continue;
             if(list[i].state == UNKNOWN || list[i].state == UNLOCKED)continue;
-            if(!list[i].techUpdateEvent.equals(event))continue;
+            if(list[i].techUpdateEvent != event)continue;
 
             list[i].progressAmountCompleted++;
             if(list[i].state == LOCKED)list[i].state = LOCKED_KNOWN;

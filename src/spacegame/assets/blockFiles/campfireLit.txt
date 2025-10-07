@@ -1,6 +1,7 @@
 blockName:CAMPFIRE_LIT
 droppedItemID:-1
-blockModel:topFaceBlockModel
+blockModel:campFireBase
+boundingBox:itemStoneBoundingBox
 isSolid:false
 isLightBlock:true
 lightBlockValue:14

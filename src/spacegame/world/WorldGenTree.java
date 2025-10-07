@@ -11,6 +11,7 @@ public class WorldGenTree extends WorldGen {
     public boolean decayIntoDirt;
 
     public WorldGenTree(Chunk chunk, WorldEarth worldEarth, int index) {
+        if(chunk.blocks[index] != Block.grass.ID)return; //Guard clause to prevent trees from generating when they shouldnt
         this.worldEarth = worldEarth;
         this.index = index;
         this.chunk = chunk;
@@ -68,6 +69,25 @@ public class WorldGenTree extends WorldGen {
             blockData = this.blockPos.get(i);
             this.worldEarth.notifySurroundingBlockWithoutRebuild(blockData[0], blockData[1], blockData[2]);
         }
+
+        int numberOfSticks = rand.nextInt(4);
+        int x = this.chunk.getBlockXFromIndex(index);
+        int y;
+        int z = this.chunk.getBlockZFromIndex(index);
+        boolean negative;
+        for(int i = 0; i < numberOfSticks; i++){
+            negative = rand.nextBoolean();
+            x = x + (negative ? rand.nextInt(-7, -1) : rand.nextInt(1, 7));
+            negative = rand.nextBoolean();
+            z = z + (negative ? rand.nextInt(-7, -1) : rand.nextInt(1, 7));
+            y = this.worldEarth.chunkController.findChunkSkyLightMap(x >> 5, z >> 5).getHeightValue(x,z);
+
+            if(this.worldEarth.getBlockID(x,y,z) == Block.grass.ID && this.worldEarth.getBlockID(x, y + 1, z) == Block.air.ID){
+                this.worldEarth.setBlockWithNotify(x, y + 1, z, Block.itemStick.ID);
+            }
+        }
+
+
         this.blockPos.clear();
         markAllChunksInRebuildQueueDirty();
     }

@@ -1,0 +1,2 @@
+itemName:VENISON
+stackLimit:20

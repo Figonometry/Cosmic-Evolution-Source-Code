@@ -53,6 +53,8 @@ public abstract class Entity {
     public boolean canMoveWithVector = false;
     public Vector3f movementVector = new Vector3f();
     public static int shadow;
+    public long despawnTime;
+    public Entity lastEntityToHit;
     public static ArrayList<AxisAlignedBB> surroundingBlocks = new ArrayList<>();
 
     public void tick() {
@@ -61,6 +63,12 @@ public abstract class Entity {
 
     public void render() {
         return;
+    }
+
+    protected void checkToDespawn(){
+        if(SpaceGame.instance.save.time >= this.despawnTime){
+            this.despawn = true;
+        }
     }
 
     public void damage(Vector3f movementVector, float damage){
@@ -224,6 +232,10 @@ public abstract class Entity {
     public void setMovementVector(Vector3f movementVector){
         this.movementVector = movementVector;
         this.canMoveWithVector = true;
+    }
+
+    public void setLastEntityToHit(Entity entity){
+        this.lastEntityToHit = entity;
     }
 
     public static void initShadow(){

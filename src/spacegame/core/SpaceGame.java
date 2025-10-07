@@ -26,7 +26,7 @@ import spacegame.render.Camera;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
 import spacegame.world.Save;
-import spacegame.gui.Tech;
+import spacegame.world.Tech;
 import spacegame.world.World;
 import spacegame.world.WorldEarth;
 
@@ -101,7 +101,7 @@ public final class SpaceGame implements Runnable {
     }
 
     private void startGame() {
-        this.title = "Cosmic Evolution Alpha v0.22";
+        this.title = "Cosmic Evolution Alpha v0.25";
         this.clearLogFiles(new File(this.launcherDirectory + "/crashReports"));
         this.initLWJGL();
         this.renderEngine = new RenderEngine();
@@ -334,35 +334,32 @@ public final class SpaceGame implements Runnable {
             KeyListener.setKeyReleased(GLFW.GLFW_KEY_CAPS_LOCK);
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_G) && KeyListener.keyReleased[GLFW.GLFW_KEY_G]){
-            if(this.save != null){
-                if(this.save.thePlayer != null && this.save.activeWorld != null){
-                    EntityDeer deer =  new EntityDeer(this.save.thePlayer.x,this.save.thePlayer.y - 0.5, this.save.thePlayer.z, false, false);
-                    this.save.activeWorld.addEntity(deer);
-                }
-            }
-            KeyListener.setKeyReleased(GLFW.GLFW_KEY_G);
-        }
+     //  if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_G) && KeyListener.keyReleased[GLFW.GLFW_KEY_G]){
+     //      if(this.save != null){
+     //          if(this.save.thePlayer != null && this.save.activeWorld != null){
+     //              EntityDeer deer =  new EntityDeer(this.save.thePlayer.x,this.save.thePlayer.y - 0.5, this.save.thePlayer.z, false, false);
+     //              this.save.activeWorld.addEntity(deer);
+     //          }
+     //      }
+     //      KeyListener.setKeyReleased(GLFW.GLFW_KEY_G);
+     //  }
 
-     // if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_MINUS)){
-     //     this.save.time -= 216000;
-     //     KeyListener.setKeyReleased(GLFW.GLFW_KEY_MINUS);
-     // }
-
-     // if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_EQUAL)){
-     //     this.save.time += 216000;
-     //     KeyListener.setKeyReleased(GLFW.GLFW_KEY_EQUAL);
-     // }
-
-     // if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_COMMA)){
-     //     this.save.time -= 1000;
-     //     KeyListener.setKeyReleased(GLFW.GLFW_KEY_COMMA);
-     // }
-
-     // if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_PERIOD)){
-     //     this.save.time += 1000;
-     //     KeyListener.setKeyReleased(GLFW.GLFW_KEY_PERIOD);
-     // }
+    //    if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_MINUS)){
+    //        this.save.time -= 216000;
+    //        KeyListener.setKeyReleased(GLFW.GLFW_KEY_MINUS);
+    //    }
+    //    if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_EQUAL)){
+    //        this.save.time += 216000;
+    //        KeyListener.setKeyReleased(GLFW.GLFW_KEY_EQUAL);
+    //    }
+    //    if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_COMMA)){
+    //        this.save.time -= 1000;
+    //        KeyListener.setKeyReleased(GLFW.GLFW_KEY_COMMA);
+    //    }
+    //    if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_PERIOD)){
+    //        this.save.time += 1000;
+    //        KeyListener.setKeyReleased(GLFW.GLFW_KEY_PERIOD);
+    //    }
 
 
         if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_GRAVE_ACCENT) && KeyListener.keyReleased[GLFW.GLFW_KEY_GRAVE_ACCENT]){
@@ -635,6 +632,8 @@ public final class SpaceGame implements Runnable {
         Shader.terrainShader.uploadBoolean("useFog", true);
         Shader.terrainShader.uploadInt("textureArray", 0);
         Shader.terrainShader.uploadInt("shadowMap", 1);
+        Shader.terrainShader.uploadBoolean("wavyWater", GameSettings.wavyWater);
+        Shader.terrainShader.uploadBoolean("wavyLeaves", GameSettings.wavyLeaves);
     }
 
     private void incrementPlayerDamageTilt() {

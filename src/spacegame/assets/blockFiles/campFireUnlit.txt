@@ -1,5 +1,7 @@
 blockName:CAMPFIRE
 droppedItemID:-1
-blockModel:topFaceBlockModel
+blockModel:campFireBase
+boundingBox:itemStoneBoundingBox
+canGreedyMesh:false
 isSolid:false
 breakTimer:60

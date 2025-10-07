@@ -1,3 +1,4 @@
 itemName:STONE_HAND_KNIFE_BLADE
+attackDamage:5
 toolType:knife
 stackLimit:1

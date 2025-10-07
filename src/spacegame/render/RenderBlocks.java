@@ -2,6 +2,8 @@ package spacegame.render;
 
 import org.joml.Vector3f;
 import spacegame.block.Block;
+import spacegame.block.BlockCampFire;
+import spacegame.block.BlockCampFireUnlit;
 import spacegame.block.BlockLog;
 import spacegame.core.MathUtil;
 import spacegame.world.Chunk;
@@ -31,108 +33,16 @@ public class RenderBlocks {
 
 
     public  void renderStandardBlock(Chunk chunk, World world, short block, int index, int face, int[] greedyMeshSize) {
-        switch (face) {
-            case TOP_FACE -> {
-                for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
-                    if (Block.list[block].blockModel.modelFaces[i].faceType == TOP_FACE) {
-                        ModelFace modelFace = Block.list[block].blockModel.modelFaces[i];
-                        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, greedyMeshSize);
-                    }
-                }
-            }
-            case BOTTOM_FACE -> {
-                for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
-                    if (Block.list[block].blockModel.modelFaces[i].faceType == BOTTOM_FACE) {
-                        ModelFace modelFace = Block.list[block].blockModel.modelFaces[i];
-                        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, greedyMeshSize);
-                    }
-                }
-            }
-            case NORTH_FACE -> {
-                for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
-                    if (Block.list[block].blockModel.modelFaces[i].faceType == NORTH_FACE) {
-                        ModelFace modelFace = Block.list[block].blockModel.modelFaces[i];
-                        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, greedyMeshSize);
-                    }
-                }
-            }
-            case SOUTH_FACE -> {
-                for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
-                    if (Block.list[block].blockModel.modelFaces[i].faceType == SOUTH_FACE) {
-                        ModelFace modelFace = Block.list[block].blockModel.modelFaces[i];
-                        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, greedyMeshSize);
-                    }
-                }
-            }
-            case EAST_FACE -> {
-                for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
-                    if (Block.list[block].blockModel.modelFaces[i].faceType == EAST_FACE) {
-                        ModelFace modelFace = Block.list[block].blockModel.modelFaces[i];
-                        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, greedyMeshSize);
-                    }
-                }
-            }
-            case WEST_FACE -> {
-                for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
-                    if (Block.list[block].blockModel.modelFaces[i].faceType == WEST_FACE) {
-                        ModelFace modelFace = Block.list[block].blockModel.modelFaces[i];
-                        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, greedyMeshSize);
-                    }
-                }
-            }
+        ModelFace[] modelFaces = Block.list[block].blockModel.getModelFaceOfType(face);
+        for (int i = 0; i < modelFaces.length; i++) {
+            renderOpaqueFace(chunk, world, block, index, face, modelFaces[i], 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, greedyMeshSize);
         }
     }
 
     public  void renderTransparentBlock(Chunk chunk, World world, short block, int index, int face, int[] greedyMeshSize) {
-        switch (face) {
-            case TOP_FACE -> {
-                for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
-                    if (Block.list[block].blockModel.modelFaces[i].faceType == TOP_FACE) {
-                        ModelFace modelFace = Block.list[block].blockModel.modelFaces[i];
-                        renderTransparentFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, greedyMeshSize);
-                    }
-                }
-            }
-            case BOTTOM_FACE -> {
-                for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
-                    if (Block.list[block].blockModel.modelFaces[i].faceType == BOTTOM_FACE) {
-                        ModelFace modelFace = Block.list[block].blockModel.modelFaces[i];
-                        renderTransparentFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, greedyMeshSize);
-                    }
-                }
-            }
-            case NORTH_FACE -> {
-                for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
-                    if (Block.list[block].blockModel.modelFaces[i].faceType == NORTH_FACE) {
-                        ModelFace modelFace = Block.list[block].blockModel.modelFaces[i];
-                        renderTransparentFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, greedyMeshSize);
-                    }
-                }
-            }
-            case SOUTH_FACE -> {
-                for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
-                    if (Block.list[block].blockModel.modelFaces[i].faceType == SOUTH_FACE) {
-                        ModelFace modelFace = Block.list[block].blockModel.modelFaces[i];
-                        renderTransparentFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, greedyMeshSize);
-                    }
-                }
-            }
-            case EAST_FACE -> {
-                for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
-                    if (Block.list[block].blockModel.modelFaces[i].faceType == EAST_FACE) {
-                        ModelFace modelFace = Block.list[block].blockModel.modelFaces[i];
-                        renderTransparentFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, greedyMeshSize);
-                    }
-                }
-            }
-            case WEST_FACE -> {
-                for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
-                    if (Block.list[block].blockModel.modelFaces[i].faceType == WEST_FACE) {
-                        ModelFace modelFace = Block.list[block].blockModel.modelFaces[i];
-                        renderTransparentFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, greedyMeshSize);
-                    }
-                }
-            }
+        ModelFace[] modelFaces = Block.list[block].blockModel.getModelFaceOfType(face);
+        for (int i = 0; i < modelFaces.length; i++) {
+            renderTransparentFace(chunk, world, block, index, face, modelFaces[i], 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, greedyMeshSize);
         }
     }
 
@@ -273,13 +183,260 @@ public class RenderBlocks {
         }
     }
 
-    public void renderCampFire(Chunk chunk, World world, short block, int index, int face){
+    public void renderCampFireOld(Chunk chunk, World world, short block, int index, int face){
         float scaleReduction = 0.25f * (Block.list[block].lightBlockValue / 14f);
         ModelLoader shrunkBlock = Block.fireBlockModel.getScaledModel(scaleReduction).translateModel(0.5f - scaleReduction/2f,0f,0.5f - scaleReduction/2f);
         this.renderTransparentFace(chunk, world, block, index, face, Block.list[block].blockModel.modelFaces[0], 0,0,0,0,0,0,0,0, 3,1,2,0, new int[2]);
         for(int i = 0; i < shrunkBlock.modelFaces.length; i++) {
             if (shrunkBlock.modelFaces[i].faceType != TOP_FACE && shrunkBlock.modelFaces[i].faceType != BOTTOM_FACE)
                 this.renderTransparentFace(chunk, world, Block.fire.ID, index, face, shrunkBlock.modelFaces[i], 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
+        }
+    }
+
+    public void renderCampFire(Chunk chunk, World world, short block, int index, int face){
+        this.renderCampFireUnlit(chunk, world, block, index, face);
+
+        ModelLoader shrunkBlock = Block.fireBlockModel.getScaledModel(0.4f).translateModel(0.3f, 0f, 0.3f);
+        ModelFace[] modelFace = shrunkBlock.getModelFaceOfType(face);
+        for(int i = 0; i < modelFace.length; i++){
+            this.renderTransparentFace(chunk, world, Block.fire.ID, index, face, modelFace[i], 0,0,0,0,0,0,0,0, 3,1,2,0, new int[2]);
+        }
+    }
+
+    public void renderCampFireUnlit(Chunk chunk, World world, short block, int index, int face){
+        switch (face){
+            case TOP_FACE -> {
+                for(int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++){
+                    if(Block.list[block].blockModel.modelFaces[i].faceType == TOP_FACE){
+                        ModelFace modelFace = Block.list[block].blockModel.modelFaces[i];
+                        renderOpaqueFace(chunk, world, block, index, face, modelFace, -0.375f,0.375f,0.375f,-0.375f,-0.375f,-0.375f,0.375f,0.375f, 3,1,2,0, new int[2]);
+                    }
+                }
+                renderOpaqueFace(chunk, world, block, index, face, Block.topFaceBlockModel.getModelFace(TOP_FACE), 0,0,0,0,0,0,0,0, 3,1,2,0, new int[2]); //This is for the staw covering on the ground
+            }
+            case BOTTOM_FACE -> {
+                for(int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++){
+                    if(Block.list[block].blockModel.modelFaces[i].faceType == BOTTOM_FACE){
+                        ModelFace modelFace = Block.list[block].blockModel.modelFaces[i];
+                        renderOpaqueFace(chunk, world, block, index, face, modelFace, -0.375f,0.375f,0.375f,-0.375f,-0.375f,-0.375f,0.375f,0.375f, 3,1,2,0, new int[2]);
+                    }
+                }
+            }
+            case NORTH_FACE -> {
+                for(int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++){
+                    if(Block.list[block].blockModel.modelFaces[i].faceType == NORTH_FACE){
+                        ModelFace modelFace = Block.list[block].blockModel.modelFaces[i];
+                        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0.375f,-0.46875f,-0.375f,0.46875f,0.375f,0.46875f,-0.375f,-0.46875f, 3,1,2,0, new int[2]);
+                    }
+                }
+            }
+            case SOUTH_FACE -> {
+                for(int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++){
+                    if(Block.list[block].blockModel.modelFaces[i].faceType == SOUTH_FACE){
+                        ModelFace modelFace = Block.list[block].blockModel.modelFaces[i];
+                        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0.375f,-0.46875f,-0.375f,0.46875f,0.375f,0.46875f,-0.375f,-0.46875f, 3,1,2,0, new int[2]);
+                    }
+                }
+            }
+            case EAST_FACE -> {
+                for(int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++){
+                    if(Block.list[block].blockModel.modelFaces[i].faceType == EAST_FACE){
+                        ModelFace modelFace = Block.list[block].blockModel.modelFaces[i];
+                        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0.375f,-0.46875f,-0.375f,0.46875f,0.375f,0.46875f,-0.375f,-0.46875f, 3,1,2,0, new int[2]);
+                    }
+                }
+            }
+            case WEST_FACE -> {
+                for(int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++){
+                    if(Block.list[block].blockModel.modelFaces[i].faceType == WEST_FACE){
+                        ModelFace modelFace = Block.list[block].blockModel.modelFaces[i];
+                        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0.375f,-0.46875f,-0.375f,0.46875f,0.375f,0.46875f,-0.375f,-0.46875f, 3,1,2,0, new int[2]);
+                    }
+                }
+            }
+        }
+    }
+
+    public void renderLogOnCampfire(Chunk chunk, World world, short block, int index, int face) {
+        int logCount = ((BlockCampFire) Block.list[block]).getLogCount(); //Get log count and draw logs above the base
+
+        block = Block.fireWoodBlock.ID; //Switch to this block id in order to bind the correct image in the texture array
+
+        float log1XRot = (float) Math.toRadians(10);
+        float log1YRot = (float) Math.toRadians(45);
+        float log1ZRot = (float) Math.toRadians(5);
+        Vector3f translationVectorLog1 = new Vector3f(0.5f, 0.135f, 0.5f);
+
+        float log2XRot = (float) Math.toRadians(45);
+        float log2YRot = (float) Math.toRadians(-45);
+        float log2ZRot = (float) Math.toRadians(70);
+        Vector3f translationVectorLog2 = new Vector3f(0.5f, 0.25f, 0.35f);
+
+        float log3XRot = (float) Math.toRadians(45);
+        float log3YRot = (float) Math.toRadians(0);
+        float log3ZRot = (float) Math.toRadians(60);
+        Vector3f translationVectorLog3 = new Vector3f(0.3f, 0.25f, 0.5f);
+
+        float log4XRot = (float) Math.toRadians(-45);
+        float log4YRot = (float) Math.toRadians(180);
+        float log4ZRot = (float) Math.toRadians(-50);
+        Vector3f translationVectorLog4 = new Vector3f(0.6f, 0.25f, 0.6f);
+
+
+        //16x4 top and bottom, 4x4 north and south, 4x16 east and west sample
+        ModelLoader baseModel = Block.fireWood;
+        ModelFace modelFace;
+        switch (logCount) {
+            case 1 -> {
+                ModelLoader log1 = baseModel.copyModel();
+                for (int j = 0; j < log1.modelFaces.length; j++) {
+                    for (int k = 0; k < log1.modelFaces[j].vertices.length; k++) {
+                        log1.modelFaces[j].vertices[k].rotateX(log1XRot);
+                        log1.modelFaces[j].vertices[k].rotateY(log1YRot);
+                        log1.modelFaces[j].vertices[k].rotateZ(log1ZRot);
+
+                        log1.modelFaces[j].vertices[k].add(translationVectorLog1);
+                    }
+                }
+
+                modelFace = log1.getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
+            }
+            case 2 -> {
+                ModelLoader log1 = baseModel.copyModel();
+                for (int j = 0; j < log1.modelFaces.length; j++) {
+                    for (int k = 0; k < log1.modelFaces[j].vertices.length; k++) {
+                        log1.modelFaces[j].vertices[k].rotateX(log1XRot);
+                        log1.modelFaces[j].vertices[k].rotateY(log1YRot);
+                        log1.modelFaces[j].vertices[k].rotateZ(log1ZRot);
+
+                        log1.modelFaces[j].vertices[k].add(translationVectorLog1);
+                    }
+                }
+
+                modelFace = log1.getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
+
+                ModelLoader log2 = baseModel.copyModel();
+                for (int j = 0; j < log2.modelFaces.length; j++) {
+                    for (int k = 0; k < log2.modelFaces[j].vertices.length; k++) {
+                        log2.modelFaces[j].vertices[k].rotateX(log2XRot);
+                        log2.modelFaces[j].vertices[k].rotateY(log2YRot);
+                        log2.modelFaces[j].vertices[k].rotateZ(log2ZRot);
+
+                        log2.modelFaces[j].vertices[k].add(translationVectorLog2);
+                    }
+                }
+
+                modelFace = log2.getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
+            }
+            case 3 -> {
+                ModelLoader log1 = baseModel.copyModel();
+                for (int j = 0; j < log1.modelFaces.length; j++) {
+                    for (int k = 0; k < log1.modelFaces[j].vertices.length; k++) {
+                        log1.modelFaces[j].vertices[k].rotateX(log1XRot);
+                        log1.modelFaces[j].vertices[k].rotateY(log1YRot);
+                        log1.modelFaces[j].vertices[k].rotateZ(log1ZRot);
+
+                        log1.modelFaces[j].vertices[k].add(translationVectorLog1);
+                    }
+                }
+
+                modelFace = log1.getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
+
+                ModelLoader log2 = baseModel.copyModel();
+                for (int j = 0; j < log2.modelFaces.length; j++) {
+                    for (int k = 0; k < log2.modelFaces[j].vertices.length; k++) {
+                        log2.modelFaces[j].vertices[k].rotateX(log2XRot);
+                        log2.modelFaces[j].vertices[k].rotateY(log2YRot);
+                        log2.modelFaces[j].vertices[k].rotateZ(log2ZRot);
+
+                        log2.modelFaces[j].vertices[k].add(translationVectorLog2);
+                    }
+                }
+
+                modelFace = log2.getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
+
+
+                ModelLoader log3 = baseModel.copyModel();
+                for (int j = 0; j < log3.modelFaces.length; j++) {
+                    for (int k = 0; k < log3.modelFaces[j].vertices.length; k++) {
+                        log3.modelFaces[j].vertices[k].rotateX(log3XRot);
+                        log3.modelFaces[j].vertices[k].rotateY(log3YRot);
+                        log3.modelFaces[j].vertices[k].rotateZ(log3ZRot);
+
+                        log3.modelFaces[j].vertices[k].add(translationVectorLog3);
+                    }
+                }
+
+                modelFace = log3.getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
+
+            }
+
+            case 4 -> {
+                ModelLoader log1 = baseModel.copyModel();
+                for (int j = 0; j < log1.modelFaces.length; j++) {
+                    for (int k = 0; k < log1.modelFaces[j].vertices.length; k++) {
+                        log1.modelFaces[j].vertices[k].rotateX(log1XRot);
+                        log1.modelFaces[j].vertices[k].rotateY(log1YRot);
+                        log1.modelFaces[j].vertices[k].rotateZ(log1ZRot);
+
+                        log1.modelFaces[j].vertices[k].add(translationVectorLog1);
+                    }
+                }
+
+                modelFace = log1.getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
+
+                ModelLoader log2 = baseModel.copyModel();
+                for (int j = 0; j < log2.modelFaces.length; j++) {
+                    for (int k = 0; k < log2.modelFaces[j].vertices.length; k++) {
+                        log2.modelFaces[j].vertices[k].rotateX(log2XRot);
+                        log2.modelFaces[j].vertices[k].rotateY(log2YRot);
+                        log2.modelFaces[j].vertices[k].rotateZ(log2ZRot);
+
+                        log2.modelFaces[j].vertices[k].add(translationVectorLog2);
+                    }
+                }
+
+                modelFace = log2.getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
+
+
+                ModelLoader log3 = baseModel.copyModel();
+                for (int j = 0; j < log3.modelFaces.length; j++) {
+                    for (int k = 0; k < log3.modelFaces[j].vertices.length; k++) {
+                        log3.modelFaces[j].vertices[k].rotateX(log3XRot);
+                        log3.modelFaces[j].vertices[k].rotateY(log3YRot);
+                        log3.modelFaces[j].vertices[k].rotateZ(log3ZRot);
+
+                        log3.modelFaces[j].vertices[k].add(translationVectorLog3);
+                    }
+                }
+
+                modelFace = log3.getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
+
+
+                ModelLoader log4 = baseModel.copyModel();
+                for (int j = 0; j < log4.modelFaces.length; j++) {
+                    for (int k = 0; k < log4.modelFaces[j].vertices.length; k++) {
+                        log4.modelFaces[j].vertices[k].rotateX(log4XRot);
+                        log4.modelFaces[j].vertices[k].rotateY(log4YRot);
+                        log4.modelFaces[j].vertices[k].rotateZ(log4ZRot);
+
+                        log4.modelFaces[j].vertices[k].add(translationVectorLog4);
+                    }
+                }
+
+                modelFace = log4.getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
+
+            }
         }
     }
 
@@ -517,6 +674,223 @@ public class RenderBlocks {
             }
         }
     }
+    public void renderItemStick(Chunk chunk, World world, short block, int index, int face, int[] greedyMeshSize) {
+        Random rand = new Random(index);
+        float rotation = rand.nextFloat((float) 0, (float) (2 * Math.PI));
+        float stickScale = rand.nextFloat(0.5f, 0.9f);
+        float translateX = rand.nextFloat(0.25f, 0.75f);
+        float translateZ = rand.nextFloat(0.25f, 0.75f);
+        Vector3f offset = new Vector3f(translateX, 0f, translateZ);
+
+        boolean secondStick = rand.nextBoolean();
+        float secondStickRotation = rand.nextFloat((float)0, (float) (2 * Math.PI));
+        float secondStickScale = rand.nextFloat(0.5f, 0.9f);
+        float secondTranslateX = rand.nextBoolean() ? translateX - 0.25f : translateX + 0.25f;
+        float secondTranslateZ = rand.nextBoolean() ? translateZ - 0.25f : translateZ + 0.25f;
+        Vector3f secondOffset = new Vector3f(secondTranslateX, 0f, secondTranslateZ);
+
+        switch (face) {
+            case TOP_FACE -> {
+                for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
+                    if (Block.list[block].blockModel.modelFaces[i].faceType == TOP_FACE) {
+                        ModelFace modelFace = Block.list[block].blockModel.copyModel().getScaledModel(stickScale).modelFaces[i];
+                        modelFace.normal.rotateY(rotation);
+                        for(int j = 0; j < modelFace.vertices.length; j++){
+                            modelFace.vertices[j].rotateY(rotation);
+                        }
+                        for(int j = 0; j < modelFace.vertices.length; j++){
+                            modelFace.vertices[j].add(offset);
+                        }
+                        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0,0.4375f,0,-0.4375f,0,-0.4375f,0,0.4375f, 3, 1, 2, 0, greedyMeshSize);
+
+                        if(secondStick){
+                            modelFace = Block.list[block].blockModel.copyModel().getScaledModel(secondStickScale).modelFaces[i];
+                            modelFace.normal.rotateY(rotation);
+                            for(int j = 0; j < modelFace.vertices.length; j++){
+                                modelFace.vertices[j].rotateY(secondStickRotation);
+                            }
+                            for(int j = 0; j < modelFace.vertices.length; j++){
+                                modelFace.vertices[j].add(secondOffset);
+                            }
+                            renderOpaqueFace(chunk, world, block, index, face, modelFace, 0,0.4375f,0,-0.4375f,0,-0.4375f,0,0.4375f, 3, 1, 2, 0, greedyMeshSize);
+                        }
+                    }
+                }
+            }
+            case BOTTOM_FACE -> {
+                for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
+                    if (Block.list[block].blockModel.modelFaces[i].faceType == BOTTOM_FACE) {
+                        ModelFace modelFace = Block.list[block].blockModel.copyModel().getScaledModel(stickScale).modelFaces[i];
+                        modelFace.normal.rotateY(rotation);
+                        for(int j = 0; j < modelFace.vertices.length; j++){
+                            modelFace.vertices[j].rotateY(rotation);
+                        }
+                        for(int j = 0; j < modelFace.vertices.length; j++){
+                            modelFace.vertices[j].add(offset);
+                        };
+                        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0,0.4375f,0,-0.4375f,0,-0.4375f,0,0.4375f, 3, 1, 2, 0, greedyMeshSize);
+
+                        if(secondStick){
+                            modelFace = Block.list[block].blockModel.copyModel().getScaledModel(secondStickScale).modelFaces[i];
+                            modelFace.normal.rotateY(rotation);
+                            for(int j = 0; j < modelFace.vertices.length; j++){
+                                modelFace.vertices[j].rotateY(secondStickRotation);
+                            }
+                            for(int j = 0; j < modelFace.vertices.length; j++){
+                                modelFace.vertices[j].add(secondOffset);
+                            }
+                            renderOpaqueFace(chunk, world, block, index, face, modelFace, 0,0.4375f,0,-0.4375f,0,-0.4375f,0,0.4375f, 3, 1, 2, 0, greedyMeshSize);
+                        }
+                    }
+                }
+            }
+            case NORTH_FACE -> {
+                for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
+                    if (Block.list[block].blockModel.modelFaces[i].faceType == NORTH_FACE) {
+                        ModelFace modelFace = Block.list[block].blockModel.copyModel().getScaledModel(stickScale).modelFaces[i];
+                        modelFace.normal.rotateY(rotation);
+                        for(int j = 0; j < modelFace.vertices.length; j++){
+                            modelFace.vertices[j].rotateY(rotation);
+                        }
+                        for(int j = 0; j < modelFace.vertices.length; j++){
+                            modelFace.vertices[j].add(offset);
+                        }
+                        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0,-0.4375f,-0.875f,0.4375f,0,0.4375f,-0.875f,-0.4375f, 3, 1, 2, 0, greedyMeshSize);
+
+                        if(secondStick){
+                            modelFace = Block.list[block].blockModel.copyModel().getScaledModel(secondStickScale).modelFaces[i];
+                            modelFace.normal.rotateY(rotation);
+                            for(int j = 0; j < modelFace.vertices.length; j++){
+                                modelFace.vertices[j].rotateY(secondStickRotation);
+                            }
+                            for(int j = 0; j < modelFace.vertices.length; j++){
+                                modelFace.vertices[j].add(secondOffset);
+                            }
+                            renderOpaqueFace(chunk, world, block, index, face, modelFace, 0,-0.4375f,-0.875f,0.4375f,0,0.4375f,-0.875f,-0.4375f, 3, 1, 2, 0, greedyMeshSize);
+                        }
+                    }
+                }
+            }
+            case SOUTH_FACE -> {
+                for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
+                    if (Block.list[block].blockModel.modelFaces[i].faceType == SOUTH_FACE) {
+                        ModelFace modelFace = Block.list[block].blockModel.copyModel().getScaledModel(stickScale).modelFaces[i];
+                        modelFace.normal.rotateY(rotation);
+                        for(int j = 0; j < modelFace.vertices.length; j++){
+                            modelFace.vertices[j].rotateY(rotation);
+                        }
+                        for(int j = 0; j < modelFace.vertices.length; j++){
+                            modelFace.vertices[j].add(offset);
+                        }
+                        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0,-0.4375f,-0.875f,0.4375f,0,0.4375f,-0.875f,-0.4375f, 3, 1, 2, 0, greedyMeshSize);
+
+                        if(secondStick){
+                            modelFace = Block.list[block].blockModel.copyModel().getScaledModel(secondStickScale).modelFaces[i];
+                            modelFace.normal.rotateY(rotation);
+                            for(int j = 0; j < modelFace.vertices.length; j++){
+                                modelFace.vertices[j].rotateY(secondStickRotation);
+                            }
+                            for(int j = 0; j < modelFace.vertices.length; j++){
+                                modelFace.vertices[j].add(secondOffset);
+                            }
+                            renderOpaqueFace(chunk, world, block, index, face, modelFace, 0,-0.4375f,-0.875f,0.4375f,0,0.4375f,-0.875f,-0.4375f, 3, 1, 2, 0, greedyMeshSize);
+                        }
+                    }
+                }
+            }
+            case EAST_FACE -> {
+                for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
+                    if (Block.list[block].blockModel.modelFaces[i].faceType == EAST_FACE) {
+                        ModelFace modelFace = Block.list[block].blockModel.copyModel().getScaledModel(stickScale).modelFaces[i];
+                        modelFace.normal.rotateY(rotation);
+                        for(int j = 0; j < modelFace.vertices.length; j++){
+                            modelFace.vertices[j].rotateY(rotation);
+                        }
+                        for(int j = 0; j < modelFace.vertices.length; j++){
+                            modelFace.vertices[j].add(offset);
+                        }
+                        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0,-0.4375f,0,0.4375f,0,0.4375f,0,-0.4375f, 3, 1, 2, 0, greedyMeshSize);
+
+                        if(secondStick){
+                            modelFace = Block.list[block].blockModel.copyModel().getScaledModel(secondStickScale).modelFaces[i];
+                            modelFace.normal.rotateY(rotation);
+                            for(int j = 0; j < modelFace.vertices.length; j++){
+                                modelFace.vertices[j].rotateY(secondStickRotation);
+                            }
+                            for(int j = 0; j < modelFace.vertices.length; j++){
+                                modelFace.vertices[j].add(secondOffset);
+                            }
+                            renderOpaqueFace(chunk, world, block, index, face, modelFace, 0,-0.4375f,0,0.4375f,0,0.4375f,0,-0.4375f, 3, 1, 2, 0, greedyMeshSize);
+                        }
+                    }
+                }
+            }
+            case WEST_FACE -> {
+                for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
+                    if (Block.list[block].blockModel.modelFaces[i].faceType == WEST_FACE) {
+                        ModelFace modelFace = Block.list[block].blockModel.copyModel().getScaledModel(stickScale).modelFaces[i];
+                        modelFace.normal.rotateY(rotation);
+                        for(int j = 0; j < modelFace.vertices.length; j++){
+                            modelFace.vertices[j].rotateY(rotation);
+                        }
+                        for(int j = 0; j < modelFace.vertices.length; j++){
+                            modelFace.vertices[j].add(offset);
+                        }
+                        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0,-0.4375f,0,0.4375f,0,0.4375f,0,-0.4375f, 3, 1, 2, 0, greedyMeshSize);
+
+                        if(secondStick){
+                            modelFace = Block.list[block].blockModel.copyModel().getScaledModel(secondStickScale).modelFaces[i];
+                            modelFace.normal.rotateY(rotation);
+                            for(int j = 0; j < modelFace.vertices.length; j++){
+                                modelFace.vertices[j].rotateY(secondStickRotation);
+                            }
+                            for(int j = 0; j < modelFace.vertices.length; j++){
+                                modelFace.vertices[j].add(secondOffset);
+                            }
+                            renderOpaqueFace(chunk, world, block, index, face, modelFace, 0,-0.4375f,0,0.4375f,0,0.4375f,0,-0.4375f, 3, 1, 2, 0, greedyMeshSize);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+    public void renderBerryBush(Chunk chunk, World world, short block, int index, int face){
+        ModelFace modelFace = Block.list[Block.berryBushNoBerries.ID].blockModel.getModelFace(face);
+        this.renderTransparentFace(chunk, world, Block.berryBushNoBerries.ID, index, face, modelFace, 0,0,0,0,0,0,0,0,3,1,2,0, new int[2]);
+
+        Vector3f translation = new Vector3f();
+        switch (face){
+            case TOP_FACE -> {
+                translation.y = 0.01f;
+            }
+            case BOTTOM_FACE -> {
+                translation.y = -0.01f;
+            }
+            case NORTH_FACE -> {
+                translation.x = -0.01f;
+            }
+            case SOUTH_FACE -> {
+                translation.x = 0.02f; //You'd think this would also be 0.01 but fun fact, no!. I assume this is due to the float to half-float conversion later on
+            }
+            case EAST_FACE -> {
+                translation.z = -0.01f;
+            }
+            case WEST_FACE -> {
+                translation.z = 0.01f;
+            }
+        }
+        if(block == Block.berryBush.ID){
+            modelFace = modelFace.translateFace(translation.x, translation.y, translation.z);
+            this.renderTransparentFace(chunk, world, Block.berryBush.ID, index, face, modelFace, 0,0,0,0,0,0,0,0,3,1,2,0, new int[2]);
+        } else if(block == Block.berryBushFlower.ID){
+            modelFace = modelFace.translateFace(translation.x, translation.y, translation.z);
+            this.renderTransparentFace(chunk, world, Block.berryBushFlower.ID, index, face, modelFace, 0,0,0,0,0,0,0,0,3,1,2,0, new int[2]);
+        }
+
+    }
+
 
 
 
@@ -543,10 +917,11 @@ public class RenderBlocks {
         };
     }
 
-    private void setPlantColorValues(int x, int y, int z, World world){
-        if(world.getBlockID(x,y,z) != Block.grass.ID && world.getBlockID(x,y,z) != Block.leaf.ID)return;
+    private void setPlantColorValues(int x, int y, int z, World world, short blockID){
+        if(blockID != Block.grass.ID && blockID != Block.leaf.ID && blockID != Block.tallGrass.ID && blockID != Block.berryBushNoBerries.ID)return;
 
-        int color = world.getBlockID(x,y,z) == Block.grass.ID ? PlantColorizer.getGrassColor(world.getTemperature(x,y,z), world.getRainfall(x,z)) : PlantColorizer.getOakLeafColor(world.getTemperature(x,y,z), world.getRainfall(x,z));;
+
+        int color = blockID == Block.grass.ID  || blockID == Block.tallGrass.ID ? PlantColorizer.getGrassColor(world.getTemperature(x,y,z), world.getRainfall(x,z)) : PlantColorizer.getOakLeafColor(world.getTemperature(x,y,z), world.getRainfall(x,z));;
         this.red = ((color >> 16) & 255) / 255f;
         this.green = ((color >> 8) & 255) / 255f;
         this.blue = (color & 255) / 255f;
@@ -554,7 +929,6 @@ public class RenderBlocks {
         float highestChannel = 0;
         highestChannel = Math.max(this.red, this.green);
         highestChannel = Math.max(highestChannel, this.blue);
-
 
         this.highestChannel = highestChannel != 0.0 ? highestChannel : 0.01f;
     }
@@ -570,12 +944,12 @@ public class RenderBlocks {
        this.grayScaleImageMultiplier = MathUtil.floatToHalf(this.highestChannel / highestChannel); //This division gives the number to multiply the vertex color by in the terrain shader to restore to the normal fully lit grass color
     }
 
-    private  void setLight(float x, float y, float z, float xMin, float yMin, float zMin, float xMax, float yMax, float zMax, int index, int face, Chunk chunk, World world, int[] greedyMeshSize) {
+    private  void setLight(float x, float y, float z, float xMin, float yMin, float zMin, float xMax, float yMax, float zMax, int index, int face, Chunk chunk, World world, int[] greedyMeshSize, short blockID) {
         int xBlock = chunk.getBlockXFromIndex(index);
         int yBlock = chunk.getBlockYFromIndex(index);
         int zBlock = chunk.getBlockZFromIndex(index);
 
-        this.setPlantColorValues(xBlock, yBlock, zBlock, world);
+        this.setPlantColorValues(xBlock, yBlock, zBlock, world, blockID);
 
         if (x == xMin && y == yMin && z == zMin) {
             final Block[] blocks = Block.list;
@@ -1825,6 +2199,7 @@ public class RenderBlocks {
 
 
     private void renderOpaqueFace(Chunk chunk, World world, short block, int index, int face, ModelFace blockFace, float xSample1, float ySample1, float xSample2, float ySample2, float xSample3, float ySample3, float xSample4, float ySample4, int corner1, int corner2, int corner3, int corner4, int[] greedyMeshSize) {
+        if(blockFace == null)return;
         int x = (index % 32);
         int y = (index >> 10);
         int z = ((index % 1024) >> 5);
@@ -1866,53 +2241,6 @@ public class RenderBlocks {
             }
         }
 
-        if(block != Block.itemStone.ID) {
-            switch (blockFace.faceType) {
-                case TOP_FACE -> {
-                    for (int i = 0; i < modelLoader.modelFaces.length; i++) {
-                        if (modelLoader.modelFaces[i].faceType == TOP_FACE) {
-                            blockFace = modelLoader.modelFaces[i];
-                        }
-                    }
-                }
-                case BOTTOM_FACE -> {
-                    for (int i = 0; i < modelLoader.modelFaces.length; i++) {
-                        if (modelLoader.modelFaces[i].faceType == BOTTOM_FACE) {
-                            blockFace = modelLoader.modelFaces[i];
-                        }
-                    }
-                }
-                case NORTH_FACE -> {
-                    for (int i = 0; i < modelLoader.modelFaces.length; i++) {
-                        if (modelLoader.modelFaces[i].faceType == NORTH_FACE) {
-                            blockFace = modelLoader.modelFaces[i];
-                        }
-                    }
-                }
-                case SOUTH_FACE -> {
-                    for (int i = 0; i < modelLoader.modelFaces.length; i++) {
-                        if (modelLoader.modelFaces[i].faceType == SOUTH_FACE) {
-                            blockFace = modelLoader.modelFaces[i];
-                        }
-                    }
-                }
-                case EAST_FACE -> {
-                    for (int i = 0; i < modelLoader.modelFaces.length; i++) {
-                        if (modelLoader.modelFaces[i].faceType == EAST_FACE) {
-                            blockFace = modelLoader.modelFaces[i];
-                        }
-                    }
-                }
-                case WEST_FACE -> {
-                    for (int i = 0; i < modelLoader.modelFaces.length; i++) {
-                        if (modelLoader.modelFaces[i].faceType == WEST_FACE) {
-                            blockFace = modelLoader.modelFaces[i];
-                        }
-                    }
-                }
-            }
-        }
-
         Vector3f vertex1 = new Vector3f(blockFace.vertices[0].x, blockFace.vertices[0].y, blockFace.vertices[0].z).add(blockPosition);
         Vector3f vertex2 = new Vector3f(blockFace.vertices[1].x, blockFace.vertices[1].y, blockFace.vertices[1].z).add(blockPosition);
         Vector3f vertex3 = new Vector3f(blockFace.vertices[2].x, blockFace.vertices[2].y, blockFace.vertices[2].z).add(blockPosition);
@@ -1923,7 +2251,7 @@ public class RenderBlocks {
         switch (blockFace.faceType) {
             case TOP_FACE, TOP_FACE_UNSORTED -> {
                 resetLight();
-                setLight(vertex1.x, vertex1.y, vertex1.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex1.x, vertex1.y, vertex1.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferOpaque.put(this.compressPosXY(vertex1.x + greedyMeshSize[0], vertex1.y));
                 chunk.vertexBufferOpaque.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferOpaque.put(this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample1, 0 + ySample1));
@@ -1932,7 +2260,7 @@ public class RenderBlocks {
                 chunk.vertexBufferOpaque.put(this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue));
 
                 resetLight();
-                setLight(vertex2.x, vertex2.y, vertex2.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex2.x, vertex2.y, vertex2.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferOpaque.put(this.compressPosXY(vertex2.x, vertex2.y));
                 chunk.vertexBufferOpaque.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferOpaque.put(this.compressTextureCoordinates(0 + xSample2, 1 + greedyMeshSize[1] + ySample2));
@@ -1941,7 +2269,7 @@ public class RenderBlocks {
                 chunk.vertexBufferOpaque.put(this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue));
 
                 resetLight();
-                setLight(vertex3.x, vertex3.y, vertex3.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex3.x, vertex3.y, vertex3.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferOpaque.put(this.compressPosXY(vertex3.x + greedyMeshSize[0], vertex3.y));
                 chunk.vertexBufferOpaque.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferOpaque.put(this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample3, 1 + greedyMeshSize[1] + ySample3));
@@ -1950,7 +2278,7 @@ public class RenderBlocks {
                 chunk.vertexBufferOpaque.put(this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue));
 
                 resetLight();
-                setLight(vertex4.x, vertex4.y, vertex4.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex4.x, vertex4.y, vertex4.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferOpaque.put(this.compressPosXY(vertex4.x, vertex4.y));
                 chunk.vertexBufferOpaque.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferOpaque.put(this.compressTextureCoordinates(0 + xSample4, 0 + ySample4));
@@ -1962,7 +2290,7 @@ public class RenderBlocks {
 
             case BOTTOM_FACE, BOTTOM_FACE_UNSORTED -> {
                 resetLight();
-                setLight(vertex1.x, vertex1.y, vertex1.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex1.x, vertex1.y, vertex1.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferOpaque.put(this.compressPosXY(vertex1.x, vertex1.y));
                 chunk.vertexBufferOpaque.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferOpaque.put(this.compressTextureCoordinates(0 + xSample1, 0 + ySample1));
@@ -1971,7 +2299,7 @@ public class RenderBlocks {
                 chunk.vertexBufferOpaque.put(this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue));
 
                 resetLight();
-                setLight(vertex2.x, vertex2.y, vertex2.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex2.x, vertex2.y, vertex2.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferOpaque.put(this.compressPosXY(vertex2.x + greedyMeshSize[0], vertex2.y));
                 chunk.vertexBufferOpaque.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferOpaque.put(this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 1 + greedyMeshSize[1] + ySample2));
@@ -1980,7 +2308,7 @@ public class RenderBlocks {
                 chunk.vertexBufferOpaque.put(this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue));
 
                 resetLight();
-                setLight(vertex3.x, vertex3.y, vertex3.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex3.x, vertex3.y, vertex3.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferOpaque.put(this.compressPosXY(vertex3.x, vertex3.y));
                 chunk.vertexBufferOpaque.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferOpaque.put(this.compressTextureCoordinates(0 + xSample3, 1 + greedyMeshSize[1] + ySample3));
@@ -1989,7 +2317,7 @@ public class RenderBlocks {
                 chunk.vertexBufferOpaque.put(this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue));
 
                 resetLight();
-                setLight(vertex4.x, vertex4.y, vertex4.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex4.x, vertex4.y, vertex4.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferOpaque.put(this.compressPosXY(vertex4.x + greedyMeshSize[0], vertex4.y));
                 chunk.vertexBufferOpaque.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferOpaque.put(this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 0 + ySample4));
@@ -1999,7 +2327,7 @@ public class RenderBlocks {
             }
             case NORTH_FACE, NORTH_FACE_UNSORTED -> {
                 resetLight();
-                setLight(vertex1.x, vertex1.y, vertex1.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex1.x, vertex1.y, vertex1.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferOpaque.put(this.compressPosXY(vertex1.x, vertex1.y));
                 chunk.vertexBufferOpaque.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferOpaque.put(this.compressTextureCoordinates(0 + xSample1, 1 + greedyMeshSize[1] + ySample1));
@@ -2008,7 +2336,7 @@ public class RenderBlocks {
                 chunk.vertexBufferOpaque.put(this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue));
 
                 resetLight();
-                setLight(vertex2.x, vertex2.y, vertex2.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex2.x, vertex2.y, vertex2.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferOpaque.put(this.compressPosXY(vertex2.x, vertex2.y + greedyMeshSize[1]));
                 chunk.vertexBufferOpaque.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferOpaque.put(this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 0 + ySample2));
@@ -2017,7 +2345,7 @@ public class RenderBlocks {
                 chunk.vertexBufferOpaque.put(this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue));
 
                 resetLight();
-                setLight(vertex3.x, vertex3.y, vertex3.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex3.x, vertex3.y, vertex3.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferOpaque.put(this.compressPosXY(vertex3.x, vertex3.y + greedyMeshSize[1]));
                 chunk.vertexBufferOpaque.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferOpaque.put(this.compressTextureCoordinates(0 + xSample3, 0 + ySample3));
@@ -2026,7 +2354,7 @@ public class RenderBlocks {
                 chunk.vertexBufferOpaque.put(this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue));
 
                 resetLight();
-                setLight(vertex4.x, vertex4.y, vertex4.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex4.x, vertex4.y, vertex4.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferOpaque.put(this.compressPosXY(vertex4.x, vertex4.y));
                 chunk.vertexBufferOpaque.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferOpaque.put(this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 1 + greedyMeshSize[1] + ySample4));
@@ -2037,7 +2365,7 @@ public class RenderBlocks {
 
             case SOUTH_FACE, SOUTH_FACE_UNSORTED -> {
                 resetLight();
-                setLight(vertex1.x, vertex1.y, vertex1.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex1.x, vertex1.y, vertex1.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferOpaque.put(this.compressPosXY(vertex1.x, vertex1.y));
                 chunk.vertexBufferOpaque.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferOpaque.put(this.compressTextureCoordinates(0 + xSample1, 1 + greedyMeshSize[1] + ySample1));
@@ -2046,7 +2374,7 @@ public class RenderBlocks {
                 chunk.vertexBufferOpaque.put(this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue));
 
                 resetLight();
-                setLight(vertex2.x, vertex2.y, vertex2.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex2.x, vertex2.y, vertex2.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferOpaque.put(this.compressPosXY(vertex2.x, vertex2.y + greedyMeshSize[1]));
                 chunk.vertexBufferOpaque.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferOpaque.put(this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 0 + ySample2));
@@ -2055,7 +2383,7 @@ public class RenderBlocks {
                 chunk.vertexBufferOpaque.put(this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue));
 
                 resetLight();
-                setLight(vertex3.x, vertex3.y, vertex3.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex3.x, vertex3.y, vertex3.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferOpaque.put(this.compressPosXY(vertex3.x, vertex3.y + greedyMeshSize[1]));
                 chunk.vertexBufferOpaque.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferOpaque.put(this.compressTextureCoordinates(0 + xSample3, 0 + ySample3));
@@ -2064,7 +2392,7 @@ public class RenderBlocks {
                 chunk.vertexBufferOpaque.put(this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue));
 
                 resetLight();
-                setLight(vertex4.x, vertex4.y, vertex4.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex4.x, vertex4.y, vertex4.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferOpaque.put(this.compressPosXY(vertex4.x, vertex4.y));
                 chunk.vertexBufferOpaque.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferOpaque.put(this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 1 + greedyMeshSize[1] + ySample4));
@@ -2075,7 +2403,7 @@ public class RenderBlocks {
 
             case EAST_FACE, EAST_FACE_UNSORTED -> {
                 resetLight();
-                setLight(vertex1.x, vertex1.y, vertex1.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex1.x, vertex1.y, vertex1.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferOpaque.put(this.compressPosXY(vertex1.x + greedyMeshSize[0], vertex1.y));
                 chunk.vertexBufferOpaque.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferOpaque.put(this.compressTextureCoordinates(0 + xSample1, 1 + greedyMeshSize[1] + ySample1));
@@ -2084,7 +2412,7 @@ public class RenderBlocks {
                 chunk.vertexBufferOpaque.put(this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue));
 
                 resetLight();
-                setLight(vertex2.x, vertex2.y, vertex2.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex2.x, vertex2.y, vertex2.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferOpaque.put(this.compressPosXY(vertex2.x, vertex2.y + greedyMeshSize[1]));
                 chunk.vertexBufferOpaque.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferOpaque.put(this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 0 + ySample2));
@@ -2093,7 +2421,7 @@ public class RenderBlocks {
                 chunk.vertexBufferOpaque.put(this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue));
 
                 resetLight();
-                setLight(vertex3.x, vertex3.y, vertex3.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex3.x, vertex3.y, vertex3.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferOpaque.put(this.compressPosXY(vertex3.x + greedyMeshSize[0], vertex3.y + greedyMeshSize[1]));
                 chunk.vertexBufferOpaque.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferOpaque.put(this.compressTextureCoordinates(0 + xSample3, 0 + ySample3));
@@ -2102,7 +2430,7 @@ public class RenderBlocks {
                 chunk.vertexBufferOpaque.put(this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue));
 
                 resetLight();
-                setLight(vertex4.x, vertex4.y, vertex4.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex4.x, vertex4.y, vertex4.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferOpaque.put(this.compressPosXY(vertex4.x, vertex4.y));
                 chunk.vertexBufferOpaque.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferOpaque.put(this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 1 + greedyMeshSize[1] + ySample4));
@@ -2114,7 +2442,7 @@ public class RenderBlocks {
 
             case WEST_FACE, WEST_FACE_UNSORTED -> {
                 resetLight();
-                setLight(vertex1.x, vertex1.y, vertex1.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex1.x, vertex1.y, vertex1.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferOpaque.put(this.compressPosXY(vertex1.x, vertex1.y));
                 chunk.vertexBufferOpaque.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferOpaque.put(this.compressTextureCoordinates(0 + xSample1, 1 + greedyMeshSize[1] + ySample1));
@@ -2123,7 +2451,7 @@ public class RenderBlocks {
                 chunk.vertexBufferOpaque.put(this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue));
 
                 resetLight();
-                setLight(vertex2.x, vertex2.y, vertex2.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex2.x, vertex2.y, vertex2.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferOpaque.put(this.compressPosXY(vertex2.x + greedyMeshSize[0], vertex2.y + greedyMeshSize[1]));
                 chunk.vertexBufferOpaque.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferOpaque.put(this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 0 + ySample2));
@@ -2132,7 +2460,7 @@ public class RenderBlocks {
                 chunk.vertexBufferOpaque.put(this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue));
 
                 resetLight();
-                setLight(vertex3.x, vertex3.y, vertex3.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex3.x, vertex3.y, vertex3.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferOpaque.put(this.compressPosXY(vertex3.x, vertex3.y + greedyMeshSize[1]));
                 chunk.vertexBufferOpaque.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferOpaque.put(this.compressTextureCoordinates(0 + xSample3, 0 + ySample3));
@@ -2141,7 +2469,7 @@ public class RenderBlocks {
                 chunk.vertexBufferOpaque.put(this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue));
 
                 resetLight();
-                setLight(vertex4.x, vertex4.y, vertex4.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex4.x, vertex4.y, vertex4.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferOpaque.put(this.compressPosXY(vertex4.x + greedyMeshSize[0], vertex4.y));
                 chunk.vertexBufferOpaque.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferOpaque.put(this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 1 + greedyMeshSize[1] + ySample4));
@@ -2156,6 +2484,7 @@ public class RenderBlocks {
     }
 
     private  void renderTransparentFace(Chunk chunk, World world, short block, int index, int face, ModelFace blockFace, float xSample1, float ySample1, float xSample2, float ySample2, float xSample3, float ySample3, float xSample4, float ySample4, int corner1, int corner2, int corner3, int corner4, int[] greedyMeshSize) {
+        if(blockFace == null)return;
         int x = (index % 32);
         int y = (index >> 10);
         int z = ((index % 1024) >> 5);
@@ -2172,7 +2501,7 @@ public class RenderBlocks {
         switch (blockFace.faceType) {
             case TOP_FACE, TOP_FACE_UNSORTED -> {
                 resetLight();
-                setLight(vertex1.x, vertex1.y, vertex1.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex1.x, vertex1.y, vertex1.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferTransparent.put(this.compressPosXY(vertex1.x + greedyMeshSize[0], vertex1.y));
                 chunk.vertexBufferTransparent.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferTransparent.put(this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample1, 0 + ySample1));
@@ -2181,7 +2510,7 @@ public class RenderBlocks {
                 chunk.vertexBufferTransparent.put(this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue));
 
                 resetLight();
-                setLight(vertex2.x, vertex2.y, vertex2.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex2.x, vertex2.y, vertex2.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferTransparent.put(this.compressPosXY(vertex2.x, vertex2.y));
                 chunk.vertexBufferTransparent.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferTransparent.put(this.compressTextureCoordinates(0 + xSample2, 1 + greedyMeshSize[1] + ySample2));
@@ -2190,7 +2519,7 @@ public class RenderBlocks {
                 chunk.vertexBufferTransparent.put(this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue));
 
                 resetLight();
-                setLight(vertex3.x, vertex3.y, vertex3.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex3.x, vertex3.y, vertex3.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferTransparent.put(this.compressPosXY(vertex3.x + greedyMeshSize[0], vertex3.y));
                 chunk.vertexBufferTransparent.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferTransparent.put(this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample3, 1 + greedyMeshSize[1] + ySample3));
@@ -2199,7 +2528,7 @@ public class RenderBlocks {
                 chunk.vertexBufferTransparent.put(this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue));
 
                 resetLight();
-                setLight(vertex4.x, vertex4.y, vertex4.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex4.x, vertex4.y, vertex4.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferTransparent.put(this.compressPosXY(vertex4.x, vertex4.y));
                 chunk.vertexBufferTransparent.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferTransparent.put(this.compressTextureCoordinates(0 + xSample4, 0 + ySample4));
@@ -2210,7 +2539,7 @@ public class RenderBlocks {
 
             case BOTTOM_FACE, BOTTOM_FACE_UNSORTED -> {
                 resetLight();
-                setLight(vertex1.x, vertex1.y, vertex1.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex1.x, vertex1.y, vertex1.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferTransparent.put(this.compressPosXY(vertex1.x, vertex1.y));
                 chunk.vertexBufferTransparent.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferTransparent.put(this.compressTextureCoordinates(0 + xSample1, 0 + ySample1));
@@ -2219,7 +2548,7 @@ public class RenderBlocks {
                 chunk.vertexBufferTransparent.put(this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue));
 
                 resetLight();
-                setLight(vertex2.x, vertex2.y, vertex2.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex2.x, vertex2.y, vertex2.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferTransparent.put(this.compressPosXY(vertex2.x + greedyMeshSize[0], vertex2.y));
                 chunk.vertexBufferTransparent.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferTransparent.put(this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 1 + greedyMeshSize[1] + ySample2));
@@ -2228,7 +2557,7 @@ public class RenderBlocks {
                 chunk.vertexBufferTransparent.put(this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue));
 
                 resetLight();
-                setLight(vertex3.x, vertex3.y, vertex3.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex3.x, vertex3.y, vertex3.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferTransparent.put(this.compressPosXY(vertex3.x, vertex3.y));
                 chunk.vertexBufferTransparent.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferTransparent.put(this.compressTextureCoordinates(0 + xSample3, 1 + greedyMeshSize[1] + ySample3));
@@ -2237,7 +2566,7 @@ public class RenderBlocks {
                 chunk.vertexBufferTransparent.put(this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue));
 
                 resetLight();
-                setLight(vertex4.x, vertex4.y, vertex4.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex4.x, vertex4.y, vertex4.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferTransparent.put(this.compressPosXY(vertex4.x + greedyMeshSize[0], vertex4.y));
                 chunk.vertexBufferTransparent.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferTransparent.put(this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 0 + ySample4));
@@ -2247,7 +2576,7 @@ public class RenderBlocks {
             }
             case NORTH_FACE, NORTH_FACE_UNSORTED -> {
                 resetLight();
-                setLight(vertex1.x, vertex1.y, vertex1.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex1.x, vertex1.y, vertex1.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferTransparent.put(this.compressPosXY(vertex1.x, vertex1.y));
                 chunk.vertexBufferTransparent.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferTransparent.put(this.compressTextureCoordinates(0 + xSample1, 1 + greedyMeshSize[1] + ySample1));
@@ -2256,7 +2585,7 @@ public class RenderBlocks {
                 chunk.vertexBufferTransparent.put(this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue));
 
                 resetLight();
-                setLight(vertex2.x, vertex2.y, vertex2.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex2.x, vertex2.y, vertex2.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferTransparent.put(this.compressPosXY(vertex2.x, vertex2.y + greedyMeshSize[1]));
                 chunk.vertexBufferTransparent.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferTransparent.put(this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 0 + ySample2));
@@ -2265,7 +2594,7 @@ public class RenderBlocks {
                 chunk.vertexBufferTransparent.put(this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue));
 
                 resetLight();
-                setLight(vertex3.x, vertex3.y, vertex3.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex3.x, vertex3.y, vertex3.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferTransparent.put(this.compressPosXY(vertex3.x, vertex3.y + greedyMeshSize[1]));
                 chunk.vertexBufferTransparent.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferTransparent.put(this.compressTextureCoordinates(0 + xSample3, 0 + ySample3));
@@ -2274,7 +2603,7 @@ public class RenderBlocks {
                 chunk.vertexBufferTransparent.put(this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue));
 
                 resetLight();
-                setLight(vertex4.x, vertex4.y, vertex4.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex4.x, vertex4.y, vertex4.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferTransparent.put(this.compressPosXY(vertex4.x, vertex4.y));
                 chunk.vertexBufferTransparent.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferTransparent.put(this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 1 + greedyMeshSize[1] + ySample4));
@@ -2285,7 +2614,7 @@ public class RenderBlocks {
 
             case SOUTH_FACE, SOUTH_FACE_UNSORTED -> {
                 resetLight();
-                setLight(vertex1.x, vertex1.y, vertex1.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex1.x, vertex1.y, vertex1.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferTransparent.put(this.compressPosXY(vertex1.x, vertex1.y));
                 chunk.vertexBufferTransparent.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferTransparent.put(this.compressTextureCoordinates(0 + xSample1, 1 + greedyMeshSize[1] + ySample1));
@@ -2294,7 +2623,7 @@ public class RenderBlocks {
                 chunk.vertexBufferTransparent.put(this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue));
 
                 resetLight();
-                setLight(vertex2.x, vertex2.y, vertex2.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex2.x, vertex2.y, vertex2.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferTransparent.put(this.compressPosXY(vertex2.x, vertex2.y + greedyMeshSize[1]));
                 chunk.vertexBufferTransparent.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferTransparent.put(this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 0 + ySample2));
@@ -2303,7 +2632,7 @@ public class RenderBlocks {
                 chunk.vertexBufferTransparent.put(this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue));
 
                 resetLight();
-                setLight(vertex3.x, vertex3.y, vertex3.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex3.x, vertex3.y, vertex3.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferTransparent.put(this.compressPosXY(vertex3.x, vertex3.y + greedyMeshSize[1]));
                 chunk.vertexBufferTransparent.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferTransparent.put(this.compressTextureCoordinates(0 + xSample3, 0 + ySample3));
@@ -2312,7 +2641,7 @@ public class RenderBlocks {
                 chunk.vertexBufferTransparent.put(this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue));
 
                 resetLight();
-                setLight(vertex4.x, vertex4.y, vertex4.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex4.x, vertex4.y, vertex4.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferTransparent.put(this.compressPosXY(vertex4.x, vertex4.y));
                 chunk.vertexBufferTransparent.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferTransparent.put(this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 1 + greedyMeshSize[1] + ySample4));
@@ -2323,7 +2652,7 @@ public class RenderBlocks {
 
             case EAST_FACE, EAST_FACE_UNSORTED -> {
                 resetLight();
-                setLight(vertex1.x, vertex1.y, vertex1.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex1.x, vertex1.y, vertex1.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferTransparent.put(this.compressPosXY(vertex1.x + greedyMeshSize[0], vertex1.y));
                 chunk.vertexBufferTransparent.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferTransparent.put(this.compressTextureCoordinates(0 + xSample1, 1 + greedyMeshSize[1] + ySample1));
@@ -2332,7 +2661,7 @@ public class RenderBlocks {
                 chunk.vertexBufferTransparent.put(this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue));
 
                 resetLight();
-                setLight(vertex2.x, vertex2.y, vertex2.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex2.x, vertex2.y, vertex2.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferTransparent.put(this.compressPosXY(vertex2.x, vertex2.y + greedyMeshSize[1]));
                 chunk.vertexBufferTransparent.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferTransparent.put(this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 0 + ySample2));
@@ -2341,7 +2670,7 @@ public class RenderBlocks {
                 chunk.vertexBufferTransparent.put(this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue));
 
                 resetLight();
-                setLight(vertex3.x, vertex3.y, vertex3.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex3.x, vertex3.y, vertex3.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferTransparent.put(this.compressPosXY(vertex3.x + greedyMeshSize[0], vertex3.y + greedyMeshSize[1]));
                 chunk.vertexBufferTransparent.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferTransparent.put(this.compressTextureCoordinates(0 + xSample3, 0 + ySample3));
@@ -2350,7 +2679,7 @@ public class RenderBlocks {
                 chunk.vertexBufferTransparent.put(this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue));
 
                 resetLight();
-                setLight(vertex4.x, vertex4.y, vertex4.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex4.x, vertex4.y, vertex4.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferTransparent.put(this.compressPosXY(vertex4.x, vertex4.y));
                 chunk.vertexBufferTransparent.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferTransparent.put(this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 1 + greedyMeshSize[1] + ySample4));
@@ -2361,7 +2690,7 @@ public class RenderBlocks {
 
             case WEST_FACE, WEST_FACE_UNSORTED -> {
                 resetLight();
-                setLight(vertex1.x, vertex1.y, vertex1.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex1.x, vertex1.y, vertex1.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferTransparent.put(this.compressPosXY(vertex1.x, vertex1.y));
                 chunk.vertexBufferTransparent.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferTransparent.put(this.compressTextureCoordinates(0 + xSample1, 1 + greedyMeshSize[1] + ySample1));
@@ -2370,7 +2699,7 @@ public class RenderBlocks {
                 chunk.vertexBufferTransparent.put(this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue));
 
                 resetLight();
-                setLight(vertex2.x, vertex2.y, vertex2.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex2.x, vertex2.y, vertex2.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferTransparent.put(this.compressPosXY(vertex2.x + greedyMeshSize[0], vertex2.y + greedyMeshSize[1]));
                 chunk.vertexBufferTransparent.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferTransparent.put(this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample2, 0 + ySample2));
@@ -2379,7 +2708,7 @@ public class RenderBlocks {
                 chunk.vertexBufferTransparent.put(this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue));
 
                 resetLight();
-                setLight(vertex3.x, vertex3.y, vertex3.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex3.x, vertex3.y, vertex3.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferTransparent.put(this.compressPosXY(vertex3.x, vertex3.y + greedyMeshSize[1]));
                 chunk.vertexBufferTransparent.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferTransparent.put(this.compressTextureCoordinates(0 + xSample3, 0 + ySample3));
@@ -2388,7 +2717,7 @@ public class RenderBlocks {
                 chunk.vertexBufferTransparent.put(this.compressNormalZAndSkyLightValue(normal.z, this.skyLightValue));
 
                 resetLight();
-                setLight(vertex4.x, vertex4.y, vertex4.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize);
+                setLight(vertex4.x, vertex4.y, vertex4.z, x, y, z, x + 1, y + 1, z + 1, index, face, chunk, world, greedyMeshSize, block);
                 chunk.vertexBufferTransparent.put(this.compressPosXY(vertex4.x + greedyMeshSize[0], vertex4.y));
                 chunk.vertexBufferTransparent.put(this.compressColor(red, green, blue));
                 chunk.vertexBufferTransparent.put(this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample4, 1 + greedyMeshSize[1] + ySample4));

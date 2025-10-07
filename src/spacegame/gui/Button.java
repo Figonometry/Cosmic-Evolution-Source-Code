@@ -7,12 +7,12 @@ import spacegame.core.MathUtil;
 import spacegame.core.MouseListener;
 import spacegame.core.SpaceGame;
 import spacegame.entity.EntityItem;
-import spacegame.entity.EntityPlayer;
 import spacegame.item.Item;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.render.*;
 import spacegame.world.Save;
+import spacegame.world.Tech;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -31,7 +31,7 @@ public class Button {
     private Gui Gui;
     private SpaceGame sg;
     public static int buttonTextureLoader = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/button.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-    public static TextureAtlas buttonTextureAtlas = new TextureAtlas(256,256, 256, 64, 3, 0);
+    public static TextureAtlas buttonTextureAtlas = SpaceGame.instance.renderEngine.createTextureAtlas(256,256, 256, 64, 3, 0);
 
 
     public Button(String name, int width, int height, int x, int y, Gui Gui, SpaceGame spaceGame){
@@ -404,16 +404,6 @@ public class Button {
                     this.sg.save.thePlayer.removeItemFromInventory();
                     this.sg.save.activeWorld.delayWhenExitingUI = 60;
                     Tech.techUpdateEvent(Tech.UPDATE_EVENT_CRAFT_STONE_HAND_TOOL);
-                }
-                if(this.Gui instanceof GuiCraftingStick){
-                    int x = ((GuiCraftingStick)this.Gui).x;
-                    int y = ((GuiCraftingStick)this.Gui).y;
-                    int z = ((GuiCraftingStick)this.Gui).z;
-                    short outputItem = ((GuiCraftingStick)this.Gui).outputItemID;
-                    this.sg.save.activeWorld.delayWhenExitingUI = 60;
-                    if(this.sg.save.thePlayer.inventory.itemStacks[EntityPlayer.selectedInventorySlot].item != null) {
-                        this.sg.save.thePlayer.inventory.itemStacks[EntityPlayer.selectedInventorySlot].durability--;
-                    }
                 }
 
                 this.sg.setNewGui(new GuiInGame(this.sg));

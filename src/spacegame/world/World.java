@@ -8,7 +8,9 @@ import spacegame.entity.EntityBlock;
 import spacegame.entity.EntityItem;
 import spacegame.gui.GuiCraftingStoneTools;
 import spacegame.gui.GuiInGame;
+import spacegame.gui.GuiLightFire;
 import spacegame.item.Item;
+import spacegame.item.ItemAxe;
 
 import java.awt.*;
 import java.io.File;
@@ -998,44 +1000,62 @@ public abstract class World {
     }
 
     public void handleSpecialBlockRightClickFunctions(Block block, int x, int y, int z){
+        if(block == Block.air)return;
+        short playerHeldItem = this.sg.save.thePlayer.getHeldItem();
+
         if(block instanceof BlockBerryBush){
             if(this.sg.save.thePlayer.getHeldItem() != Item.block.ID && this.sg.save.thePlayer.getHeldItem() != Item.torch.ID){
                 block.onRightClick(x, y, z, this, this.sg.save.thePlayer);
             }
         }
-        if(block instanceof BlockLog){
-            if(this.sg.save.thePlayer.getHeldItem() == Item.stoneHandAxe.ID){
-                Item.stoneHandAxe.onRightClick(x, y, z, this, this.sg.save.thePlayer);
+        if(block instanceof BlockLog && playerHeldItem != Item.NULL_ITEM_REFERENCE){
+            if(Item.list[playerHeldItem] instanceof ItemAxe){
+                Item.list[playerHeldItem].onRightClick(x, y, z, this, this.sg.save.thePlayer);
             }
         }
+
+        if(block instanceof BlockCampFireUnlit && playerHeldItem != Item.NULL_ITEM_REFERENCE && MouseListener.rightClickReleased){
+            if(playerHeldItem == Item.fireWood.ID) {
+                int logCount = ((BlockCampFireUnlit) block).getLogCount();
+                switch (logCount) {
+                    case 0 -> this.setBlockWithNotify(x, y, z, Block.campFire1FireWood.ID);
+                    case 1 -> this.setBlockWithNotify(x, y, z, Block.campFire2FireWood.ID);
+                    case 2 -> this.setBlockWithNotify(x, y, z, Block.campFire3Firewood.ID);
+                    case 3 -> this.setBlockWithNotify(x, y, z, Block.campFire4FireWood.ID);
+                }
+                if(logCount != 4){
+                    this.sg.save.thePlayer.removeItemFromInventory();
+                }
+                MouseListener.rightClickReleased = false;
+            }
+        }
+
         if(block instanceof BlockCampFireUnlit){
-            if(this.sg.save.thePlayer.getHeldItem() == Item.rawStick.ID){
-                if(this.getBlockID(x, y, z) >= Block.campfireUnLit2Sticks.ID && this.getBlockID(x, y, z) < Block.campfireUnLit.ID){
-                    this.setBlockWithNotify(x,y,z, (short) (this.getBlockID(x,y,z) + 1));
-                    this.sg.save.thePlayer.removeItemFromInventory();
-                    new SoundPlayer(SpaceGame.instance).playSound(x, y, z, new Sound(Sound.itemPickup, false), new Random().nextFloat(0.5F, 0.9F));
-                }
-            }
-            if(this.sg.save.thePlayer.getHeldItem() == Item.stoneFragments.ID && this.getBlockID(x,y,z) == Block.campfireUnLit.ID){
-                Item.stoneFragments.onRightClick(x, y, z, this, this.sg.save.thePlayer);
+            if(playerHeldItem == Item.stoneFragments.ID){
+                SpaceGame.instance.setNewGui(new GuiLightFire(SpaceGame.instance, x, y, z));
             }
         }
-        if(block instanceof BlockCampFireLit){
-            if(this.sg.save.thePlayer.getHeldItem() == Item.rawStick.ID || this.sg.save.thePlayer.getHeldItem() == Item.woodShards.ID){
-                if(this.getBlockID(x, y, z) >= Block.campFireLitLight13.ID && this.getBlockID(x, y, z) < Block.campFireLitLight1.ID){
-                    this.setBlockWithNotify(x,y,z, (short) (this.getBlockID(x,y,z) - 1));
-                    this.sg.save.thePlayer.removeItemFromInventory();
-                    new SoundPlayer(SpaceGame.instance).playSound(x, y, z, new Sound(Sound.itemPickup, false), new Random().nextFloat(0.5F, 0.9F));
+
+        if(block instanceof BlockCampFire){
+            if(playerHeldItem == Item.unlitTorch.ID) {
+                SpaceGame.instance.save.thePlayer.removeItemFromInventory();
+                if (!SpaceGame.instance.save.thePlayer.addItemToInventory(Item.torch.ID, Item.NULL_ITEM_METADATA, (byte) 1, Item.NULL_ITEM_DURABILITY)) {
+                    this.addEntity(new EntityItem(SpaceGame.instance.save.thePlayer.x, SpaceGame.instance.save.thePlayer.y, SpaceGame.instance.save.thePlayer.z, Item.torch.ID, Item.NULL_ITEM_METADATA, (byte) 1, Item.NULL_ITEM_DURABILITY));
                 }
             }
-            if(this.sg.save.thePlayer.getHeldItem() == Item.unlitTorch.ID){
-                this.sg.save.thePlayer.removeItemFromInventory();
-                this.sg.save.thePlayer.addItemToInventory(Item.torch.ID, (short)0, (byte) 1, (short) -1);
-            }
         }
+
+
         if(block.ID == Block.itemStone.ID){
             if(this.sg.save.thePlayer.getHeldItem() == Item.stone.ID){
                 this.sg.setNewGui(new GuiCraftingStoneTools(this.sg, x,y,z));
+            }
+        }
+
+        if(block.ID == Block.itemStick.ID){
+            if(this.sg.save.thePlayer.getHeldItem() == Item.stoneFragments.ID){
+                this.setBlockWithNotify(x,y,z, Block.air.ID);
+                this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).addEntityToList(new EntityItem(x + 0.5, y + 0.1, z + 0.5, Item.unlitTorch.ID, (short) 0, (byte) 1, (short) -1));
             }
         }
 
@@ -1103,8 +1123,9 @@ public abstract class World {
         ArrayList<Entity> entities = this.getEntitiesInChunks(this.getSurroundingChunksAndCurrentChunk(chunkX, chunkY, chunkZ));
 
         for(int i = 0; i < entities.size(); i++){
-            if(entities.get(i).boundingBox.pointInsideBoundingBox(x,y,z)) {
+            if(entities.get(i).boundingBox.pointInsideBoundingBox(x,y,z)) { //This determines if you hit an entity
                 entities.get(i).damage(movementVector, this.sg.save.thePlayer.getAttackDamageValue());
+                entities.get(i).setLastEntityToHit(this.sg.save.thePlayer);
                 return true;
             }
         }
@@ -1140,7 +1161,7 @@ public abstract class World {
                 if (GuiInGame.isBlockVisible(blockX, blockY, blockZ) && (checkedBlock.ID != Block.air.ID && checkedBlock.ID != Block.water.ID)) {
                     if(this.sg.save.thePlayer.blockLookingAt[0] == blockX && this.sg.save.thePlayer.blockLookingAt[1] == blockY && this.sg.save.thePlayer.blockLookingAt[2] == blockZ){
                         short playerHeldItem = SpaceGame.instance.save.thePlayer.getHeldItem();
-                        if(playerHeldItem == -1){playerHeldItem = 0;}
+                        if(playerHeldItem == Item.NULL_ITEM_REFERENCE){playerHeldItem = 0;}
                         this.sg.save.thePlayer.breakTimer++;
                         if(checkedBlock.hardness > (SpaceGame.instance.save.thePlayer.hardnessThreshold + Item.list[playerHeldItem].hardness)){
                             this.sg.save.thePlayer.breakTimer = 1;
@@ -1150,7 +1171,7 @@ public abstract class World {
                         }
                         if(this.sg.save.thePlayer.breakTimer >= checkedBlock.getDynamicBreakTimer() && checkedBlock.breakTimer >= 0){
                             checkedBlock.onLeftClick(blockX, blockY, blockZ, this, this.sg.save.thePlayer);
-                            if(checkedBlock.droppedItemID != -1) {
+                            if(checkedBlock.droppedItemID != Item.NULL_ITEM_REFERENCE) {
                                 if (checkedBlock.droppedItemID != Item.block.ID) {
                                     if(checkedBlock.itemDropChance > SpaceGame.globalRand.nextFloat()) {
                                         this.findChunkFromChunkCoordinates(blockX >> 5, blockY >> 5, blockZ >> 5).addEntityToList(new EntityItem(blockX + 0.5 + new Random().nextDouble(-0.3, 0.3), blockY + 0.5 + new Random().nextDouble(-0.3, 0.3), blockZ + 0.5 + new Random().nextDouble(-0.3, 0.3), checkedBlock.droppedItemID, (short)0, (byte) 1, Item.list[checkedBlock.droppedItemID].durability));
@@ -1177,8 +1198,8 @@ public abstract class World {
     public void handleRightClick() {
         if (this.sg.save.thePlayer != null && !this.paused && MouseListener.rightClickReleased && this.sg.currentGui instanceof GuiInGame && this.delayWhenExitingUI <= 0) {
             short item = SpaceGame.instance.save.thePlayer.getHeldItem();
-            if(item != -1) {
-                Item.list[item].onRightClick((int) SpaceGame.instance.save.thePlayer.x, (int) SpaceGame.instance.save.thePlayer.y, (int) SpaceGame.instance.save.thePlayer.z, this, SpaceGame.instance.save.thePlayer);
+            if(item != Item.NULL_ITEM_REFERENCE) {
+                Item.list[item].onRightClick(MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.x), MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.y),  MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.z), this, SpaceGame.instance.save.thePlayer);
             }
             double[] rayCast = SpaceGame.camera.rayCast(3);
             final double multiplier = 0.05D;

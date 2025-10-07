@@ -8,6 +8,7 @@ import java.util.Random;
 public final class WorldGenCactus extends WorldGen{
     public ArrayList<int[]> blockPos = new ArrayList<>();
     public WorldGenCactus(Chunk chunk, WorldEarth worldEarth, int index){
+        if(chunk.blocks[index] != Block.sand.ID)return;
         this.worldEarth = worldEarth;
         this.index = index;
         this.chunk = chunk;

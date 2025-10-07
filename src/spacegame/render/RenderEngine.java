@@ -332,12 +332,12 @@ public final class RenderEngine {
                 case 8 -> "logSide";
                 case 9 -> "logTop";
                 case 10 -> "leaf";
-                case 11 -> "berryBushSide";
-                case 12 -> "berryBushNoBerriesSide";
-                case 13 -> "campFire2Sticks";
+                case 11 -> "berryBushSideBase";
+                case 12 -> "berryBushTopBase";
+                case 13 -> "campFire2Sticks"; //13,14,15 are open and usable
                 case 14 -> "campFire3Sticks";
                 case 15 -> "campFire4Sticks";
-                case 16 -> "campFireUnlit";
+                case 16 -> "campFireBase";
                 case 17 -> "campFireLit";
                 case 18 -> "fire";
                 case 19 -> "campFireBurnedOut";
@@ -346,10 +346,13 @@ public final class RenderEngine {
                 case 22 -> "cactusTop";
                 case 23 -> "cactusBottom";
                 case 24 -> "leafTransparent";
-                case 25 -> "berryBushNoBerriesTop";
+                case 25 -> "berryBushSide";
                 case 26 -> "berryBushTop";
                 case 27 -> "berryBushFlowerSide";
                 case 28 -> "berryBushFlowerTop";
+                case 29 -> "itemStick";
+                case 30 -> "tallGrass";
+                case 31 -> "fireWood";
                 default -> "missing";
             };
         } else if(textureFolderpath.contains("item")){
@@ -361,9 +364,11 @@ public final class RenderEngine {
                 case 5 -> "berry";
                 case 6 -> "rawStick";
                 case 7 -> "unlitTorch";
-                case 8 -> "woodShards";
+                case 8 -> "fireWood";
                 case 9 -> "stoneHandKnife";
                 case 10 -> "stoneHandShovel";
+                case 11 -> "rawVenison";
+                case 12 -> "straw";
                 default -> "missing";
             };
         }
@@ -409,9 +414,6 @@ public final class RenderEngine {
             SpaceGame.instance.renderEngine.setVertexAttribute(this.texture2DAtlasVAO, 2, texCoordsSize, vertexSizeBytes, (positionsSize + colorSize) * Float.BYTES, this.vboID);
             SpaceGame.instance.renderEngine.setVertexAttribute(this.texture2DAtlasVAO, 3, texIndexSize, vertexSizeBytes, (positionsSize + colorSize + texCoordsSize) * Float.BYTES, this.vboID);
 
-            positionsSize = 3;
-            colorSize = 4;
-            texCoordsSize = 2;
             vertexSizeBytes = (positionsSize + colorSize + texCoordsSize) * Float.BYTES;
 
             SpaceGame.instance.renderEngine.setVertexAttribute(this.texture2DVAO, 0, positionsSize, vertexSizeBytes, 0, this.vboID);
@@ -419,8 +421,6 @@ public final class RenderEngine {
             SpaceGame.instance.renderEngine.setVertexAttribute(this.texture2DVAO, 2, texCoordsSize, vertexSizeBytes, (positionsSize + colorSize) * Float.BYTES, this.vboID);
 
 
-            positionsSize = 3;
-            colorSize = 4;
             vertexSizeBytes = (positionsSize + colorSize) * Float.BYTES;
             SpaceGame.instance.renderEngine.setVertexAttribute(this.textureCubeMapVAO, 0, positionsSize, vertexSizeBytes, 0, this.vboID);
             SpaceGame.instance.renderEngine.setVertexAttribute(this.textureCubeMapVAO, 1, colorSize, vertexSizeBytes, positionsSize * Float.BYTES, this.vboID);
@@ -493,6 +493,8 @@ public final class RenderEngine {
             }
         }
         //Negative x shifts to the left, positive x shifts to the right, negative y shifts up, positive y shifts down
+        //Corner order is Top right, bottom left, bottom right, top left for sampling top face/bottom face
+        //Bottom left, Top right, top left, bottom right for n, s, e, w faces
         public void addVertex2DTextureWithSampling(int colorValue, float x, float y, float z, int corner, float xSample, float ySample){
             if(colorValue > 16777215){
                 colorValue = 1677215;
@@ -670,8 +672,6 @@ public final class RenderEngine {
 
             GL46.glDrawElements(GL46.GL_TRIANGLES, this.elementBuffer.limit(), GL46.GL_UNSIGNED_INT, 0);
 
-            GL46.glUseProgram(0);
-
             GL46.glBindTexture(GL46.GL_TEXTURE_2D, 0);
             GL46.glDisable(GL46.GL_ALPHA_TEST);
             this.reset();
@@ -829,7 +829,9 @@ public final class RenderEngine {
         public FloatBuffer vertexBuffer;
         public IntBuffer elementBuffer;
         private int elementOffset = 0;
-        private int vaoID;
+        private int texture2DVAO;
+        private int texture2DAtlasVAO;
+        private int textureCubeMapVAO;
         private int vboID;
         private int eboID;
         private int[] texSlots = new int[256];
@@ -841,9 +843,44 @@ public final class RenderEngine {
         private WorldTessellator(int quadLimit){
             this.vertexBuffer = BufferUtils.createFloatBuffer(quadLimit * 40);
             this.elementBuffer = BufferUtils.createIntBuffer(quadLimit * 6);
-            this.vaoID = GL46.glGenVertexArrays();
-            this.vboID = GL46.glGenBuffers();
-            this.eboID = GL46.glGenBuffers();
+            this.vboID = SpaceGame.instance.renderEngine.createBuffers();
+            this.eboID = SpaceGame.instance.renderEngine.createBuffers();
+
+            this.texture2DVAO = SpaceGame.instance.renderEngine.createVAO();
+            this.texture2DAtlasVAO = SpaceGame.instance.renderEngine.createVAO();
+            this.textureCubeMapVAO = SpaceGame.instance.renderEngine.createVAO();
+
+            int positionsSize = 3;
+            int colorSize = 4;
+            int texIndexSize = 1;
+            int texCoordsSize = 2;
+            int normalSize = 3;
+            int skyLightValueSize = 1;
+            int vertexSizeBytes = (positionsSize + colorSize + texCoordsSize + texIndexSize + skyLightValueSize + normalSize) * Float.BYTES;
+
+
+            SpaceGame.instance.renderEngine.setVertexAttribute(this.texture2DAtlasVAO, 0, positionsSize, vertexSizeBytes, 0, this.vboID);
+            SpaceGame.instance.renderEngine.setVertexAttribute(this.texture2DAtlasVAO, 1, colorSize, vertexSizeBytes, positionsSize * Float.BYTES, this.vboID);
+            SpaceGame.instance.renderEngine.setVertexAttribute(this.texture2DAtlasVAO, 2, texCoordsSize, vertexSizeBytes, (positionsSize + colorSize) * Float.BYTES, this.vboID);
+            SpaceGame.instance.renderEngine.setVertexAttribute(this.texture2DAtlasVAO, 3, texIndexSize, vertexSizeBytes, (positionsSize + colorSize + texCoordsSize) * Float.BYTES, this.vboID);
+            SpaceGame.instance.renderEngine.setVertexAttribute(this.texture2DAtlasVAO, 4, normalSize, vertexSizeBytes, (positionsSize + colorSize + texCoordsSize + texIndexSize) * Float.BYTES, this.vboID);
+            SpaceGame.instance.renderEngine.setVertexAttribute(this.texture2DAtlasVAO, 5, skyLightValueSize, vertexSizeBytes, (positionsSize + colorSize + texCoordsSize + texIndexSize + normalSize) * Float.BYTES, this.vboID);
+
+            vertexSizeBytes = (positionsSize + colorSize + texCoordsSize + normalSize + skyLightValueSize) * Float.BYTES;
+
+            SpaceGame.instance.renderEngine.setVertexAttribute(this.texture2DVAO, 0, positionsSize, vertexSizeBytes, 0, this.vboID);
+            SpaceGame.instance.renderEngine.setVertexAttribute(this.texture2DVAO, 1, colorSize, vertexSizeBytes, positionsSize * Float.BYTES, this.vboID);
+            SpaceGame.instance.renderEngine.setVertexAttribute(this.texture2DVAO, 2, texCoordsSize, vertexSizeBytes, (positionsSize + colorSize) * Float.BYTES, this.vboID);
+            SpaceGame.instance.renderEngine.setVertexAttribute(this.texture2DVAO, 3, normalSize, vertexSizeBytes, (positionsSize + colorSize + texCoordsSize) * Float.BYTES, this.vboID);
+            SpaceGame.instance.renderEngine.setVertexAttribute(this.texture2DVAO, 4, skyLightValueSize, vertexSizeBytes, (positionsSize + colorSize + texCoordsSize + normalSize) * Float.BYTES, this.vboID);
+
+
+
+            vertexSizeBytes = (positionsSize + colorSize + normalSize + skyLightValueSize) * Float.BYTES;
+            SpaceGame.instance.renderEngine.setVertexAttribute(this.textureCubeMapVAO, 0, positionsSize, vertexSizeBytes, 0, this.vboID);
+            SpaceGame.instance.renderEngine.setVertexAttribute(this.textureCubeMapVAO, 1, colorSize, vertexSizeBytes, positionsSize * Float.BYTES, this.vboID);
+            SpaceGame.instance.renderEngine.setVertexAttribute(this.textureCubeMapVAO, 2, normalSize, vertexSizeBytes, (positionsSize + colorSize) * Float.BYTES, this.vboID);
+            SpaceGame.instance.renderEngine.setVertexAttribute(this.textureCubeMapVAO, 3, skyLightValueSize, vertexSizeBytes, (positionsSize + colorSize + normalSize) * Float.BYTES, this.vboID);
         }
 
         public void addVertex2DTextureWithAtlas(int colorValue, float x, float y, float z, int corner, Texture textureID, float blockID, float normalX, float normalY, float normalZ, float skyLightValue){
@@ -853,11 +890,12 @@ public final class RenderEngine {
             if(colorValue < 0){
                 colorValue = 0;
             }
-            Color color = new Color(colorValue);
-            final float red = color.getRed()/256F;
-            final float green = color.getGreen()/256F;
-            final float blue = color.getBlue()/256F;
-            final float alpha = color.getAlpha()/256F;
+
+
+            final float red = ((colorValue >> 16) & 255) / 255f;
+            final float green = ((colorValue >> 8) & 255) / 255f;
+            final float blue = (colorValue & 255) / 255f;
+            final float alpha = 1f;
 
             this.vertexBuffer.put(x);
             this.vertexBuffer.put(y);
@@ -882,11 +920,11 @@ public final class RenderEngine {
             if(colorValue < 0){
                 colorValue = 0;
             }
-            Color color = new Color(colorValue);
-            final float red = color.getRed()/256F;
-            final float green = color.getGreen()/256F;
-            final float blue = color.getBlue()/256F;
-            final float alpha = color.getAlpha()/256F;
+
+            final float red = ((colorValue >> 16) & 255) / 255f;
+            final float green = ((colorValue >> 8) & 255) / 255f;
+            final float blue = (colorValue & 255) / 255f;
+            final float alpha = 1f;
 
             this.vertexBuffer.put(x);
             this.vertexBuffer.put(y);
@@ -928,11 +966,11 @@ public final class RenderEngine {
             if(colorValue < 0){
                 colorValue = 0;
             }
-            Color color = new Color(colorValue);
-            final float red = color.getRed()/256F;
-            final float green = color.getGreen()/256F;
-            final float blue = color.getBlue()/256F;
-            final float alpha = color.getAlpha()/256F;
+
+            final float red = ((colorValue >> 16) & 255) / 255f;
+            final float green = ((colorValue >> 8) & 255) / 255f;
+            final float blue = (colorValue & 255) / 255f;
+            final float alpha = 1f;
 
             this.vertexBuffer.put(x);
             this.vertexBuffer.put(y);
@@ -974,11 +1012,12 @@ public final class RenderEngine {
             if(colorValue < 0){
                 colorValue = 0;
             }
-            Color color = new Color(colorValue);
-            final float red = color.getRed()/256F;
-            final float green = color.getGreen()/256F;
-            final float blue = color.getBlue()/256F;
-            final float alpha = color.getAlpha()/256F;
+
+
+            final float red = ((colorValue >> 16) & 255) / 255f;
+            final float green = ((colorValue >> 8) & 255) / 255f;
+            final float blue = (colorValue & 255) / 255f;
+            final float alpha = 1f;
 
             this.vertexBuffer.put(x);
             this.vertexBuffer.put(y);
@@ -1000,11 +1039,12 @@ public final class RenderEngine {
             if(colorValue < 0){
                 colorValue = 0;
             }
-            Color color = new Color(colorValue);
-            final float red = color.getRed()/256F;
-            final float green = color.getGreen()/256F;
-            final float blue = color.getBlue()/256F;
-            final float alpha = color.getAlpha()/256F;
+
+            final float red = ((colorValue >> 16) & 255) / 255f;
+            final float green = ((colorValue >> 8) & 255) / 255f;
+            final float blue = (colorValue & 255) / 255f;
+            final float alpha = 1f;
+
 
             float[] texCoords = this.texCoords(corner);
             this.vertexBuffer.put(x);
@@ -1030,11 +1070,12 @@ public final class RenderEngine {
             if(colorValue < 0){
                 colorValue = 0;
             }
-            Color color = new Color(colorValue);
-            final float red = color.getRed()/256F;
-            final float green = color.getGreen()/256F;
-            final float blue = color.getBlue()/256F;
-            final float alpha = color.getAlpha()/256F;
+
+
+            final float red = ((colorValue >> 16) & 255) / 255f;
+            final float green = ((colorValue >> 8) & 255) / 255f;
+            final float blue = (colorValue & 255) / 255f;
+            final float alpha = 1f;
 
             float[] texCoords = this.texCoords(corner);
             this.vertexBuffer.put(x);
@@ -1085,7 +1126,7 @@ public final class RenderEngine {
         public void drawTexture2DWithAtlas(int texID, Shader shader, Camera camera){
             this.boundTexture = texID;
 
-            GL46.glBindVertexArray(vaoID);
+            GL46.glBindVertexArray(this.texture2DAtlasVAO);
 
             this.vertexBuffer.flip();
             this.elementBuffer.flip();
@@ -1095,32 +1136,6 @@ public final class RenderEngine {
 
             GL46.glBindBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, eboID);
             GL46.glBufferData(GL46.GL_ELEMENT_ARRAY_BUFFER, this.elementBuffer, GL46.GL_STATIC_DRAW);
-
-            //add the vertex attribute pointers
-            int positionsSize = 3;
-            int colorSize = 4;
-            int texIndexSize = 1;
-            int texCoordsSize = 2;
-            int normalSize = 3;
-            int skyLightValueSize = 1;
-            int vertexSizeBytes = (positionsSize + colorSize + texCoordsSize + texIndexSize + normalSize + skyLightValueSize) * Float.BYTES;
-            GL46.glVertexAttribPointer(0, positionsSize, GL46.GL_FLOAT, false, vertexSizeBytes, 0);
-            GL46.glEnableVertexAttribArray(0);
-
-            GL46.glVertexAttribPointer(1, colorSize, GL46.GL_FLOAT, false, vertexSizeBytes, positionsSize * Float.BYTES);
-            GL46.glEnableVertexAttribArray(1);
-
-            GL46.glVertexAttribPointer(2, texCoordsSize, GL46.GL_FLOAT, false, vertexSizeBytes, (positionsSize + colorSize) * Float.BYTES);
-            GL46.glEnableVertexAttribArray(2);
-
-            GL46.glVertexAttribPointer(3, texIndexSize, GL46.GL_FLOAT, false, vertexSizeBytes, (positionsSize + colorSize + texCoordsSize) * Float.BYTES);
-            GL46.glEnableVertexAttribArray(3);
-
-            GL46.glVertexAttribPointer(4, normalSize, GL46.GL_FLOAT, false, vertexSizeBytes, (positionsSize + colorSize + texCoordsSize + texIndexSize) * Float.BYTES);
-            GL46.glEnableVertexAttribArray(4);
-
-            GL46.glVertexAttribPointer(5, skyLightValueSize, GL46.GL_FLOAT, false, vertexSizeBytes, (positionsSize + colorSize + texCoordsSize + texIndexSize + skyLightValueSize) * Float.BYTES);
-            GL46.glEnableVertexAttribArray(5);
 
             GL46.glBindTexture(GL46.GL_TEXTURE_2D, this.boundTexture);
 
@@ -1141,20 +1156,6 @@ public final class RenderEngine {
 
             GL46.glDrawElements(GL46.GL_TRIANGLES, this.elementBuffer.limit(), GL46.GL_UNSIGNED_INT, 0);
 
-            //unbind
-            GL46.glDisableVertexAttribArray(0);
-            GL46.glDisableVertexAttribArray(1);
-            GL46.glDisableVertexAttribArray(2);
-            GL46.glDisableVertexAttribArray(3);
-            GL46.glDisableVertexAttribArray(4);
-            GL46.glDisableVertexAttribArray(5);
-
-
-            GL46.glBindVertexArray(0);
-            GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, 0);
-            GL46.glBindBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, 0);
-
-            GL46.glUseProgram(0);
 
             GL46.glBindTexture(GL46.GL_TEXTURE_2D, 0);
             GL46.glDisable(GL46.GL_ALPHA_TEST);
@@ -1164,7 +1165,7 @@ public final class RenderEngine {
         public void drawTexture2D(int texID, Shader shader, Camera camera){
             this.boundTexture = texID;
 
-            GL46.glBindVertexArray(vaoID);
+            GL46.glBindVertexArray(this.texture2DVAO);
 
             this.vertexBuffer.flip();
             this.elementBuffer.flip();
@@ -1174,29 +1175,6 @@ public final class RenderEngine {
 
             GL46.glBindBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, eboID);
             GL46.glBufferData(GL46.GL_ELEMENT_ARRAY_BUFFER, this.elementBuffer, GL46.GL_STATIC_DRAW);
-
-            //add the vertex attribute pointers
-            int positionsSize = 3;
-            int colorSize = 4;
-            int texCoordsSize = 2;
-            int normalSize = 3;
-            int skyLightValueSize = 1;
-            int vertexSizeBytes = (positionsSize + colorSize + texCoordsSize + normalSize + skyLightValueSize) * Float.BYTES;
-            GL46.glVertexAttribPointer(0, positionsSize, GL46.GL_FLOAT, false, vertexSizeBytes, 0);
-            GL46.glEnableVertexAttribArray(0);
-
-            GL46.glVertexAttribPointer(1, colorSize, GL46.GL_FLOAT, false, vertexSizeBytes, positionsSize * Float.BYTES);
-            GL46.glEnableVertexAttribArray(1);
-
-            GL46.glVertexAttribPointer(2, texCoordsSize, GL46.GL_FLOAT, false, vertexSizeBytes, (positionsSize + colorSize) * Float.BYTES);
-            GL46.glEnableVertexAttribArray(2);
-
-            GL46.glVertexAttribPointer(3, normalSize, GL46.GL_FLOAT, false, vertexSizeBytes, (positionsSize + colorSize + texCoordsSize) * Float.BYTES);
-            GL46.glEnableVertexAttribArray(3);
-
-            GL46.glVertexAttribPointer(4, skyLightValueSize, GL46.GL_FLOAT, false, vertexSizeBytes, (positionsSize + colorSize + texCoordsSize + normalSize) * Float.BYTES);
-            GL46.glEnableVertexAttribArray(4);
-
 
             GL46.glBindTexture(GL46.GL_TEXTURE_2D, this.boundTexture);
 
@@ -1226,19 +1204,6 @@ public final class RenderEngine {
 
             GL46.glDrawElements(GL46.GL_TRIANGLES, this.elementBuffer.limit(), GL46.GL_UNSIGNED_INT, 0);
 
-            //unbind
-            GL46.glDisableVertexAttribArray(0);
-            GL46.glDisableVertexAttribArray(1);
-            GL46.glDisableVertexAttribArray(2);
-            GL46.glDisableVertexAttribArray(3);
-            GL46.glDisableVertexAttribArray(4);
-
-
-            GL46.glBindVertexArray(0);
-            GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, 0);
-            GL46.glBindBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, 0);
-
-            GL46.glUseProgram(0);
 
             GL46.glBindTexture(GL46.GL_TEXTURE_2D, 0);
             GL46.glActiveTexture(GL46.GL_TEXTURE0);
@@ -1251,7 +1216,7 @@ public final class RenderEngine {
         public void drawTextureArray(int texID, Shader shader, Camera camera){
             this.boundTexture = texID;
 
-            GL46.glBindVertexArray(vaoID);
+            GL46.glBindVertexArray(this.texture2DAtlasVAO);
 
             this.vertexBuffer.flip();
             this.elementBuffer.flip();
@@ -1262,32 +1227,7 @@ public final class RenderEngine {
             GL46.glBindBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, eboID);
             GL46.glBufferData(GL46.GL_ELEMENT_ARRAY_BUFFER, this.elementBuffer, GL46.GL_STATIC_DRAW);
 
-            //add the vertex attribute pointers
-            int positionsSize = 3;
-            int colorSize = 4;
-            int texIndexSize = 1;
-            int texCoordsSize = 2;
-            int normalSize = 3;
-            int skyLightSize = 1;
-            int vertexSizeBytes = (positionsSize + colorSize + texCoordsSize + texIndexSize + normalSize + skyLightSize) * Float.BYTES;
-            GL46.glVertexAttribPointer(0, positionsSize, GL46.GL_FLOAT, false, vertexSizeBytes, 0);
-            GL46.glEnableVertexAttribArray(0);
-
-            GL46.glVertexAttribPointer(1, colorSize, GL46.GL_FLOAT, false, vertexSizeBytes, positionsSize * Float.BYTES);
-            GL46.glEnableVertexAttribArray(1);
-
-            GL46.glVertexAttribPointer(2, texCoordsSize, GL46.GL_FLOAT, false, vertexSizeBytes, (positionsSize + colorSize) * Float.BYTES);
-            GL46.glEnableVertexAttribArray(2);
-
-            GL46.glVertexAttribPointer(3, texIndexSize, GL46.GL_FLOAT, false, vertexSizeBytes, (positionsSize + colorSize + texCoordsSize) * Float.BYTES);
-            GL46.glEnableVertexAttribArray(3);
-
-            GL46.glVertexAttribPointer(4, normalSize, GL46.GL_FLOAT, false, vertexSizeBytes, (positionsSize + colorSize + texCoordsSize + texIndexSize) * Float.BYTES);
-            GL46.glEnableVertexAttribArray(4);
-
-            GL46.glVertexAttribPointer(5, skyLightSize, GL46.GL_FLOAT, false, vertexSizeBytes, (positionsSize + colorSize + texCoordsSize + texIndexSize + normalSize) * Float.BYTES);
-            GL46.glEnableVertexAttribArray(5);
-
+            GL46.glActiveTexture(GL46.GL_TEXTURE0);
             GL46.glBindTexture(GL46.GL_TEXTURE_2D_ARRAY, this.boundTexture);
 
             if(SpaceGame.instance.save.activeWorld.chunkController.renderWorldScene.nearbyStars.size() > 0) {
@@ -1309,26 +1249,10 @@ public final class RenderEngine {
             }
             shader.uploadInt("textureArray", 0);
 
-            //enable the vertex attribute pointers
-
 
             GL46.glDrawElements(GL46.GL_TRIANGLES, this.elementBuffer.limit(), GL46.GL_UNSIGNED_INT, 0);
 
-            //unbind
-            GL46.glDisableVertexAttribArray(0);
-            GL46.glDisableVertexAttribArray(1);
-            GL46.glDisableVertexAttribArray(2);
-            GL46.glDisableVertexAttribArray(3);
-            GL46.glDisableVertexAttribArray(4);
-            GL46.glDisableVertexAttribArray(5);
-
-
-            GL46.glBindVertexArray(0);
-            GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, 0);
-            GL46.glBindBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, 0);
-
-            GL46.glUseProgram(0);
-
+            GL46.glActiveTexture(GL46.GL_TEXTURE1);
             GL46.glBindTexture(GL46.GL_TEXTURE_2D, 0);
 
             GL46.glActiveTexture(GL46.GL_TEXTURE0);

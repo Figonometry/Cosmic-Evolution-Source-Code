@@ -30,4 +30,18 @@ public final class ModelFace {
         this.normal.y = normalY;
         this.normal.z = normalZ;
     }
+
+    public ModelFace translateFace(float x, float y, float z){
+        ModelFace translatedFace = new ModelFace(this.faceType);
+        Vector3f translation = new Vector3f(x,y,z);
+        for(int i = 0; i < this.vertices.length; i++) {
+            translatedFace.setFloatValue(i, 0, this.vertices[i].x);
+            translatedFace.setFloatValue(i, 1, this.vertices[i].y);
+            translatedFace.setFloatValue(i, 2, this.vertices[i].z);
+            translatedFace.vertices[i].add(translation);
+        }
+
+        translatedFace.setNormal(this.normal.x, this.normal.y, this.normal.z);
+        return translatedFace;
+    }
 }

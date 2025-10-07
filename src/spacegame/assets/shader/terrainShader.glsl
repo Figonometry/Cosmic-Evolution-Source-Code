@@ -155,11 +155,32 @@ vec4 decompressSkyLightValue(vec2 normalAndSkyLightValue){
     return vec4(skyLightValue, skyLightValue, skyLightValue, 1.0);
 }
 
+bool isTexIDColorCorrected(int texID){
+    switch(texID){
+        case 0: //Grass Top
+        return true;
+        case 2: //Grass Side
+        return true;
+        case 10: //Leaf Transparent
+        return true;
+        case 24: //Leaf Opaque
+        return true;
+        case 30: //Tall Grass
+        return true;
+        case 11: //Berry Bush Base Side
+        return true;
+        case 12: //Berry Bush Base Top
+        return true;
+        default:
+        return false;
+    }
+}
+
 vec4 setFinalColor(vec4 skyLightColor, vec4 vertexColor){
     vec4 finalColor = vec4(1.0, 1.0, 1.0, 1.0);
 
     int texID = int(fTexId);
-    if(texID == 0 || texID == 2 || texID == 10 || texID == 24){//Grass top and grass side textures, leaf, transparent and opaque
+    if(isTexIDColorCorrected(texID)){
         int upperByte = (floatBitsToInt(aColor) >> 24) & 255;
         int lowerByte = (floatBitsToInt(aTexCoords) >> 24) & 255;
         float colorMultiplier = halfToFloat((upperByte << 8) | lowerByte);

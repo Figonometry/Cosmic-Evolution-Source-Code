@@ -161,11 +161,20 @@ public final class ThreadRebuildChunk implements Runnable {
     private void addBlockToRenderData(short block, int index, int face, int[] greedyMeshSize, RenderBlocks renderBlocks) {
         switch (Block.list[block].blockName) {
             case "TORCH" -> renderBlocks.renderTorch(this.workingChunk, this.parentWorld, block, index, face);
-            case "WATER", "BERRY_BUSH", "CAMPFIRE" ->
+            case "WATER", "TALL_GRASS" ->
                     renderBlocks.renderTransparentBlock(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);
-            case "CAMPFIRE_LIT" -> renderBlocks.renderCampFire(this.workingChunk, this.parentWorld, block, index, face);
+            case "CAMPFIRE_LIT" -> {
+                renderBlocks.renderCampFire(this.workingChunk, this.parentWorld, block, index, face);
+                renderBlocks.renderLogOnCampfire(this.workingChunk, this.parentWorld, block, index, face);
+            }
+            case "CAMPFIRE" -> {
+                renderBlocks.renderCampFireUnlit(this.workingChunk, this.parentWorld, block, index, face);
+                renderBlocks.renderLogOnCampfire(this.workingChunk, this.parentWorld, block, index, face);
+            }
+            case "BERRY_BUSH" -> renderBlocks.renderBerryBush(this.workingChunk, this.parentWorld, block, index, face);
             case "GRASS" -> renderBlocks.renderGrassBlock(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);
             case "ITEM_STONE" -> renderBlocks.renderItemStone(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);
+            case "ITEM_STICK" -> renderBlocks.renderItemStick(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);
             case "LEAF" -> {
                 if(GameSettings.transparentLeaves){
                     renderBlocks.renderTransparentBlock(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);

@@ -1,3 +1,4 @@
 itemName:STONE_HAND_SHOVEL
+attackDamage:1
 toolType:shovel
 stackLimit:1

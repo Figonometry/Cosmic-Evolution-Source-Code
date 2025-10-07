@@ -1010,6 +1010,7 @@ public final class Chunk implements Comparable<Chunk> {
     public void addEntityToList(Entity entity){
         for(int i = 0; i < this.entities.size(); i++){
             if(entity.equals(this.entities.get(i))){
+                System.out.println("Test Test ");
                 return;
             }
         }
@@ -1028,11 +1029,13 @@ public final class Chunk implements Comparable<Chunk> {
         Entity entity;
         for(int i = 0; i < this.entities.size(); i++){
             entity = this.entities.get(i);
-            chunkX = (int)entity.x >> 5;
-            chunkY = (int)entity.y >> 5;
-            chunkZ = (int)entity.z >> 5;
+            chunkX = MathUtil.floorDouble(entity.x) >> 5;
+            chunkY = MathUtil.floorDouble(entity.y) >> 5;
+            chunkZ = MathUtil.floorDouble(entity.z) >> 5;
             if(chunkX != this.x || chunkY != this.y || chunkZ != this.z){
-                this.parentWorld.chunkController.findChunkFromChunkCoordinates(chunkX, chunkY, chunkZ).addEntityToList(entity);
+                Chunk chunk = this.parentWorld.chunkController.findChunkFromChunkCoordinates(chunkX, chunkY, chunkZ);
+                if(chunk == null)continue;
+                chunk.addEntityToList(entity);
                 this.removeEntity(entity);
             }
         }

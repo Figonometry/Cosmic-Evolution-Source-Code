@@ -1,5 +1,5 @@
 techName:Hunting II
-techUpdateEvent:Berry Collection
+techUpdateEvent:Hunt Animals
 unlockedTech:Hunting III
 unlockedTech:Trapping I
 unlockedTech:Wolf Domestication

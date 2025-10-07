@@ -1,2 +1,3 @@
 itemName:BLOCK
+canPlaceOnGround:true
 renderItemWithBlockModel:true
