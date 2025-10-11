@@ -1,2 +1,3 @@
 itemName:RAW_STICK
 canPlaceOnGround:true
+displayName:Stick

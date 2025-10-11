@@ -23,14 +23,14 @@ import java.io.IOException;
 import java.util.Random;
 
 public final class GuiInGame extends Gui {
-    public int vignette;
-    public int water;
-    public int hotbar;
+    public static int vignette;
+    public static int water;
+    public static int hotbar;
     public static int outline;
     public static int blockBreaking;
     public static TextureAtlas blockBreakingAtlas;
-    public int transparentBackground;
-    public int fillableColorWithShadedBottom;
+    public static int transparentBackground;
+    public static int fillableColorWithShadedBottom;
     public static int fillableColor;
 
     public GuiInGame(SpaceGame sg) {
@@ -40,27 +40,27 @@ public final class GuiInGame extends Gui {
 
     @Override
     public void loadTextures() {
-        this.vignette = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/vignette.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        this.water = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/waterOverlay.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        vignette = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/vignette.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        water = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/waterOverlay.png", RenderEngine.TEXTURE_TYPE_2D, 0);
         outline = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInGame/outline.png", RenderEngine.TEXTURE_TYPE_2D, 0);
         blockBreaking = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInGame/blockBreaking.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        blockBreakingAtlas = SpaceGame.instance.renderEngine.createTextureAtlas(96,96, 32, 32, 9, 0);
-        this.hotbar = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInGame/hotbarSlot.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        this.transparentBackground = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        this.fillableColorWithShadedBottom = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColorWithShadedBottom.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        blockBreakingAtlas = SpaceGame.instance.renderEngine.createTextureAtlas(96,96, 32, 32, 7, 0);
+        hotbar = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInGame/hotbarSlot.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        transparentBackground = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        fillableColorWithShadedBottom = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColorWithShadedBottom.png", RenderEngine.TEXTURE_TYPE_2D, 0);
         fillableColor = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColor.png", RenderEngine.TEXTURE_TYPE_2D, 0);
     }
 
     @Override
     public void deleteTextures() {
-        SpaceGame.instance.renderEngine.deleteTexture(this.vignette);
-        SpaceGame.instance.renderEngine.deleteTexture(this.water);
-        SpaceGame.instance.renderEngine.deleteTexture(outline);
-        SpaceGame.instance.renderEngine.deleteTexture(blockBreaking);
-        SpaceGame.instance.renderEngine.deleteTexture(this.hotbar);
-        SpaceGame.instance.renderEngine.deleteTexture(this.transparentBackground);
-        SpaceGame.instance.renderEngine.deleteTexture(this.fillableColorWithShadedBottom);
-        blockBreakingAtlas = null;
+       //SpaceGame.instance.renderEngine.deleteTexture(this.vignette);
+       //SpaceGame.instance.renderEngine.deleteTexture(this.water);
+       //SpaceGame.instance.renderEngine.deleteTexture(outline);
+       //SpaceGame.instance.renderEngine.deleteTexture(blockBreaking);
+       //SpaceGame.instance.renderEngine.deleteTexture(this.hotbar);
+       //SpaceGame.instance.renderEngine.deleteTexture(this.transparentBackground);
+       //SpaceGame.instance.renderEngine.deleteTexture(this.fillableColorWithShadedBottom);
+       //blockBreakingAtlas = null;
     }
 
     public static void renderText(){
@@ -103,10 +103,24 @@ public final class GuiInGame extends Gui {
     public void drawGui() {
         renderText();
         this.renderCursor();
+        renderVignette();
+        renderHeldItem();
+        renderHotbar();
+        renderHealthbar();
+    }
 
+    public static void renderGuiFromOtherGuis(){
+        renderText();
+        renderVignette();
+        renderHeldItem();
+        renderHotbar();
+        renderHealthbar();
+    }
+
+    public static void renderVignette(){
         RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
 
-        short blockPlayerHeadIsIn = this.sg.save.activeWorld.getBlockID(MathUtil.floorDouble(this.sg.save.thePlayer.x), MathUtil.floorDouble(this.sg.save.thePlayer.y+  this.sg.save.thePlayer.height/2), MathUtil.floorDouble(this.sg.save.thePlayer.z));
+        short blockPlayerHeadIsIn = SpaceGame.instance.save.activeWorld.getBlockID(MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.x), MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.y+  SpaceGame.instance.save.thePlayer.height/2), MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.z));
         if(blockPlayerHeadIsIn == Block.water.ID){
             GL46.glEnable(GL46.GL_BLEND);
             GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
@@ -116,10 +130,10 @@ public final class GuiInGame extends Gui {
             tessellator.addVertex2DTexture(8355711, (float) -SpaceGame.width /2, (float) SpaceGame.height /2, -900, 2);
             tessellator.addVertex2DTexture(8355711, (float) SpaceGame.width /2, (float) -SpaceGame.height /2, -900, 0);
             tessellator.addElements();
-            tessellator.drawTexture2D(this.water, Shader.screen2DTexture, SpaceGame.camera);
+            tessellator.drawTexture2D(water, Shader.screen2DTexture, SpaceGame.camera);
             tessellator.toggleOrtho();
             GL46.glDisable(GL46.GL_BLEND);
-            this.renderAirBar();
+            renderAirBar();
         } else if (blockPlayerHeadIsIn != Block.air.ID && blockPlayerHeadIsIn != Block.torchStandard.ID && blockPlayerHeadIsIn != Block.torchNorth.ID && blockPlayerHeadIsIn != Block.torchSouth.ID && blockPlayerHeadIsIn != Block.torchEast.ID && blockPlayerHeadIsIn != Block.torchWest.ID) {
             int textureID = Block.list[blockPlayerHeadIsIn].textureID;
             tessellator.toggleOrtho();
@@ -141,17 +155,13 @@ public final class GuiInGame extends Gui {
         tessellator.addVertex2DTexture(16777215, (float) 970, (float) -970, -100, 0);
         tessellator.addElements();
         GL46.glDepthMask(false);
-        tessellator.drawTexture2D(this.vignette, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(vignette, Shader.screen2DTexture, SpaceGame.camera);
         GL46.glDepthMask(true);
         tessellator.toggleOrtho();
         GL46.glDisable(GL46.GL_BLEND);
-
-        this.renderHeldItem();
-        this.renderHotbar();
-        this.renderHealthbar();
     }
 
-    public void renderHotbar(){
+    public static void renderHotbar(){
         RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         tessellator.toggleOrtho();
         int x = -428;
@@ -163,7 +173,7 @@ public final class GuiInGame extends Gui {
         tessellator.addElements();
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-        tessellator.drawTexture2D(this.transparentBackground, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(transparentBackground, Shader.screen2DTexture, SpaceGame.camera);
         GL46.glDisable(GL46.GL_BLEND);
 
         int size = 96;
@@ -257,7 +267,7 @@ public final class GuiInGame extends Gui {
         tessellator.addElements();
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-        tessellator.drawTexture2D(this.hotbar, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(hotbar, Shader.screen2DTexture, SpaceGame.camera);
         GL46.glDisable(GL46.GL_BLEND);
         tessellator.toggleOrtho();
 
@@ -278,7 +288,7 @@ public final class GuiInGame extends Gui {
         }
     }
 
-    private void renderHealthbar(){ //Full red 16711680, half red 8323072
+    private static void renderHealthbar(){ //Full red 16711680, half red 8323072
         RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         tessellator.toggleOrtho();
         int x = -428;
@@ -295,11 +305,11 @@ public final class GuiInGame extends Gui {
         tessellator.addVertex2DTexture(16711680, x, y + 16, -89, 2);
         tessellator.addVertex2DTexture(16711680, x + progress, y, -89, 0);
         tessellator.addElements();
-        tessellator.drawTexture2D(this.fillableColorWithShadedBottom, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(fillableColorWithShadedBottom, Shader.screen2DTexture, SpaceGame.camera);
         tessellator.toggleOrtho();
     }
 
-    private void renderAirBar(){
+    public static void renderAirBar(){
         RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         tessellator.toggleOrtho();
         int x = -428;
@@ -316,12 +326,12 @@ public final class GuiInGame extends Gui {
         tessellator.addVertex2DTexture(38143, x, y + 16, -89, 2);
         tessellator.addVertex2DTexture(38143, x + progress, y, -89, 0);
         tessellator.addElements();
-        tessellator.drawTexture2D(this.fillableColorWithShadedBottom, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(fillableColorWithShadedBottom, Shader.screen2DTexture, SpaceGame.camera);
         tessellator.toggleOrtho();
     }
 
 
-    public void renderHeldItem() {
+    public static void renderHeldItem() {
         final short heldBlock = SpaceGame.instance.save.thePlayer.getHeldBlock();
         if(SpaceGame.instance.save.thePlayer.isHoldingBlock()) {
             if (heldBlock != Block.air.ID) {
@@ -330,8 +340,8 @@ public final class GuiInGame extends Gui {
                 float y = -2.5f;
                 float z = -3f;
                 if(GameSettings.viewBob) {
-                    x -= 0.5f * ((MathUtil.sin((float) (((this.sg.save.thePlayer.viewBobTimer / 60f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
-                    y -= 0.25f * ((MathUtil.sin((float) (((this.sg.save.thePlayer.viewBobTimer / 60f) - 0.125f) * (Math.PI * 4f))) * 0.5) + 0.5f);
+                    x -= 0.5f * ((MathUtil.sin((float) (((SpaceGame.instance.save.thePlayer.viewBobTimer / 60f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
+                    y -= 0.25f * ((MathUtil.sin((float) (((SpaceGame.instance.save.thePlayer.viewBobTimer / 60f) - 0.125f) * (Math.PI * 4f))) * 0.5) + 0.5f);
                 }
                 z -= 1f * ((MathUtil.sin((float) (((SpaceGame.instance.save.thePlayer.swingTimer / 15f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
                 Vector3f position = new Vector3f(x,y,z);
@@ -447,8 +457,8 @@ public final class GuiInGame extends Gui {
                 float y = -1f;
                 float z = -3f;
                 if(GameSettings.viewBob) {
-                    x -= 0.125f * ((MathUtil.sin((float) (((this.sg.save.thePlayer.viewBobTimer / 60f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
-                    y -= 0.0625f * ((MathUtil.sin((float) (((this.sg.save.thePlayer.viewBobTimer / 60f) - 0.125f) * (Math.PI * 4f))) * 0.5) + 0.5f);
+                    x -= 0.125f * ((MathUtil.sin((float) (((SpaceGame.instance.save.thePlayer.viewBobTimer / 60f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
+                    y -= 0.0625f * ((MathUtil.sin((float) (((SpaceGame.instance.save.thePlayer.viewBobTimer / 60f) - 0.125f) * (Math.PI * 4f))) * 0.5) + 0.5f);
                 }
                 z -= 1f * ((MathUtil.sin((float) (((SpaceGame.instance.save.thePlayer.swingTimer / 15f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
                 Vector3f position = new Vector3f(x,y,z);
@@ -748,7 +758,7 @@ public final class GuiInGame extends Gui {
                         Vector3f chunkOffset = new Vector3f(xOffset, yOffset, zOffset);
                         Shader.worldShader2DTextureWithAtlas.uploadVec3f("chunkOffset", chunkOffset);
                         Shader.worldShader2DTextureWithAtlas.uploadBoolean("useFog", true);
-                        int textureID = (int) (((double)SpaceGame.instance.save.thePlayer.breakTimer/(double)Block.list[block].getDynamicBreakTimer()) * 10);
+                        int textureID = (int) (((double)SpaceGame.instance.save.thePlayer.breakTimer/(double)Block.list[block].getDynamicBreakTimer()) * 7);
                         if(textureID > 8){
                             textureID = 8;
                         }

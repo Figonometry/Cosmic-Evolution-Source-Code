@@ -1,2 +1,3 @@
 itemName:STRAW
 canPlaceOnGround:true
+displayName:Straw

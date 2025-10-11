@@ -36,6 +36,7 @@ public final class GuiPlayerInventory extends GuiInventory {
 
     @Override
     public void drawGui() {
+        GuiInGame.renderGuiFromOtherGuis();
         RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         tessellator.toggleOrtho();
         GLFW.glfwSetInputMode(this.sg.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
@@ -54,8 +55,8 @@ public final class GuiPlayerInventory extends GuiInventory {
         tessellator.drawTexture2D(transparentBackground, Shader.screen2DTexture, SpaceGame.camera);
         GL46.glDisable(GL46.GL_BLEND);
 
-        int inventoryUIWidth = 656;
-        int inventoryUIHeight = 128;
+        int inventoryUIWidth = 1200;
+        int inventoryUIHeight = 608;
         int inventoryUIX = 5;
         int inventoryUIY = 0;
         int inventoryUIZ = -90;
@@ -68,8 +69,7 @@ public final class GuiPlayerInventory extends GuiInventory {
         tessellator.toggleOrtho();
 
         this.associatedInventory.renderInventory();
-
-        GuiInGame.renderText();
+        this.renderHoveredItemStackName(this.getHoveredItemStack());
     }
 
     @Override

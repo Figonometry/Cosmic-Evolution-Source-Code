@@ -6,3 +6,4 @@ hardness:0.01
 droppedItemID:0
 itemMetadata:62
 isSolid:false
+displayName:Berry Bush

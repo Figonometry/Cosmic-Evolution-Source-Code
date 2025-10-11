@@ -2,3 +2,4 @@ itemName:STONE_HAND_AXE
 attackDamage:3
 toolType:axe
 stackLimit:1
+displayName:Stone Hand Axe

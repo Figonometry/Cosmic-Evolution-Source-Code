@@ -2,6 +2,7 @@ package spacegame.entity;
 
 import org.joml.Vector3d;
 import org.joml.Vector3f;
+import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
 import spacegame.core.GameSettings;
 import spacegame.core.SpaceGame;
@@ -108,8 +109,10 @@ public final class EntityParticle extends EntityNonLiving {
         tessellator.addVertexTextureArrayWithSampling(colorValue, (float) vertex3.x, (float) vertex3.y, (float) vertex3.z, 2, blockID, 0.46875f, 0.46875f);
         tessellator.addVertexTextureArrayWithSampling(colorValue, (float) vertex4.x, (float) vertex4.y, (float) vertex4.z, 0, blockID, -0.46875f, -0.46875f);
         tessellator.addElements();
-        Shader.worldShaderTextureArray.uploadBoolean("blocks", false);
+        GL46.glDisable(GL46.GL_CULL_FACE);
         tessellator.drawVertexArray(Assets.blockTextureArray, Shader.worldShaderTextureArray, SpaceGame.camera);
+        GL46.glEnable(GL46.GL_CULL_FACE);
+        GL46.glCullFace(GL46.GL_FRONT);
     }
 
     private  void resetLight() {

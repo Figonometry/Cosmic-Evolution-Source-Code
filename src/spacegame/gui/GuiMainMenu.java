@@ -63,7 +63,6 @@ public final class GuiMainMenu extends Gui {
         this.settings = new Button(EnumButtonEffects.SETTINGS.name(), 512, 64, 0, -200, this, this.sg);
         this.quitGame = new Button(EnumButtonEffects.QUIT_GAME.name(), 512, 64, 0, - 300, this, this.sg);
         this.bugReport = new Button(EnumButtonEffects.BUG_REPORT.name(), 64,64, 910, -458, this, this.sg);
-        this.bugReport.active = false;
         this.information = new Button(EnumButtonEffects.INFORMATION.name(), 64,64, -910, -458, this, this.sg);
     }
 
@@ -139,17 +138,40 @@ public final class GuiMainMenu extends Gui {
             fontRenderer.drawString(this.sg.title, x, y, depth, 16711875, 50);
             y -= 60;
             fontRenderer.toggleItalics();
-            fontRenderer.drawString("Berry bushes are now colored according to biome", x, y, depth, yellow, 50);
+            fontRenderer.drawString("Added Item tooltips", x, y, depth, green, 50);
             y -= 30;
-            fontRenderer.drawString("Updated leaf texture", x, y, depth, yellow, 50);
+            fontRenderer.drawString("Fixed particles not rendering correctly", x, y, depth, yellow, 50);
             y -= 30;
-            fontRenderer.drawString("Fixed a bug where trees, rocks, cacti, and tall grass would spawn incorrectly", x, y, depth, yellow, 50);
+            fontRenderer.drawString("Updated the texture for lighting a fire to have logs", x, y, depth, yellow, 50);
             y -= 30;
-            fontRenderer.drawString("Sticks now generate when trees generate", x, y ,depth, yellow, 50);
+            fontRenderer.drawString("All Guis in game now display the elements of the normal in game gui", x, y, depth, yellow, 50);
             y -= 30;
-            fontRenderer.drawString("Campfires can now be lit by right clicking with a stone fragment", x, y, yellow, depth, 50);
+            fontRenderer.drawString("Bug report button is now active, there is also a bug report email address set up", x, y, depth, green, 50);
             y -= 30;
-            fontRenderer.drawString("Torches can be created by right clicking a lit campfire with an unlit torch item", x, y, yellow, depth, 50);
+            fontRenderer.drawString("Pressing the number keys on the top row will now go directly to that inventory slot", x, y, depth, green, 50);
+            y -= 30;
+            fontRenderer.drawString("Fixed a bug where the player wouldn't fall when in various UIs", x, y, depth, yellow, 50);
+            y -= 30;
+            fontRenderer.drawString("Changed the player inventory UI background", x, y, depth, yellow, 50);
+            y -= 30;
+            fontRenderer.drawString("Changed the background image for the crafting stone tools UI", x, y, depth, yellow, 50);
+            y -= 30;
+            fontRenderer.drawString("Added in inventory slots for armor, clothing, offhand items and storage", x, y, depth, yellow, 50);
+            y -= 30;
+            fontRenderer.drawString("Reduced pickup time for items from 2 seconds to 1 second", x, y, depth, yellow, 50);
+            y -= 30;
+            fontRenderer.drawString("Fixed a bug where you could not place torches", x, y, depth, yellow, 50);
+            y -= 30;
+            fontRenderer.drawString("Added straw chests into the game, they do not have a UI", x, y, depth, green, 50);
+            y -= 30;
+            fontRenderer.drawString("Added straw baskets to increase player inventory slots", x, y, depth, green, 50);
+            y -= 30;
+            fontRenderer.drawString("Added a straw storage crafting UI, ", x, y, depth, green, 50);
+            y -= 30;
+            fontRenderer.drawString("accessible by using a knife on straw placed down with 8 straw in the inventory", x, y, depth, green, 50);
+            y -= 30;
+            fontRenderer.drawString("Fixed a duplication bug", x, y, depth, yellow, 50);
+
             fontRenderer.toggleItalics();
 
 
@@ -176,6 +198,42 @@ public final class GuiMainMenu extends Gui {
         }
         this.bugReport.renderButton();
         this.information.renderButton();
+
+
+        if(this.subMenu2){
+            int backgroundWidth = 1600;
+            int backgroundHeight = 900;
+            int backgroundX = 0;
+            int backgroundY = 0;
+            int backgroundZ = -100;
+            int y = backgroundHeight/2 - 150;
+            int x = -backgroundWidth/2;
+            int depth = -15;
+            int white = 16777215;
+            int green = Color.magenta.getRGB() * -1;
+            int red = 16711680;
+            int yellow = Color.blue.getRGB() * -1;
+            fontRenderer.drawString("Report all bugs to the following email address: cosmicevolution.bugreport@gmail.com", x, y, depth, red, 50);
+            y -= 60;
+            fontRenderer.drawString("Please include screenshots and crash logs as applicable as well as a description", x, y, depth, green, 50);
+            y -= 60;
+
+
+
+
+
+            tessellator.toggleOrtho();
+            tessellator.addVertex2DTexture(0, backgroundX - backgroundWidth/2, backgroundY - backgroundHeight/2, backgroundZ, 3);
+            tessellator.addVertex2DTexture(0, backgroundX + backgroundWidth/2, backgroundY + backgroundHeight/2, backgroundZ, 1);
+            tessellator.addVertex2DTexture(0, backgroundX - backgroundWidth/2, backgroundY + backgroundHeight/2, backgroundZ, 2);
+            tessellator.addVertex2DTexture(0, backgroundX + backgroundWidth/2, backgroundY - backgroundHeight/2, backgroundZ, 0);
+            tessellator.addElements();
+            GL46.glEnable(GL46.GL_BLEND);
+            GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
+            tessellator.drawTexture2D(this.background, Shader.screen2DTexture, SpaceGame.camera);
+            tessellator.toggleOrtho();
+            GL46.glDisable(GL46.GL_BLEND);
+        }
 
         fontRenderer.drawString(this.sg.title, -970, 460, -15, Color.magenta.getRGB() * -1, 50);
 

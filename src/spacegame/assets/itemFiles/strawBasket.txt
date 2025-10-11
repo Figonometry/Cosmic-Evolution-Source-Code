@@ -1,0 +1,5 @@
+itemName:STRAW_BASKET
+stackLimit:1
+storageLevel:2
+displayName:Straw Basket
+itemType:playerStorage

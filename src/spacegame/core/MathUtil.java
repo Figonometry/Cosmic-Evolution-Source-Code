@@ -52,6 +52,14 @@ public abstract class MathUtil {
         return ((r << 16) | (g << 8) | b);
     }
 
+    public static float getOpenGLMouseX(){
+        return (float) (MouseListener.instance.xPos - SpaceGame.width/2D);
+    }
+
+    public static float getOpenGLMouseY(){
+       return (float) ((MouseListener.instance.yPos - SpaceGame.height/2D) * -1);
+    }
+
     public static short floatToHalf(float value) {
         int floatBits = Float.floatToIntBits(value);
         int sign = (floatBits >> 16) & 0x8000;

@@ -1,1 +1,2 @@
 itemName:FIRE_WOOD
+displayName:Firewood

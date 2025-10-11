@@ -171,7 +171,7 @@ public final class ChunkTerrainHandler {
         }
         int berryClusterCount = rand.nextInt(40) == 0 ? 1 : 0;
         int cactusCount = rand.nextInt(10) == 0 ? 4 : 1;
-        int tallGrassCount = rand.nextInt(10, 20);
+        int tallGrassCount = rand.nextInt(20, 30);
         short[] grassIndicesRaw = new short[32768];
         short[] surfaceSandIndices = new short[32768];
         int grassIndex = 0;

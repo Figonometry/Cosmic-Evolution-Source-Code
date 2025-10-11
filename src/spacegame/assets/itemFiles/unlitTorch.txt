@@ -1,1 +1,2 @@
 itemName:UNLIT_TORCH
+displayName:Unlit Torch

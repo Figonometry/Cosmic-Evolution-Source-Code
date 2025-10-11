@@ -1,1 +1,3 @@
 itemName:TORCH
+canPlaceOnGround:true
+displayName:Torch

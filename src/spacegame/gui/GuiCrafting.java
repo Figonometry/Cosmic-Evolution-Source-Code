@@ -8,4 +8,6 @@ public abstract class GuiCrafting extends Gui {
     }
 
     public abstract CraftingMaterial getHoveredCraftingMaterial();
+
+    public abstract RecipeSelector getSelectedRecipeSelector();
 }

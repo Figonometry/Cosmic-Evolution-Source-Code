@@ -6,6 +6,7 @@ import spacegame.render.*;
 public abstract class Gui {
     public SpaceGame sg;
     public boolean subMenu;
+    public boolean subMenu2;
 
     public Gui(SpaceGame spaceGame) {
         this.sg = spaceGame;

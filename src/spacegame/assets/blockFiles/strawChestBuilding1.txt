@@ -1,0 +1,11 @@
+blockName:STRAW_CHEST
+blockModel:strawChestBuild1
+boundingBox:itemStoneBoundingBox
+isSolid:false
+canGreedyMesh:false
+stepSound:grass
+breakTimer:60
+hardness:0.05
+toolType:knife
+droppedItemID:12
+displayName:Straw Chest

@@ -40,7 +40,7 @@ public final class GuiLightFire extends GuiAction {
 
     @Override
     public void loadTextures() {
-        this.campFire = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/blocks/campFireBase.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.campFire = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInGame/campFireLighting.png", RenderEngine.TEXTURE_TYPE_2D, 0);
         this.stone1Texture = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInventory/stone1.png", RenderEngine.TEXTURE_TYPE_2D, 0);
         this.stone2Texture = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInventory/stone2.png", RenderEngine.TEXTURE_TYPE_2D, 0);
         this.transparentBackground = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
@@ -56,6 +56,7 @@ public final class GuiLightFire extends GuiAction {
 
     @Override
     public void drawGui() {
+        GuiInGame.renderGuiFromOtherGuis();
         GLFW.glfwSetInputMode(this.sg.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
         RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         tessellator.toggleOrtho();

@@ -1,3 +1,4 @@
 itemName:RAW_STONE
 stackLimit:100
 canPlaceOnGround:True
+displayName:Rock

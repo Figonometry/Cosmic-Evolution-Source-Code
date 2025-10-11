@@ -36,6 +36,7 @@ public final class GuiPauseInGame extends Gui {
 
     @Override
     public void drawGui() {
+        GuiInGame.renderGuiFromOtherGuis();
         RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         tessellator.toggleOrtho();
         GLFW.glfwSetInputMode(this.sg.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
@@ -71,8 +72,6 @@ public final class GuiPauseInGame extends Gui {
         this.back.renderButton();
         this.quit.renderButton();
         this.settings.renderButton();
-
-        GuiInGame.renderText();
     }
 
     @Override

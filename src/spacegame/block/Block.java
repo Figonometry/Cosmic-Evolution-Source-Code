@@ -30,6 +30,9 @@ public class Block {
     public static final ModelLoader itemStickModel = new ModelLoader("src/spacegame/assets/models/blockModels/itemStick.obj");
     public static final ModelLoader campFireBase = new ModelLoader("src/spacegame/assets/models/blockModels/campFireBase.obj");
     public static final ModelLoader fireWood = new ModelLoader("src/spacegame/assets/models/blockModels/fireWood.obj");
+    public static final ModelLoader strawChestBuild0 = new ModelLoader("src/spacegame/assets/models/blockModels/strawChestBuild0.obj");
+    public static final ModelLoader strawChestBuild1 = new ModelLoader("src/spacegame/assets/models/blockModels/strawChestBuild1.obj");
+    public static final ModelLoader strawChestModel = new ModelLoader("src/spacegame/assets/models/blockModels/strawChest.obj");
     public static final ModelLoader size15NormalModel = standardBlockModel.alterStandardBlockModel(1,0,1);
     public static final ModelLoader size14NormalModel = standardBlockModel.alterStandardBlockModel(2,0,2);
     public static final ModelLoader size13NormalModel = standardBlockModel.alterStandardBlockModel(3,0,3);
@@ -169,6 +172,10 @@ public class Block {
     public static final Block tallGrass = new Block((short)88, 30, "src/spacegame/assets/blockFiles/tallGrass.txt");
     public static final Block campFire4FireWood = new BlockCampFireUnlit((short) 89, 16, "src/spacegame/assets/blockFiles/campFireUnlit.txt");
     public static final Block fireWoodBlock = new Block((short)90, 31, "src/spacegame/assets/blockFiles/fireWood.txt");
+    public static final Block strawChest = new Block((short)91, 32, "src/spacegame/assets/blockFiles/strawChest.txt");
+    public static final Block strawChestTier0 = new Block((short)92, 32, "src/spacegame/assets/blockFiles/strawChestBuilding0.txt");
+    public static final Block strawBasketTier0 = new Block((short)93, 32, "src/spacegame/assets/blockFiles/strawBasketBuilding.txt");
+    public static final Block strawChestTier1 = new Block((short)94, 32, "src/spacegame/assets/blockFiles/strawChestBuilding1.txt");
     public final short ID;
     public final int textureID;
     public static int facingDirection;
@@ -190,6 +197,7 @@ public class Block {
     public boolean requiresTool;
     public float itemDropChance = 1;
     public AxisAlignedBB standardCollisionBoundingBox = standardBlock;
+    public String displayName = "Undefined Name";
 
     public Block(short ID, int textureID, String filepath) {
         if (list[ID] != null) {
@@ -239,6 +247,10 @@ public class Block {
                 this.isLightBlock = Boolean.parseBoolean(properties[1]);
             }
 
+            if(properties[0].equals("displayName")){
+                this.displayName = properties[1];
+            }
+
             if (properties[0].equals("lightBlockValue")) {
                 this.lightBlockValue = Byte.parseByte(properties[1]);
             }
@@ -276,6 +288,9 @@ public class Block {
                     case "berryBushModel" -> this.blockModel = berryBushModel;
                     case "itemStickModel" -> this.blockModel = itemStickModel;
                     case "campFireBase" -> this.blockModel = campFireBase;
+                    case "strawChestBuild0" -> this.blockModel = strawChestBuild0;
+                    case "strawChestBuild1" -> this.blockModel = strawChestBuild1;
+                    case "strawChestModel" -> this.blockModel = strawChestModel;
                     case "size15NormalModel" -> this.blockModel = size15NormalModel;
                     case "size14NormalModel" -> this.blockModel = size14NormalModel;
                     case "size13NormalModel" -> this.blockModel = size13NormalModel;

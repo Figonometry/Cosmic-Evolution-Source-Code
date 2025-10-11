@@ -3,6 +3,9 @@ package spacegame.render;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 public final class ModelFace {
     public Vector3f[] vertices = new Vector3f[4];
     public Vector3f normal = new Vector3f();
@@ -44,4 +47,34 @@ public final class ModelFace {
         translatedFace.setNormal(this.normal.x, this.normal.y, this.normal.z);
         return translatedFace;
     }
+
+
+    public int getFaceWidthX(){
+        float[] xValues = new float[4];
+        for(int i = 0; i < xValues.length; i++){
+            xValues[i] = this.vertices[i].x;
+        }
+        Arrays.sort(xValues);
+        return (int)((xValues[3] - xValues[0]) * 32);
+    }
+    public int getFaceWidthY(){
+        float[] yValues = new float[4];
+        for(int i = 0; i < yValues.length; i++){
+            yValues[i] = this.vertices[i].y;
+        }
+        Arrays.sort(yValues);
+        return (int)((yValues[3] - yValues[0]) * 32);
+    }
+    public int getFaceWidthZ(){
+        float[] zValues = new float[4];
+        for(int i = 0; i < zValues.length; i++){
+            zValues[i] = this.vertices[i].z;
+        }
+        Arrays.sort(zValues);
+        return (int)((zValues[3] - zValues[0]) * 32);
+    }
+
+
+
+
 }

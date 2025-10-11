@@ -16,6 +16,8 @@ import java.awt.*;
 
 public final class ItemStack {
     public Item item;
+    public String exclusiveItemType;
+    public boolean usesExclusiveItem;
     public short metadata;
     public byte count;
     public short durability;
@@ -38,6 +40,20 @@ public final class ItemStack {
         this.y = y;
         this.originalX = x;
         this.originalY = y;
+    }
+
+    public ItemStack(Item item, byte count, float x, float y, String exclusiveItemType){
+        this.item = item;
+        this.count = count;
+        if(this.item != null) {
+            this.durability = this.item.durability;
+        }
+        this.x = x;
+        this.y = y;
+        this.originalX = x;
+        this.originalY = y;
+        this.usesExclusiveItem = true;
+        this.exclusiveItemType = exclusiveItemType;
     }
 
     public void setMetadata(short metadata){

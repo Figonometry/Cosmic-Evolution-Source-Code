@@ -18,6 +18,7 @@ import spacegame.entity.Entity;
 import spacegame.entity.EntityDeer;
 import spacegame.entity.EntityPlayer;
 import spacegame.gui.*;
+import spacegame.item.Item;
 import spacegame.item.ItemStack;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
@@ -101,7 +102,7 @@ public final class SpaceGame implements Runnable {
     }
 
     private void startGame() {
-        this.title = "Cosmic Evolution Alpha v0.25";
+        this.title = "Cosmic Evolution Alpha v0.26";
         this.clearLogFiles(new File(this.launcherDirectory + "/crashReports"));
         this.initLWJGL();
         this.renderEngine = new RenderEngine();
@@ -344,22 +345,59 @@ public final class SpaceGame implements Runnable {
      //      KeyListener.setKeyReleased(GLFW.GLFW_KEY_G);
      //  }
 
-    //    if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_MINUS)){
-    //        this.save.time -= 216000;
-    //        KeyListener.setKeyReleased(GLFW.GLFW_KEY_MINUS);
-    //    }
-    //    if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_EQUAL)){
-    //        this.save.time += 216000;
-    //        KeyListener.setKeyReleased(GLFW.GLFW_KEY_EQUAL);
-    //    }
-    //    if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_COMMA)){
-    //        this.save.time -= 1000;
-    //        KeyListener.setKeyReleased(GLFW.GLFW_KEY_COMMA);
-    //    }
-    //    if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_PERIOD)){
-    //        this.save.time += 1000;
-    //        KeyListener.setKeyReleased(GLFW.GLFW_KEY_PERIOD);
-    //    }
+     //   if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_MINUS)){
+     //       this.save.time -= 216000;
+     //       KeyListener.setKeyReleased(GLFW.GLFW_KEY_MINUS);
+     //   }
+     //   if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_EQUAL)){
+     //       this.save.time += 216000;
+     //       KeyListener.setKeyReleased(GLFW.GLFW_KEY_EQUAL);
+     //   }
+     //   if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_COMMA)){
+     //       this.save.time -= 1000;
+     //       KeyListener.setKeyReleased(GLFW.GLFW_KEY_COMMA);
+     //   }
+     //   if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_PERIOD)){
+     //       this.save.time += 1000;
+     //       KeyListener.setKeyReleased(GLFW.GLFW_KEY_PERIOD);
+     //   }
+
+
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_1) && this.currentGui instanceof GuiInGame){
+            EntityPlayer.selectedInventorySlot = 0;
+        }
+
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_2) && this.currentGui instanceof GuiInGame){
+            EntityPlayer.selectedInventorySlot = 1;
+        }
+
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_3) && this.currentGui instanceof GuiInGame){
+            EntityPlayer.selectedInventorySlot = 2;
+        }
+
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_4) && this.currentGui instanceof GuiInGame){
+            EntityPlayer.selectedInventorySlot = 3;
+        }
+
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_5) && this.currentGui instanceof GuiInGame){
+            EntityPlayer.selectedInventorySlot = 4;
+        }
+
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_6) && this.currentGui instanceof GuiInGame){
+            EntityPlayer.selectedInventorySlot = 5;
+        }
+
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_7) && this.currentGui instanceof GuiInGame){
+            EntityPlayer.selectedInventorySlot = 6;
+        }
+
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_8) && this.currentGui instanceof GuiInGame){
+            EntityPlayer.selectedInventorySlot = 7;
+        }
+
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_9) && this.currentGui instanceof GuiInGame){
+            EntityPlayer.selectedInventorySlot = 8;
+        }
 
 
         if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_GRAVE_ACCENT) && KeyListener.keyReleased[GLFW.GLFW_KEY_GRAVE_ACCENT]){
@@ -417,13 +455,13 @@ public final class SpaceGame implements Runnable {
         if(this.currentGui instanceof GuiInGame) {
             if (MouseListener.getScrollY() == -1) {
                 EntityPlayer.selectedInventorySlot++;
-                if (EntityPlayer.selectedInventorySlot > this.save.thePlayer.inventory.itemStacks.length - 1) {
+                if (EntityPlayer.selectedInventorySlot > 9) {
                     EntityPlayer.selectedInventorySlot = 0;
                 }
             } else if (MouseListener.getScrollY() == 1) {
                 EntityPlayer.selectedInventorySlot--;
                 if (EntityPlayer.selectedInventorySlot < 0) {
-                    EntityPlayer.selectedInventorySlot = this.save.thePlayer.inventory.itemStacks.length - 1;
+                    EntityPlayer.selectedInventorySlot = 9;
                 }
             }
         }
@@ -466,7 +504,7 @@ public final class SpaceGame implements Runnable {
             if(stack != null) {
                 if(ItemStack.itemStackOnMouse.item != null) {
                     if(ItemStack.itemStackOnMouse.item.equals(stack.item)){
-                        if(stack.count + ItemStack.itemStackOnMouse.count <= 100) {
+                        if(stack.count + ItemStack.itemStackOnMouse.count <= stack.item.stackLimit) {
                             if (stack.metadata == ItemStack.itemStackOnMouse.metadata) {
                                 if (MouseListener.leftClickReleased) {
                                     stack.mergeStack(ItemStack.itemStackOnMouse);
@@ -479,7 +517,7 @@ public final class SpaceGame implements Runnable {
                         } else {
                             if (stack.metadata == ItemStack.itemStackOnMouse.metadata) {
                                 if (MouseListener.leftClickReleased) {
-                                    while(stack.count < 100){
+                                    while(stack.count < stack.item.stackLimit){
                                         stack.count++;
                                         ItemStack.itemStackOnMouse.count--;
                                     }
@@ -488,14 +526,28 @@ public final class SpaceGame implements Runnable {
                         }
                     } else if(stack.item == null){
                         if (MouseListener.leftClickReleased) {
-                            stack.item = ItemStack.itemStackOnMouse.item;
-                            stack.count = ItemStack.itemStackOnMouse.count;
-                            stack.metadata = ItemStack.itemStackOnMouse.metadata;
-                            stack.durability = ItemStack.itemStackOnMouse.durability;
-                            ItemStack.itemStackOnMouse.item = null;
-                            ItemStack.itemStackOnMouse.count = 0;
-                            ItemStack.itemStackOnMouse.metadata = 0;
-                            ItemStack.itemStackOnMouse.durability = 0;
+                            if (stack.usesExclusiveItem && stack.exclusiveItemType.equals(ItemStack.itemStackOnMouse.item.itemType)) {
+                                stack.item = ItemStack.itemStackOnMouse.item;
+                                stack.count = ItemStack.itemStackOnMouse.count;
+                                stack.metadata = ItemStack.itemStackOnMouse.metadata;
+                                stack.durability = ItemStack.itemStackOnMouse.durability;
+                                ItemStack.itemStackOnMouse.item = null;
+                                ItemStack.itemStackOnMouse.count = 0;
+                                ItemStack.itemStackOnMouse.metadata = 0;
+                                ItemStack.itemStackOnMouse.durability = 0;
+                                if(stack.exclusiveItemType.equals(Item.ITEM_TYPE_PLAYER_STORAGE)){
+                                    this.save.thePlayer.setPlayerStorageLevel((byte) stack.item.storageLevel);
+                                }
+                            } else if(!stack.usesExclusiveItem){
+                                stack.item = ItemStack.itemStackOnMouse.item;
+                                stack.count = ItemStack.itemStackOnMouse.count;
+                                stack.metadata = ItemStack.itemStackOnMouse.metadata;
+                                stack.durability = ItemStack.itemStackOnMouse.durability;
+                                ItemStack.itemStackOnMouse.item = null;
+                                ItemStack.itemStackOnMouse.count = 0;
+                                ItemStack.itemStackOnMouse.metadata = 0;
+                                ItemStack.itemStackOnMouse.durability = 0;
+                            }
                         }
                     }
                 } else if(stack.item != null) {
@@ -504,10 +556,14 @@ public final class SpaceGame implements Runnable {
                         ItemStack.itemStackOnMouse.count = stack.count;
                         ItemStack.itemStackOnMouse.metadata = stack.metadata;
                         ItemStack.itemStackOnMouse.durability = stack.durability;
+                        ItemStack.itemStackOnMouse.exclusiveItemType = stack.exclusiveItemType;
                         stack.item = null;
                         stack.count = 0;
                         stack.metadata = 0;
                         stack.durability = 0;
+                        if(stack.usesExclusiveItem && stack.exclusiveItemType.equals(Item.ITEM_TYPE_PLAYER_STORAGE)){
+                            this.save.thePlayer.setPlayerStorageLevel((byte) 1);
+                        }
                     }
                 }
             }
@@ -557,6 +613,13 @@ public final class SpaceGame implements Runnable {
             }
         }
 
+        if(this.currentGui instanceof GuiCraftingStrawStorage){
+            RecipeSelector recipeSelector = ((GuiCraftingStrawStorage)this.currentGui).getSelectedRecipeSelector();
+            if(recipeSelector != null){
+                ((GuiCraftingStrawStorage)this.currentGui).setRecipeSelected(recipeSelector);
+            }
+        }
+
         MouseListener.leftClickReleased = false;
     }
 
@@ -581,16 +644,30 @@ public final class SpaceGame implements Runnable {
                 }
                 if (ItemStack.itemStackOnMouse != null && stack != null) {
                     if (stack.item == null || (stack.item == ItemStack.itemStackOnMouse.item && stack.durability == ItemStack.itemStackOnMouse.durability && stack.metadata == ItemStack.itemStackOnMouse.metadata)) {
-                        stack.item = ItemStack.itemStackOnMouse.item;
-                        stack.durability = ItemStack.itemStackOnMouse.durability;
-                        stack.metadata = ItemStack.itemStackOnMouse.metadata;
-                        stack.count++;
-                        ItemStack.itemStackOnMouse.count--;
-                        if (ItemStack.itemStackOnMouse.count <= 0) {
-                            ItemStack.itemStackOnMouse.item = null;
-                            ItemStack.itemStackOnMouse.count = 0;
-                            ItemStack.itemStackOnMouse.durability = 0;
-                            ItemStack.itemStackOnMouse.metadata = 0;
+                        if(stack.usesExclusiveItem && stack.exclusiveItemType.equals(ItemStack.itemStackOnMouse.item.itemType)) {
+                            stack.item = ItemStack.itemStackOnMouse.item;
+                            stack.durability = ItemStack.itemStackOnMouse.durability;
+                            stack.metadata = ItemStack.itemStackOnMouse.metadata;
+                            stack.count++;
+                            ItemStack.itemStackOnMouse.count--;
+                            if (ItemStack.itemStackOnMouse.count <= 0) {
+                                ItemStack.itemStackOnMouse.item = null;
+                                ItemStack.itemStackOnMouse.count = 0;
+                                ItemStack.itemStackOnMouse.durability = 0;
+                                ItemStack.itemStackOnMouse.metadata = 0;
+                            }
+                        } else if(!stack.usesExclusiveItem){
+                            stack.item = ItemStack.itemStackOnMouse.item;
+                            stack.durability = ItemStack.itemStackOnMouse.durability;
+                            stack.metadata = ItemStack.itemStackOnMouse.metadata;
+                            stack.count++;
+                            ItemStack.itemStackOnMouse.count--;
+                            if (ItemStack.itemStackOnMouse.count <= 0) {
+                                ItemStack.itemStackOnMouse.item = null;
+                                ItemStack.itemStackOnMouse.count = 0;
+                                ItemStack.itemStackOnMouse.durability = 0;
+                                ItemStack.itemStackOnMouse.metadata = 0;
+                            }
                         }
                     }
                 }
@@ -682,6 +759,7 @@ public final class SpaceGame implements Runnable {
                 ItemStack.itemStackOnMouse.x = (float) (MouseListener.instance.xPos - SpaceGame.width/2D);
                 ItemStack.itemStackOnMouse.y = (float) ((MouseListener.instance.yPos - SpaceGame.height/2D) * -1);
                 ItemStack.itemStackOnMouse.renderItemStack(false);
+                ((GuiInventory) this.currentGui).renderHoveredItemStackName(ItemStack.itemStackOnMouse);
             }
         }
         GLFW.glfwSwapBuffers(this.window);

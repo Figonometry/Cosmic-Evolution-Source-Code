@@ -1,1 +1,2 @@
 blockName:FIREWOOD
+displayName:Firewood

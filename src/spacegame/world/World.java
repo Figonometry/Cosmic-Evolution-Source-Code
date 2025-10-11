@@ -7,6 +7,7 @@ import spacegame.entity.Entity;
 import spacegame.entity.EntityBlock;
 import spacegame.entity.EntityItem;
 import spacegame.gui.GuiCraftingStoneTools;
+import spacegame.gui.GuiCraftingStrawStorage;
 import spacegame.gui.GuiInGame;
 import spacegame.gui.GuiLightFire;
 import spacegame.item.Item;
@@ -1006,11 +1007,13 @@ public abstract class World {
         if(block instanceof BlockBerryBush){
             if(this.sg.save.thePlayer.getHeldItem() != Item.block.ID && this.sg.save.thePlayer.getHeldItem() != Item.torch.ID){
                 block.onRightClick(x, y, z, this, this.sg.save.thePlayer);
+                return;
             }
         }
         if(block instanceof BlockLog && playerHeldItem != Item.NULL_ITEM_REFERENCE){
             if(Item.list[playerHeldItem] instanceof ItemAxe){
                 Item.list[playerHeldItem].onRightClick(x, y, z, this, this.sg.save.thePlayer);
+                return;
             }
         }
 
@@ -1027,12 +1030,14 @@ public abstract class World {
                     this.sg.save.thePlayer.removeItemFromInventory();
                 }
                 MouseListener.rightClickReleased = false;
+                return;
             }
         }
 
         if(block instanceof BlockCampFireUnlit){
             if(playerHeldItem == Item.stoneFragments.ID){
-                SpaceGame.instance.setNewGui(new GuiLightFire(SpaceGame.instance, x, y, z));
+                this.sg.setNewGui(new GuiLightFire(SpaceGame.instance, x, y, z));
+                return;
             }
         }
 
@@ -1041,21 +1046,67 @@ public abstract class World {
                 SpaceGame.instance.save.thePlayer.removeItemFromInventory();
                 if (!SpaceGame.instance.save.thePlayer.addItemToInventory(Item.torch.ID, Item.NULL_ITEM_METADATA, (byte) 1, Item.NULL_ITEM_DURABILITY)) {
                     this.addEntity(new EntityItem(SpaceGame.instance.save.thePlayer.x, SpaceGame.instance.save.thePlayer.y, SpaceGame.instance.save.thePlayer.z, Item.torch.ID, Item.NULL_ITEM_METADATA, (byte) 1, Item.NULL_ITEM_DURABILITY));
+                    return;
                 }
             }
         }
 
 
         if(block.ID == Block.itemStone.ID){
-            if(this.sg.save.thePlayer.getHeldItem() == Item.stone.ID){
+            if(playerHeldItem == Item.stone.ID){
                 this.sg.setNewGui(new GuiCraftingStoneTools(this.sg, x,y,z));
+                return;
             }
         }
 
         if(block.ID == Block.itemStick.ID){
-            if(this.sg.save.thePlayer.getHeldItem() == Item.stoneFragments.ID){
+            if(playerHeldItem == Item.stoneFragments.ID){
                 this.setBlockWithNotify(x,y,z, Block.air.ID);
-                this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).addEntityToList(new EntityItem(x + 0.5, y + 0.1, z + 0.5, Item.unlitTorch.ID, (short) 0, (byte) 1, (short) -1));
+                this.addEntity(new EntityItem(x + 0.5, y + 0.1, z + 0.5, Item.unlitTorch.ID, Item.NULL_ITEM_METADATA, (byte) 1, Item.NULL_ITEM_DURABILITY));
+                return;
+            }
+        }
+
+        if(block.ID == Block.campFireNoFirewood.ID){
+           if(playerHeldItem != Item.NULL_ITEM_REFERENCE){
+               if(Item.list[playerHeldItem].toolType.equals(Item.ITEM_TOOL_TYPE_KNIFE) && this.sg.save.thePlayer.containsAmountOfItem(Item.straw.ID, 8)){
+                   this.sg.setNewGui(new GuiCraftingStrawStorage(this.sg, x, y, z));
+                   for(int i = 0; i < 8; i++){
+                       this.sg.save.thePlayer.removeSpecificItemFromInventory(Item.straw.ID);
+                   }
+                   return;
+               }
+           }
+        }
+
+        if(block.ID == Block.strawChestTier0.ID && playerHeldItem == Item.straw.ID){
+            if(this.sg.save.thePlayer.getHeldItemCount() >= 8){
+                this.setBlockWithNotify(x,y,z, Block.strawChestTier1.ID);
+                for(int i = 0; i < 8; i++){
+                    this.sg.save.thePlayer.removeItemFromInventory();
+                }
+                return;
+            }
+        }
+
+        if(block.ID == Block.strawChestTier1.ID && playerHeldItem == Item.straw.ID){
+            if(this.sg.save.thePlayer.getHeldItemCount() >= 8){
+                this.setBlockWithNotify(x,y,z, Block.strawChest.ID);
+                for(int i = 0; i < 8; i++){
+                    this.sg.save.thePlayer.removeItemFromInventory();
+                }
+                return;
+            }
+        }
+
+        if(block.ID == Block.strawBasketTier0.ID && playerHeldItem == Item.straw.ID){
+            if(this.sg.save.thePlayer.getHeldItemCount() >= 4){
+                this.setBlockWithNotify(x,y,z, Block.air.ID);
+                this.addEntity(new EntityItem(x + 0.5, y + 0.5, z + 0.5, Item.strawBasket.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY));
+                for(int i = 0; i < 4; i++){
+                    this.sg.save.thePlayer.removeItemFromInventory();
+                }
+                return;
             }
         }
 

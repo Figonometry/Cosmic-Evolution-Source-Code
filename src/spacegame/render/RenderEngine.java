@@ -353,6 +353,7 @@ public final class RenderEngine {
                 case 29 -> "itemStick";
                 case 30 -> "tallGrass";
                 case 31 -> "fireWood";
+                case 32 -> "strawChest";
                 default -> "missing";
             };
         } else if(textureFolderpath.contains("item")){
@@ -369,6 +370,7 @@ public final class RenderEngine {
                 case 10 -> "stoneHandShovel";
                 case 11 -> "rawVenison";
                 case 12 -> "straw";
+                case 13 -> "strawBasket";
                 default -> "missing";
             };
         }

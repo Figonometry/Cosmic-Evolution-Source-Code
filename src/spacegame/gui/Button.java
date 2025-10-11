@@ -63,9 +63,12 @@ public class Button {
                 this.sg.running = false;
             }
             case BUG_REPORT -> {
-                //Bug
+                if(this.Gui.subMenu)return;
+                this.Gui.subMenu2 = !this.Gui.subMenu2;
+                this.clicked = !this.clicked;
             }
             case INFORMATION -> {
+                if(this.Gui.subMenu2)return;
                 this.Gui.subMenu = !this.Gui.subMenu;
                 this.clicked = !this.clicked;
             }

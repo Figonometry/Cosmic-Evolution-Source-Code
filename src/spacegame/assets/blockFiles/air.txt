@@ -2,3 +2,4 @@ isSolid:false
 blockName:AIR
 canBeBroken:false
 canGreedyMesh:false
+displayName:Air

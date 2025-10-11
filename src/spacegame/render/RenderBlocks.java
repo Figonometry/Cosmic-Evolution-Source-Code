@@ -34,8 +34,10 @@ public class RenderBlocks {
 
     public  void renderStandardBlock(Chunk chunk, World world, short block, int index, int face, int[] greedyMeshSize) {
         ModelFace[] modelFaces = Block.list[block].blockModel.getModelFaceOfType(face);
+        float[] UVSamples;
         for (int i = 0; i < modelFaces.length; i++) {
-            renderOpaqueFace(chunk, world, block, index, face, modelFaces[i], 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, greedyMeshSize);
+            UVSamples = face == TOP_FACE || face == BOTTOM_FACE ? autoUVTopBottom(this.getFaceWidth(modelFaces[i]), this.getFaceHeight(modelFaces[i])) : autoUVNSEW(this.getFaceWidth(modelFaces[i]), this.getFaceHeight(modelFaces[i]));
+            renderOpaqueFace(chunk, world, block, index, face, modelFaces[i], UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, greedyMeshSize);
         }
     }
 
@@ -888,7 +890,94 @@ public class RenderBlocks {
             modelFace = modelFace.translateFace(translation.x, translation.y, translation.z);
             this.renderTransparentFace(chunk, world, Block.berryBushFlower.ID, index, face, modelFace, 0,0,0,0,0,0,0,0,3,1,2,0, new int[2]);
         }
+    }
 
+    private int getFaceHeight(ModelFace modelFace){
+        if(modelFace == null)return 0;
+
+        return switch (modelFace.faceType){
+            case TOP_FACE, BOTTOM_FACE -> modelFace.getFaceWidthZ();
+            case NORTH_FACE, SOUTH_FACE, EAST_FACE, WEST_FACE -> modelFace.getFaceWidthY();
+            default -> throw new IllegalStateException("Unexpected value: " + modelFace.faceType);
+        };
+    }
+
+    private int getFaceWidth(ModelFace modelFace){
+        if(modelFace == null)return 0;
+
+        return switch (modelFace.faceType){
+            case TOP_FACE, BOTTOM_FACE, EAST_FACE, WEST_FACE -> modelFace.getFaceWidthX();
+            case NORTH_FACE, SOUTH_FACE -> modelFace.getFaceWidthZ();
+            default -> throw new IllegalStateException("Unexpected value: " + modelFace.faceType);
+        };
+
+    }
+
+
+
+
+    private float[] autoUVNSEW(int width, int height){
+        float[] UVSamples = new float[8]; //Order of x and y sample for corners 1 - 4, this will be centered on the actual texture image
+        final float pixelWidth = 0.03125f;
+        int pixelsFromLeftSide;
+        int pixelsFromRightSide;
+        int pixelsFromTopSide;
+        int pixelsFromBottomSide;
+
+        width = 32 - width;
+        height = 32 - height;
+
+        pixelsFromLeftSide = (width & 1) == 0 ? width >> 1 : (width >> 1) + 1;
+        pixelsFromRightSide = width >> 1;
+
+        pixelsFromTopSide = (height & 1) == 0 ? height >> 1 : (height >> 1) + 1;
+        pixelsFromBottomSide = height >> 1;
+
+        UVSamples[0] = pixelsFromLeftSide * pixelWidth;
+        UVSamples[1] = pixelsFromBottomSide * -pixelWidth;
+
+        UVSamples[2] = pixelsFromRightSide * -pixelWidth;
+        UVSamples[3] = pixelsFromTopSide * pixelWidth;
+
+        UVSamples[4] = pixelsFromLeftSide * pixelWidth;
+        UVSamples[5] = pixelsFromTopSide * pixelWidth;
+
+        UVSamples[6] = pixelsFromRightSide * -pixelWidth;
+        UVSamples[7] = pixelsFromBottomSide * -pixelWidth;
+
+        return UVSamples;
+    }
+
+    private float[] autoUVTopBottom(int width, int height){
+        float[] UVSamples = new float[8]; //Order of x and y sample for corners 1 - 4, this will be centered on the actual texture image
+        final float pixelWidth = 0.03125f;
+        int pixelsFromLeftSide;
+        int pixelsFromRightSide;
+        int pixelsFromTopSide;
+        int pixelsFromBottomSide;
+
+        width = 32 - width;
+        height = 32 - height;
+
+        pixelsFromLeftSide = (width & 1) == 0 ? width >> 1 : (width >> 1) + 1;
+        pixelsFromRightSide = width >> 1;
+
+        pixelsFromTopSide = (height & 1) == 0 ? height >> 1 : (height >> 1) + 1;
+        pixelsFromBottomSide = height >> 1;
+
+        UVSamples[0] = pixelsFromRightSide * -pixelWidth;
+        UVSamples[1] = pixelsFromTopSide * pixelWidth;
+
+        UVSamples[2] = pixelsFromLeftSide * pixelWidth;
+        UVSamples[3] = pixelsFromBottomSide * -pixelWidth;
+
+        UVSamples[4] = pixelsFromRightSide * -pixelWidth;
+        UVSamples[5] = pixelsFromBottomSide * -pixelWidth;
+
+        UVSamples[6] = pixelsFromLeftSide * pixelWidth;
+        UVSamples[7] = pixelsFromTopSide * pixelWidth;
+
+        return UVSamples;
     }
 
 

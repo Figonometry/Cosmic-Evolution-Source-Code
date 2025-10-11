@@ -1,2 +1,3 @@
 itemName:BERRY
 stackLimit:20
+displayName:Berry

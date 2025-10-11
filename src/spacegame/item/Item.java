@@ -1,5 +1,6 @@
 package spacegame.item;
 
+import spacegame.block.Block;
 import spacegame.core.SpaceGame;
 import spacegame.entity.EntityPlayer;
 import spacegame.world.World;
@@ -21,6 +22,7 @@ public class Item {
     public static final Item stoneHandShovel = new ItemShovel((short)10, 10, "src/spacegame/assets/itemFiles/stoneHandShovel.txt", Material.RAW_STONE);
     public static final Item rawVenison = new ItemFood((short)11, 11, "src/spacegame/assets/itemFiles/rawVenison.txt", 5f);
     public static final Item straw = new Item((short)12, 12, "src/spacegame/assets/itemFiles/straw.txt");
+    public static final Item strawBasket = new Item((short)13, 13, "src/spacegame/assets/itemFiles/strawBasket.txt");
     public final short ID;
     public final int textureID;
     public short metadata;
@@ -33,9 +35,25 @@ public class Item {
     public String itemName;
     public String toolType = "";
     public Material material;
+    private String displayName = "Undefined Name";
+    public String itemType;
+    public int storageLevel;
     public static final short NULL_ITEM_REFERENCE = -1;
     public static final short NULL_ITEM_DURABILITY = -1;
     public static final short NULL_ITEM_METADATA = 0;
+    public static final String ITEM_TYPE_PLAYER_STORAGE = "playerStorage";
+    public static final String ITEM_TYPE_ARMOR_HEAD = "armorHead";
+    public static final String ITEM_TYPE_ARMOR_TORSO = "armorTorso";
+    public static final String ITEM_TYPE_ARMOR_LEGS = "armorLegs";
+    public static final String ITEM_TYPE_ARMOR_FEET = "armorFeet";
+    public static final String ITEM_TYPE_CLOTHING_HEAD = "clothingHead";
+    public static final String ITEM_TYPE_CLOTHING_TORSO = "clothingTorso";
+    public static final String ITEM_TYPE_CLOTHING_LEGS = "clothingLegs";
+    public static final String ITEM_TYPE_CLOTHING_FEET = "clothingFeet";
+    public static final String ITEM_TYPE_OFFHAND = "offhand";
+    public static final String ITEM_TOOL_TYPE_KNIFE = "knife";
+    public static final String ITEM_TOOL_TYPE_SHOVEL = "shovel";
+    public static final String ITEM_TOOL_TYPE_AXE = "axe";
 
     public Item(short ID, int textureID, String filepath){
         if (list[ID] != null) {
@@ -76,8 +94,20 @@ public class Item {
                 this.attackDamage = Float.parseFloat(properties[1]);
             }
 
+            if (properties[0].equals("itemType")) {
+                this.itemType = properties[1];
+            }
+
             if (properties[0].equals("renderItemWithBlockModel")) {
                 this.renderItemWithBlockModel = Boolean.parseBoolean(properties[1]);
+            }
+
+            if(properties[0].equals("storageLevel")){
+                this.storageLevel = Integer.parseInt(properties[1]);
+            }
+
+            if (properties[0].equals("displayName")) {
+                this.displayName = properties[1];
             }
 
             if(properties[0].equals("canPlaceOnGround")){
@@ -114,6 +144,12 @@ public class Item {
     public void onRightClick(int x, int y, int z, World world, EntityPlayer player){
 
     }
+
+    public String getDisplayName(short blockID){
+        return this.ID == block.ID ? Block.list[blockID].displayName : this.displayName;
+    }
+
+
 
     public void onDestroy(ItemStack itemStack, int accessor){
         SpaceGame.instance.save.thePlayer.inventory.itemStacks[accessor].item = null;

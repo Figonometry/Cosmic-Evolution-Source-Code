@@ -68,6 +68,7 @@ public final class GuiVideoSettingsInGame extends Gui {
 
     @Override
     public void drawGui() {
+        GuiInGame.renderGuiFromOtherGuis();
         RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         tessellator.toggleOrtho();
         GLFW.glfwSetInputMode(this.sg.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
@@ -123,8 +124,6 @@ public final class GuiVideoSettingsInGame extends Gui {
             }
         }
         this.back.renderButton();
-
-        GuiInGame.renderText();
     }
 
     @Override

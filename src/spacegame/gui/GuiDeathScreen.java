@@ -65,7 +65,7 @@ public final class GuiDeathScreen extends Gui {
 
         this.respawn.renderButton();
 
-        GuiInGame.renderText();
+        GuiInGame.renderGuiFromOtherGuis();
     }
 
     @Override

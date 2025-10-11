@@ -8,8 +8,7 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
 import spacegame.core.*;
-import spacegame.gui.GuiDeathScreen;
-import spacegame.gui.GuiInGame;
+import spacegame.gui.*;
 import spacegame.item.Inventory;
 import spacegame.item.Item;
 import spacegame.item.ItemStack;
@@ -38,7 +37,7 @@ public final class EntityPlayer extends EntityLiving {
     public int breakTimer = 0;
     public int[] blockLookingAt = new int[3];
     public int[] prevBlockLookingAt = new int[3];
-    public Inventory inventory = new Inventory(9,1);
+    public Inventory inventory;
     public final File playerFile;
     public boolean loadedFromFile;
     public double lastYOnGround;
@@ -50,6 +49,7 @@ public final class EntityPlayer extends EntityLiving {
     public boolean startViewBob;
     public int viewBobTimer;
     public byte viewBobDelay;
+    public byte inventoryUpgradeLevel = 1;
     public float hardnessThreshold = 0.1f;
 
     public EntityPlayer(SpaceGame spaceGame, double x, double y, double z) {
@@ -67,6 +67,7 @@ public final class EntityPlayer extends EntityLiving {
         this.health = 100;
         this.maxHealth = 100;
         this.playerFile = new File(this.sg.save.saveFolder + "/player.dat");
+        this.inventory = new Inventory(9,1, 10);
     }
     public EntityPlayer(SpaceGame spaceGame, File playerFile, double x, double y, double z) {
         super(Integer.MAX_VALUE);
@@ -84,6 +85,9 @@ public final class EntityPlayer extends EntityLiving {
         this.playerFile = playerFile;
         this.loadedFromFile = true;
         this.loadPlayerFromFile();
+        if(this.inventoryUpgradeLevel == 0){
+            this.inventoryUpgradeLevel = 1;
+        }
     }
 
     private void loadPlayerFromFile(){
@@ -109,6 +113,9 @@ public final class EntityPlayer extends EntityLiving {
             this.health = player.getFloat("health");
             this.lastYOnGround = player.getDouble("lastYOnGround");
             this.drowningTimer = player.getInteger("drowningTimer");
+            this.inventoryUpgradeLevel = player.getByte("inventoryUpgradeLevel");
+
+            this.inventory = new Inventory(9,this.inventoryUpgradeLevel, 10);
 
             NBTTagCompound item;
             for(int i = 0; i < this.inventory.itemStacks.length; i++) {
@@ -154,6 +161,7 @@ public final class EntityPlayer extends EntityLiving {
             playerData.setFloat("health", this.health);
             playerData.setDouble("lastYOnGround", this.lastYOnGround);
             playerData.setInteger("drowningTimer", this.drowningTimer);
+            playerData.setByte("inventoryUpgradeLevel", this.inventoryUpgradeLevel);
 
             ItemStack stack;
             NBTTagCompound[] items = new NBTTagCompound[this.inventory.itemStacks.length];
@@ -197,6 +205,36 @@ public final class EntityPlayer extends EntityLiving {
         return Item.NULL_ITEM_REFERENCE;
     }
 
+    public int getHeldItemCount(){
+        if(this.inventory.itemStacks[selectedInventorySlot].item != null){
+            return this.inventory.itemStacks[selectedInventorySlot].count;
+        }
+        return 0;
+    }
+
+    public boolean containsAmountOfItem(short item, int count){
+        for(int i = 0; i < this.inventory.itemStacks.length; i++){
+            if(this.inventory.itemStacks[i].item == null)continue;
+
+            if(this.inventory.itemStacks[i].item.ID == item && this.inventory.itemStacks[i].count >= count){
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public void removeSpecificItemFromInventory(short item){
+        for(int i = 0; i < this.inventory.itemStacks.length; i++){
+            if(this.inventory.itemStacks[i].item == null)continue;
+
+            if(this.inventory.itemStacks[i].item.ID == item){
+                this.inventory.itemStacks[i].count--;
+                break;
+            }
+        }
+    }
+
     public short getHeldItemDurability(){
         if(this.inventory.itemStacks[selectedInventorySlot].item != null) {
             return this.inventory.itemStacks[selectedInventorySlot].durability;
@@ -205,12 +243,82 @@ public final class EntityPlayer extends EntityLiving {
     }
 
     public boolean isHoldingBlock(){
-        if(this.inventory.itemStacks[selectedInventorySlot].item != null) {
-            return this.inventory.itemStacks[selectedInventorySlot].item.ID == Item.block.ID;
-        }
-        return false;
+        return this.inventory.itemStacks[selectedInventorySlot].item == Item.block;
     }
 
+    public void setPlayerStorageLevel(byte storageLevel){
+        if(this.inventoryUpgradeLevel == storageLevel)return;
+
+        //Perform inventory data copy
+
+
+        if(this.inventoryUpgradeLevel < storageLevel){
+            this.inventoryUpgradeLevel = storageLevel;
+            Inventory newInventory = new Inventory(9, this.inventoryUpgradeLevel, 10);
+            for(int i = 0; i < this.inventory.itemStacks.length - 10; i++){
+                newInventory.itemStacks[i] = this.inventory.itemStacks[i];
+            }
+            newInventory.itemStacks[newInventory.itemStacks.length - 1] = this.inventory.itemStacks[this.inventory.itemStacks.length - 1];
+            newInventory.itemStacks[newInventory.itemStacks.length - 2] = this.inventory.itemStacks[this.inventory.itemStacks.length - 2];
+            newInventory.itemStacks[newInventory.itemStacks.length - 3] = this.inventory.itemStacks[this.inventory.itemStacks.length - 3];
+            newInventory.itemStacks[newInventory.itemStacks.length - 4] = this.inventory.itemStacks[this.inventory.itemStacks.length - 4];
+            newInventory.itemStacks[newInventory.itemStacks.length - 5] = this.inventory.itemStacks[this.inventory.itemStacks.length - 5];
+            newInventory.itemStacks[newInventory.itemStacks.length - 6] = this.inventory.itemStacks[this.inventory.itemStacks.length - 6];
+            newInventory.itemStacks[newInventory.itemStacks.length - 7] = this.inventory.itemStacks[this.inventory.itemStacks.length - 7];
+            newInventory.itemStacks[newInventory.itemStacks.length - 8] = this.inventory.itemStacks[this.inventory.itemStacks.length - 8];
+            newInventory.itemStacks[newInventory.itemStacks.length - 9] = this.inventory.itemStacks[this.inventory.itemStacks.length - 9];
+            newInventory.itemStacks[newInventory.itemStacks.length - 10] = this.inventory.itemStacks[this.inventory.itemStacks.length - 10];
+
+            this.inventory = newInventory;
+            this.sg.setNewGui(new GuiPlayerInventory(this.sg, this.inventory));
+        } else {
+            this.inventoryUpgradeLevel = storageLevel;
+            Inventory newInventory = new Inventory(9, this.inventoryUpgradeLevel, 10);
+            int i;
+            for(i = 0; i < newInventory.itemStacks.length - 10; i++){
+                newInventory.itemStacks[i] = this.inventory.itemStacks[i];
+            }
+
+            i++;
+            while(i < this.inventory.itemStacks.length){
+                if(this.inventory.itemStacks[i].item != null) {
+
+                    if (this.inventory.itemStacks[i].item.ID == Item.block.ID) {
+                        EntityBlock block = new EntityBlock(this.x, this.y, this.z, this.inventory.itemStacks[i].metadata, this.inventory.itemStacks[i].count);
+                        double[] vector = SpaceGame.camera.rayCast(1);
+                        Vector3d difVector = new Vector3d(vector[0] - this.x, (vector[1] - this.y) + this.height/2, vector[2] - this.z);
+                        difVector.normalize();
+                        block.setMovementVector(new Vector3f((float) difVector.x, (float) difVector.y, (float) difVector.z));
+                        this.sg.save.activeWorld.addEntity(block);
+                    } else {
+                        EntityItem item = new EntityItem(this.x, this.y, this.z, this.inventory.itemStacks[i].item.ID, Item.NULL_ITEM_METADATA, this.inventory.itemStacks[i].count, this.inventory.itemStacks[i].durability);
+                        double[] vector = SpaceGame.camera.rayCast(1);
+                        Vector3d difVector = new Vector3d(vector[0] - this.x, (vector[1] - this.y) + this.height/2, vector[2] - this.z);
+                        difVector.normalize();
+                        item.setMovementVector(new Vector3f((float) difVector.x, (float) difVector.y, (float) difVector.z));
+                        this.sg.save.activeWorld.addEntity(item);
+                    }
+
+                }
+                i++;
+            }
+
+
+            newInventory.itemStacks[newInventory.itemStacks.length - 1] = this.inventory.itemStacks[this.inventory.itemStacks.length - 1];
+            newInventory.itemStacks[newInventory.itemStacks.length - 2] = this.inventory.itemStacks[this.inventory.itemStacks.length - 2];
+            newInventory.itemStacks[newInventory.itemStacks.length - 3] = this.inventory.itemStacks[this.inventory.itemStacks.length - 3];
+            newInventory.itemStacks[newInventory.itemStacks.length - 4] = this.inventory.itemStacks[this.inventory.itemStacks.length - 4];
+            newInventory.itemStacks[newInventory.itemStacks.length - 5] = this.inventory.itemStacks[this.inventory.itemStacks.length - 5];
+            newInventory.itemStacks[newInventory.itemStacks.length - 6] = this.inventory.itemStacks[this.inventory.itemStacks.length - 6];
+            newInventory.itemStacks[newInventory.itemStacks.length - 7] = this.inventory.itemStacks[this.inventory.itemStacks.length - 7];
+            newInventory.itemStacks[newInventory.itemStacks.length - 8] = this.inventory.itemStacks[this.inventory.itemStacks.length - 8];
+            newInventory.itemStacks[newInventory.itemStacks.length - 9] = this.inventory.itemStacks[this.inventory.itemStacks.length - 9];
+            newInventory.itemStacks[newInventory.itemStacks.length - 10] = this.inventory.itemStacks[this.inventory.itemStacks.length - 10];
+
+            this.inventory = newInventory;
+            this.sg.setNewGui(new GuiPlayerInventory(this.sg, this.inventory));
+        }
+    }
 
 
     public short getHeldBlock() {
@@ -263,7 +371,7 @@ public final class EntityPlayer extends EntityLiving {
             }
             this.setMovementAmount();
             this.doGravity();
-            if(!(this.sg.currentGui instanceof GuiInGame)){
+            if(!(this.sg.currentGui instanceof GuiInGame || this.sg.currentGui instanceof GuiInventory || this.sg.currentGui instanceof GuiAction || this.sg.currentGui instanceof GuiCrafting)){
                 this.deltaX = 0;
                 this.deltaY = 0;
                 this.deltaZ = 0;

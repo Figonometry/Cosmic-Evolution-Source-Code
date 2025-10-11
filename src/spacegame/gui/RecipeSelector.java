@@ -6,18 +6,33 @@ import spacegame.core.SpaceGame;
 
 public final class RecipeSelector {
     public short itemID;
+    public short blockID;
     public float x;
     public float y;
     public float width;
     public float height;
+    public String displayName;
+    public boolean isBlock;
 
 
-    public RecipeSelector(short itemID, float x, float y, float width, float height){
+    public RecipeSelector(short itemID, float x, float y, float width, float height, String displayName){
         this.itemID = itemID;
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
+        this.displayName = displayName;
+    }
+
+    public RecipeSelector(short itemID, short blockID, float x, float y, float width, float height, String displayName){
+        this.itemID = itemID;
+        this.blockID = blockID;
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.displayName = displayName;
+        this.isBlock = true;
     }
 
     public boolean isMouseHoveredOver(){
@@ -29,4 +44,6 @@ public final class RecipeSelector {
         float adjustedButtonHeight = MathUtil.adjustHeightBasedOnScreenHeight(this.height);
         return x > adjustedButtonX - (double) adjustedButtonWidth / 2 && x < adjustedButtonX + (double) adjustedButtonWidth / 2 && y > adjustedButtonY - (double) adjustedButtonHeight / 2 && y < adjustedButtonY + (double) adjustedButtonHeight / 2;
     }
+
+
 }
