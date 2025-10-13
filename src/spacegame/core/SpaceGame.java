@@ -102,7 +102,7 @@ public final class SpaceGame implements Runnable {
     }
 
     private void startGame() {
-        this.title = "Cosmic Evolution Alpha v0.26";
+        this.title = "Cosmic Evolution Alpha v0.27";
         this.clearLogFiles(new File(this.launcherDirectory + "/crashReports"));
         this.initLWJGL();
         this.renderEngine = new RenderEngine();
@@ -345,22 +345,22 @@ public final class SpaceGame implements Runnable {
      //      KeyListener.setKeyReleased(GLFW.GLFW_KEY_G);
      //  }
 
-     //   if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_MINUS)){
-     //       this.save.time -= 216000;
-     //       KeyListener.setKeyReleased(GLFW.GLFW_KEY_MINUS);
-     //   }
-     //   if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_EQUAL)){
-     //       this.save.time += 216000;
-     //       KeyListener.setKeyReleased(GLFW.GLFW_KEY_EQUAL);
-     //   }
-     //   if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_COMMA)){
-     //       this.save.time -= 1000;
-     //       KeyListener.setKeyReleased(GLFW.GLFW_KEY_COMMA);
-     //   }
-     //   if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_PERIOD)){
-     //       this.save.time += 1000;
-     //       KeyListener.setKeyReleased(GLFW.GLFW_KEY_PERIOD);
-     //   }
+      //  if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_MINUS)){
+      //      this.save.time -= 216000;
+      //      KeyListener.setKeyReleased(GLFW.GLFW_KEY_MINUS);
+      //  }
+      //  if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_EQUAL)){
+      //      this.save.time += 216000;
+      //      KeyListener.setKeyReleased(GLFW.GLFW_KEY_EQUAL);
+      //  }
+      //  if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_COMMA)){
+      //      this.save.time -= 1000;
+      //      KeyListener.setKeyReleased(GLFW.GLFW_KEY_COMMA);
+      //  }
+      //  if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_PERIOD)){
+      //      this.save.time += 1000;
+      //      KeyListener.setKeyReleased(GLFW.GLFW_KEY_PERIOD);
+      //  }
 
 
         if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_1) && this.currentGui instanceof GuiInGame){
@@ -440,7 +440,7 @@ public final class SpaceGame implements Runnable {
 
         if(KeyListener.isKeyPressed(GameSettings.inventoryKey.keyCode) && KeyListener.keyReleased[GameSettings.inventoryKey.keyCode]){
             if(this.currentGui instanceof GuiInGame){
-                this.setNewGui(new GuiPlayerInventory(this, this.save.thePlayer.inventory));
+                this.setNewGui(new GuiInventoryPlayer(this, this.save.thePlayer.inventory));
             } else if(this.currentGui instanceof GuiInventory){
                 this.setNewGui(new GuiInGame(this));
                 GLFW.glfwSetInputMode(this.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
@@ -455,13 +455,13 @@ public final class SpaceGame implements Runnable {
         if(this.currentGui instanceof GuiInGame) {
             if (MouseListener.getScrollY() == -1) {
                 EntityPlayer.selectedInventorySlot++;
-                if (EntityPlayer.selectedInventorySlot > 9) {
+                if (EntityPlayer.selectedInventorySlot > 8) {
                     EntityPlayer.selectedInventorySlot = 0;
                 }
             } else if (MouseListener.getScrollY() == 1) {
                 EntityPlayer.selectedInventorySlot--;
                 if (EntityPlayer.selectedInventorySlot < 0) {
-                    EntityPlayer.selectedInventorySlot = 9;
+                    EntityPlayer.selectedInventorySlot = 8;
                 }
             }
         }
@@ -643,30 +643,32 @@ public final class SpaceGame implements Runnable {
                     }
                 }
                 if (ItemStack.itemStackOnMouse != null && stack != null) {
-                    if (stack.item == null || (stack.item == ItemStack.itemStackOnMouse.item && stack.durability == ItemStack.itemStackOnMouse.durability && stack.metadata == ItemStack.itemStackOnMouse.metadata)) {
-                        if(stack.usesExclusiveItem && stack.exclusiveItemType.equals(ItemStack.itemStackOnMouse.item.itemType)) {
-                            stack.item = ItemStack.itemStackOnMouse.item;
-                            stack.durability = ItemStack.itemStackOnMouse.durability;
-                            stack.metadata = ItemStack.itemStackOnMouse.metadata;
-                            stack.count++;
-                            ItemStack.itemStackOnMouse.count--;
-                            if (ItemStack.itemStackOnMouse.count <= 0) {
-                                ItemStack.itemStackOnMouse.item = null;
-                                ItemStack.itemStackOnMouse.count = 0;
-                                ItemStack.itemStackOnMouse.durability = 0;
-                                ItemStack.itemStackOnMouse.metadata = 0;
-                            }
-                        } else if(!stack.usesExclusiveItem){
-                            stack.item = ItemStack.itemStackOnMouse.item;
-                            stack.durability = ItemStack.itemStackOnMouse.durability;
-                            stack.metadata = ItemStack.itemStackOnMouse.metadata;
-                            stack.count++;
-                            ItemStack.itemStackOnMouse.count--;
-                            if (ItemStack.itemStackOnMouse.count <= 0) {
-                                ItemStack.itemStackOnMouse.item = null;
-                                ItemStack.itemStackOnMouse.count = 0;
-                                ItemStack.itemStackOnMouse.durability = 0;
-                                ItemStack.itemStackOnMouse.metadata = 0;
+                    if (stack.item == null || (stack.item == ItemStack.itemStackOnMouse.item && stack.durability == ItemStack.itemStackOnMouse.durability && stack.metadata == ItemStack.itemStackOnMouse.metadata && stack.count < stack.item.stackLimit)) {
+                        if(ItemStack.itemStackOnMouse.item != null) {
+                            if (stack.usesExclusiveItem && stack.exclusiveItemType.equals(ItemStack.itemStackOnMouse.item.itemType)) {
+                                stack.item = ItemStack.itemStackOnMouse.item;
+                                stack.durability = ItemStack.itemStackOnMouse.durability;
+                                stack.metadata = ItemStack.itemStackOnMouse.metadata;
+                                stack.count++;
+                                ItemStack.itemStackOnMouse.count--;
+                                if (ItemStack.itemStackOnMouse.count <= 0) {
+                                    ItemStack.itemStackOnMouse.item = null;
+                                    ItemStack.itemStackOnMouse.count = 0;
+                                    ItemStack.itemStackOnMouse.durability = 0;
+                                    ItemStack.itemStackOnMouse.metadata = 0;
+                                }
+                            } else if (!stack.usesExclusiveItem) {
+                                stack.item = ItemStack.itemStackOnMouse.item;
+                                stack.durability = ItemStack.itemStackOnMouse.durability;
+                                stack.metadata = ItemStack.itemStackOnMouse.metadata;
+                                stack.count++;
+                                ItemStack.itemStackOnMouse.count--;
+                                if (ItemStack.itemStackOnMouse.count <= 0) {
+                                    ItemStack.itemStackOnMouse.item = null;
+                                    ItemStack.itemStackOnMouse.count = 0;
+                                    ItemStack.itemStackOnMouse.durability = 0;
+                                    ItemStack.itemStackOnMouse.metadata = 0;
+                                }
                             }
                         }
                     }

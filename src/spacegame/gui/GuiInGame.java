@@ -180,90 +180,90 @@ public final class GuiInGame extends Gui {
         if(EntityPlayer.selectedInventorySlot == 0){
             size = 102;
         }
-        tessellator.addVertex2DTexture(16777215, x, y, -80, 3);
-        tessellator.addVertex2DTexture(16777215, x + size, y + size, -80, 1);
-        tessellator.addVertex2DTexture(16777215, x, y + size, -80, 2);
-        tessellator.addVertex2DTexture(16777215, x + size, y, -80, 0);
+        tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 0 ? 0 : 16777215, x, y, -80, 3);
+        tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 0 ? 0 : 16777215, x + size, y + size, -80, 1);
+        tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 0 ? 0 : 16777215, x, y + size, -80, 2);
+        tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 0 ? 0 : 16777215, x + size, y, -80, 0);
         tessellator.addElements();
         size = 96;
         x += size;
         if(EntityPlayer.selectedInventorySlot == 1){
             size = 102;
         }
-        tessellator.addVertex2DTexture(16777215, x, y, -80, 3);
-        tessellator.addVertex2DTexture(16777215, x + size, y + size, -80, 1);
-        tessellator.addVertex2DTexture(16777215, x, y + size, -80, 2);
-        tessellator.addVertex2DTexture(16777215, x + size, y, -80, 0);
+        tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 1 ? 0 : 16777215, x, y, -80, 3);
+        tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 1 ? 0 : 16777215, x + size, y + size, -80, 1);
+        tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 1 ? 0 : 16777215, x, y + size, -80, 2);
+        tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 1 ? 0 : 16777215, x + size, y, -80, 0);
         tessellator.addElements();
         size = 96;
         x += size;
         if(EntityPlayer.selectedInventorySlot == 2){
             size = 102;
         }
-        tessellator.addVertex2DTexture(16777215, x, y, -80, 3);
-        tessellator.addVertex2DTexture(16777215, x + size, y + size, -80, 1);
-        tessellator.addVertex2DTexture(16777215, x, y + size, -80, 2);
-        tessellator.addVertex2DTexture(16777215, x + size, y, -80, 0);
+        tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 2 ? 0 : 16777215, x, y, -80, 3);
+        tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 2 ? 0 : 16777215, x + size, y + size, -80, 1);
+        tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 2 ? 0 : 16777215, x, y + size, -80, 2);
+        tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 2 ? 0 : 16777215, x + size, y, -80, 0);
         tessellator.addElements();
         size = 96;
         x += size;
         if(EntityPlayer.selectedInventorySlot == 3){
             size = 102;
         }
-        tessellator.addVertex2DTexture(16777215, x, y, -80, 3);
-        tessellator.addVertex2DTexture(16777215, x + size, y + size, -80, 1);
-        tessellator.addVertex2DTexture(16777215, x, y + size, -80, 2);
-        tessellator.addVertex2DTexture(16777215, x + size, y, -80, 0);
+        tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 3 ? 0 : 16777215, x, y, -80, 3);
+        tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 3 ? 0 : 16777215, x + size, y + size, -80, 1);
+        tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 3 ? 0 : 16777215, x, y + size, -80, 2);
+        tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 3 ? 0 : 16777215, x + size, y, -80, 0);
         tessellator.addElements();
         size = 96;
         x += size;
         if(EntityPlayer.selectedInventorySlot == 4){
             size = 102;
         }
-        tessellator.addVertex2DTexture(16777215, x, y, -80, 3);
-        tessellator.addVertex2DTexture(16777215, x + size, y + size, -80, 1);
-        tessellator.addVertex2DTexture(16777215, x, y + size, -80, 2);
-        tessellator.addVertex2DTexture(16777215, x + size, y, -80, 0);
+        tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 4 ? 0 : 16777215, x, y, -80, 3);
+        tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 4 ? 0 : 16777215, x + size, y + size, -80, 1);
+        tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 4 ? 0 : 16777215, x, y + size, -80, 2);
+        tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 4 ? 0 : 16777215, x + size, y, -80, 0);
         tessellator.addElements();
         size = 96;
         x += size;
         if(EntityPlayer.selectedInventorySlot == 5){
             size = 102;
         }
-        tessellator.addVertex2DTexture(16777215, x, y, -80, 3);
-        tessellator.addVertex2DTexture(16777215, x + size, y + size, -80, 1);
-        tessellator.addVertex2DTexture(16777215, x, y + size, -80, 2);
-        tessellator.addVertex2DTexture(16777215, x + size, y, -80, 0);
+        tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 5 ? 0 : 16777215, x, y, -80, 3);
+        tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 5 ? 0 : 16777215, x + size, y + size, -80, 1);
+        tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 5 ? 0 : 16777215, x, y + size, -80, 2);
+        tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 5 ? 0 : 16777215, x + size, y, -80, 0);
         tessellator.addElements();
         size = 96;
         x += size;
         if(EntityPlayer.selectedInventorySlot == 6){
             size = 102;
         }
-        tessellator.addVertex2DTexture(16777215, x, y, -80, 3);
-        tessellator.addVertex2DTexture(16777215, x + size, y + size, -80, 1);
-        tessellator.addVertex2DTexture(16777215, x, y + size, -80, 2);
-        tessellator.addVertex2DTexture(16777215, x + size, y, -80, 0);
+        tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 6 ? 0 : 16777215, x, y, -80, 3);
+        tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 6 ? 0 : 16777215, x + size, y + size, -80, 1);
+        tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 6 ? 0 : 16777215, x, y + size, -80, 2);
+        tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 6 ? 0 : 16777215, x + size, y, -80, 0);
         tessellator.addElements();
         size = 96;
         x += size;
         if(EntityPlayer.selectedInventorySlot == 7){
             size = 102;
         }
-        tessellator.addVertex2DTexture(16777215, x, y, -80, 3);
-        tessellator.addVertex2DTexture(16777215, x + size, y + size, -80, 1);
-        tessellator.addVertex2DTexture(16777215, x, y + size, -80, 2);
-        tessellator.addVertex2DTexture(16777215, x + size, y, -80, 0);
+        tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 7 ? 0 : 16777215, x, y, -80, 3);
+        tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 7 ? 0 : 16777215, x + size, y + size, -80, 1);
+        tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 7 ? 0 : 16777215, x, y + size, -80, 2);
+        tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 7 ? 0 : 16777215, x + size, y, -80, 0);
         tessellator.addElements();
         size = 96;
         x += size;
         if(EntityPlayer.selectedInventorySlot == 8){
             size = 102;
         }
-        tessellator.addVertex2DTexture(16777215, x, y, -80, 3);
-        tessellator.addVertex2DTexture(16777215, x + size, y + size, -80, 1);
-        tessellator.addVertex2DTexture(16777215, x, y + size, -80, 2);
-        tessellator.addVertex2DTexture(16777215, x + size, y, -80, 0);
+        tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 8 ? 0 : 16777215, x, y, -80, 3);
+        tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 8 ? 0 : 16777215, x + size, y + size, -80, 1);
+        tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 8 ? 0 : 16777215, x, y + size, -80, 2);
+        tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 8 ? 0 : 16777215, x + size, y, -80, 0);
         tessellator.addElements();
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
@@ -285,6 +285,10 @@ public final class GuiInGame extends Gui {
             }
 
             x += size;
+        }
+
+        if(SpaceGame.instance.currentGui instanceof GuiInventoryStrawChest){
+            SpaceGame.instance.save.thePlayer.inventory.shiftPlayerHotbar(((GuiInventoryStrawChest) SpaceGame.instance.currentGui).getPlayerInventoryShiftX(), 0);
         }
     }
 

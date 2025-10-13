@@ -226,8 +226,8 @@ void main()
     vec3 correctPosRelativeToSun = vec3(sunChunkOffset + decompressPosition(aPos, aTexId));
         switch(int(fTexId)){
             case 4://water
+            correctPos.y -= 0.1F;
             if (wavyWater){
-                correctPos.y -= 0.1F;
                 correctPos.y = sinY(correctPos.x, correctPos.y, correctPos.z);
                 fColor.xyz -= 0.5F;
                 fColor.w = max(fColor.w, 0.5f);

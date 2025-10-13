@@ -2,7 +2,6 @@ package spacegame.core;
 
 import org.lwjgl.glfw.GLFW;
 import spacegame.block.Block;
-import spacegame.render.Shader;
 
 import java.io.*;
 

@@ -1,5 +1,7 @@
 package spacegame.world;
 
+import spacegame.block.Block;
+import spacegame.block.BlockContainer;
 import spacegame.core.GameSettings;
 import spacegame.core.Logger;
 import spacegame.core.SpaceGame;
@@ -7,6 +9,7 @@ import spacegame.entity.Entity;
 import spacegame.entity.EntityBlock;
 import spacegame.entity.EntityDeer;
 import spacegame.entity.EntityItem;
+import spacegame.item.Inventory;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
 
@@ -41,6 +44,7 @@ public final class ThreadChunkColumnLoader implements Runnable {
                         NBTTagCompound chunkTag = NBTIO.readCompressed(inputStream);
                         NBTTagCompound chunkData = chunkTag.getCompoundTag("Chunk");
                         NBTTagCompound entity = chunkData.getCompoundTag("Entity");
+                        NBTTagCompound chest = chunkData.getCompoundTag("Chest");
                         chunk = new Chunk(x, y, z, SpaceGame.instance.save.activeWorld);
 
                         chunk.containsWater = chunkData.getBoolean("containsWater");
@@ -78,6 +82,29 @@ public final class ThreadChunkColumnLoader implements Runnable {
                                 }
                             }
                         }
+
+                        int chestCount  = chest.getInteger("chestCount");
+                        NBTTagCompound chestLoadedTag;
+                        for(int i = 0; i < chestCount; i++){
+                            chestLoadedTag = chest.getCompoundTag("chest" + i);
+                            NBTTagCompound inventory = chestLoadedTag.getCompoundTag("Inventory");
+                            short index = chestLoadedTag.getShort("index");
+                            NBTTagCompound item;
+                            Inventory chestInventory = new Inventory(((BlockContainer)(Block.list[chunk.blocks[index]])).inventorySize, 9);
+                            for(int j = 0; j < chestInventory.itemStacks.length; j++) {
+                                item = inventory.getCompoundTag("slot " + j);
+                                if (item != null) {
+                                    short id = item.getShort("id");
+                                    byte count = item.getByte("count");
+                                    short durability = item.getShort("durability");
+                                    short metadata = item.getShort("metadata");
+                                    chestInventory.loadItemToInventory(id, metadata, count, durability, j);
+                                }
+                            }
+                            chunk.addChestLocation(index, chestInventory);
+                        }
+
+
 
                         inputStream.close();
                     }

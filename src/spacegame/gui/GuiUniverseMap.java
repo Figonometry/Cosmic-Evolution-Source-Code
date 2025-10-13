@@ -11,7 +11,9 @@ import spacegame.core.GameSettings;
 import spacegame.core.MathUtil;
 import spacegame.core.MouseListener;
 import spacegame.core.SpaceGame;
-import spacegame.render.*;
+import spacegame.render.Camera;
+import spacegame.render.RenderEngine;
+import spacegame.render.Shader;
 
 import java.util.ArrayList;
 

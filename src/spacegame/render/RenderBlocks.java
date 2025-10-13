@@ -3,7 +3,6 @@ package spacegame.render;
 import org.joml.Vector3f;
 import spacegame.block.Block;
 import spacegame.block.BlockCampFire;
-import spacegame.block.BlockCampFireUnlit;
 import spacegame.block.BlockLog;
 import spacegame.core.MathUtil;
 import spacegame.world.Chunk;
@@ -185,16 +184,6 @@ public class RenderBlocks {
         }
     }
 
-    public void renderCampFireOld(Chunk chunk, World world, short block, int index, int face){
-        float scaleReduction = 0.25f * (Block.list[block].lightBlockValue / 14f);
-        ModelLoader shrunkBlock = Block.fireBlockModel.getScaledModel(scaleReduction).translateModel(0.5f - scaleReduction/2f,0f,0.5f - scaleReduction/2f);
-        this.renderTransparentFace(chunk, world, block, index, face, Block.list[block].blockModel.modelFaces[0], 0,0,0,0,0,0,0,0, 3,1,2,0, new int[2]);
-        for(int i = 0; i < shrunkBlock.modelFaces.length; i++) {
-            if (shrunkBlock.modelFaces[i].faceType != TOP_FACE && shrunkBlock.modelFaces[i].faceType != BOTTOM_FACE)
-                this.renderTransparentFace(chunk, world, Block.fire.ID, index, face, shrunkBlock.modelFaces[i], 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
-        }
-    }
-
     public void renderCampFire(Chunk chunk, World world, short block, int index, int face){
         this.renderCampFireUnlit(chunk, world, block, index, face);
 
@@ -206,54 +195,14 @@ public class RenderBlocks {
     }
 
     public void renderCampFireUnlit(Chunk chunk, World world, short block, int index, int face){
-        switch (face){
-            case TOP_FACE -> {
-                for(int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++){
-                    if(Block.list[block].blockModel.modelFaces[i].faceType == TOP_FACE){
-                        ModelFace modelFace = Block.list[block].blockModel.modelFaces[i];
-                        renderOpaqueFace(chunk, world, block, index, face, modelFace, -0.375f,0.375f,0.375f,-0.375f,-0.375f,-0.375f,0.375f,0.375f, 3,1,2,0, new int[2]);
-                    }
-                }
-                renderOpaqueFace(chunk, world, block, index, face, Block.topFaceBlockModel.getModelFace(TOP_FACE), 0,0,0,0,0,0,0,0, 3,1,2,0, new int[2]); //This is for the staw covering on the ground
-            }
-            case BOTTOM_FACE -> {
-                for(int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++){
-                    if(Block.list[block].blockModel.modelFaces[i].faceType == BOTTOM_FACE){
-                        ModelFace modelFace = Block.list[block].blockModel.modelFaces[i];
-                        renderOpaqueFace(chunk, world, block, index, face, modelFace, -0.375f,0.375f,0.375f,-0.375f,-0.375f,-0.375f,0.375f,0.375f, 3,1,2,0, new int[2]);
-                    }
-                }
-            }
-            case NORTH_FACE -> {
-                for(int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++){
-                    if(Block.list[block].blockModel.modelFaces[i].faceType == NORTH_FACE){
-                        ModelFace modelFace = Block.list[block].blockModel.modelFaces[i];
-                        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0.375f,-0.46875f,-0.375f,0.46875f,0.375f,0.46875f,-0.375f,-0.46875f, 3,1,2,0, new int[2]);
-                    }
-                }
-            }
-            case SOUTH_FACE -> {
-                for(int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++){
-                    if(Block.list[block].blockModel.modelFaces[i].faceType == SOUTH_FACE){
-                        ModelFace modelFace = Block.list[block].blockModel.modelFaces[i];
-                        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0.375f,-0.46875f,-0.375f,0.46875f,0.375f,0.46875f,-0.375f,-0.46875f, 3,1,2,0, new int[2]);
-                    }
-                }
-            }
-            case EAST_FACE -> {
-                for(int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++){
-                    if(Block.list[block].blockModel.modelFaces[i].faceType == EAST_FACE){
-                        ModelFace modelFace = Block.list[block].blockModel.modelFaces[i];
-                        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0.375f,-0.46875f,-0.375f,0.46875f,0.375f,0.46875f,-0.375f,-0.46875f, 3,1,2,0, new int[2]);
-                    }
-                }
-            }
-            case WEST_FACE -> {
-                for(int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++){
-                    if(Block.list[block].blockModel.modelFaces[i].faceType == WEST_FACE){
-                        ModelFace modelFace = Block.list[block].blockModel.modelFaces[i];
-                        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0.375f,-0.46875f,-0.375f,0.46875f,0.375f,0.46875f,-0.375f,-0.46875f, 3,1,2,0, new int[2]);
-                    }
+        ModelFace[] modelFaces = Block.list[block].blockModel.getModelFaceOfType(face);
+        float[] UVSamples;
+        for (int i = 0; i < modelFaces.length; i++) {
+            UVSamples = face == TOP_FACE || face == BOTTOM_FACE ? autoUVTopBottom(this.getFaceWidth(modelFaces[i]), this.getFaceHeight(modelFaces[i])) : autoUVNSEW(this.getFaceWidth(modelFaces[i]), this.getFaceHeight(modelFaces[i]));
+            renderOpaqueFace(chunk, world, block, index, face, modelFaces[i], UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+            if(modelFaces[i] != null){
+                if(modelFaces[i].faceType == TOP_FACE){
+                    renderOpaqueFace(chunk, world, block, index, face, Block.topFaceBlockModel.getModelFace(TOP_FACE), 0,0,0,0,0,0,0,0, 3,1,2,0, new int[2]); //This is for the staw covering on the ground
                 }
             }
         }
@@ -288,142 +237,9 @@ public class RenderBlocks {
         //16x4 top and bottom, 4x4 north and south, 4x16 east and west sample
         ModelLoader baseModel = Block.fireWood;
         ModelFace modelFace;
-        switch (logCount) {
-            case 1 -> {
-                ModelLoader log1 = baseModel.copyModel();
-                for (int j = 0; j < log1.modelFaces.length; j++) {
-                    for (int k = 0; k < log1.modelFaces[j].vertices.length; k++) {
-                        log1.modelFaces[j].vertices[k].rotateX(log1XRot);
-                        log1.modelFaces[j].vertices[k].rotateY(log1YRot);
-                        log1.modelFaces[j].vertices[k].rotateZ(log1ZRot);
 
-                        log1.modelFaces[j].vertices[k].add(translationVectorLog1);
-                    }
-                }
-
-                modelFace = log1.getModelFace(face);
-                renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
-            }
-            case 2 -> {
-                ModelLoader log1 = baseModel.copyModel();
-                for (int j = 0; j < log1.modelFaces.length; j++) {
-                    for (int k = 0; k < log1.modelFaces[j].vertices.length; k++) {
-                        log1.modelFaces[j].vertices[k].rotateX(log1XRot);
-                        log1.modelFaces[j].vertices[k].rotateY(log1YRot);
-                        log1.modelFaces[j].vertices[k].rotateZ(log1ZRot);
-
-                        log1.modelFaces[j].vertices[k].add(translationVectorLog1);
-                    }
-                }
-
-                modelFace = log1.getModelFace(face);
-                renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
-
-                ModelLoader log2 = baseModel.copyModel();
-                for (int j = 0; j < log2.modelFaces.length; j++) {
-                    for (int k = 0; k < log2.modelFaces[j].vertices.length; k++) {
-                        log2.modelFaces[j].vertices[k].rotateX(log2XRot);
-                        log2.modelFaces[j].vertices[k].rotateY(log2YRot);
-                        log2.modelFaces[j].vertices[k].rotateZ(log2ZRot);
-
-                        log2.modelFaces[j].vertices[k].add(translationVectorLog2);
-                    }
-                }
-
-                modelFace = log2.getModelFace(face);
-                renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
-            }
-            case 3 -> {
-                ModelLoader log1 = baseModel.copyModel();
-                for (int j = 0; j < log1.modelFaces.length; j++) {
-                    for (int k = 0; k < log1.modelFaces[j].vertices.length; k++) {
-                        log1.modelFaces[j].vertices[k].rotateX(log1XRot);
-                        log1.modelFaces[j].vertices[k].rotateY(log1YRot);
-                        log1.modelFaces[j].vertices[k].rotateZ(log1ZRot);
-
-                        log1.modelFaces[j].vertices[k].add(translationVectorLog1);
-                    }
-                }
-
-                modelFace = log1.getModelFace(face);
-                renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
-
-                ModelLoader log2 = baseModel.copyModel();
-                for (int j = 0; j < log2.modelFaces.length; j++) {
-                    for (int k = 0; k < log2.modelFaces[j].vertices.length; k++) {
-                        log2.modelFaces[j].vertices[k].rotateX(log2XRot);
-                        log2.modelFaces[j].vertices[k].rotateY(log2YRot);
-                        log2.modelFaces[j].vertices[k].rotateZ(log2ZRot);
-
-                        log2.modelFaces[j].vertices[k].add(translationVectorLog2);
-                    }
-                }
-
-                modelFace = log2.getModelFace(face);
-                renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
-
-
-                ModelLoader log3 = baseModel.copyModel();
-                for (int j = 0; j < log3.modelFaces.length; j++) {
-                    for (int k = 0; k < log3.modelFaces[j].vertices.length; k++) {
-                        log3.modelFaces[j].vertices[k].rotateX(log3XRot);
-                        log3.modelFaces[j].vertices[k].rotateY(log3YRot);
-                        log3.modelFaces[j].vertices[k].rotateZ(log3ZRot);
-
-                        log3.modelFaces[j].vertices[k].add(translationVectorLog3);
-                    }
-                }
-
-                modelFace = log3.getModelFace(face);
-                renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
-
-            }
-
-            case 4 -> {
-                ModelLoader log1 = baseModel.copyModel();
-                for (int j = 0; j < log1.modelFaces.length; j++) {
-                    for (int k = 0; k < log1.modelFaces[j].vertices.length; k++) {
-                        log1.modelFaces[j].vertices[k].rotateX(log1XRot);
-                        log1.modelFaces[j].vertices[k].rotateY(log1YRot);
-                        log1.modelFaces[j].vertices[k].rotateZ(log1ZRot);
-
-                        log1.modelFaces[j].vertices[k].add(translationVectorLog1);
-                    }
-                }
-
-                modelFace = log1.getModelFace(face);
-                renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
-
-                ModelLoader log2 = baseModel.copyModel();
-                for (int j = 0; j < log2.modelFaces.length; j++) {
-                    for (int k = 0; k < log2.modelFaces[j].vertices.length; k++) {
-                        log2.modelFaces[j].vertices[k].rotateX(log2XRot);
-                        log2.modelFaces[j].vertices[k].rotateY(log2YRot);
-                        log2.modelFaces[j].vertices[k].rotateZ(log2ZRot);
-
-                        log2.modelFaces[j].vertices[k].add(translationVectorLog2);
-                    }
-                }
-
-                modelFace = log2.getModelFace(face);
-                renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
-
-
-                ModelLoader log3 = baseModel.copyModel();
-                for (int j = 0; j < log3.modelFaces.length; j++) {
-                    for (int k = 0; k < log3.modelFaces[j].vertices.length; k++) {
-                        log3.modelFaces[j].vertices[k].rotateX(log3XRot);
-                        log3.modelFaces[j].vertices[k].rotateY(log3YRot);
-                        log3.modelFaces[j].vertices[k].rotateZ(log3ZRot);
-
-                        log3.modelFaces[j].vertices[k].add(translationVectorLog3);
-                    }
-                }
-
-                modelFace = log3.getModelFace(face);
-                renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
-
-
+        switch (logCount){ //This switch statement is not supposed to have case labels, I'm intentionally using the follow through of a default switch statement to reduce LOC
+            case 4:
                 ModelLoader log4 = baseModel.copyModel();
                 for (int j = 0; j < log4.modelFaces.length; j++) {
                     for (int k = 0; k < log4.modelFaces[j].vertices.length; k++) {
@@ -437,63 +253,59 @@ public class RenderBlocks {
 
                 modelFace = log4.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
+            case 3:
+                ModelLoader log3 = baseModel.copyModel();
+                for (int j = 0; j < log3.modelFaces.length; j++) {
+                    for (int k = 0; k < log3.modelFaces[j].vertices.length; k++) {
+                        log3.modelFaces[j].vertices[k].rotateX(log3XRot);
+                        log3.modelFaces[j].vertices[k].rotateY(log3YRot);
+                        log3.modelFaces[j].vertices[k].rotateZ(log3ZRot);
 
-            }
+                        log3.modelFaces[j].vertices[k].add(translationVectorLog3);
+                    }
+                }
+
+                modelFace = log3.getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
+            case 2:
+                ModelLoader log2 = baseModel.copyModel();
+                for (int j = 0; j < log2.modelFaces.length; j++) {
+                    for (int k = 0; k < log2.modelFaces[j].vertices.length; k++) {
+                        log2.modelFaces[j].vertices[k].rotateX(log2XRot);
+                        log2.modelFaces[j].vertices[k].rotateY(log2YRot);
+                        log2.modelFaces[j].vertices[k].rotateZ(log2ZRot);
+
+                        log2.modelFaces[j].vertices[k].add(translationVectorLog2);
+                    }
+                }
+
+                modelFace = log2.getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
+            case 1:
+                ModelLoader log1 = baseModel.copyModel();
+                for (int j = 0; j < log1.modelFaces.length; j++) {
+                    for (int k = 0; k < log1.modelFaces[j].vertices.length; k++) {
+                        log1.modelFaces[j].vertices[k].rotateX(log1XRot);
+                        log1.modelFaces[j].vertices[k].rotateY(log1YRot);
+                        log1.modelFaces[j].vertices[k].rotateZ(log1ZRot);
+
+                        log1.modelFaces[j].vertices[k].add(translationVectorLog1);
+                    }
+                }
+
+                modelFace = log1.getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
+
         }
     }
 
     public  void renderGrassBlock(Chunk chunk, World world, short block, int index, int face, int[] greedyMeshSize) {
-        switch (face) {
-            case TOP_FACE -> {
-                for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
-                    if (Block.list[block].blockModel.modelFaces[i].faceType == TOP_FACE) {
-                        ModelFace modelFace = Block.list[block].blockModel.modelFaces[i];
-                        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, greedyMeshSize);
-                    }
-                }
-            }
-            case BOTTOM_FACE -> {
-                for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
-                    if (Block.list[block].blockModel.modelFaces[i].faceType == BOTTOM_FACE) {
-                        ModelFace modelFace = Block.list[block].blockModel.modelFaces[i];
-                        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, greedyMeshSize);
-                    }
-                }
-            }
-            case NORTH_FACE -> {
-                for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
-                    if (Block.list[block].blockModel.modelFaces[i].faceType == NORTH_FACE) {
-                        ModelFace modelFace = Block.list[block].blockModel.modelFaces[i];
-                        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, greedyMeshSize);
-                        renderOpaqueFace(chunk, world, Block.grassBlockLower.ID, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, greedyMeshSize);
-                    }
-                }
-            }
-            case SOUTH_FACE -> {
-                for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
-                    if (Block.list[block].blockModel.modelFaces[i].faceType == SOUTH_FACE) {
-                        ModelFace modelFace = Block.list[block].blockModel.modelFaces[i];
-                        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, greedyMeshSize);
-                        renderOpaqueFace(chunk, world, Block.grassBlockLower.ID, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, greedyMeshSize);
-                    }
-                }
-            }
-            case EAST_FACE -> {
-                for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
-                    if (Block.list[block].blockModel.modelFaces[i].faceType == EAST_FACE) {
-                        ModelFace modelFace = Block.list[block].blockModel.modelFaces[i];
-                        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, greedyMeshSize);
-                        renderOpaqueFace(chunk, world, Block.grassBlockLower.ID, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, greedyMeshSize);
-                    }
-                }
-            }
-            case WEST_FACE -> {
-                for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
-                    if (Block.list[block].blockModel.modelFaces[i].faceType == WEST_FACE) {
-                        ModelFace modelFace = Block.list[block].blockModel.modelFaces[i];
-                        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, greedyMeshSize);
-                        renderOpaqueFace(chunk, world, Block.grassBlockLower.ID, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, greedyMeshSize);
-                    }
+        ModelFace[] modelFaces = Block.list[block].blockModel.getModelFaceOfType(face);
+        for (int i = 0; i < modelFaces.length; i++) {
+            renderOpaqueFace(chunk, world, block, index, face, modelFaces[i], 0,0,0,0,0,0,0,0, 3, 1, 2, 0, greedyMeshSize);
+            if(modelFaces[i] != null) {
+                if (modelFaces[i].faceType != TOP_FACE && modelFaces[i].faceType != BOTTOM_FACE) {
+                    renderOpaqueFace(chunk, world, Block.grassBlockLower.ID, index, face, modelFaces[i], 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, greedyMeshSize);
                 }
             }
         }
@@ -511,168 +323,33 @@ public class RenderBlocks {
         float secondTranslateX = rand.nextBoolean() ? translateX - 0.25f : translateX + 0.25f;
         float secondTranslateZ = rand.nextBoolean() ? translateZ - 0.25f : translateZ + 0.25f;
         Vector3f secondOffset = new Vector3f(secondTranslateX, 0f, secondTranslateZ);
-        switch (face) {
-            case TOP_FACE -> {
-                for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
-                    if (Block.list[block].blockModel.modelFaces[i].faceType == TOP_FACE) {
-                        ModelFace modelFace = Block.list[block].blockModel.copyModel().modelFaces[i];
-                        modelFace.normal.rotateY(rotation);
-                        for(int j = 0; j < modelFace.vertices.length; j++){
-                            modelFace.vertices[j].rotateY(rotation);
-                        }
-                        for(int j = 0; j < modelFace.vertices.length; j++){
-                            modelFace.vertices[j].add(offset);
-                        }
-                        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0.3125f, 0.375f, -0.3125f, -0.375f, 0.3125f, -0.375f, -0.3125f, 0.375f, 3, 1, 2, 0, greedyMeshSize);
 
-                        if(secondRockHasHitTheTowers){
-                            modelFace = Block.list[block].blockModel.copyModel().getScaledModel(0.5f).modelFaces[i];
-                            modelFace.normal.rotateY(rotation);
-                            for(int j = 0; j < modelFace.vertices.length; j++){
-                                modelFace.vertices[j].rotateY(secondRockRotation);
-                            }
-                            for(int j = 0; j < modelFace.vertices.length; j++){
-                                modelFace.vertices[j].add(secondOffset);
-                            }
-                            renderOpaqueFace(chunk, world, block, index, face, modelFace, 0.3125f, 0.375f, -0.3125f, -0.375f, 0.3125f, -0.375f, -0.3125f, 0.375f, 3, 1, 2, 0, greedyMeshSize);
-                        }
-                    }
-                }
+        ModelFace[] modelFaces = Block.list[block].blockModel.getModelFaceOfType(face);
+        float[] UVSamples;
+        for (int i = 0; i < modelFaces.length; i++) {
+            UVSamples = face == TOP_FACE || face == BOTTOM_FACE ? autoUVTopBottom(this.getFaceWidth(modelFaces[i]), this.getFaceHeight(modelFaces[i])) : autoUVNSEW(this.getFaceWidth(modelFaces[i]), this.getFaceHeight(modelFaces[i]));
+            if(modelFaces[i] == null)return;
+            ModelFace modelFace = modelFaces[i].getScaledFace(1f);
+            modelFace.normal.rotateY(rotation);
+            for(int j = 0; j <  modelFaces[i].vertices.length; j++){
+                modelFace.vertices[j].rotateY(rotation);
             }
-            case BOTTOM_FACE -> {
-                for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
-                    if (Block.list[block].blockModel.modelFaces[i].faceType == BOTTOM_FACE) {
-                        ModelFace modelFace = Block.list[block].blockModel.copyModel().modelFaces[i];
-                        modelFace.normal.rotateY(rotation);
-                        for(int j = 0; j < modelFace.vertices.length; j++){
-                            modelFace.vertices[j].rotateY(rotation);
-                        }
-                        for(int j = 0; j < modelFace.vertices.length; j++){
-                            modelFace.vertices[j].add(offset);
-                        };
-                        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0.3125f, 0.375f, -0.3125f, -0.375f, 0.3125f, -0.375f, -0.3125f, 0.375f, 3, 1, 2, 0, greedyMeshSize);
-
-                        if(secondRockHasHitTheTowers){
-                            modelFace = Block.list[block].blockModel.copyModel().getScaledModel(0.5f).modelFaces[i];
-                            modelFace.normal.rotateY(rotation);
-                            for(int j = 0; j < modelFace.vertices.length; j++){
-                                modelFace.vertices[j].rotateY(secondRockRotation);
-                            }
-                            for(int j = 0; j < modelFace.vertices.length; j++){
-                                modelFace.vertices[j].add(secondOffset);
-                            }
-                            renderOpaqueFace(chunk, world, block, index, face, modelFace, 0.3125f, 0.375f, -0.3125f, -0.375f, 0.3125f, -0.375f, -0.3125f, 0.375f, 3, 1, 2, 0, greedyMeshSize);
-                        }
-                    }
-                }
+            for(int j = 0; j <  modelFace.vertices.length; j++){
+                modelFace.vertices[j].add(offset);
             }
-            case NORTH_FACE -> {
-                for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
-                    if (Block.list[block].blockModel.modelFaces[i].faceType == NORTH_FACE) {
-                        ModelFace modelFace = Block.list[block].blockModel.copyModel().modelFaces[i];
-                        modelFace.normal.rotateY(rotation);
-                        for(int j = 0; j < modelFace.vertices.length; j++){
-                            modelFace.vertices[j].rotateY(rotation);
-                        }
-                        for(int j = 0; j < modelFace.vertices.length; j++){
-                            modelFace.vertices[j].add(offset);
-                        }
-                        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0.375f, -0.46875f, -0.375f, 0.46875f, 0.375f, 0.46875f, -0.375f, -0.46875f, 3, 1, 2, 0, greedyMeshSize);
+            renderOpaqueFace(chunk, world, block, index, face,  modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, greedyMeshSize);
 
-                        if(secondRockHasHitTheTowers){
-                            modelFace = Block.list[block].blockModel.copyModel().getScaledModel(0.5f).modelFaces[i];
-                            modelFace.normal.rotateY(rotation);
-                            for(int j = 0; j < modelFace.vertices.length; j++){
-                                modelFace.vertices[j].rotateY(secondRockRotation);
-                            }
-                            for(int j = 0; j < modelFace.vertices.length; j++){
-                                modelFace.vertices[j].add(secondOffset);
-                            }
-                            renderOpaqueFace(chunk, world, block, index, face, modelFace, 0.375f, -0.46875f, -0.375f, 0.46875f, 0.375f, 0.46875f, -0.375f, -0.46875f, 3, 1, 2, 0, greedyMeshSize);
-                        }
-                    }
+            if(secondRockHasHitTheTowers){
+                modelFace = modelFaces[i].getScaledFace(0.5f);
+                UVSamples = face == TOP_FACE || face == BOTTOM_FACE ? autoUVTopBottom(this.getFaceWidth(modelFace), this.getFaceHeight(modelFace)) : autoUVNSEW(this.getFaceWidth(modelFace), this.getFaceHeight(modelFace));
+                modelFace.normal.rotateY(secondRockRotation);
+                for(int j = 0; j < modelFace.vertices.length; j++){
+                    modelFace.vertices[j].rotateY(secondRockRotation);
                 }
-            }
-            case SOUTH_FACE -> {
-                for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
-                    if (Block.list[block].blockModel.modelFaces[i].faceType == SOUTH_FACE) {
-                        ModelFace modelFace = Block.list[block].blockModel.copyModel().modelFaces[i];
-                        modelFace.normal.rotateY(rotation);
-                        for(int j = 0; j < modelFace.vertices.length; j++){
-                            modelFace.vertices[j].rotateY(rotation);
-                        }
-                        for(int j = 0; j < modelFace.vertices.length; j++){
-                            modelFace.vertices[j].add(offset);
-                        }
-                        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0.375f, -0.46875f, -0.375f, 0.46875f, 0.375f, 0.46875f, -0.375f, -0.46875f, 3, 1, 2, 0, greedyMeshSize);
-
-                        if(secondRockHasHitTheTowers){
-                            modelFace = Block.list[block].blockModel.copyModel().getScaledModel(0.5f).modelFaces[i];
-                            modelFace.normal.rotateY(rotation);
-                            for(int j = 0; j < modelFace.vertices.length; j++){
-                                modelFace.vertices[j].rotateY(secondRockRotation);
-                            }
-                            for(int j = 0; j < modelFace.vertices.length; j++){
-                                modelFace.vertices[j].add(secondOffset);
-                            }
-                            renderOpaqueFace(chunk, world, block, index, face, modelFace, 0.375f, -0.46875f, -0.375f, 0.46875f, 0.375f, 0.46875f, -0.375f, -0.46875f, 3, 1, 2, 0, greedyMeshSize);
-                        }
-                    }
+                for(int j = 0; j <  modelFace.vertices.length; j++){
+                    modelFace.vertices[j].add(secondOffset);
                 }
-            }
-            case EAST_FACE -> {
-                for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
-                    if (Block.list[block].blockModel.modelFaces[i].faceType == EAST_FACE) {
-                        ModelFace modelFace = Block.list[block].blockModel.copyModel().modelFaces[i];
-                        modelFace.normal.rotateY(rotation);
-                        for(int j = 0; j < modelFace.vertices.length; j++){
-                            modelFace.vertices[j].rotateY(rotation);
-                        }
-                        for(int j = 0; j < modelFace.vertices.length; j++){
-                            modelFace.vertices[j].add(offset);
-                        }
-                        renderOpaqueFace(chunk, world, block, index, face, modelFace, -0.3125f, -0.46875f, 0.3125f, 0.46875f, -0.3125f, 0.46875f, 0.3125f, -0.46875f, 3, 1, 2, 0, greedyMeshSize);
-
-                        if(secondRockHasHitTheTowers){
-                            modelFace = Block.list[block].blockModel.copyModel().getScaledModel(0.5f).modelFaces[i];
-                            modelFace.normal.rotateY(rotation);
-                            for(int j = 0; j < modelFace.vertices.length; j++){
-                                modelFace.vertices[j].rotateY(secondRockRotation);
-                            }
-                            for(int j = 0; j < modelFace.vertices.length; j++){
-                                modelFace.vertices[j].add(secondOffset);
-                            }
-                            renderOpaqueFace(chunk, world, block, index, face, modelFace, -0.3125f, -0.46875f, 0.3125f, 0.46875f, -0.3125f, 0.46875f, 0.3125f, -0.46875f, 3, 1, 2, 0, greedyMeshSize);
-                        }
-                    }
-                }
-            }
-            case WEST_FACE -> {
-                for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
-                    if (Block.list[block].blockModel.modelFaces[i].faceType == WEST_FACE) {
-                        ModelFace modelFace = Block.list[block].blockModel.copyModel().modelFaces[i];
-                        modelFace.normal.rotateY(rotation);
-                        for(int j = 0; j < modelFace.vertices.length; j++){
-                            modelFace.vertices[j].rotateY(rotation);
-                        }
-                        for(int j = 0; j < modelFace.vertices.length; j++){
-                            modelFace.vertices[j].add(offset);
-                        }
-                        renderOpaqueFace(chunk, world, block, index, face, modelFace, -0.3125f, -0.46875f, 0.3125f, 0.46875f, -0.3125f, 0.46875f, 0.3125f, -0.46875f, 3, 1, 2, 0, greedyMeshSize);
-
-                        if(secondRockHasHitTheTowers){
-                            modelFace = Block.list[block].blockModel.copyModel().getScaledModel(0.5f).modelFaces[i];
-                            modelFace.normal.rotateY(rotation);
-                            for(int j = 0; j < modelFace.vertices.length; j++){
-                                modelFace.vertices[j].rotateY(secondRockRotation);
-                            }
-                            for(int j = 0; j < modelFace.vertices.length; j++){
-                                modelFace.vertices[j].add(secondOffset);
-                            }
-                            renderOpaqueFace(chunk, world, block, index, face, modelFace, -0.3125f, -0.46875f, 0.3125f, 0.46875f, -0.3125f, 0.46875f, 0.3125f, -0.46875f, 3, 1, 2, 0, greedyMeshSize);
-                        }
-                    }
-                }
+                renderOpaqueFace(chunk, world, block, index, face,  modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, greedyMeshSize);
             }
         }
     }
@@ -691,168 +368,32 @@ public class RenderBlocks {
         float secondTranslateZ = rand.nextBoolean() ? translateZ - 0.25f : translateZ + 0.25f;
         Vector3f secondOffset = new Vector3f(secondTranslateX, 0f, secondTranslateZ);
 
-        switch (face) {
-            case TOP_FACE -> {
-                for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
-                    if (Block.list[block].blockModel.modelFaces[i].faceType == TOP_FACE) {
-                        ModelFace modelFace = Block.list[block].blockModel.copyModel().getScaledModel(stickScale).modelFaces[i];
-                        modelFace.normal.rotateY(rotation);
-                        for(int j = 0; j < modelFace.vertices.length; j++){
-                            modelFace.vertices[j].rotateY(rotation);
-                        }
-                        for(int j = 0; j < modelFace.vertices.length; j++){
-                            modelFace.vertices[j].add(offset);
-                        }
-                        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0,0.4375f,0,-0.4375f,0,-0.4375f,0,0.4375f, 3, 1, 2, 0, greedyMeshSize);
-
-                        if(secondStick){
-                            modelFace = Block.list[block].blockModel.copyModel().getScaledModel(secondStickScale).modelFaces[i];
-                            modelFace.normal.rotateY(rotation);
-                            for(int j = 0; j < modelFace.vertices.length; j++){
-                                modelFace.vertices[j].rotateY(secondStickRotation);
-                            }
-                            for(int j = 0; j < modelFace.vertices.length; j++){
-                                modelFace.vertices[j].add(secondOffset);
-                            }
-                            renderOpaqueFace(chunk, world, block, index, face, modelFace, 0,0.4375f,0,-0.4375f,0,-0.4375f,0,0.4375f, 3, 1, 2, 0, greedyMeshSize);
-                        }
-                    }
-                }
+        ModelFace[] modelFaces = Block.list[block].blockModel.getModelFaceOfType(face);
+        float[] UVSamples;
+        for (int i = 0; i < modelFaces.length; i++) {
+            UVSamples = face == TOP_FACE || face == BOTTOM_FACE ? autoUVTopBottom(this.getFaceWidth(modelFaces[i]), this.getFaceHeight(modelFaces[i])) : autoUVNSEW(this.getFaceWidth(modelFaces[i]), this.getFaceHeight(modelFaces[i]));
+            if(modelFaces[i] == null)return;
+            ModelFace modelFace = modelFaces[i].getScaledFace(stickScale);
+            modelFace.normal.rotateY(rotation);
+            for(int j = 0; j <  modelFaces[i].vertices.length; j++){
+                modelFace.vertices[j].rotateY(rotation);
             }
-            case BOTTOM_FACE -> {
-                for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
-                    if (Block.list[block].blockModel.modelFaces[i].faceType == BOTTOM_FACE) {
-                        ModelFace modelFace = Block.list[block].blockModel.copyModel().getScaledModel(stickScale).modelFaces[i];
-                        modelFace.normal.rotateY(rotation);
-                        for(int j = 0; j < modelFace.vertices.length; j++){
-                            modelFace.vertices[j].rotateY(rotation);
-                        }
-                        for(int j = 0; j < modelFace.vertices.length; j++){
-                            modelFace.vertices[j].add(offset);
-                        };
-                        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0,0.4375f,0,-0.4375f,0,-0.4375f,0,0.4375f, 3, 1, 2, 0, greedyMeshSize);
-
-                        if(secondStick){
-                            modelFace = Block.list[block].blockModel.copyModel().getScaledModel(secondStickScale).modelFaces[i];
-                            modelFace.normal.rotateY(rotation);
-                            for(int j = 0; j < modelFace.vertices.length; j++){
-                                modelFace.vertices[j].rotateY(secondStickRotation);
-                            }
-                            for(int j = 0; j < modelFace.vertices.length; j++){
-                                modelFace.vertices[j].add(secondOffset);
-                            }
-                            renderOpaqueFace(chunk, world, block, index, face, modelFace, 0,0.4375f,0,-0.4375f,0,-0.4375f,0,0.4375f, 3, 1, 2, 0, greedyMeshSize);
-                        }
-                    }
-                }
+            for(int j = 0; j <  modelFace.vertices.length; j++){
+                modelFace.vertices[j].add(offset);
             }
-            case NORTH_FACE -> {
-                for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
-                    if (Block.list[block].blockModel.modelFaces[i].faceType == NORTH_FACE) {
-                        ModelFace modelFace = Block.list[block].blockModel.copyModel().getScaledModel(stickScale).modelFaces[i];
-                        modelFace.normal.rotateY(rotation);
-                        for(int j = 0; j < modelFace.vertices.length; j++){
-                            modelFace.vertices[j].rotateY(rotation);
-                        }
-                        for(int j = 0; j < modelFace.vertices.length; j++){
-                            modelFace.vertices[j].add(offset);
-                        }
-                        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0,-0.4375f,-0.875f,0.4375f,0,0.4375f,-0.875f,-0.4375f, 3, 1, 2, 0, greedyMeshSize);
+            renderOpaqueFace(chunk, world, block, index, face,  modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, greedyMeshSize);
 
-                        if(secondStick){
-                            modelFace = Block.list[block].blockModel.copyModel().getScaledModel(secondStickScale).modelFaces[i];
-                            modelFace.normal.rotateY(rotation);
-                            for(int j = 0; j < modelFace.vertices.length; j++){
-                                modelFace.vertices[j].rotateY(secondStickRotation);
-                            }
-                            for(int j = 0; j < modelFace.vertices.length; j++){
-                                modelFace.vertices[j].add(secondOffset);
-                            }
-                            renderOpaqueFace(chunk, world, block, index, face, modelFace, 0,-0.4375f,-0.875f,0.4375f,0,0.4375f,-0.875f,-0.4375f, 3, 1, 2, 0, greedyMeshSize);
-                        }
-                    }
+            if(secondStick){
+                modelFace = modelFaces[i].getScaledFace(secondStickScale);
+                UVSamples = face == TOP_FACE || face == BOTTOM_FACE ? autoUVTopBottom(this.getFaceWidth(modelFace), this.getFaceHeight(modelFace)) : autoUVNSEW(this.getFaceWidth(modelFace), this.getFaceHeight(modelFace));
+                modelFace.normal.rotateY(secondStickRotation);
+                for(int j = 0; j < modelFace.vertices.length; j++){
+                    modelFace.vertices[j].rotateY(secondStickRotation);
                 }
-            }
-            case SOUTH_FACE -> {
-                for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
-                    if (Block.list[block].blockModel.modelFaces[i].faceType == SOUTH_FACE) {
-                        ModelFace modelFace = Block.list[block].blockModel.copyModel().getScaledModel(stickScale).modelFaces[i];
-                        modelFace.normal.rotateY(rotation);
-                        for(int j = 0; j < modelFace.vertices.length; j++){
-                            modelFace.vertices[j].rotateY(rotation);
-                        }
-                        for(int j = 0; j < modelFace.vertices.length; j++){
-                            modelFace.vertices[j].add(offset);
-                        }
-                        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0,-0.4375f,-0.875f,0.4375f,0,0.4375f,-0.875f,-0.4375f, 3, 1, 2, 0, greedyMeshSize);
-
-                        if(secondStick){
-                            modelFace = Block.list[block].blockModel.copyModel().getScaledModel(secondStickScale).modelFaces[i];
-                            modelFace.normal.rotateY(rotation);
-                            for(int j = 0; j < modelFace.vertices.length; j++){
-                                modelFace.vertices[j].rotateY(secondStickRotation);
-                            }
-                            for(int j = 0; j < modelFace.vertices.length; j++){
-                                modelFace.vertices[j].add(secondOffset);
-                            }
-                            renderOpaqueFace(chunk, world, block, index, face, modelFace, 0,-0.4375f,-0.875f,0.4375f,0,0.4375f,-0.875f,-0.4375f, 3, 1, 2, 0, greedyMeshSize);
-                        }
-                    }
+                for(int j = 0; j <  modelFace.vertices.length; j++){
+                    modelFace.vertices[j].add(secondOffset);
                 }
-            }
-            case EAST_FACE -> {
-                for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
-                    if (Block.list[block].blockModel.modelFaces[i].faceType == EAST_FACE) {
-                        ModelFace modelFace = Block.list[block].blockModel.copyModel().getScaledModel(stickScale).modelFaces[i];
-                        modelFace.normal.rotateY(rotation);
-                        for(int j = 0; j < modelFace.vertices.length; j++){
-                            modelFace.vertices[j].rotateY(rotation);
-                        }
-                        for(int j = 0; j < modelFace.vertices.length; j++){
-                            modelFace.vertices[j].add(offset);
-                        }
-                        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0,-0.4375f,0,0.4375f,0,0.4375f,0,-0.4375f, 3, 1, 2, 0, greedyMeshSize);
-
-                        if(secondStick){
-                            modelFace = Block.list[block].blockModel.copyModel().getScaledModel(secondStickScale).modelFaces[i];
-                            modelFace.normal.rotateY(rotation);
-                            for(int j = 0; j < modelFace.vertices.length; j++){
-                                modelFace.vertices[j].rotateY(secondStickRotation);
-                            }
-                            for(int j = 0; j < modelFace.vertices.length; j++){
-                                modelFace.vertices[j].add(secondOffset);
-                            }
-                            renderOpaqueFace(chunk, world, block, index, face, modelFace, 0,-0.4375f,0,0.4375f,0,0.4375f,0,-0.4375f, 3, 1, 2, 0, greedyMeshSize);
-                        }
-                    }
-                }
-            }
-            case WEST_FACE -> {
-                for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
-                    if (Block.list[block].blockModel.modelFaces[i].faceType == WEST_FACE) {
-                        ModelFace modelFace = Block.list[block].blockModel.copyModel().getScaledModel(stickScale).modelFaces[i];
-                        modelFace.normal.rotateY(rotation);
-                        for(int j = 0; j < modelFace.vertices.length; j++){
-                            modelFace.vertices[j].rotateY(rotation);
-                        }
-                        for(int j = 0; j < modelFace.vertices.length; j++){
-                            modelFace.vertices[j].add(offset);
-                        }
-                        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0,-0.4375f,0,0.4375f,0,0.4375f,0,-0.4375f, 3, 1, 2, 0, greedyMeshSize);
-
-                        if(secondStick){
-                            modelFace = Block.list[block].blockModel.copyModel().getScaledModel(secondStickScale).modelFaces[i];
-                            modelFace.normal.rotateY(rotation);
-                            for(int j = 0; j < modelFace.vertices.length; j++){
-                                modelFace.vertices[j].rotateY(secondStickRotation);
-                            }
-                            for(int j = 0; j < modelFace.vertices.length; j++){
-                                modelFace.vertices[j].add(secondOffset);
-                            }
-                            renderOpaqueFace(chunk, world, block, index, face, modelFace, 0,-0.4375f,0,0.4375f,0,0.4375f,0,-0.4375f, 3, 1, 2, 0, greedyMeshSize);
-                        }
-                    }
-                }
+                renderOpaqueFace(chunk, world, block, index, face,  modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, greedyMeshSize);
             }
         }
     }

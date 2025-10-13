@@ -1,6 +1,5 @@
 package spacegame.entity;
 
-import org.joml.Vector3f;
 import spacegame.block.Block;
 import spacegame.core.MathUtil;
 import spacegame.core.Sound;

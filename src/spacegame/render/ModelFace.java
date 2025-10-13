@@ -1,9 +1,7 @@
 package spacegame.render;
 
 import org.joml.Vector3f;
-import org.joml.Vector4f;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 
 public final class ModelFace {
@@ -72,6 +70,19 @@ public final class ModelFace {
         }
         Arrays.sort(zValues);
         return (int)((zValues[3] - zValues[0]) * 32);
+    }
+
+    public ModelFace getScaledFace(float scale){
+        ModelFace scaledFace = new ModelFace(this.faceType);
+        for(int i = 0; i < scaledFace.vertices.length; i++){
+            scaledFace.setFloatValue(i, 0, this.vertices[i].x);
+            scaledFace.setFloatValue(i, 1, this.vertices[i].y);
+            scaledFace.setFloatValue(i, 2, this.vertices[i].z);
+            scaledFace.vertices[i].mul(scale);
+        }
+        scaledFace.setNormal(this.normal.x, this.normal.y, this.normal.z);
+
+        return scaledFace;
     }
 
 

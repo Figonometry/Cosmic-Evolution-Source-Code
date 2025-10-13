@@ -6,7 +6,6 @@ import org.lwjgl.opengl.GL46;
 import org.lwjgl.stb.STBImage;
 import spacegame.core.SpaceGame;
 
-import java.awt.*;
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;

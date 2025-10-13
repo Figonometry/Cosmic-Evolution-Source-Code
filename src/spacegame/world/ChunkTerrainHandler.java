@@ -3,7 +3,6 @@ package spacegame.world;
 import spacegame.block.Block;
 import spacegame.block.ITickable;
 import spacegame.core.SpaceGame;
-import spacegame.item.Item;
 
 import java.awt.*;
 import java.util.Random;

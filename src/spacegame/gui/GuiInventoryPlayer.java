@@ -8,12 +8,12 @@ import spacegame.item.ItemStack;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
 
-public final class GuiPlayerInventory extends GuiInventory {
+public final class GuiInventoryPlayer extends GuiInventory {
     public int inventoryUI;
-    public static int transparentBackground;
     public static int fillableColorWithShadedBottom;
+    public static int flllableColor;
 
-    public GuiPlayerInventory(SpaceGame spaceGame, Inventory associatedInventory) {
+    public GuiInventoryPlayer(SpaceGame spaceGame, Inventory associatedInventory) {
         super(spaceGame);
         this.associatedInventory = associatedInventory;
     }
@@ -21,16 +21,16 @@ public final class GuiPlayerInventory extends GuiInventory {
     @Override
     public void loadTextures() {
         this.inventoryUI = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInventory/playerInventory.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        transparentBackground = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
         fillableColorWithShadedBottom = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColorWithShadedBottom.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        fillableColor = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColor.png", RenderEngine.TEXTURE_TYPE_2D, 0);
         this.loadTexture();
     }
 
     @Override
     public void deleteTextures() {
         SpaceGame.instance.renderEngine.deleteTexture(this.inventoryUI);
-        SpaceGame.instance.renderEngine.deleteTexture(transparentBackground);
         SpaceGame.instance.renderEngine.deleteTexture(fillableColorWithShadedBottom);
+        SpaceGame.instance.renderEngine.deleteTexture(fillableColor);
         this.unloadTexture();
     }
 

@@ -11,19 +11,19 @@ import spacegame.render.Shader;
 public abstract class GuiInventory extends Gui {
     public Inventory associatedInventory;
     public static int fillableColor;
-    public int transparentBackground;
+    public static int transparentBackground;
     public GuiInventory(SpaceGame spaceGame) {
         super(spaceGame);
     }
 
     public void loadTexture(){
         fillableColor = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColor.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        this.transparentBackground = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        transparentBackground = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
     }
 
     public void unloadTexture() {
         SpaceGame.instance.renderEngine.deleteTexture(fillableColor);
-        SpaceGame.instance.renderEngine.deleteTexture(this.transparentBackground);
+        SpaceGame.instance.renderEngine.deleteTexture(transparentBackground);
     }
 
     public abstract ItemStack getHoveredItemStack();

@@ -270,7 +270,7 @@ public final class EntityPlayer extends EntityLiving {
             newInventory.itemStacks[newInventory.itemStacks.length - 10] = this.inventory.itemStacks[this.inventory.itemStacks.length - 10];
 
             this.inventory = newInventory;
-            this.sg.setNewGui(new GuiPlayerInventory(this.sg, this.inventory));
+            this.sg.setNewGui(new GuiInventoryPlayer(this.sg, this.inventory));
         } else {
             this.inventoryUpgradeLevel = storageLevel;
             Inventory newInventory = new Inventory(9, this.inventoryUpgradeLevel, 10);
@@ -279,7 +279,6 @@ public final class EntityPlayer extends EntityLiving {
                 newInventory.itemStacks[i] = this.inventory.itemStacks[i];
             }
 
-            i++;
             while(i < this.inventory.itemStacks.length){
                 if(this.inventory.itemStacks[i].item != null) {
 
@@ -316,7 +315,7 @@ public final class EntityPlayer extends EntityLiving {
             newInventory.itemStacks[newInventory.itemStacks.length - 10] = this.inventory.itemStacks[this.inventory.itemStacks.length - 10];
 
             this.inventory = newInventory;
-            this.sg.setNewGui(new GuiPlayerInventory(this.sg, this.inventory));
+            this.sg.setNewGui(new GuiInventoryPlayer(this.sg, this.inventory));
         }
     }
 
@@ -717,6 +716,9 @@ public final class EntityPlayer extends EntityLiving {
        if(heldItem == Item.NULL_ITEM_REFERENCE){
            return 5f;
        } else {
+           if(this.inventory.itemStacks[selectedInventorySlot].durability != Item.NULL_ITEM_DURABILITY){
+               this.reduceHeldItemDurability();
+           }
            return 5f + Item.list[heldItem].attackDamage;
        }
     }
@@ -791,6 +793,7 @@ public final class EntityPlayer extends EntityLiving {
     @Override
     public void handleDeath() {
         this.clearInventory();
+        this.inventoryUpgradeLevel = 1;
         this.sg.setNewGui(new GuiDeathScreen(this.sg));
         this.sg.save.activeWorld.paused = true;
     }

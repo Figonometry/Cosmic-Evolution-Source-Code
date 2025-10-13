@@ -1,6 +1,5 @@
 package spacegame.entity;
 
-import spacegame.core.MathUtil;
 import spacegame.core.Sound;
 import spacegame.core.SpaceGame;
 import spacegame.entity.ai.AIPassive;
@@ -10,7 +9,6 @@ import spacegame.render.ModelDeer;
 import spacegame.render.RenderEngine;
 import spacegame.world.Tech;
 
-import java.io.File;
 import java.util.Random;
 
 public final class EntityDeer extends EntityLiving {

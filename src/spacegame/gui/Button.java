@@ -10,7 +10,10 @@ import spacegame.entity.EntityItem;
 import spacegame.item.Item;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
-import spacegame.render.*;
+import spacegame.render.RenderEngine;
+import spacegame.render.Shader;
+import spacegame.render.Texture;
+import spacegame.render.TextureAtlas;
 import spacegame.world.Save;
 import spacegame.world.Tech;
 

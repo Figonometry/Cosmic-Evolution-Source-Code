@@ -3,7 +3,6 @@ package spacegame.render;
 import spacegame.block.Block;
 import spacegame.block.BlockLog;
 import spacegame.core.GameSettings;
-import spacegame.render.RenderBlocks;
 
 public final class ShouldFaceRenderSorter {
 

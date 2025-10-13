@@ -5,6 +5,7 @@ import spacegame.core.SoundPlayer;
 import spacegame.core.SpaceGame;
 import spacegame.entity.EntityItem;
 import spacegame.entity.EntityPlayer;
+import spacegame.item.Inventory;
 import spacegame.item.Item;
 import spacegame.item.ItemKnife;
 import spacegame.render.ModelLoader;
@@ -80,6 +81,7 @@ public class Block {
     public static final ModelLoader size1EastWestModel = standardBlockModel.alterStandardBlockModel(15,15,0);
     public static final AxisAlignedBB standardBlock = new AxisAlignedBB(0,0,0,1,1,1);
     public static final AxisAlignedBB itemStoneBoundingBox = new AxisAlignedBB(0,0,0,1,0.125,1);
+    public static final AxisAlignedBB slab = new AxisAlignedBB(0, 0, 0, 1, 0.5, 1);
     public static final Block[] list = new Block[Short.MAX_VALUE];
     public static final Block air = new Block((short) 0, -1, "src/spacegame/assets/blockFiles/air.txt");
     public static final Block grass = new BlockGrass((short) 1, 2, "src/spacegame/assets/blockFiles/grass.txt");
@@ -172,7 +174,7 @@ public class Block {
     public static final Block tallGrass = new Block((short)88, 30, "src/spacegame/assets/blockFiles/tallGrass.txt");
     public static final Block campFire4FireWood = new BlockCampFireUnlit((short) 89, 16, "src/spacegame/assets/blockFiles/campFireUnlit.txt");
     public static final Block fireWoodBlock = new Block((short)90, 31, "src/spacegame/assets/blockFiles/fireWood.txt");
-    public static final Block strawChest = new Block((short)91, 32, "src/spacegame/assets/blockFiles/strawChest.txt");
+    public static final Block strawChest = new BlockStrawChest((short)91, 32, "src/spacegame/assets/blockFiles/strawChest.txt");
     public static final Block strawChestTier0 = new Block((short)92, 32, "src/spacegame/assets/blockFiles/strawChestBuilding0.txt");
     public static final Block strawBasketTier0 = new Block((short)93, 32, "src/spacegame/assets/blockFiles/strawBasketBuilding.txt");
     public static final Block strawChestTier1 = new Block((short)94, 32, "src/spacegame/assets/blockFiles/strawChestBuilding1.txt");
@@ -270,6 +272,7 @@ public class Block {
             if (properties[0].equals("boundingBox")) {
                 switch (properties[1]){
                     case "itemStoneBoundingBox" -> this.standardCollisionBoundingBox = itemStoneBoundingBox;
+                    case "slab" -> this.standardCollisionBoundingBox = slab;
                 }
             }
 
@@ -393,7 +396,7 @@ public class Block {
     }
 
 
-    private void handleSpecialLeftClickFunctions(int x, int y, int z, World world, EntityPlayer player){
+    protected void handleSpecialLeftClickFunctions(int x, int y, int z, World world, EntityPlayer player){
         short playerHeldItem = player.getHeldItem();
         if(playerHeldItem != Item.NULL_ITEM_REFERENCE) {
             if (this.ID == tallGrass.ID && Item.list[playerHeldItem] instanceof ItemKnife) {
@@ -438,6 +441,9 @@ public class Block {
         };
 
 
+        if(Block.list[heldBlock] instanceof BlockContainer){
+            chunk.addChestLocation(x,y,z, new Inventory(((BlockContainer)(Block.list[heldBlock])).inventorySize, 9));
+        }
 
         new SoundPlayer(SpaceGame.instance).playSound(x, y, z, new Sound(list[player.getHeldBlock()].stepSound, false), new Random().nextFloat(0.6F, 1));
         player.removeItemFromInventory();

@@ -12,14 +12,14 @@ public final class Inventory {
         this.inventoryHeight = inventoryHeight;
         this.inventoryWidth = inventoryWidth;
         this.itemStacks = new ItemStack[inventoryHeight * inventoryWidth];
-        float x = -256;
-        float y = -192;
+        float x = 0;
+        float y = -256;
         for(int i = 0; i < this.itemStacks.length; i++){
             this.itemStacks[i] = new ItemStack(null, (byte)0,x,y);
             x += 65;
-            if(x == 329){
-                y += i < 9 ? 128 : 65;
-                x = -256;
+            if(x == 65 * inventoryWidth){
+                y += 65;
+                x = 0;
             }
         }
     }
@@ -34,8 +34,8 @@ public final class Inventory {
         for(i = 0; i < this.itemStacks.length - extraSpaces; i++){
             this.itemStacks[i] = new ItemStack(null, (byte)0,x,y);
             x += 65;
-            if(x == 607){
-                y += i < 9 ? 128 : 65;
+            if(x == 22 + (65 * inventoryWidth)){
+                y += i < inventoryWidth ? 128 : 65;
                 x = 22;
             }
         }
@@ -50,6 +50,26 @@ public final class Inventory {
         this.itemStacks[i + 7] = new ItemStack(null, (byte)0, -96, y - 259, Item.ITEM_TYPE_ARMOR_LEGS);
         this.itemStacks[i + 8] = new ItemStack(null, (byte)0, -196, y - 356, Item.ITEM_TYPE_CLOTHING_FEET);
         this.itemStacks[i + 9] = new ItemStack(null, (byte)0, -96, y - 356, Item.ITEM_TYPE_ARMOR_FEET);
+    }
+
+    public void shiftAllItemStacks(int x, int y){
+        for(int i = 0; i < this.itemStacks.length; i++){
+            this.itemStacks[i].x += x;
+            this.itemStacks[i].y += y;
+        }
+    }
+
+    public void shiftPlayerHotbar(int x, int y){
+        for(int i = 0; i < 9; i++){
+            this.itemStacks[i].x += x;
+            this.itemStacks[i].y += y;
+        }
+    }
+
+    public void resetAllItemStacks(){
+        for(int i = 0; i < this.itemStacks.length; i++){
+          this.itemStacks[i].resetStackPosition();
+        }
     }
 
     public void renderInventory(){

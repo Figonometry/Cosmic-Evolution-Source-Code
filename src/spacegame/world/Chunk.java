@@ -7,14 +7,21 @@ import spacegame.block.ITickable;
 import spacegame.core.MathUtil;
 import spacegame.core.SpaceGame;
 import spacegame.entity.Entity;
+import spacegame.entity.EntityBlock;
+import spacegame.entity.EntityItem;
 import spacegame.entity.EntityParticle;
-import spacegame.render.*;
+import spacegame.item.Inventory;
+import spacegame.item.Item;
+import spacegame.render.RenderBlocks;
+import spacegame.render.Shader;
+import spacegame.render.ShouldFaceRenderSorter;
 
 import java.awt.*;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Random;
 
 public final class Chunk implements Comparable<Chunk> {
     public World parentWorld;
@@ -61,6 +68,7 @@ public final class Chunk implements Comparable<Chunk> {
     public IntBuffer elementBufferOpaque;
     public FloatBuffer vertexBufferTransparent;
     public IntBuffer elementBufferTransparent;
+    public ArrayList<ChestLocation> chestLocations = new ArrayList<>();
     public int opaqueVBOID = -10;
     public int opaqueVAOID = -10;
     public int opaqueEBOID = -10;
@@ -304,6 +312,18 @@ public final class Chunk implements Comparable<Chunk> {
 
     public int checkBitValue(int value, int mask) {
         return value & mask;
+    }
+
+    public int calculateIndexInTopOrBottomFaceBitMasks(int positionInBitMaskArray, int bit){
+        return positionInBitMaskArray + (bit << 10);
+    }
+
+    public int calculateIndexInNorthOrSouthFaceBitMasks(int positionInBitMaskArray, int bit){
+        return (positionInBitMaskArray << 5) + bit;
+    }
+
+    public int calculateIndexInEastOrWestFaceBitMasks(int positionInBitMaskArray, int bit){
+        return ((positionInBitMaskArray & 31) + (( positionInBitMaskArray >> 5) << 10) + (bit << 5));
     }
 
     public int createMask(int bitToCheck) {
@@ -1100,6 +1120,54 @@ public final class Chunk implements Comparable<Chunk> {
             this.tickableBlockIndex = newArray;
         } else {
             this.tickableBlockIndex = new short[0];
+        }
+    }
+
+    public void addChestLocation(int x, int y, int z, Inventory inventory){
+        this.chestLocations.add(new ChestLocation((short) getBlockIndexFromCoordinates(x,y,z), inventory));
+    }
+
+    public void addChestLocation(short index, Inventory inventory){
+        this.chestLocations.add(new ChestLocation(index, inventory));
+    }
+
+    public ChestLocation getChestLocation(int x, int y, int z){
+        int index = getBlockIndexFromCoordinates(x,y,z);
+        for(int i = 0; i < this.chestLocations.size(); i++){
+            if(this.chestLocations.get(i).index == index){
+                return this.chestLocations.get(i);
+            }
+        }
+        return null;
+    }
+
+    public void removeChestLocation(short index){
+        for(int i = 0; i < this.chestLocations.size(); i++){
+            if(this.chestLocations.get(i).index == index){
+                this.clearInventoryFromChest(this.chestLocations.get(i).inventory, this.chestLocations.get(i).index);
+                this.chestLocations.remove(i);
+                break;
+            }
+        }
+        this.chestLocations.trimToSize();
+    }
+
+    private void clearInventoryFromChest(Inventory inventory, int index){
+        Random rand = new Random();
+        for(int i = 0; i < inventory.itemStacks.length; i++) {
+            if(inventory.itemStacks[i].item == Item.block) {
+                EntityBlock block = new EntityBlock(this.getBlockXFromIndex(index) + 0.5, this.getBlockYFromIndex(index) + 0.5, this.getBlockZFromIndex(index) + 0.5, inventory.itemStacks[i].metadata, inventory.itemStacks[i].count);
+                block.setMovementVector(new Vector3f(rand.nextFloat(-1, 1), rand.nextFloat(-1, 1), rand.nextFloat(-1, 1)));
+                this.addEntityToList(block);
+            } else if(inventory.itemStacks[i].item != null){
+                EntityItem item = new EntityItem(this.getBlockXFromIndex(index) + 0.5, this.getBlockYFromIndex(index) + 0.5, this.getBlockZFromIndex(index) + 0.5, inventory.itemStacks[i].item.ID, inventory.itemStacks[i].metadata, inventory.itemStacks[i].count, inventory.itemStacks[i].durability);
+                item.setMovementVector(new Vector3f(rand.nextFloat(-1, 1), rand.nextFloat(-1, 1), rand.nextFloat(-1, 1)));
+                this.addEntityToList(item);
+            }
+            inventory.itemStacks[i].item = null;
+            inventory.itemStacks[i].count = 0;
+            inventory.itemStacks[i].durability = 0;
+            inventory.itemStacks[i].metadata = 0;
         }
     }
 

@@ -191,7 +191,7 @@ public abstract class Entity {
         AxisAlignedBB block;
         for(int i = 0; i < surroundingBlocks.size(); i++) {
             block = surroundingBlocks.get(i);
-            this.deltaX = block.clipXCollide(this.boundingBox, this.deltaX);
+            this.deltaX = block.clipXCollide(this.boundingBox, this.deltaX, this);
         }
 
         this.boundingBox.move(this.deltaX, 0, 0);
@@ -210,7 +210,7 @@ public abstract class Entity {
 
         for(int i = 0; i < surroundingBlocks.size(); i++) {
             block = surroundingBlocks.get(i);
-            this.deltaZ = block.clipZCollide(this.boundingBox, this.deltaZ);
+            this.deltaZ = block.clipZCollide(this.boundingBox, this.deltaZ, this);
         }
 
         this.boundingBox.move(0, 0, this.deltaZ);

@@ -5,8 +5,6 @@ import spacegame.core.MathUtil;
 import spacegame.core.SpaceGame;
 import spacegame.entity.EntityLiving;
 
-import java.util.Random;
-
 public abstract class AIPassive { ;
 
 

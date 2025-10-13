@@ -6,6 +6,7 @@ import spacegame.entity.Entity;
 import spacegame.entity.EntityBlock;
 import spacegame.entity.EntityDeer;
 import spacegame.entity.EntityItem;
+import spacegame.item.ItemStack;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
 
@@ -29,8 +30,10 @@ public final class ThreadChunkUnloader implements Runnable {
             NBTTagCompound chunkTag = new NBTTagCompound();
             NBTTagCompound chunkData = new NBTTagCompound();
             NBTTagCompound entity = new NBTTagCompound();
+            NBTTagCompound chest = new NBTTagCompound();
             chunkTag.setTag("Chunk", chunkData);
             chunkData.setTag("Entity", entity);
+            chunkData.setTag("Chest", chest);
 
             chunkData.setInteger("x", chunk.x);
             chunkData.setInteger("y", chunk.y);
@@ -77,6 +80,37 @@ public final class ThreadChunkUnloader implements Runnable {
                     entityCount++;
                 }
                 entity.setInteger("entityCount", entityCount);
+            }
+
+            if(this.chunk.chestLocations.size() > 0){
+                ChestLocation chestLocation;
+                int chestCount = 0;
+                NBTTagCompound[] chests = new NBTTagCompound[this.chunk.chestLocations.size()];
+                for(int i = 0; i < chests.length; i++){
+                    chestLocation = this.chunk.chestLocations.get(i);
+                    chests[i] = new NBTTagCompound();
+                    chests[i].setShort("index", chestLocation.index);
+                    ItemStack stack;
+                    NBTTagCompound[] items = new NBTTagCompound[chestLocation.inventory.itemStacks.length];
+                    NBTTagCompound inventory = new NBTTagCompound();
+                    int slotNumber = 0;
+                    for(int j = 0; j < chestLocation.inventory.itemStacks.length; j++){
+                        stack = chestLocation.inventory.itemStacks[j];
+                        if(stack.item != null) {
+                            items[j] = new NBTTagCompound();
+                            items[j].setShort("id", stack.item.ID);
+                            items[j].setByte("count", stack.count);
+                            items[j].setShort("metadata", stack.metadata);
+                            items[j].setShort("durability", stack.durability);
+                            inventory.setTag("slot " + slotNumber, items[j]);
+                        }
+                        slotNumber++;
+                    }
+                    chests[i].setTag("Inventory", inventory);
+                    chest.setTag("chest" + chestCount, chests[i]);
+                    chestCount++;
+                }
+                chest.setInteger("chestCount", chestCount);
             }
 
             NBTIO.writeCompressed(chunkTag, outputStream);

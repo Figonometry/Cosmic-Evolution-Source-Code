@@ -1,6 +1,9 @@
 package spacegame.world;
 
 import spacegame.block.Block;
+import spacegame.entity.Entity;
+import spacegame.entity.EntityItem;
+import spacegame.entity.EntityLiving;
 
 public final class AxisAlignedBB {
 
@@ -35,12 +38,12 @@ public final class AxisAlignedBB {
             this.maxZ = z + 1;
             this.air = true;
         } else {
-            this.minX = x;
-            this.maxX = x + 1;
-            this.minY = y;
-            this.maxY = y + 1;
-            this.minZ = z;
-            this.maxZ = z + 1;
+            this.minX = x + Block.list[blockID].standardCollisionBoundingBox.minX;
+            this.maxX = x + Block.list[blockID].standardCollisionBoundingBox.maxX;
+            this.minY = y + Block.list[blockID].standardCollisionBoundingBox.minY;
+            this.maxY = y + Block.list[blockID].standardCollisionBoundingBox.maxY;
+            this.minZ = z + Block.list[blockID].standardCollisionBoundingBox.minZ;
+            this.maxZ = z + Block.list[blockID].standardCollisionBoundingBox.maxZ;
             this.air = false;
         }
     }
@@ -65,7 +68,7 @@ public final class AxisAlignedBB {
         this.maxZ += scaleFactor;
     }
 
-    public double clipXCollide(AxisAlignedBB entityBoundingBox, double deltaX) {
+    public double clipXCollide(AxisAlignedBB entityBoundingBox, double deltaX, Entity entity) {
         if(entityBoundingBox.maxY > this.minY && entityBoundingBox.minY < this.maxY) {
             if(entityBoundingBox.maxZ > this.minZ && entityBoundingBox.minZ < this.maxZ) {
                 double max;
@@ -83,13 +86,13 @@ public final class AxisAlignedBB {
                     }
                 }
 
-                return deltaX;
-            } else {
-                return deltaX;
+                if(this.maxY - this.minY <= 0.5 && entity instanceof EntityLiving) {
+                    entity.y += (this.maxY - this.minY);
+                }
+
             }
-        } else {
-            return deltaX;
         }
+        return deltaX;
     }
 
     public double clipYCollide(AxisAlignedBB entityBoundingBox, double deltaY) {
@@ -110,16 +113,12 @@ public final class AxisAlignedBB {
                     }
                 }
 
-                return deltaY;
-            } else {
-                return deltaY;
             }
-        } else {
-            return deltaY;
         }
+        return deltaY;
     }
 
-    public double clipZCollide(AxisAlignedBB entityBoundingBox, double deltaZ) {
+    public double clipZCollide(AxisAlignedBB entityBoundingBox, double deltaZ, Entity entity) {
         if(entityBoundingBox.maxX > this.minX && entityBoundingBox.minX < this.maxX) {
             if(entityBoundingBox.maxY > this.minY && entityBoundingBox.minY < this.maxY) {
                 double max;
@@ -137,13 +136,13 @@ public final class AxisAlignedBB {
                     }
                 }
 
-                return deltaZ;
-            } else {
-                return deltaZ;
+                if(this.maxY - this.minY <= 0.5 && entity instanceof EntityLiving) {
+                    entity.y += (this.maxY - this.minY);
+                }
+
             }
-        } else {
-            return deltaZ;
         }
+        return deltaZ;
     }
     
     public boolean clip(AxisAlignedBB boundingBox) {

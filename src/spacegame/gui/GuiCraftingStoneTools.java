@@ -6,7 +6,10 @@ import spacegame.core.MathUtil;
 import spacegame.core.SpaceGame;
 import spacegame.item.Item;
 import spacegame.item.ItemCraftingTemplates;
-import spacegame.render.*;
+import spacegame.render.Assets;
+import spacegame.render.RenderBlocks;
+import spacegame.render.RenderEngine;
+import spacegame.render.Shader;
 
 import java.awt.*;
 import java.util.Random;

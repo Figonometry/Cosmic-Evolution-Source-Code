@@ -9,8 +9,11 @@ import spacegame.core.SpaceGame;
 import spacegame.gui.FontRenderer;
 import spacegame.gui.GuiInGame;
 import spacegame.gui.GuiInventory;
-import spacegame.gui.GuiPlayerInventory;
-import spacegame.render.*;
+import spacegame.gui.GuiInventoryPlayer;
+import spacegame.render.Assets;
+import spacegame.render.RenderBlocks;
+import spacegame.render.RenderEngine;
+import spacegame.render.Shader;
 
 import java.awt.*;
 
@@ -63,11 +66,19 @@ public final class ItemStack {
 
 
 
-    public void renderItemStack(boolean renderWithBackground){
+    public void renderItemStack(boolean renderWithBackground){ //If the special inventory slots have an item draw a square directly behind it with the same color as the background for the player UI.
         RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         if(renderWithBackground) {
             tessellator.toggleOrtho();
             int z = -80;
+            if(this.usesExclusiveItem && this.item != null){
+                tessellator.addVertex2DTexture(7500402, this.x - (float) this.width / 2, this.y - (float) this.height / 2, z - 5, 3);
+                tessellator.addVertex2DTexture(7500402, this.x + (float) this.width / 2, this.y + (float) this.height / 2, z - 5, 1);
+                tessellator.addVertex2DTexture(7500402, this.x - (float) this.width / 2, this.y + (float) this.height / 2, z - 5, 2);
+                tessellator.addVertex2DTexture(7500402, this.x + (float) this.width / 2, this.y - (float) this.height / 2, z - 5, 0);
+                tessellator.addElements();
+                tessellator.drawTexture2D(GuiInventoryPlayer.fillableColor, Shader.screen2DTexture, SpaceGame.camera);
+            }
             GL46.glEnable(GL46.GL_BLEND);
             GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
             tessellator.addVertex2DTexture(0, this.x - (float) this.width / 2, this.y - (float) this.height / 2, z, 3);
@@ -75,7 +86,7 @@ public final class ItemStack {
             tessellator.addVertex2DTexture(0, this.x - (float) this.width / 2, this.y + (float) this.height / 2, z, 2);
             tessellator.addVertex2DTexture(0, this.x + (float) this.width / 2, this.y - (float) this.height / 2, z, 0);
             tessellator.addElements();
-            tessellator.drawTexture2D(GuiPlayerInventory.transparentBackground, Shader.screen2DTexture, SpaceGame.camera);
+            tessellator.drawTexture2D(GuiInventory.transparentBackground, Shader.screen2DTexture, SpaceGame.camera);
             GL46.glDisable(GL46.GL_BLEND);
             tessellator.toggleOrtho();
         }

@@ -1,7 +1,10 @@
 package spacegame.gui;
 
 import spacegame.core.SpaceGame;
-import spacegame.render.*;
+import spacegame.render.Assets;
+import spacegame.render.RenderEngine;
+import spacegame.render.Shader;
+import spacegame.render.Texture;
 
 public abstract class Gui {
     public SpaceGame sg;

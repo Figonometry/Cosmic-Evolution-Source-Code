@@ -369,6 +369,8 @@ public final class RenderWorldScene {
         if(this.hasTickPassed) {
             Vector3f normalizedDir = dir.normalize();
             Shader.terrainShader.uploadVec3f("normalizedLightVector", dir); //This needs be called in order to set the direction vector even if shadows are turned off otherwise vertex normals will not work
+            Shader.worldShader2DTexture.uploadVec3f("normalizedLightVector", dir);
+            Shader.worldShaderTextureArray.uploadVec3f("normalizedLightVector", dir);
             if (GameSettings.shadowMap) {
                 float lightDist = 256;
                 float orthoSize = 256;
@@ -399,9 +401,7 @@ public final class RenderWorldScene {
                 Matrix4f lightViewProjectionMatrix = sunProjectionMatrix.mul(sunViewMatrix);
                 Shader.terrainShader.uploadMat4f("lightViewProjectionMatrix", lightViewProjectionMatrix);
                 Shader.worldShaderTextureArray.uploadMat4f("lightViewProjectionMatrix", lightViewProjectionMatrix);
-                Shader.worldShaderTextureArray.uploadVec3f("normalizedLightVector", dir);
                 Shader.worldShader2DTexture.uploadMat4f("lightViewProjectionMatrix", lightViewProjectionMatrix);
-                Shader.worldShader2DTexture.uploadVec3f("normalizedLightVector", dir);
 
 
                 this.sunX = sunX;
