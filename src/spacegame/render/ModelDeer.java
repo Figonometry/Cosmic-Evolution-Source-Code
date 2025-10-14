@@ -212,7 +212,6 @@ public final class ModelDeer extends Model {
         offsetZ *= 32;
 
         Shader.worldShader2DTexture.uploadVec3f("chunkOffset", new Vector3f(offsetX, offsetY, offsetZ));
-        Shader.worldShader2DTexture.uploadBoolean("useFog", true);
         worldTessellator.drawTexture2D(EntityDeer.texture, Shader.worldShader2DTexture, SpaceGame.camera);
     }
 

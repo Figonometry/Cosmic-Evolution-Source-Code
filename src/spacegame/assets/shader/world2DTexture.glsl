@@ -21,6 +21,8 @@ uniform bool compressTest;
 out vec4 fColor;
 out vec2 fTexCoords;
 out vec4 fragPosInLightSpace;
+out vec3 fragPosInWorldSpace;
+out vec3 fPlayerPositionInChunk;
 flat out int isInShadowRange;
 
 vec4 performLightingNormals(vec4 skyLightColor, vec3 vertexNormal){
@@ -136,10 +138,13 @@ void main()
     if(compressTest){
         correctPos = vec3(chunkOffset + compress());
     }
+    fragPosInWorldSpace = correctPos;
     gl_Position = vec4(uProjection * uView * vec4(correctPos, 1.0));
 
     vec3 correctPosRelativeToSun = vec3(sunChunkOffset + aPos);
     fragPosInLightSpace = vec4(lightViewProjectionMatrix * vec4(correctPosRelativeToSun, 1.0));
+
+    fPlayerPositionInChunk = playerPositionInChunk;
 
     isInShadowRange = distance(correctPos, playerPositionInChunk) < 256.0 ? 1 : 0;
 }
@@ -151,15 +156,17 @@ void main()
 in vec4 fColor;
 in vec2 fTexCoords;
 in vec4 fragPosInLightSpace;
+in vec3 fragPosInWorldSpace;
+in vec3 fPlayerPositionInChunk;
 flat in int isInShadowRange;
 
 uniform sampler2D uTexture;
 uniform sampler2D shadowMap;
-uniform bool useFog;
 uniform float fogDistance;
 uniform bool underwater;
 uniform bool renderShadows;
 uniform bool shadowMapSetting;
+uniform bool useFog;
 
 uniform float fogRed;
 uniform float fogGreen;
@@ -168,10 +175,11 @@ uniform float fogBlue;
 out vec4 color;
 
 vec4 setFog(vec4 color){
-    float fogStart = (fogDistance - 128) * gl_FragCoord.w;
-    float fogEnd = (fogDistance - 64) * gl_FragCoord.w;
-    if(gl_FragCoord.z > fogStart){
-        float fogDepth = (gl_FragCoord.z / fogEnd) - fogStart;
+    float fogStart = (fogDistance - 128);
+    float fogEnd = (fogDistance - 64);
+    float distanceFromPlayer = distance(fragPosInWorldSpace, fPlayerPositionInChunk);
+    if(distanceFromPlayer > fogStart){
+        float fogDepth = ((distanceFromPlayer - fogStart) / fogEnd);
         if (fogDepth < 0){
             fogDepth = 0;
         }
@@ -218,12 +226,12 @@ float getShadowFactor(vec4 fragPosInLightSpace){
 void main()
 {
     color = fColor * texture(uTexture, fTexCoords);
-    if (useFog){
-        if(renderShadows && isInShadowRange == 1){
-            float shadow = getShadowFactor(fragPosInLightSpace);
-            color.xyz *= shadow;
-        }
+    if (renderShadows && isInShadowRange == 1){
+        float shadow = getShadowFactor(fragPosInLightSpace);
+        color.xyz *= shadow;
+    }
 
+    if (useFog){
         if (underwater){
             color = setFogUnderwater(color);
         } else {

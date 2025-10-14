@@ -3,6 +3,7 @@ package spacegame.render;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL46;
+import spacegame.block.Block;
 import spacegame.core.GameSettings;
 import spacegame.core.MathUtil;
 import spacegame.core.SpaceGame;
@@ -133,11 +134,20 @@ public final class RenderEntityItem {
         this.chunkX = MathUtil.floorDouble(this.x) >> 5;
         this.chunkY = MathUtil.floorDouble(this.y) >> 5;
         this.chunkZ = MathUtil.floorDouble(this.z) >> 5;
-        for(int i = 0; i < this.entityModel.modelFaces.length; i++){
-            modelFace = this.entityModel.modelFaces[i];
-            this.renderOpaqueFace(worldTessellator, (WorldEarth) SpaceGame.instance.save.activeWorld, this.blockID, modelFace.faceType, modelFace, 0,0,0,0,0,0,0,0,0,0,0,0);
-            worldTessellator.addElements();
+
+        ModelLoader model = Block.list[this.blockID].blockModel.copyModel().translateModel( -0.5f, 0, -0.5f).getScaledModel(0.125f);
+        ModelFace[] faces;
+        for(int face = 0; face < 6; face++){
+            faces = model.getModelFaceOfType(face);
+            for(int i = 0; i < faces.length; i++){
+                if(faces[i] == null)continue;
+
+                this.renderOpaqueFace(worldTessellator, (WorldEarth) SpaceGame.instance.save.activeWorld, this.blockID, faces[i].faceType, faces[i], 0,0,0,0,0,0,0,0,0,0,0,0);
+                worldTessellator.addElements();
+
+            }
         }
+
         Shader.worldShaderTextureArray.uploadBoolean("useFog", true);
         Shader.worldShaderTextureArray.uploadFloat("fogRed", SpaceGame.instance.save.activeWorld.skyColor[0]);
         Shader.worldShaderTextureArray.uploadFloat("fogGreen", SpaceGame.instance.save.activeWorld.skyColor[1]);
@@ -156,6 +166,7 @@ public final class RenderEntityItem {
         Shader.worldShaderTextureArray.uploadVec3f("chunkOffset", chunkOffset);
         worldTessellator.drawTextureArray(Assets.blockTextureArray, Shader.worldShaderTextureArray, SpaceGame.camera);
     }
+
 
     private float getLightValueFromMap(byte lightValue) {
         return switch (lightValue) {

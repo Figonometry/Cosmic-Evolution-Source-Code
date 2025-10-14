@@ -91,7 +91,7 @@ public final class SpaceGame implements Runnable {
         try {
             this.startGame();
         } catch(Exception exception){
-            new Logger(exception);
+            new Logger(exception, true);
             if(this.save != null){
                 this.save.saveDataToFile();
                 this.save.activeWorld.saveWorld();
@@ -102,7 +102,7 @@ public final class SpaceGame implements Runnable {
     }
 
     private void startGame() {
-        this.title = "Cosmic Evolution Alpha v0.27";
+        this.title = "Cosmic Evolution Alpha v0.28";
         this.clearLogFiles(new File(this.launcherDirectory + "/crashReports"));
         this.initLWJGL();
         this.renderEngine = new RenderEngine();
@@ -245,7 +245,6 @@ public final class SpaceGame implements Runnable {
         }
 
         this.shutdown();
-        System.exit(0);
     }
 
     public void startSave(int saveSlotNumber, String saveName, long seed) {
@@ -334,17 +333,17 @@ public final class SpaceGame implements Runnable {
             KeyListener.capsLockEnabled = !KeyListener.capsLockEnabled;
             KeyListener.setKeyReleased(GLFW.GLFW_KEY_CAPS_LOCK);
         }
-
-     //  if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_G) && KeyListener.keyReleased[GLFW.GLFW_KEY_G]){
-     //      if(this.save != null){
-     //          if(this.save.thePlayer != null && this.save.activeWorld != null){
-     //              EntityDeer deer =  new EntityDeer(this.save.thePlayer.x,this.save.thePlayer.y - 0.5, this.save.thePlayer.z, false, false);
-     //              this.save.activeWorld.addEntity(deer);
-     //          }
-     //      }
-     //      KeyListener.setKeyReleased(GLFW.GLFW_KEY_G);
-     //  }
-
+//
+      //    if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_G) && KeyListener.keyReleased[GLFW.GLFW_KEY_G]){
+      //        if(this.save != null){
+      //            if(this.save.thePlayer != null && this.save.activeWorld != null){
+      //                EntityDeer deer =  new EntityDeer(this.save.thePlayer.x,this.save.thePlayer.y - 0.5, this.save.thePlayer.z, false, false);
+      //                this.save.activeWorld.addEntity(deer);
+      //            }
+      //        }
+      //        KeyListener.setKeyReleased(GLFW.GLFW_KEY_G);
+      //    }
+//
       //  if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_MINUS)){
       //      this.save.time -= 216000;
       //      KeyListener.setKeyReleased(GLFW.GLFW_KEY_MINUS);

@@ -10,10 +10,7 @@ import spacegame.gui.FontRenderer;
 import spacegame.gui.GuiInGame;
 import spacegame.gui.GuiInventory;
 import spacegame.gui.GuiInventoryPlayer;
-import spacegame.render.Assets;
-import spacegame.render.RenderBlocks;
-import spacegame.render.RenderEngine;
-import spacegame.render.Shader;
+import spacegame.render.*;
 
 import java.awt.*;
 
@@ -94,47 +91,40 @@ public final class ItemStack {
         if(this.item != null){
             tessellator.toggleOrtho();
             if(this.item.renderItemWithBlockModel){
-                Vector3f position = new Vector3f(this.x - 12, this.y - 16,0);
-                Vector3f vertex1 = new Vector3f(-50, 0, -70).mul(0.25F).add(position);
-                Vector3f vertex2 = new Vector3f(50,75,-70).mul(0.25F).add(position);
-                Vector3f vertex3 = new Vector3f(-50,125,-70).mul(0.25F).add(position);
-                Vector3f vertex4 = new Vector3f(50,-50,-70).mul(0.25F).add(position);
+                ModelLoader model = Block.list[this.metadata].blockModel.copyModel().translateModel(-0.5f, 0, -0.5f).getScaledModel(38);
+                ModelFace[] faces;
+                float textureID;
+                Vector3f vertex1;
+                Vector3f vertex2;
+                Vector3f vertex3;
+                Vector3f vertex4;
+                Vector3f position = new Vector3f(this.x, this.y - 16,-70);
+                int red = 255;
+                int green = 255;
+                int blue = 255;
+                float[] UVSamples;
+                for(int face = 0; face < 6; face++){
+                    faces = model.getModelFaceOfType(face);
+                    for(int i = 0; i < faces.length; i++){
+                        if(faces[i] == null)continue;
+                        textureID = Block.list[this.metadata].getBlockTexture(this.metadata, face);
+                        UVSamples = face == RenderBlocks.TOP_FACE || face == RenderBlocks.BOTTOM_FACE ? RenderBlocks.autoUVTopBottom(RenderBlocks.getFaceWidth(faces[i]), RenderBlocks.getFaceHeight(faces[i])) : RenderBlocks.autoUVNSEW(RenderBlocks.getFaceWidth(faces[i]), RenderBlocks.getFaceHeight(faces[i]));
+                        vertex1 = new Vector3f(faces[i].vertices[0].x, faces[i].vertices[0].y, faces[i].vertices[0].z).rotateY((float)(0.25 * Math.PI)).rotateX((float)(0.20 * Math.PI)).add(position);
+                        vertex2 = new Vector3f(faces[i].vertices[1].x, faces[i].vertices[1].y, faces[i].vertices[1].z).rotateY((float)(0.25 * Math.PI)).rotateX((float)(0.20 * Math.PI)).add(position);
+                        vertex3 = new Vector3f(faces[i].vertices[2].x, faces[i].vertices[2].y, faces[i].vertices[2].z).rotateY((float)(0.25 * Math.PI)).rotateX((float)(0.20 * Math.PI)).add(position);
+                        vertex4 = new Vector3f(faces[i].vertices[3].x, faces[i].vertices[3].y, faces[i].vertices[3].z).rotateY((float)(0.25 * Math.PI)).rotateX((float)(0.20 * Math.PI)).add(position);
 
-                Shader.screenTextureArray.uploadInt("textureArray", Assets.blockTextureArray);
+                        tessellator.addVertexTextureArrayWithSampling(((red << 16) | (green << 8) | blue), vertex1.x, vertex1.y, vertex1.z, 3, textureID, UVSamples[0], UVSamples[1]);
+                        tessellator.addVertexTextureArrayWithSampling(((red << 16) | (green << 8) | blue), vertex2.x, vertex2.y, vertex2.z, 1, textureID, UVSamples[2], UVSamples[3]);
+                        tessellator.addVertexTextureArrayWithSampling(((red << 16) | (green << 8) | blue), vertex3.x, vertex3.y, vertex3.z, 2, textureID, UVSamples[4], UVSamples[5]);
+                        tessellator.addVertexTextureArrayWithSampling(((red << 16) | (green << 8) | blue), vertex4.x, vertex4.y, vertex4.z, 0, textureID, UVSamples[6], UVSamples[7]);
+                        tessellator.addElements();
 
-                short currentBlock = this.metadata;
-                float blockID = Block.list[currentBlock].getBlockTexture(currentBlock, 5);
-                tessellator.addVertexTextureArray(12566463, vertex1.x, vertex1.y, vertex1.z, 3, blockID, 5);
-                tessellator.addVertexTextureArray(12566463, vertex2.x, vertex2.y, vertex2.z, 1, blockID, 5);
-                tessellator.addVertexTextureArray(12566463, vertex3.x, vertex3.y, vertex3.z, 2, blockID, 5);
-                tessellator.addVertexTextureArray(12566463, vertex4.x, vertex4.y, vertex4.z, 0, blockID, 5);
-                tessellator.addElements();
-
-                vertex1 = new Vector3f(50, -50, -70).mul(0.25F).add(position);
-                vertex2 = new Vector3f(150,125,-70).mul(0.25F).add(position);
-                vertex3 = new Vector3f(50,75,-70).mul(0.25F).add(position);
-                vertex4 = new Vector3f(150,0,-70).mul(0.25F).add(position);
-
-                currentBlock = this.metadata;
-                blockID = Block.list[currentBlock].getBlockTexture(currentBlock, 5);
-                tessellator.addVertexTextureArray(9868950, vertex1.x, vertex1.y, vertex1.z, 3, blockID, 2);
-                tessellator.addVertexTextureArray(9868950, vertex2.x, vertex2.y, vertex2.z, 1, blockID, 2);
-                tessellator.addVertexTextureArray(9868950, vertex3.x, vertex3.y, vertex3.z, 2, blockID, 2);
-                tessellator.addVertexTextureArray(9868950, vertex4.x, vertex4.y, vertex4.z, 0, blockID, 2);
-                tessellator.addElements();
-
-                vertex1 = new Vector3f(50,75,-70).mul(0.25F).add(position);
-                vertex2 = new Vector3f(50,175,-70).mul(0.25F).add(position);
-                vertex3 = new Vector3f(-50,125,-70).mul(0.25F).add(position);
-                vertex4 = new Vector3f(150,125,-70).mul(0.25F).add(position);
-
-                currentBlock = this.metadata;
-                blockID = Block.list[currentBlock].getBlockTexture(currentBlock, 0);
-                tessellator.addVertexTextureArray(16777215, vertex1.x, vertex1.y, vertex1.z, 3, blockID, 0);
-                tessellator.addVertexTextureArray(16777215, vertex2.x, vertex2.y, vertex2.z, 1, blockID, 0);
-                tessellator.addVertexTextureArray(16777215, vertex3.x, vertex3.y, vertex3.z, 2, blockID, 0);
-                tessellator.addVertexTextureArray(16777215, vertex4.x, vertex4.y, vertex4.z, 0, blockID, 0);
-                tessellator.addElements();
+                        red -= 10;
+                        green -= 10;
+                        blue -= 10;
+                    }
+                }
                 tessellator.drawVertexArray(Assets.blockTextureArray, Shader.screenTextureArray, SpaceGame.camera);
             } else {
                 int z = -70;
@@ -165,47 +155,40 @@ public final class ItemStack {
         if(this.item != null){
             tessellator.toggleOrtho();
             if(this.item.renderItemWithBlockModel){
-                Vector3f position = new Vector3f(this.x - 12, this.y - 16,0);
-                Vector3f vertex1 = new Vector3f(-50, 0, -70).mul(0.35F).add(position);
-                Vector3f vertex2 = new Vector3f(50,75,-70).mul(0.35F).add(position);
-                Vector3f vertex3 = new Vector3f(-50,125,-70).mul(0.35F).add(position);
-                Vector3f vertex4 = new Vector3f(50,-50,-70).mul(0.35F).add(position);
+                ModelLoader model = Block.list[this.metadata].blockModel.copyModel().translateModel(-0.5f, 0, -0.5f).getScaledModel(38);
+                ModelFace[] faces;
+                float textureID;
+                Vector3f vertex1;
+                Vector3f vertex2;
+                Vector3f vertex3;
+                Vector3f vertex4;
+                Vector3f position = new Vector3f(this.x + 4, this.y - 12,-70);
+                int red = 255;
+                int green = 255;
+                int blue = 255;
+                float[] UVSamples;
+                for(int face = 0; face < 6; face++){
+                    faces = model.getModelFaceOfType(face);
+                    for(int i = 0; i < faces.length; i++){
+                        if(faces[i] == null)continue;
+                        textureID = Block.list[this.metadata].getBlockTexture(this.metadata, face);
+                        UVSamples = face == RenderBlocks.TOP_FACE || face == RenderBlocks.BOTTOM_FACE ? RenderBlocks.autoUVTopBottom(RenderBlocks.getFaceWidth(faces[i]), RenderBlocks.getFaceHeight(faces[i])) : RenderBlocks.autoUVNSEW(RenderBlocks.getFaceWidth(faces[i]), RenderBlocks.getFaceHeight(faces[i]));
+                        vertex1 = new Vector3f(faces[i].vertices[0].x, faces[i].vertices[0].y, faces[i].vertices[0].z).rotateY((float)(0.25 * Math.PI)).rotateX((float)(0.20 * Math.PI)).add(position);
+                        vertex2 = new Vector3f(faces[i].vertices[1].x, faces[i].vertices[1].y, faces[i].vertices[1].z).rotateY((float)(0.25 * Math.PI)).rotateX((float)(0.20 * Math.PI)).add(position);
+                        vertex3 = new Vector3f(faces[i].vertices[2].x, faces[i].vertices[2].y, faces[i].vertices[2].z).rotateY((float)(0.25 * Math.PI)).rotateX((float)(0.20 * Math.PI)).add(position);
+                        vertex4 = new Vector3f(faces[i].vertices[3].x, faces[i].vertices[3].y, faces[i].vertices[3].z).rotateY((float)(0.25 * Math.PI)).rotateX((float)(0.20 * Math.PI)).add(position);
 
-                Shader.screenTextureArray.uploadInt("textureArray", Assets.blockTextureArray);
+                        tessellator.addVertexTextureArrayWithSampling(((red << 16) | (green << 8) | blue), vertex1.x, vertex1.y, vertex1.z, 3, textureID, UVSamples[0], UVSamples[1]);
+                        tessellator.addVertexTextureArrayWithSampling(((red << 16) | (green << 8) | blue), vertex2.x, vertex2.y, vertex2.z, 1, textureID, UVSamples[2], UVSamples[3]);
+                        tessellator.addVertexTextureArrayWithSampling(((red << 16) | (green << 8) | blue), vertex3.x, vertex3.y, vertex3.z, 2, textureID, UVSamples[4], UVSamples[5]);
+                        tessellator.addVertexTextureArrayWithSampling(((red << 16) | (green << 8) | blue), vertex4.x, vertex4.y, vertex4.z, 0, textureID, UVSamples[6], UVSamples[7]);
+                        tessellator.addElements();
 
-                short currentBlock = this.metadata;
-                float blockID = Block.list[currentBlock].getBlockTexture(currentBlock, 5);
-                tessellator.addVertexTextureArray(12566463, vertex1.x, vertex1.y, vertex1.z, 3, blockID, 5);
-                tessellator.addVertexTextureArray(12566463, vertex2.x, vertex2.y, vertex2.z, 1, blockID, 5);
-                tessellator.addVertexTextureArray(12566463, vertex3.x, vertex3.y, vertex3.z, 2, blockID, 5);
-                tessellator.addVertexTextureArray(12566463, vertex4.x, vertex4.y, vertex4.z, 0, blockID, 5);
-                tessellator.addElements();
-
-                vertex1 = new Vector3f(50, -50, -70).mul(0.35F).add(position);
-                vertex2 = new Vector3f(150,125,-70).mul(0.35F).add(position);
-                vertex3 = new Vector3f(50,75,-70).mul(0.35F).add(position);
-                vertex4 = new Vector3f(150,0,-70).mul(0.35F).add(position);
-
-                currentBlock = this.metadata;
-                blockID = Block.list[currentBlock].getBlockTexture(currentBlock, 5);
-                tessellator.addVertexTextureArray(9868950, vertex1.x, vertex1.y, vertex1.z, 3, blockID, 2);
-                tessellator.addVertexTextureArray(9868950, vertex2.x, vertex2.y, vertex2.z, 1, blockID, 2);
-                tessellator.addVertexTextureArray(9868950, vertex3.x, vertex3.y, vertex3.z, 2, blockID, 2);
-                tessellator.addVertexTextureArray(9868950, vertex4.x, vertex4.y, vertex4.z, 0, blockID, 2);
-                tessellator.addElements();
-
-                vertex1 = new Vector3f(50,75,-70).mul(0.35F).add(position);
-                vertex2 = new Vector3f(50,175,-70).mul(0.35F).add(position);
-                vertex3 = new Vector3f(-50,125,-70).mul(0.35F).add(position);
-                vertex4 = new Vector3f(150,125,-70).mul(0.35F).add(position);
-
-                currentBlock = this.metadata;
-                blockID = Block.list[currentBlock].getBlockTexture(currentBlock, 0);
-                tessellator.addVertexTextureArray(16777215, vertex1.x, vertex1.y, vertex1.z, 3, blockID, 0);
-                tessellator.addVertexTextureArray(16777215, vertex2.x, vertex2.y, vertex2.z, 1, blockID, 0);
-                tessellator.addVertexTextureArray(16777215, vertex3.x, vertex3.y, vertex3.z, 2, blockID, 0);
-                tessellator.addVertexTextureArray(16777215, vertex4.x, vertex4.y, vertex4.z, 0, blockID, 0);
-                tessellator.addElements();
+                        red -= 10;
+                        green -= 10;
+                        blue -= 10;
+                    }
+                }
                 tessellator.drawVertexArray(Assets.blockTextureArray, Shader.screenTextureArray, SpaceGame.camera);
             } else {
                 int z = -70;

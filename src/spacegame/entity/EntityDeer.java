@@ -134,6 +134,7 @@ public final class EntityDeer extends EntityLiving {
         if(this.alertTimer <= 0){
             this.alerted = false;
         }
+        this.handleFallDamage();
     }
 
     private void updateYawAndPitch(){

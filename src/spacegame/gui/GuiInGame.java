@@ -368,81 +368,37 @@ public final class GuiInGame extends Gui {
                 int colorRGB = color.getRGB();
 
                 RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
-                Vector3f vertex1 = new Vector3f(1, 1, 0).rotate(rotation).add(position);
-                Vector3f vertex2 = new Vector3f(0, 1, 1).rotate(rotation).add(position);
-                Vector3f vertex3 = new Vector3f(1, 1, 1).rotate(rotation).add(position);
-                Vector3f vertex4 = new Vector3f(0, 1, 0).rotate(rotation).add(position);
-                blockID = RenderBlocks.getBlockTextureID(heldBlock, RenderBlocks.TOP_FACE);
-                tessellator.addVertexTextureArray(colorRGB, vertex1.x, vertex1.y, vertex1.z, 3, blockID, 0);
-                tessellator.addVertexTextureArray(colorRGB, vertex2.x, vertex2.y, vertex2.z, 1, blockID, 0);
-                tessellator.addVertexTextureArray(colorRGB, vertex3.x, vertex3.y, vertex3.z, 2, blockID, 0);
-                tessellator.addVertexTextureArray(colorRGB, vertex4.x, vertex4.y, vertex4.z, 0, blockID, 0);
-                tessellator.addElements();
+                ModelLoader model = Block.list[heldBlock].blockModel.copyModel();
+                model.translateModel(-0.5f, 0, -0.5f);
+                Vector3f vertex1;
+                Vector3f vertex2;
+                Vector3f vertex3;
+                Vector3f vertex4;
+                float textureID;
+                int colorVal;
+                float[] UVSamples;
+                for(int face = 0; face < 6; face++){
+                    ModelFace[] faces = model.getModelFaceOfType(face);
+                    for(int i = 0; i < faces.length; i++){
+                        if(faces[i] == null)continue;
+                        UVSamples = face == RenderBlocks.TOP_FACE || face == RenderBlocks.BOTTOM_FACE ? RenderBlocks.autoUVTopBottom(RenderBlocks.getFaceWidth(faces[i]), RenderBlocks.getFaceHeight(faces[i])) : RenderBlocks.autoUVNSEW(RenderBlocks.getFaceWidth(faces[i]), RenderBlocks.getFaceHeight(faces[i]));
+                        textureID = RenderBlocks.getBlockTextureID(heldBlock, face);
+                        vertex1 = new Vector3f(faces[i].vertices[0].x, faces[i].vertices[0].y, faces[i].vertices[0].z).rotate(rotation).add(position);
+                        vertex2 = new Vector3f(faces[i].vertices[1].x, faces[i].vertices[1].y, faces[i].vertices[1].z).rotate(rotation).add(position);
+                        vertex3 = new Vector3f(faces[i].vertices[2].x, faces[i].vertices[2].y, faces[i].vertices[2].z).rotate(rotation).add(position);
+                        vertex4 = new Vector3f(faces[i].vertices[3].x, faces[i].vertices[3].y, faces[i].vertices[3].z).rotate(rotation).add(position);
 
-                color = color.darker();
-                colorRGB = color.getRGB();
-                vertex1 = new Vector3f(0, 0, 0).rotate(rotation).add(position);
-                vertex2 = new Vector3f(1, 0, 1).rotate(rotation).add(position);
-                vertex3 = new Vector3f(0, 0, 1).rotate(rotation).add(position);
-                vertex4 = new Vector3f(1, 0, 0).rotate(rotation).add(position);
-                blockID = RenderBlocks.getBlockTextureID(heldBlock, RenderBlocks.BOTTOM_FACE);
-                tessellator.addVertexTextureArray(colorRGB, vertex1.x, vertex1.y, vertex1.z, 3, blockID, 0);
-                tessellator.addVertexTextureArray(colorRGB, vertex2.x, vertex2.y, vertex2.z, 1, blockID, 0);
-                tessellator.addVertexTextureArray(colorRGB, vertex3.x, vertex3.y, vertex3.z, 2, blockID, 0);
-                tessellator.addVertexTextureArray(colorRGB, vertex4.x, vertex4.y, vertex4.z, 0, blockID, 0);
-                tessellator.addElements();
 
-                color = color.darker();
-                colorRGB = color.getRGB();
-                vertex1 = new Vector3f(0, 0, 0).rotate(rotation).add(position);
-                vertex2 = new Vector3f(0, 1, 1).rotate(rotation).add(position);
-                vertex3 = new Vector3f(0, 1, 0).rotate(rotation).add(position);
-                vertex4 = new Vector3f(0, 0, 1).rotate(rotation).add(position);
-                blockID = RenderBlocks.getBlockTextureID(heldBlock, RenderBlocks.NORTH_FACE);
-                tessellator.addVertexTextureArray(colorRGB, vertex1.x, vertex1.y, vertex1.z, 3, blockID, 0);
-                tessellator.addVertexTextureArray(colorRGB, vertex2.x, vertex2.y, vertex2.z, 1, blockID, 0);
-                tessellator.addVertexTextureArray(colorRGB, vertex3.x, vertex3.y, vertex3.z, 2, blockID, 0);
-                tessellator.addVertexTextureArray(colorRGB, vertex4.x, vertex4.y, vertex4.z, 0, blockID, 0);
-                tessellator.addElements();
-
-                color = color.darker();
-                colorRGB = color.getRGB();
-                vertex1 = new Vector3f(1, 0, 1).rotate(rotation).add(position);
-                vertex2 = new Vector3f(1, 1, 0).rotate(rotation).add(position);
-                vertex3 = new Vector3f(1, 1, 1).rotate(rotation).add(position);
-                vertex4 = new Vector3f(1, 0, 0).rotate(rotation).add(position);
-                blockID = RenderBlocks.getBlockTextureID(heldBlock, RenderBlocks.SOUTH_FACE);
-                tessellator.addVertexTextureArray(colorRGB, vertex1.x, vertex1.y, vertex1.z, 3, blockID, 0);
-                tessellator.addVertexTextureArray(colorRGB, vertex2.x, vertex2.y, vertex2.z, 1, blockID, 0);
-                tessellator.addVertexTextureArray(colorRGB, vertex3.x, vertex3.y, vertex3.z, 2, blockID, 0);
-                tessellator.addVertexTextureArray(colorRGB, vertex4.x, vertex4.y, vertex4.z, 0, blockID, 0);
-                tessellator.addElements();
-
-                color = color.darker();
-                colorRGB = color.getRGB();
-                vertex1 = new Vector3f(1, 0, 0).rotate(rotation).add(position);
-                vertex2 = new Vector3f(0, 1, 0).rotate(rotation).add(position);
-                vertex3 = new Vector3f(1, 1, 0).rotate(rotation).add(position);
-                vertex4 = new Vector3f(0, 0, 0).rotate(rotation).add(position);
-                blockID = RenderBlocks.getBlockTextureID(heldBlock, RenderBlocks.EAST_FACE);
-                tessellator.addVertexTextureArray(colorRGB, vertex1.x, vertex1.y, vertex1.z, 3, blockID, 0);
-                tessellator.addVertexTextureArray(colorRGB, vertex2.x, vertex2.y, vertex2.z, 1, blockID, 0);
-                tessellator.addVertexTextureArray(colorRGB, vertex3.x, vertex3.y, vertex3.z, 2, blockID, 0);
-                tessellator.addVertexTextureArray(colorRGB, vertex4.x, vertex4.y, vertex4.z, 0, blockID, 0);
-                tessellator.addElements();
-
-                color = color.darker();
-                colorRGB = color.getRGB();
-                vertex1 = new Vector3f(0, 0, 1).rotate(rotation).add(position);
-                vertex2 = new Vector3f(1, 1, 1).rotate(rotation).add(position);
-                vertex3 = new Vector3f(0, 1, 1).rotate(rotation).add(position);
-                vertex4 = new Vector3f(1, 0, 1).rotate(rotation).add(position);
-                blockID = RenderBlocks.getBlockTextureID(heldBlock, RenderBlocks.WEST_FACE);
-                tessellator.addVertexTextureArray(colorRGB, vertex1.x, vertex1.y, vertex1.z, 3, blockID, 0);
-                tessellator.addVertexTextureArray(colorRGB, vertex2.x, vertex2.y, vertex2.z, 1, blockID, 0);
-                tessellator.addVertexTextureArray(colorRGB, vertex3.x, vertex3.y, vertex3.z, 2, blockID, 0);
-                tessellator.addVertexTextureArray(colorRGB, vertex4.x, vertex4.y, vertex4.z, 0, blockID, 0);
-                tessellator.addElements();
+                        tessellator.addVertexTextureArrayWithSampling(colorRGB, vertex1.x, vertex1.y, vertex1.z, 3, textureID, UVSamples[0], UVSamples[1]);
+                        tessellator.addVertexTextureArrayWithSampling(colorRGB, vertex2.x, vertex2.y, vertex2.z, 1, textureID, UVSamples[2], UVSamples[3]);
+                        tessellator.addVertexTextureArrayWithSampling(colorRGB, vertex3.x, vertex3.y, vertex3.z, 2, textureID, UVSamples[4], UVSamples[5]);
+                        tessellator.addVertexTextureArrayWithSampling(colorRGB, vertex4.x, vertex4.y, vertex4.z, 0, textureID, UVSamples[6], UVSamples[7]);
+                        tessellator.addElements();
+                        colorVal = colorRGB & 255;
+                        colorVal -= 10;
+                        colorRGB = (colorVal << 16) | (colorVal << 8) | colorVal;
+                    }
+                }
 
                 Matrix4d preservedViewMatrix = SpaceGame.camera.viewMatrix.get(new Matrix4d());
                 SpaceGame.camera.viewMatrix = new Matrix4d();
@@ -866,7 +822,6 @@ public final class GuiInGame extends Gui {
                     int zOffset = (chunk.z - playerChunkZ) << 5;
                     Vector3f chunkOffset = new Vector3f(xOffset, yOffset, zOffset);
                     Shader.worldShader2DTexture.uploadVec3f("chunkOffset", chunkOffset);
-                    Shader.worldShader2DTexture.uploadBoolean("useFog", true);
                     Shader.worldShader2DTexture.uploadBoolean("compressTest", true);
                     modelLoader = Block.list[block].blockModel;
                     Random rand = new Random(Chunk.getBlockIndexFromCoordinates(locationX, locationY, locationZ));

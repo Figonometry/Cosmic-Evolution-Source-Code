@@ -46,6 +46,21 @@ public final class ModelFace {
         return translatedFace;
     }
 
+    public ModelFace rotateFace(float x, float y, float z){
+        ModelFace rotatedFace = new ModelFace(this.faceType);
+        for(int i = 0; i < this.vertices.length; i++) {
+            rotatedFace.setFloatValue(i, 0, this.vertices[i].x);
+            rotatedFace.setFloatValue(i, 1, this.vertices[i].y);
+            rotatedFace.setFloatValue(i, 2, this.vertices[i].z);
+            rotatedFace.vertices[i].rotateX(x);
+            rotatedFace.vertices[i].rotateY(y);
+            rotatedFace.vertices[i].rotateZ(z);
+        }
+
+        rotatedFace.setNormal(this.normal.x, this.normal.y, this.normal.z);
+        return rotatedFace;
+    }
+
 
     public int getFaceWidthX(){
         float[] xValues = new float[4];

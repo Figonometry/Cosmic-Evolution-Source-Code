@@ -110,7 +110,7 @@ public abstract class Entity {
             Shader.worldShader2DTexture.uploadFloat("fogRed", SpaceGame.instance.save.activeWorld.skyColor[0]);
             Shader.worldShader2DTexture.uploadFloat("fogGreen", SpaceGame.instance.save.activeWorld.skyColor[1]);
             Shader.worldShader2DTexture.uploadFloat("fogBlue", SpaceGame.instance.save.activeWorld.skyColor[2]);
-            Shader.worldShader2DTexture.uploadFloat("fogDistance", GameSettings.renderDistance << 5);
+            Shader.worldShader2DTexture.uploadFloat("fogDistance", GameSettings.renderDistance  * 20f);
             y = MathUtil.floorDouble(this.y);
             int playerChunkX = MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.x) >> 5;
             int playerChunkY = MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.y) >> 5;

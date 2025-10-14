@@ -21,7 +21,9 @@ public abstract class EntityLiving extends Entity {
     public float maxHealth;
     public int damageTimer;
     public boolean alerted;
+    public double lastYOnGround;
     public int alertTimer;
+    public short blockUnderEntity;
     public AxisAlignedBB lowerBlock = new AxisAlignedBB();
     public AxisAlignedBB upperBlock = new AxisAlignedBB();
     public AxisAlignedBB northBlock = new AxisAlignedBB();
@@ -73,6 +75,17 @@ public abstract class EntityLiving extends Entity {
             } else {
                 this.stepTimer--;
             }
+    }
+
+    protected void handleFallDamage() {
+        this.blockUnderEntity = SpaceGame.instance.save.activeWorld.getBlockID(MathUtil.floorDouble(this.x), MathUtil.floorDouble(this.y - (this.height / 2) - 0.1), MathUtil.floorDouble(this.z));
+        if (Block.list[this.blockUnderEntity].isSolid && !this.inWater) {
+            if (this.lastYOnGround - this.y > 3) {
+                this.health -= this.lastYOnGround - this.y;
+                new SoundPlayer(SpaceGame.instance).playSound(this.x, this.y, this.z, new Sound(Sound.fallDamage, false), new Random().nextFloat(0.4F, 0.7F));
+            }
+            this.lastYOnGround = this.y;
+        }
     }
 
 

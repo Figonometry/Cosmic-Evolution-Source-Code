@@ -128,7 +128,7 @@ public final class TechBlock {
 
             if(this.tech.state == Tech.LOCKED_KNOWN){
                 textHeight -= 500;
-                fontRenderer.drawCenteredString(this.tech.techUpdateEvent, topLeftX + width * 0.45f, textHeight, -49, 16766976, 40);
+                fontRenderer.drawCenteredString(this.tech.getTechUpdateName(), topLeftX + width * 0.45f, textHeight, -49, 16766976, 40);
                 textHeight -= 60;
                 fontRenderer.drawCenteredString(this.tech.progressAmountCompleted + " / " + this.tech.unlockRequirementAmount, topLeftX + width * 0.45f, textHeight, -49, 16766976, 40);
             }

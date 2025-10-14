@@ -159,6 +159,7 @@ public class Button {
                     this.sg.save.activeWorld.chunkController.resetChunkLoading();
                 }
                 Shader.terrainShader.uploadFloat("fogDistance", GameSettings.renderDistance * 20f);
+                Shader.worldShader2DTexture.uploadFloat("fogDistance", GameSettings.renderDistance * 20f);
             }
             case CHUNK_VIEW_VERTICAL -> {
                 if(this.sideOfButtonBeingClicked() == 0){

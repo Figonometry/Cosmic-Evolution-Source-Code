@@ -433,7 +433,7 @@ public class RenderBlocks {
         }
     }
 
-    private int getFaceHeight(ModelFace modelFace){
+    public static int getFaceHeight(ModelFace modelFace){
         if(modelFace == null)return 0;
 
         return switch (modelFace.faceType){
@@ -443,7 +443,7 @@ public class RenderBlocks {
         };
     }
 
-    private int getFaceWidth(ModelFace modelFace){
+    public static int getFaceWidth(ModelFace modelFace){
         if(modelFace == null)return 0;
 
         return switch (modelFace.faceType){
@@ -457,7 +457,7 @@ public class RenderBlocks {
 
 
 
-    private float[] autoUVNSEW(int width, int height){
+    public static float[] autoUVNSEW(int width, int height){
         float[] UVSamples = new float[8]; //Order of x and y sample for corners 1 - 4, this will be centered on the actual texture image
         final float pixelWidth = 0.03125f;
         int pixelsFromLeftSide;
@@ -489,7 +489,7 @@ public class RenderBlocks {
         return UVSamples;
     }
 
-    private float[] autoUVTopBottom(int width, int height){
+    public static float[] autoUVTopBottom(int width, int height){
         float[] UVSamples = new float[8]; //Order of x and y sample for corners 1 - 4, this will be centered on the actual texture image
         final float pixelWidth = 0.03125f;
         int pixelsFromLeftSide;

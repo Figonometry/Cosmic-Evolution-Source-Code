@@ -40,7 +40,6 @@ public final class EntityPlayer extends EntityLiving {
     public Inventory inventory;
     public final File playerFile;
     public boolean loadedFromFile;
-    public double lastYOnGround;
     public int drowningTimer;
     public int damageTiltTimer;
     public boolean runDamageTilt;
@@ -517,7 +516,7 @@ public final class EntityPlayer extends EntityLiving {
             this.handleFallDamage();
             this.lastYOnGround = this.y;
         }
-        this.inWater = Block.list[this.sg.save.activeWorld.getBlockID(playerX, playerY, playerZ)].ID == Block.water.ID;
+        this.inWater = Block.list[this.sg.save.activeWorld.getBlockID(playerX, playerYFoot, playerZ)].ID == Block.water.ID || Block.list[this.sg.save.activeWorld.getBlockID(playerX, playerYHead, playerZ)].ID == Block.water.ID;
         short headBlock = Block.list[this.sg.save.activeWorld.getBlockID(playerX, playerYHead, playerZ)].ID;
         if(headBlock == Block.water.ID){
             Shader.worldShaderTextureArray.uploadBoolean("underwater", true);
@@ -559,9 +558,10 @@ public final class EntityPlayer extends EntityLiving {
 
         if(this.prevInWater && !this.inWater && !this.moveEntityUp && this.deltaY > 0.0){
             this.moveEntityUp = true;
-            this.moveEntityUpDistance = 1.1D;
+            this.moveEntityUpDistance = 0.6;
             this.timeFalling = 0;
             this.isJumping = true;
+            this.inWater = true;
         }
 
         if (this.moveEntityUp) {
@@ -703,7 +703,8 @@ public final class EntityPlayer extends EntityLiving {
         SpaceGame.camera.viewMatrix.rotateLocalZ(-roll);
     }
 
-    private void handleFallDamage(){
+    @Override
+    protected void handleFallDamage(){
         if(this.lastYOnGround - this.y > 3){
             this.health -= this.lastYOnGround - this.y;
             this.runDamageTilt = true;
@@ -767,7 +768,7 @@ public final class EntityPlayer extends EntityLiving {
             Shader.worldShader2DTexture.uploadFloat("fogRed", SpaceGame.instance.save.activeWorld.skyColor[0]);
             Shader.worldShader2DTexture.uploadFloat("fogGreen", SpaceGame.instance.save.activeWorld.skyColor[1]);
             Shader.worldShader2DTexture.uploadFloat("fogBlue", SpaceGame.instance.save.activeWorld.skyColor[2]);
-            Shader.worldShader2DTexture.uploadFloat("fogDistance", GameSettings.renderDistance << 5);
+            Shader.worldShader2DTexture.uploadFloat("fogDistance", GameSettings.renderDistance * 20f);
             Vector3f chunkOffset = new Vector3f(0,0,0);
             Shader.worldShader2DTexture.uploadVec3f("chunkOffset", chunkOffset);
             RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;

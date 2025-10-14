@@ -3,4 +3,5 @@ techUpdateEvent:Animal Killing
 unlockedTech:Hunting II
 unlockRequirementAmount:50
 requiredTech:Neolithic Era
+infoText:The meat from wild animals is often much morenutritious than plants, humans have been     hunting wild animals for hundreds of         thousands of years.
 era:Neolithic

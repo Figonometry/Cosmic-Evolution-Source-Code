@@ -171,8 +171,15 @@ public final class Tech {
                unlockedTech.state = LOCKED;
            }
         }
+    }
 
-
+    public String getTechUpdateName(){
+       return switch (this.techUpdateEvent){
+           case UPDATE_EVENT_CRAFT_STONE_HAND_TOOL -> "Crafting Stone Hand Tools";
+           case UPDATE_EVENT_BERRY_COLLECTION -> "Berry Collectioin";
+           case UPDATE_EVENT_HUNT_ANIMAL -> "Hunt Animals";
+           default -> throw new IllegalStateException("Unexpected value: " + this.techUpdateEvent);
+       };
     }
 
     public void unlockChildrenFromBaseNode() {

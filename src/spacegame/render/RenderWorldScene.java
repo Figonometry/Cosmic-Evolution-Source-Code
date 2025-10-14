@@ -87,9 +87,14 @@ public final class RenderWorldScene {
         Shader.terrainShader.uploadInt("textureArray", 0);
         Shader.terrainShader.uploadBoolean("useFog", true);
         Shader.terrainShader.uploadFloat("fogDistance", GameSettings.renderDistance * 20f);
+        Shader.worldShader2DTexture.uploadFloat("fogDistance", GameSettings.renderDistance * 20f);
+        Shader.worldShader2DTexture.uploadBoolean("useFog", true);
         Shader.terrainShader.uploadFloat("fogRed", this.controller.parentWorld.skyColor[0]);
         Shader.terrainShader.uploadFloat("fogGreen", this.controller.parentWorld.skyColor[1]);
         Shader.terrainShader.uploadFloat("fogBlue", this.controller.parentWorld.skyColor[2]);
+        Shader.worldShader2DTexture.uploadFloat("fogRed", this.controller.parentWorld.skyColor[0]);
+        Shader.worldShader2DTexture.uploadFloat("fogGreen", this.controller.parentWorld.skyColor[1]);
+        Shader.worldShader2DTexture.uploadFloat("fogBlue", this.controller.parentWorld.skyColor[2]);
         Shader.terrainShader.uploadDouble("time", (double) Timer.elapsedTime % 8388608);
 
         Chunk chunk;
@@ -260,6 +265,9 @@ public final class RenderWorldScene {
     }
 
     public void renderWorldWithoutChunks(){
+        Shader.worldShader2DTexture.uploadBoolean("useFog", true);
+        Shader.worldShader2DTexture.uploadFloat("fogDistance", GameSettings.renderDistance * 20f);
+        Shader.worldShader2DTexture.uploadVec3f("playerPositionInChunk", new Vector3f((float) (SpaceGame.instance.save.thePlayer.x % 32), (float) (SpaceGame.instance.save.thePlayer.y % 32), (float) (SpaceGame.instance.save.thePlayer.z % 32)));
         Shader.terrainShader.uploadMat4d("uView", SpaceGame.camera.viewMatrix);
         for(int i = 0; i < this.nearbyStars.size(); i++){
             this.setShadowMap(this.nearbyStars.get(i),this.nearbyStarPos.get(i));
