@@ -20,6 +20,10 @@ public final class Sound {
     public static String fallDamage = "src/spacegame/assets/sound/fallDamage.ogg";
     public static String deerHurt = "src/spacegame/assets/sound/deerHurt.ogg";
     public static String deerAmbient = "src/spacegame/assets/sound/deerAmbient.ogg";
+    public static String leftClickStoneCraftingMaterial = "src/spacegame/assets/sound/leftClickCraftingMaterialStone.ogg";
+    public static String rightClickStoneCraftingMaterial = "src/spacegame/assets/sound/rightClickCraftingMaterialStone.ogg";
+    public static String fireCrackling = "src/spacegame/assets/sound/fireCrackling.ogg";
+    public static String clay = "src/spacegame/assets/sound/stepClay.ogg";
     public String filepath;
     public int bufferID;
     public int sourceID;

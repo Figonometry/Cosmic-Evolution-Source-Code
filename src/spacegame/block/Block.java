@@ -1,7 +1,6 @@
 package spacegame.block;
 
-import org.joml.Quaternionf;
-import org.joml.Vector3f;
+import spacegame.core.MouseListener;
 import spacegame.core.Sound;
 import spacegame.core.SoundPlayer;
 import spacegame.core.SpaceGame;
@@ -11,12 +10,10 @@ import spacegame.item.Inventory;
 import spacegame.item.Item;
 import spacegame.item.ItemKnife;
 import spacegame.render.ModelLoader;
-import spacegame.render.RenderEngine;
 import spacegame.world.AxisAlignedBB;
 import spacegame.world.Chunk;
 import spacegame.world.World;
 
-import java.awt.*;
 import java.io.*;
 import java.util.Random;
 
@@ -38,6 +35,9 @@ public class Block {
     public static final ModelLoader strawChestBuild0 = new ModelLoader("src/spacegame/assets/models/blockModels/strawChestBuild0.obj");
     public static final ModelLoader strawChestBuild1 = new ModelLoader("src/spacegame/assets/models/blockModels/strawChestBuild1.obj");
     public static final ModelLoader strawChestModel = new ModelLoader("src/spacegame/assets/models/blockModels/strawChest.obj");
+    public static final ModelLoader itemClayModel = new ModelLoader("src/spacegame/assets/models/blockModels/itemClay.obj");
+    public static final ModelLoader clayCookingPotModel = new ModelLoader("src/spacegame/assets/models/blockModels/clayCookingPot.obj");
+    public static final ModelLoader largeFireWood = new ModelLoader("src/spacegame/assets/models/blockModels/largeFireWood.obj");
     public static final ModelLoader size15NormalModel = standardBlockModel.alterStandardBlockModel(1,0,1);
     public static final ModelLoader size14NormalModel = standardBlockModel.alterStandardBlockModel(2,0,2);
     public static final ModelLoader size13NormalModel = standardBlockModel.alterStandardBlockModel(3,0,3);
@@ -156,20 +156,20 @@ public class Block {
     public static final Block campFireNoFirewood = new BlockCampFireUnlit((short) 66, 16, "src/spacegame/assets/blockFiles/campFireUnlit.txt");
     public static final Block fire = new Block((short)67, 18, "src/spacegame/assets/blockFiles/fire.txt");
     public static final Block campfireLit = new BlockCampFireLit((short) 68, 16, "src/spacegame/assets/blockFiles/campFireLit.txt");
-    public static final Block campFireLitLight13 = new BlockCampFireLit((short)69, 17, "src/spacegame/assets/blockFiles/campFireLitLight13.txt"); //Nice
-    public static final Block campFireLitLight12 = new BlockCampFireLit((short)70, 17, "src/spacegame/assets/blockFiles/campFireLitLight12.txt");
-    public static final Block campFireLitLight11 = new BlockCampFireLit((short)71, 17, "src/spacegame/assets/blockFiles/campFireLitLight11.txt");
-    public static final Block campFireLitLight10 = new BlockCampFireLit((short)72, 17, "src/spacegame/assets/blockFiles/campFireLitLight10.txt");
-    public static final Block campFireLitLight9 = new BlockCampFireLit((short)73, 17, "src/spacegame/assets/blockFiles/campFireLitLight9.txt");
-    public static final Block campFireLitLight8 = new BlockCampFireLit((short)74, 17, "src/spacegame/assets/blockFiles/campFireLitLight8.txt");
-    public static final Block campFireLitLight7 = new BlockCampFireLit((short)75, 17, "src/spacegame/assets/blockFiles/campFireLitLight7.txt");
-    public static final Block campFireLitLight6 = new BlockCampFireLit((short)76, 17, "src/spacegame/assets/blockFiles/campFireLitLight6.txt");
-    public static final Block campFireLitLight5 = new BlockCampFireLit((short)77, 17, "src/spacegame/assets/blockFiles/campFireLitLight5.txt");
-    public static final Block campFireLitLight4 = new BlockCampFireLit((short)78, 17, "src/spacegame/assets/blockFiles/campFireLitLight4.txt");
-    public static final Block campFireLitLight3 = new BlockCampFireLit((short)79, 17, "src/spacegame/assets/blockFiles/campFireLitLight3.txt");
-    public static final Block campFireLitLight2 = new BlockCampFireLit((short)80, 17, "src/spacegame/assets/blockFiles/campFireLitLight2.txt");
-    public static final Block campFireLitLight1 = new BlockCampFireLit((short)81, 17, "src/spacegame/assets/blockFiles/campFireLitLight1.txt");
-    public static final Block campFireBurnedOut = new Block((short)82, 19, "src/spacegame/assets/blockFiles/campFireBurnedOut.txt");
+    public static final Block grassWithClay = new BlockGrassWithClay((short)69, 2, "src/spacegame/assets/blockFiles/grassWithClay.txt"); //Nice
+    public static final Block grassBlockWithClayLower = new Block((short)70, 14, "src/spacegame/assets/blockFiles/grassBlockWithClayLower.txt");
+    public static final Block clay = new BlockClay((short)71, 13, "src/spacegame/assets/blockFiles/clay.txt");
+    public static final Block itemClay = new Block((short)72, 13, "src/spacegame/assets/blockFiles/itemClay.txt");
+    public static final Block rawRedClayCookingPot = new Block((short)73, 13, "src/spacegame/assets/blockFiles/rawClayCookingPot.txt");
+    public static final Block pitKilnUnlit1 = new BlockPitKilnUnlit((short)74, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1);
+    public static final Block pitKilnUnlit2 = new BlockPitKilnUnlit((short)75, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1);
+    public static final Block pitKilnUnlit3 = new BlockPitKilnUnlit((short)76, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1);
+    public static final Block pitKilnUnlit4 = new BlockPitKilnUnlit((short)77, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1);
+    public static final Block pitKilnUnlit5 = new BlockPitKilnUnlit((short)78, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1);
+    public static final Block pitKilnUnlit6 = new BlockPitKilnUnlit((short)79, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1);
+    public static final Block pitKilnUnlit7 = new BlockPitKilnUnlit((short)80, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1);
+    public static final Block pitKilnUnlit8 = new BlockPitKilnUnlit((short)81, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1);
+    public static final Block redClayCookingPot = new Block((short)82, 17, "src/spacegame/assets/blockFiles/redClayCookingPot.txt");
     public static final Block grassBlockLower = new Block((short)83, 20, "src/spacegame/assets/blockFiles/grassBlockLower.txt");
     public static final Block cactus = new BlockCactus((short)84, 21, "src/spacegame/assets/blockFiles/cactus.txt");
     public static final Block itemStone = new Block((short)85, stone.textureID, "src/spacegame/assets/blockFiles/itemStone.txt");
@@ -182,6 +182,12 @@ public class Block {
     public static final Block strawChestTier0 = new Block((short)92, 32, "src/spacegame/assets/blockFiles/strawChestBuilding0.txt");
     public static final Block strawBasketTier0 = new Block((short)93, 32, "src/spacegame/assets/blockFiles/strawBasketBuilding.txt");
     public static final Block strawChestTier1 = new Block((short)94, 32, "src/spacegame/assets/blockFiles/strawChestBuilding1.txt");
+    public static final Block pitKilnUnlitLog1 = new BlockPitKilnUnlit((short)95, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1);
+    public static final Block pitKilnUnlitLog2 = new BlockPitKilnUnlit((short)96, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1);
+    public static final Block pitKilnUnlitLog3 = new BlockPitKilnUnlit((short)97, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1);
+    public static final Block pitKilnUnlit = new BlockPitKilnUnlit((short)98, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1);
+    public static final Block pitKilnLit = new BlockPitKilnLit((short)99, 15, "src/spacegame/assets/blockFiles/pitKilnLit.txt", 1);
+    public static final Block largeFireWoodBlock = new Block((short)100, 31, "src/spacegame/assets/blockFiles/firewood.txt");
     public final short ID;
     public final int textureID;
     public static int facingDirection;
@@ -194,7 +200,7 @@ public class Block {
     public int lightColor;
     public boolean canGreedyMesh = true;
     public boolean canBurnOut;
-    public ModelLoader blockModel;
+    public ModelLoader blockModel = topFaceBlockModel;
     public String blockName;
     public String stepSound = "";
     public int breakTimer = 1;
@@ -298,6 +304,8 @@ public class Block {
                     case "strawChestBuild0" -> this.blockModel = strawChestBuild0;
                     case "strawChestBuild1" -> this.blockModel = strawChestBuild1;
                     case "strawChestModel" -> this.blockModel = strawChestModel;
+                    case "itemClayModel" -> this.blockModel = itemClayModel;
+                    case "clayCookingPotModel" -> this.blockModel = clayCookingPotModel;
                     case "size15NormalModel" -> this.blockModel = size15NormalModel;
                     case "size14NormalModel" -> this.blockModel = size14NormalModel;
                     case "size13NormalModel" -> this.blockModel = size13NormalModel;
@@ -361,6 +369,7 @@ public class Block {
                     case "wood" -> this.stepSound = Sound.wood;
                     case "itemPickup" -> this.stepSound = Sound.itemPickup;
                     case "fallDamage" -> this.stepSound = Sound.fallDamage;
+                    case "clay" -> this.stepSound = Sound.clay;
                 }
             }
 
@@ -407,11 +416,20 @@ public class Block {
                 world.addEntity(new EntityItem(x + 0.5, y + 0.5, z + 0.5, Item.straw.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY));
             }
         }
+        if(this.ID == grassWithClay.ID || this.ID == clay.ID){
+            int extraClay = SpaceGame.globalRand.nextInt(2,4);
+            for(int i = 0; i < extraClay; i++){
+                world.addEntity(new EntityItem(x + 0.5, y + 0.5, z + 0.5, Item.clay.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY));
+            }
+        }
     }
     public void onLeftClick(int x, int y, int z, World world, EntityPlayer player) {
         if (!this.canBeBroken) {return;}
         this.handleSpecialLeftClickFunctions(x,y,z,world,player);
         world.setBlockWithNotify(x, y, z, Block.air.ID);
+        if(this instanceof ITickable){
+            world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).removeTickableBlockFromArray((short) Chunk.getBlockIndexFromCoordinates(x,y,z));
+        }
         new SoundPlayer(SpaceGame.instance).playSound(x, y, z, new Sound(this.stepSound, false), new Random().nextFloat(0.6F, 1));
         player.reduceHeldItemDurability();
     }
@@ -420,6 +438,7 @@ public class Block {
         Chunk chunk = world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
         if (chunk.blocks == null) {chunk.initChunk();}
         if (chunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)] != air.ID && chunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)] != water.ID) {return;}
+        if (!MouseListener.rightClickReleased)return;
 
         short heldItem = player.getHeldItem(); //Block all items that cannot be placed on the ground
         if (heldItem == Item.NULL_ITEM_REFERENCE || !Item.list[heldItem].canPlaceOnGround)return;
@@ -440,10 +459,15 @@ public class Block {
         heldBlock = switch (Item.list[heldItem].itemName) { //Convert held item into an equivalent block id to place, if one exists, otherwise default to the held block
             case "RAW_STONE" -> itemStone.ID;
             case "RAW_STICK" -> itemStick.ID;
+            case "CLAY" -> itemClay.ID;
             case "STRAW" -> campFireNoFirewood.ID;
             default -> heldBlock;
         };
 
+
+        if(Block.list[heldBlock] instanceof ITickable){
+            chunk.addTickableBlockToArray((short) Chunk.getBlockIndexFromCoordinates(x,y,z));
+        }
 
         if(Block.list[heldBlock] instanceof BlockContainer){
             chunk.addChestLocation(x,y,z, new Inventory(((BlockContainer)(Block.list[heldBlock])).inventorySize, 9));

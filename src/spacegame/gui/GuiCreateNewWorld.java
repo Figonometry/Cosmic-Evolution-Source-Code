@@ -67,7 +67,7 @@ public final class GuiCreateNewWorld extends Gui {
         tessellator.addVertex2DTexture(16777215, titleX - titleWidth/2, titleY + titleHeight/2, titleZ, 2);
         tessellator.addVertex2DTexture(16777215, titleX + titleWidth/2, titleY - titleHeight/2, titleZ, 0);
         tessellator.addElements();
-        tessellator.drawTexture2D(this.title, Shader.screen2DTextureAtlas, SpaceGame.camera);
+        tessellator.drawTexture2D(this.title, Shader.screen2DTexture, SpaceGame.camera);
 
         int earthSize = 256;
         int earthX = 0;
@@ -78,7 +78,7 @@ public final class GuiCreateNewWorld extends Gui {
         tessellator.addVertex2DTexture(16777215, earthX - earthSize, earthY + earthSize, earthZ, 2);
         tessellator.addVertex2DTexture(16777215, earthX + earthSize, earthY - earthSize, earthZ, 0);
         tessellator.addElements();
-        tessellator.drawTexture2D(this.earth, Shader.worldShader2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.earth, Shader.screen2DTexture, SpaceGame.camera);
 
         int backgroundWidth = SpaceGame.width;
         int backgroundHeight = SpaceGame.height;
@@ -92,7 +92,7 @@ public final class GuiCreateNewWorld extends Gui {
         tessellator.addElements();
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-        tessellator.drawTexture2D(this.background, Shader.worldShader2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.background, Shader.screen2DTexture, SpaceGame.camera);
         GL46.glDisable(GL46.GL_BLEND);
 
         tessellator.toggleOrtho();

@@ -31,9 +31,11 @@ public final class ThreadChunkUnloader implements Runnable {
             NBTTagCompound chunkData = new NBTTagCompound();
             NBTTagCompound entity = new NBTTagCompound();
             NBTTagCompound chest = new NBTTagCompound();
+            NBTTagCompound timeEvents = new NBTTagCompound();
             chunkTag.setTag("Chunk", chunkData);
             chunkData.setTag("Entity", entity);
             chunkData.setTag("Chest", chest);
+            chunkData.setTag("TimeEvents", timeEvents);
 
             chunkData.setInteger("x", chunk.x);
             chunkData.setInteger("y", chunk.y);
@@ -111,6 +113,21 @@ public final class ThreadChunkUnloader implements Runnable {
                     chestCount++;
                 }
                 chest.setInteger("chestCount", chestCount);
+            }
+
+            if(this.chunk.updateEvents.size() > 0){
+                TimeUpdateEvent timeUpdateEvent;
+                int eventCount = 0;
+                NBTTagCompound[] events = new NBTTagCompound[this.chunk.chestLocations.size()];
+                for(int i = 0; i < events.length; i++){
+                    timeUpdateEvent = this.chunk.updateEvents.get(i);
+                    events[i] = new NBTTagCompound();
+                    events[i].setShort("index", timeUpdateEvent.index);
+                    events[i].setLong("updateTime", timeUpdateEvent.updateTime);
+                    timeEvents.setTag("event" + eventCount, events[i]);
+                    eventCount++;
+                }
+                timeEvents.setInteger("eventCount", eventCount);
             }
 
             NBTIO.writeCompressed(chunkTag, outputStream);

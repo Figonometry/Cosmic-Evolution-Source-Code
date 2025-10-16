@@ -1,0 +1,4 @@
+itemName:CLAY
+canPlaceOnGround:true
+isSolid:false
+displayName:Red Clay

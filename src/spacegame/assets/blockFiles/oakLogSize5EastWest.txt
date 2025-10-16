@@ -1,5 +1,6 @@
 blockName:OAK_LOG
 blockModel:size5EastWestModel
+itemMetadata:12
 stepSound:wood
 breakTimer:120
 requiresTool:true

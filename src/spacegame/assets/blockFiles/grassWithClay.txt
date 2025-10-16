@@ -1,0 +1,8 @@
+blockName:GRASS_WITH_CLAY
+blockModel:standardBlockModel
+droppedItemID:14
+stepSound:clay
+breakTimer:60
+hardness:0.05
+toolType:shovel
+displayName:Grass With Clay

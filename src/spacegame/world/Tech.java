@@ -68,6 +68,7 @@ public final class Tech {
     public static final int UPDATE_EVENT_BERRY_COLLECTION = 0;
     public static final int UPDATE_EVENT_CRAFT_STONE_HAND_TOOL = 1;
     public static final int UPDATE_EVENT_HUNT_ANIMAL = 2;
+    public static final int UPDATE_EVENT_COOK_CLAY = 3;
 
 
     private Tech(int techID, String filepath) {
@@ -113,6 +114,7 @@ public final class Tech {
                     case "Crafting Stone Hand Tools" -> this.techUpdateEvent = UPDATE_EVENT_CRAFT_STONE_HAND_TOOL;
                     case "Berry Collection" -> this.techUpdateEvent = UPDATE_EVENT_BERRY_COLLECTION;
                     case "Hunt Animals" -> this.techUpdateEvent = UPDATE_EVENT_HUNT_ANIMAL;
+                    case "Cook Clay" -> this.techUpdateEvent = UPDATE_EVENT_COOK_CLAY;
                 }
             }
 
@@ -176,8 +178,9 @@ public final class Tech {
     public String getTechUpdateName(){
        return switch (this.techUpdateEvent){
            case UPDATE_EVENT_CRAFT_STONE_HAND_TOOL -> "Crafting Stone Hand Tools";
-           case UPDATE_EVENT_BERRY_COLLECTION -> "Berry Collectioin";
+           case UPDATE_EVENT_BERRY_COLLECTION -> "Berry Collection";
            case UPDATE_EVENT_HUNT_ANIMAL -> "Hunt Animals";
+           case UPDATE_EVENT_COOK_CLAY -> "Cook Clay Items";
            default -> throw new IllegalStateException("Unexpected value: " + this.techUpdateEvent);
        };
     }

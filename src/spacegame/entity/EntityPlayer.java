@@ -350,7 +350,7 @@ public final class EntityPlayer extends EntityLiving {
                 this.sg.save.activeWorld.findChunkFromChunkCoordinates(this.chunkX, this.chunkY, this.chunkZ).addEntityToList(droppedBlock);
             }
         } else if(itemID != Item.NULL_ITEM_REFERENCE) {
-            EntityItem droppedItem = new EntityItem(this.x, this.y, this.z, itemID, (byte)1,(byte) 1, this.getHeldItemDurability());
+            EntityItem droppedItem = new EntityItem(this.x, this.y, this.z, itemID, Item.NULL_ITEM_METADATA, (byte) 1, this.getHeldItemDurability());
             this.removeItemFromInventory();
             double[] vector = SpaceGame.camera.rayCast(1);
             Vector3d difVector = new Vector3d(vector[0] - this.x, (vector[1] - this.y) + this.height/2, vector[2] - this.z);

@@ -1,0 +1,6 @@
+blockName:UNLIT_PIT_KILN
+blockModel:standardBlockModel
+stepSound:grass
+breakTimer:60
+hardness:0.05
+itemDropChance:0

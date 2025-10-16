@@ -1,0 +1,2 @@
+itemName:CLAY_COOKING_POT
+displayName:Raw Red Clay Cooking Pot

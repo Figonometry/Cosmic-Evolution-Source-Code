@@ -1,0 +1,2 @@
+itemName:CLAY_ADOBE_BRICK
+displayName:Raw Red Clay Adobe Brick

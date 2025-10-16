@@ -5,13 +5,13 @@ import spacegame.core.*;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
 
-public final class TextField implements Runnable {
+public final class TextField {
    public int width;
    public int height;
    public int x;
    public int y;
    public String text = "";
-   public boolean breakLoop;
+   public String next = null;
    public boolean typing;
 
 
@@ -58,33 +58,27 @@ public final class TextField implements Runnable {
         fontRenderer.drawString(this.text, this.x - this.width/2, this.y - this.height/2,-15, 16777215, 50);
     }
 
-    public void scanForInputText(){
-        String next = null;
-        while (true) {
-            if (this.text.length() != 28) {
-                if (!KeyListener.isKeyPressed(KeyMappings.getKeyCodeFromMap(next, 599))) {
-                    boolean capsOriginalValue = KeyListener.capsLockEnabled;
-                    if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT)) {
-                        KeyListener.capsLockEnabled = !KeyListener.capsLockEnabled;
-                    }
-                    next = KeyMappings.getKeyNameFromMapForTextFields();
-                    KeyListener.capsLockEnabled = capsOriginalValue;
-                    if (next != null) {
-                        this.text = this.text + next;
-                    }
-                    if (this.breakLoop) {
-                        break;
-                    }
+    public void scanForInputText() {
+        if (this.text.length() != 28) {
+            if (!KeyListener.isKeyPressed(KeyMappings.getKeyCodeFromMap(next, 599))) {
+                boolean capsOriginalValue = KeyListener.capsLockEnabled;
+                if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT)) {
+                    KeyListener.capsLockEnabled = !KeyListener.capsLockEnabled;
+                }
+                this.next = KeyMappings.getKeyNameFromMapForTextFields();
+                KeyListener.capsLockEnabled = capsOriginalValue;
+                if (this.next != null) {
+                    this.text = this.text + this.next;
                 }
             }
-            if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_BACKSPACE) && KeyListener.keyReleased[GLFW.GLFW_KEY_BACKSPACE] && this.text.length() > 0) {
-                char[] newTextCharacters = new char[this.text.length() - 1];
-                for (int i = 0; i < this.text.length() - 1; i++) {
-                    newTextCharacters[i] = this.text.charAt(i);
-                }
-                this.text = new String(newTextCharacters);
-                KeyListener.setKeyReleased(GLFW.GLFW_KEY_BACKSLASH);
+        }
+        if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_BACKSPACE) && KeyListener.keyReleased[GLFW.GLFW_KEY_BACKSPACE] && this.text.length() > 0) {
+            char[] newTextCharacters = new char[this.text.length() - 1];
+            for (int i = 0; i < this.text.length() - 1; i++) {
+                newTextCharacters[i] = this.text.charAt(i);
             }
+            this.text = new String(newTextCharacters);
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_BACKSPACE);
         }
     }
 
@@ -95,14 +89,9 @@ public final class TextField implements Runnable {
         return x > this.x - (double) this.width /2 && x < this.x + (double) this.width /2 && y > this.y - (double) this.height /2 && y < this.y + (double) this.height /2;
     }
 
-    @Override
-    public void run() {
-        this.typing = true;
-        this.scanForInputText();
-    }
 
     public void onLeftClick(){
-        new Thread(this).start();
+       this.typing = true;
     }
 
 

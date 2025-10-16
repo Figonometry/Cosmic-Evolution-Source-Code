@@ -293,7 +293,7 @@ public final class RenderEngine {
     private void loadTextures(int textureNumber, String filepath) {
         String imageName = getBlockName(textureNumber, filepath);
         String imageFilepath = filepath + imageName + ".png";
-        if (!new File(filepath).exists()) {
+        if (!new File(imageFilepath).exists()) {
             imageFilepath = SpaceGame.imageFallbackPath;
         }
 
@@ -333,13 +333,13 @@ public final class RenderEngine {
                 case 10 -> "leaf";
                 case 11 -> "berryBushSideBase";
                 case 12 -> "berryBushTopBase";
-                case 13 -> "campFire2Sticks"; //13,14,15 are open and usable
-                case 14 -> "campFire3Sticks";
-                case 15 -> "campFire4Sticks";
+                case 13 -> "clay";
+                case 14 -> "claySideBottom";
+                case 15 -> "strawTexture";
                 case 16 -> "campFireBase";
-                case 17 -> "campFireLit";
+                case 17 -> "firedRedClay";
                 case 18 -> "fire";
-                case 19 -> "campFireBurnedOut";
+                case 19 -> "campFireBurnedOut"; //This is an open texture
                 case 20 -> "grassSideBottom";
                 case 21 -> "cactus";
                 case 22 -> "cactusTop";
@@ -370,6 +370,8 @@ public final class RenderEngine {
                 case 11 -> "rawVenison";
                 case 12 -> "straw";
                 case 13 -> "strawBasket";
+                case 14 -> "clay";
+                case 15 -> "rawClayAdobeBrick";
                 default -> "missing";
             };
         }

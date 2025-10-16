@@ -17,7 +17,7 @@ import java.util.Random;
 public final class GuiCraftingStoneTools extends GuiCrafting {
     public Button craft;
     public Button close;
-    public int inventoryUI;
+    public int backgroundTexture;
     public int recipeOverlay;
     public int transparentBackground;
     public int fillableColor;
@@ -43,13 +43,13 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
         int xMat; //base -370
         int yMat; //base -120
         Random rand = new Random();
-        float color;
+        int color;
         for(int i = 0 ; i < this.materials.length; i++){
-            color = rand.nextFloat(0.4f, 0.7f);
+            color = MathUtil.floatToIntRGBA(rand.nextFloat(0.4f, 0.7f));
             xMat = -112 + ((i % 8) * 32);
             yMat = -112 + ((i / 8) * 32);
             this.materials[i] = new CraftingMaterial(32, 32, xMat, yMat, "stone");
-            this.materials[i].setColor(new Color(color, color, color, 0).getRGB());
+            this.materials[i].setColor(color << 16 | color << 8 | color);
         }
     }
 
@@ -82,7 +82,7 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
 
     @Override
     public void loadTextures() {
-        this.inventoryUI = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiTechTree/clayTexture.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.backgroundTexture = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiTechTree/clayTexture.png", RenderEngine.TEXTURE_TYPE_2D, 0);
         this.transparentBackground = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
         this.fillableColor = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColor.png", RenderEngine.TEXTURE_TYPE_2D, 0);
         this.outline = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/outline.png", RenderEngine.TEXTURE_TYPE_2D, 0);
@@ -90,7 +90,7 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
 
     @Override
     public void deleteTextures() {
-        SpaceGame.instance.renderEngine.deleteTexture(this.inventoryUI);
+        SpaceGame.instance.renderEngine.deleteTexture(this.backgroundTexture);
         SpaceGame.instance.renderEngine.deleteTexture(this.transparentBackground);
         SpaceGame.instance.renderEngine.deleteTexture(this.fillableColor);
         SpaceGame.instance.renderEngine.deleteTexture(this.outline);
@@ -138,7 +138,7 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
         tessellator.addVertex2DTexture(16777215, backgroundX - (float) backgroundWidth /2, backgroundY + (float) backgroundHeight /2, backgroundZ, 2);
         tessellator.addVertex2DTexture(16777215, backgroundX + (float) backgroundWidth /2, backgroundY - (float) backgroundHeight /2, backgroundZ, 0);
         tessellator.addElements();
-        tessellator.drawTexture2D(this.inventoryUI, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.backgroundTexture, Shader.screen2DTexture, SpaceGame.camera);
 
         if(this.selectedItemID != -1) {
             backgroundZ += 10;

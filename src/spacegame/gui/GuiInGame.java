@@ -40,27 +40,22 @@ public final class GuiInGame extends Gui {
 
     @Override
     public void loadTextures() {
-        vignette = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/vignette.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        water = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/waterOverlay.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        outline = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInGame/outline.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        blockBreaking = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInGame/blockBreaking.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        blockBreakingAtlas = SpaceGame.instance.renderEngine.createTextureAtlas(96,96, 32, 32, 7, 0);
-        hotbar = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInGame/hotbarSlot.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        transparentBackground = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        fillableColorWithShadedBottom = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColorWithShadedBottom.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        fillableColor = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColor.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        if (vignette == 0) {
+            vignette = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/vignette.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+            water = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/waterOverlay.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+            outline = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInGame/outline.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+            blockBreaking = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInGame/blockBreaking.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+            blockBreakingAtlas = SpaceGame.instance.renderEngine.createTextureAtlas(96, 96, 32, 32, 7, 0);
+            hotbar = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInGame/hotbarSlot.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+            transparentBackground = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+            fillableColorWithShadedBottom = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColorWithShadedBottom.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+            fillableColor = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColor.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        }
     }
 
     @Override
     public void deleteTextures() {
-       //SpaceGame.instance.renderEngine.deleteTexture(this.vignette);
-       //SpaceGame.instance.renderEngine.deleteTexture(this.water);
-       //SpaceGame.instance.renderEngine.deleteTexture(outline);
-       //SpaceGame.instance.renderEngine.deleteTexture(blockBreaking);
-       //SpaceGame.instance.renderEngine.deleteTexture(this.hotbar);
-       //SpaceGame.instance.renderEngine.deleteTexture(this.transparentBackground);
-       //SpaceGame.instance.renderEngine.deleteTexture(this.fillableColorWithShadedBottom);
-       //blockBreakingAtlas = null;
+
     }
 
     public static void renderText(){
@@ -134,7 +129,7 @@ public final class GuiInGame extends Gui {
             tessellator.toggleOrtho();
             GL46.glDisable(GL46.GL_BLEND);
             renderAirBar();
-        } else if (blockPlayerHeadIsIn != Block.air.ID && blockPlayerHeadIsIn != Block.torchStandard.ID && blockPlayerHeadIsIn != Block.torchNorth.ID && blockPlayerHeadIsIn != Block.torchSouth.ID && blockPlayerHeadIsIn != Block.torchEast.ID && blockPlayerHeadIsIn != Block.torchWest.ID) {
+        } else if (blockPlayerHeadIsIn != Block.air.ID && Block.list[blockPlayerHeadIsIn].isSolid) {
             int textureID = Block.list[blockPlayerHeadIsIn].textureID;
             tessellator.toggleOrtho();
             tessellator.addVertexTextureArray(4144959, (float) -SpaceGame.width /2, (float) -SpaceGame.height /2, -900, 3, textureID, 2);

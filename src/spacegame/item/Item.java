@@ -23,10 +23,10 @@ public class Item {
     public static final Item rawVenison = new ItemFood((short)11, 11, "src/spacegame/assets/itemFiles/rawVenison.txt", 5f);
     public static final Item straw = new Item((short)12, 12, "src/spacegame/assets/itemFiles/straw.txt");
     public static final Item strawBasket = new Item((short)13, 13, "src/spacegame/assets/itemFiles/strawBasket.txt");
+    public static final Item clay = new Item((short)14, 14, "src/spacegame/assets/itemFiles/clay.txt");
+    public static final Item clayAdobeBrick = new Item((short)15, 15, "src/spacegame/assets/itemFiles/clayAdobeBrick.txt");
     public final short ID;
     public final int textureID;
-    public short metadata;
-    public short durability = -1; //If this is -1 that means the item has no durability and should never render a durability bar
     public float hardness = 0;
     public boolean renderItemWithBlockModel;
     public byte stackLimit = 100;
@@ -54,6 +54,8 @@ public class Item {
     public static final String ITEM_TOOL_TYPE_KNIFE = "knife";
     public static final String ITEM_TOOL_TYPE_SHOVEL = "shovel";
     public static final String ITEM_TOOL_TYPE_AXE = "axe";
+    public short durability = NULL_ITEM_DURABILITY;   //If this is -1 that means the item has no durability and should never render a durability bar
+    public short metadata = NULL_ITEM_METADATA;
 
     public Item(short ID, int textureID, String filepath){
         if (list[ID] != null) {

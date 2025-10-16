@@ -1,6 +1,7 @@
 package spacegame.core;
 
 import org.joml.Vector3d;
+import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -12,11 +13,10 @@ import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL46;
 import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryUtil;
+import spacegame.block.Block;
 import spacegame.celestial.Sun;
 import spacegame.celestial.Universe;
-import spacegame.entity.Entity;
-import spacegame.entity.EntityDeer;
-import spacegame.entity.EntityPlayer;
+import spacegame.entity.*;
 import spacegame.gui.*;
 import spacegame.item.Item;
 import spacegame.item.ItemStack;
@@ -102,7 +102,7 @@ public final class SpaceGame implements Runnable {
     }
 
     private void startGame() {
-        this.title = "Cosmic Evolution Alpha v0.28";
+        this.title = "Cosmic Evolution Alpha v0.29";
         this.clearLogFiles(new File(this.launcherDirectory + "/crashReports"));
         this.initLWJGL();
         this.renderEngine = new RenderEngine();
@@ -225,25 +225,20 @@ public final class SpaceGame implements Runnable {
     private void mainLoop() {
         long lastTime = System.nanoTime();
         byte fpsTimer = 30;
-        try {
-            while (this.running) {
-                this.timer.advanceTime();
-                for (int i = 0; i < this.timer.ticks; i++) {
-                    this.tick();
-                    fpsTimer--;
-                    if (fpsTimer <= 0) {
-                        this.fps = (int) (1000000000.0 / (lastTime - System.nanoTime()));
-                        fpsTimer = 30;
-                    }
+        while (this.running) {
+            this.timer.advanceTime();
+            for (int i = 0; i < this.timer.ticks; i++) {
+                this.tick();
+                fpsTimer--;
+                if (fpsTimer <= 0) {
+                    this.fps = (int) (1000000000.0 / (lastTime - System.nanoTime()));
+                    fpsTimer = 30;
                 }
-                lastTime = System.nanoTime();
-                this.framePulse();
-                this.render();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+            lastTime = System.nanoTime();
+            this.framePulse();
+            this.render();
         }
-
         this.shutdown();
     }
 
@@ -312,6 +307,11 @@ public final class SpaceGame implements Runnable {
                 }
             }
         }
+        if(this.currentlySelectedField != null){
+            if(this.currentlySelectedField.typing){
+                this.currentlySelectedField.scanForInputText();
+            }
+        }
         camera.setFrustum();
         GuiUniverseMap.universeCamera.setFrustum();
         this.incrementPlayerDamageTilt();
@@ -344,22 +344,22 @@ public final class SpaceGame implements Runnable {
       //        KeyListener.setKeyReleased(GLFW.GLFW_KEY_G);
       //    }
 //
-      //  if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_MINUS)){
-      //      this.save.time -= 216000;
-      //      KeyListener.setKeyReleased(GLFW.GLFW_KEY_MINUS);
-      //  }
-      //  if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_EQUAL)){
-      //      this.save.time += 216000;
-      //      KeyListener.setKeyReleased(GLFW.GLFW_KEY_EQUAL);
-      //  }
-      //  if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_COMMA)){
-      //      this.save.time -= 1000;
-      //      KeyListener.setKeyReleased(GLFW.GLFW_KEY_COMMA);
-      //  }
-      //  if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_PERIOD)){
-      //      this.save.time += 1000;
-      //      KeyListener.setKeyReleased(GLFW.GLFW_KEY_PERIOD);
-      //  }
+       //   if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_MINUS)){
+       //       this.save.time -= 216000;
+       //       KeyListener.setKeyReleased(GLFW.GLFW_KEY_MINUS);
+       //   }
+       //   if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_EQUAL)){
+       //       this.save.time += 216000;
+       //       KeyListener.setKeyReleased(GLFW.GLFW_KEY_EQUAL);
+       //   }
+       //   if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_COMMA)){
+       //       this.save.time -= 1000;
+       //       KeyListener.setKeyReleased(GLFW.GLFW_KEY_COMMA);
+       //   }
+       //   if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_PERIOD)){
+       //       this.save.time += 1000;
+       //       KeyListener.setKeyReleased(GLFW.GLFW_KEY_PERIOD);
+       //   }
 
 
         if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_1) && this.currentGui instanceof GuiInGame){
@@ -476,6 +476,32 @@ public final class SpaceGame implements Runnable {
         GLFW.glfwPollEvents();
     }
 
+    private void dropItemStackFromMouse(){
+        if(ItemStack.itemStackOnMouse.item != null){
+            if(ItemStack.itemStackOnMouse.item.ID == Item.block.ID) {
+                if (ItemStack.itemStackOnMouse.metadata != Block.air.ID) {
+                    EntityBlock droppedBlock = new EntityBlock(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, ItemStack.itemStackOnMouse.metadata, ItemStack.itemStackOnMouse.count);
+                    double[] vector = SpaceGame.camera.rayCast(1);
+                    Vector3d difVector = new Vector3d(vector[0] - this.save.thePlayer.x, (vector[1] - this.save.thePlayer.y) + this.save.thePlayer.height/2, vector[2] - this.save.thePlayer.z);
+                    difVector.normalize();
+                    droppedBlock.setMovementVector(new Vector3f((float) difVector.x, (float) difVector.y, (float) difVector.z));
+                    this.save.activeWorld.findChunkFromChunkCoordinates(MathUtil.floorDouble(this.save.thePlayer.x) >> 5, MathUtil.floorDouble(this.save.thePlayer.y) >> 5, MathUtil.floorDouble(this.save.thePlayer.z) >> 5).addEntityToList(droppedBlock);
+                }
+            } else if(ItemStack.itemStackOnMouse.item.ID != Item.NULL_ITEM_REFERENCE) {
+                EntityItem droppedItem = new EntityItem(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, ItemStack.itemStackOnMouse.item.ID, Item.NULL_ITEM_METADATA, ItemStack.itemStackOnMouse.count, ItemStack.itemStackOnMouse.durability);
+                double[] vector = SpaceGame.camera.rayCast(1);
+                Vector3d difVector = new Vector3d(vector[0] - this.save.thePlayer.x, (vector[1] - this.save.thePlayer.y) + this.save.thePlayer.height/2, vector[2] - this.save.thePlayer.z);
+                difVector.normalize();
+                droppedItem.setMovementVector(new Vector3f((float) difVector.x, (float) difVector.y, (float) difVector.z));
+                this.save.activeWorld.findChunkFromChunkCoordinates(MathUtil.floorDouble(this.save.thePlayer.x) >> 5, MathUtil.floorDouble(this.save.thePlayer.y) >> 5, MathUtil.floorDouble(this.save.thePlayer.z) >> 5).addEntityToList(droppedItem);
+            }
+            ItemStack.itemStackOnMouse.item = null;
+            ItemStack.itemStackOnMouse.count = 0;
+            ItemStack.itemStackOnMouse.metadata = Item.NULL_ITEM_METADATA;
+            ItemStack.itemStackOnMouse.durability = Item.NULL_ITEM_DURABILITY;
+        }
+    }
+
     private void checkKeyBindStates() {
         if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_ESCAPE) && this.save != null && this.currentGui instanceof GuiInGame) {
             this.save.activeWorld.paused = true;
@@ -509,8 +535,8 @@ public final class SpaceGame implements Runnable {
                                     stack.mergeStack(ItemStack.itemStackOnMouse);
                                     ItemStack.itemStackOnMouse.item = null;
                                     ItemStack.itemStackOnMouse.count = 0;
-                                    ItemStack.itemStackOnMouse.metadata = 0;
-                                    ItemStack.itemStackOnMouse.durability = 0;
+                                    ItemStack.itemStackOnMouse.metadata = Item.NULL_ITEM_METADATA;
+                                    ItemStack.itemStackOnMouse.durability = Item.NULL_ITEM_DURABILITY;
                                 }
                             }
                         } else {
@@ -532,8 +558,8 @@ public final class SpaceGame implements Runnable {
                                 stack.durability = ItemStack.itemStackOnMouse.durability;
                                 ItemStack.itemStackOnMouse.item = null;
                                 ItemStack.itemStackOnMouse.count = 0;
-                                ItemStack.itemStackOnMouse.metadata = 0;
-                                ItemStack.itemStackOnMouse.durability = 0;
+                                ItemStack.itemStackOnMouse.metadata = Item.NULL_ITEM_METADATA;
+                                ItemStack.itemStackOnMouse.durability = Item.NULL_ITEM_DURABILITY;
                                 if(stack.exclusiveItemType.equals(Item.ITEM_TYPE_PLAYER_STORAGE)){
                                     this.save.thePlayer.setPlayerStorageLevel((byte) stack.item.storageLevel);
                                 }
@@ -544,8 +570,8 @@ public final class SpaceGame implements Runnable {
                                 stack.durability = ItemStack.itemStackOnMouse.durability;
                                 ItemStack.itemStackOnMouse.item = null;
                                 ItemStack.itemStackOnMouse.count = 0;
-                                ItemStack.itemStackOnMouse.metadata = 0;
-                                ItemStack.itemStackOnMouse.durability = 0;
+                                ItemStack.itemStackOnMouse.metadata = Item.NULL_ITEM_METADATA;
+                                ItemStack.itemStackOnMouse.durability = Item.NULL_ITEM_DURABILITY;
                             }
                         }
                     }
@@ -558,8 +584,8 @@ public final class SpaceGame implements Runnable {
                         ItemStack.itemStackOnMouse.exclusiveItemType = stack.exclusiveItemType;
                         stack.item = null;
                         stack.count = 0;
-                        stack.metadata = 0;
-                        stack.durability = 0;
+                        stack.metadata = Item.NULL_ITEM_METADATA;
+                        stack.durability = Item.NULL_ITEM_DURABILITY;
                         if(stack.usesExclusiveItem && stack.exclusiveItemType.equals(Item.ITEM_TYPE_PLAYER_STORAGE)){
                             this.save.thePlayer.setPlayerStorageLevel((byte) 1);
                         }
@@ -585,11 +611,9 @@ public final class SpaceGame implements Runnable {
                 if(textField != this.currentlySelectedField){
                     if(this.currentlySelectedField != null){
                         this.currentlySelectedField.typing = false;
-                        this.currentlySelectedField.breakLoop = true;
                     }
                 }
                 this.currentlySelectedField = textField;
-                textField.breakLoop = false;
                 textField.onLeftClick();
             }
         }
@@ -599,6 +623,14 @@ public final class SpaceGame implements Runnable {
             if (material != null) {
                 if (material.active) {
                     material.deactivate();
+                    switch (material.type){
+                        case "stone":
+                            new SoundPlayer(this).playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound(Sound.leftClickStoneCraftingMaterial, false), globalRand.nextFloat(0.5f, 1));
+                            break;
+                        case "clay":
+                            new SoundPlayer(this).playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound(Sound.clay, false), globalRand.nextFloat(0.5f, 1));
+                            break;
+                    }
                 }
             }
         }
@@ -609,6 +641,15 @@ public final class SpaceGame implements Runnable {
                 ((GuiCraftingStoneTools)this.currentGui).selectedItemID = recipeSelector.itemID;
                 ((GuiCraftingStoneTools)this.currentGui).selectableRecipes = null;
                 ((GuiCraftingStoneTools)this.currentGui).activateRecipeOverlay();
+            }
+        }
+
+        if(this.currentGui instanceof GuiCraftingPottery){
+            RecipeSelector recipeSelector = ((GuiCraftingPottery)this.currentGui).getSelectedRecipeSelector();
+            if(recipeSelector != null){
+                ((GuiCraftingPottery)this.currentGui).selectedItemID = recipeSelector.itemID;
+                ((GuiCraftingPottery)this.currentGui).selectableRecipes = null;
+                ((GuiCraftingPottery)this.currentGui).activateRecipeOverlay();
             }
         }
 
@@ -675,6 +716,23 @@ public final class SpaceGame implements Runnable {
             }
         }
 
+        if(this.currentGui instanceof GuiCrafting) {
+            CraftingMaterial material = ((GuiCrafting) this.currentGui).getHoveredCraftingMaterial();
+            if (material != null) {
+                if (!material.active) {
+                    material.active = true;
+                    switch (material.type){
+                        case "stone":
+                            new SoundPlayer(this).playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound(Sound.rightClickStoneCraftingMaterial, false), globalRand.nextFloat(0.5f, 1));
+                            break;
+                        case "clay":
+                            new SoundPlayer(this).playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound(Sound.clay, false), globalRand.nextFloat(0.5f, 1));
+                            break;
+                    }
+                }
+            }
+        }
+
             if(this.currentGui instanceof GuiTechTree){
                 float deltaX = MouseListener.getDeltaX();
                 float deltaY = -MouseListener.getDeltaY();
@@ -694,7 +752,7 @@ public final class SpaceGame implements Runnable {
             if(this.currentGui instanceof GuiWorldLoadingScreen){
                 if(Thread.activeCount() < 5){
                     GLFW.glfwSetInputMode(this.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
-                    if(Assets.blockTextureArray == 0) {
+                    if(Assets.blockTextureArray == 0 || Assets.itemTextureArray == 0) {
                         Assets.enableBlockTextureArray();
                         Assets.enableItemTextureArray();
                     }
@@ -768,6 +826,9 @@ public final class SpaceGame implements Runnable {
     }
 
     public void setNewGui(Gui gui) {
+        if(this.currentGui instanceof GuiInventory && !(gui instanceof GuiInventory)){
+            this.dropItemStackFromMouse();
+        }
         if (this.currentGui != null) {
             this.currentGui.deleteTextures();
         }

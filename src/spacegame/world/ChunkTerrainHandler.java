@@ -171,6 +171,7 @@ public final class ChunkTerrainHandler {
         int berryClusterCount = rand.nextInt(40) == 0 ? 1 : 0;
         int cactusCount = rand.nextInt(10) == 0 ? 4 : 1;
         int tallGrassCount = rand.nextInt(20, 30);
+        boolean generateClayBlob = rand.nextInt(6) == 0;
         short[] grassIndicesRaw = new short[32768];
         short[] surfaceSandIndices = new short[32768];
         int grassIndex = 0;
@@ -198,6 +199,10 @@ public final class ChunkTerrainHandler {
         short[] sandIndices = new short[sandIndex + 1];
         for(int i = 0; i < sandIndices.length; i++){
             sandIndices[i] = surfaceSandIndices[i];
+        }
+
+        if(generateClayBlob && grassIndex > 0){
+            new WorldGenClayBlob(chunk, (WorldEarth)chunk.parentWorld, grassIndices[rand.nextInt(grassIndices.length)]);
         }
 
         while (cactusCount > 0 && sandIndex > 0){ //Should not generate outside of desert regions

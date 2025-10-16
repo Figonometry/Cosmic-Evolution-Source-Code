@@ -4,6 +4,7 @@ import org.joml.Vector3f;
 import spacegame.block.Block;
 import spacegame.block.BlockCampFire;
 import spacegame.block.BlockLog;
+import spacegame.block.BlockPitKilnUnlit;
 import spacegame.core.MathUtil;
 import spacegame.world.Chunk;
 import spacegame.world.World;
@@ -238,7 +239,7 @@ public class RenderBlocks {
         ModelLoader baseModel = Block.fireWood;
         ModelFace modelFace;
 
-        switch (logCount){ //This switch statement is not supposed to have case labels, I'm intentionally using the follow through of a default switch statement to reduce LOC
+        switch (logCount){ //This switch statement is not supposed to have case labels, I'm intentionally using the follow through of a default switch statement to reduce LOC, this is also why it's in reverse order
             case 4:
                 ModelLoader log4 = baseModel.copyModel();
                 for (int j = 0; j < log4.modelFaces.length; j++) {
@@ -299,7 +300,7 @@ public class RenderBlocks {
         }
     }
 
-    public  void renderGrassBlock(Chunk chunk, World world, short block, int index, int face, int[] greedyMeshSize) {
+    public void renderGrassBlock(Chunk chunk, World world, short block, int index, int face, int[] greedyMeshSize) {
         ModelFace[] modelFaces = Block.list[block].blockModel.getModelFaceOfType(face);
         for (int i = 0; i < modelFaces.length; i++) {
             renderOpaqueFace(chunk, world, block, index, face, modelFaces[i], 0,0,0,0,0,0,0,0, 3, 1, 2, 0, greedyMeshSize);
@@ -308,6 +309,45 @@ public class RenderBlocks {
                     renderOpaqueFace(chunk, world, Block.grassBlockLower.ID, index, face, modelFaces[i], 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, greedyMeshSize);
                 }
             }
+        }
+    }
+
+    public void renderGrassBlockWithClay(Chunk chunk, World world, short block, int index, int face, int[] greedyMeshSize) {
+        ModelFace[] modelFaces = Block.list[block].blockModel.getModelFaceOfType(face);
+        for (int i = 0; i < modelFaces.length; i++) {
+            renderOpaqueFace(chunk, world, block, index, face, modelFaces[i], 0,0,0,0,0,0,0,0, 3, 1, 2, 0, greedyMeshSize);
+            if(modelFaces[i] != null) {
+                if (modelFaces[i].faceType != TOP_FACE && modelFaces[i].faceType != BOTTOM_FACE) {
+                    renderOpaqueFace(chunk, world, Block.grassBlockWithClayLower.ID, index, face, modelFaces[i], 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, greedyMeshSize);
+                }
+            }
+        }
+    }
+
+    public void renderPitKiln(Chunk chunk, World world, short block, int index, int face){
+        if(face == TOP_FACE){
+            renderOpaqueFace(chunk, world, block, index, face, Block.list[block].blockModel.copyModel().translateModel(0, -1 + (0.109375f * ((BlockPitKilnUnlit)Block.list[block]).getStrawHeight()), 0).getModelFace(face) , 0,0,0,0,0,0,0,0, 3, 1, 2, 0, new int[2]);
+        } else {
+            renderOpaqueFace(chunk, world, block, index, face, Block.list[block].blockModel.getModelFace(face), 0,0,0,0,0,0,0,0, 3, 1, 2, 0, new int[2]);
+        }
+
+        int numberOfLogs = ((BlockPitKilnUnlit)Block.list[block]).getNumberOfLogs();
+        block = Block.largeFireWoodBlock.ID;
+        ModelLoader baseModel = Block.largeFireWood;
+        ModelFace modelFace;
+        switch (numberOfLogs){
+            case 4:
+                modelFace = baseModel.copyModel().translateModel(0.5f, 1, 0.875f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
+            case 3:
+                modelFace = baseModel.copyModel().translateModel(0.5f, 1, 0.625f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
+            case 2:
+                modelFace = baseModel.copyModel().translateModel(0.5f, 1, 0.375f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
+            case 1:
+                modelFace = baseModel.copyModel().translateModel(0.5f, 1, 0.125f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
         }
     }
 
@@ -548,10 +588,10 @@ public class RenderBlocks {
     }
 
     private void setPlantColorValues(int x, int y, int z, World world, short blockID){
-        if(blockID != Block.grass.ID && blockID != Block.leaf.ID && blockID != Block.tallGrass.ID && blockID != Block.berryBushNoBerries.ID)return;
+        if(blockID != Block.grass.ID && blockID != Block.leaf.ID && blockID != Block.tallGrass.ID && blockID != Block.berryBushNoBerries.ID && blockID != Block.grassWithClay.ID)return;
 
 
-        int color = blockID == Block.grass.ID  || blockID == Block.tallGrass.ID ? PlantColorizer.getGrassColor(world.getTemperature(x,y,z), world.getRainfall(x,z)) : PlantColorizer.getOakLeafColor(world.getTemperature(x,y,z), world.getRainfall(x,z));;
+        int color = blockID == Block.grass.ID  || blockID == Block.tallGrass.ID || blockID == Block.grassWithClay.ID ? PlantColorizer.getGrassColor(world.getTemperature(x,y,z), world.getRainfall(x,z)) : PlantColorizer.getOakLeafColor(world.getTemperature(x,y,z), world.getRainfall(x,z));;
         this.red = ((color >> 16) & 255) / 255f;
         this.green = ((color >> 8) & 255) / 255f;
         this.blue = (color & 255) / 255f;

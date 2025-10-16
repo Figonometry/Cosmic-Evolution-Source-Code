@@ -24,9 +24,9 @@ public final class RecipeSelector {
         this.displayName = displayName;
     }
 
-    public RecipeSelector(short itemID, short blockID, float x, float y, float width, float height, String displayName){
+    public RecipeSelector(short itemID, short blockTextureID, float x, float y, float width, float height, String displayName){
         this.itemID = itemID;
-        this.blockID = blockID;
+        this.blockID = blockTextureID;
         this.x = x;
         this.y = y;
         this.width = width;

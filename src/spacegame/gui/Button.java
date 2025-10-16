@@ -6,14 +6,12 @@ import spacegame.core.GameSettings;
 import spacegame.core.MathUtil;
 import spacegame.core.MouseListener;
 import spacegame.core.SpaceGame;
+import spacegame.entity.EntityBlock;
 import spacegame.entity.EntityItem;
 import spacegame.item.Item;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
-import spacegame.render.RenderEngine;
-import spacegame.render.Shader;
-import spacegame.render.Texture;
-import spacegame.render.TextureAtlas;
+import spacegame.render.*;
 import spacegame.world.Save;
 import spacegame.world.Tech;
 
@@ -91,6 +89,8 @@ public class Button {
             }
             case BACK_TO_MAIN_MENU -> {
                 this.sg.setNewGui(new GuiMainMenu(this.sg));
+                Assets.disableBlockTextureArray();
+                Assets.disableItemTextureArray();
             }
             case BACK -> {
                 if(this.Gui instanceof GuiVideoSettingsMainMenu || this.Gui instanceof GuiControlsMainMenu){
@@ -356,8 +356,8 @@ public class Button {
                 }
             }
             case CREATE_NEW_WORLD -> {
-                ((GuiCreateNewWorld)this.Gui).nameWorld.breakLoop = true;
-                ((GuiCreateNewWorld)this.Gui).setSeed.breakLoop = true;
+                ((GuiCreateNewWorld)this.Gui).nameWorld.typing = false;
+                ((GuiCreateNewWorld)this.Gui).setSeed.typing = false;
                 this.sg.startSave(((GuiCreateNewWorld)this.Gui).saveSlot, ((GuiCreateNewWorld)this.Gui).nameWorld.text, ((GuiCreateNewWorld)this.Gui).getSeed());
             }
             case RENAME_WORLD -> {
@@ -383,7 +383,7 @@ public class Button {
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-                ((GuiRenameWorld)this.Gui).nameWorld.breakLoop = true;
+                ((GuiRenameWorld)this.Gui).nameWorld.typing = false;
                 this.sg.setNewGui(new GuiWorldSelect(this.sg));
             }
             case WORLD_INFO -> {
@@ -406,11 +406,28 @@ public class Button {
                     int z = ((GuiCraftingStoneTools) this.Gui).z;
                     short outputItem = ((GuiCraftingStoneTools) this.Gui).outputItemID;
                     this.sg.save.activeWorld.setBlockWithNotify(x,y,z, Block.air.ID);
-                    EntityItem item = new EntityItem(x + 0.5, y + 0.5, z + 0.5, outputItem, (short)0, (byte) 1, Item.list[outputItem].durability);
-                    this.sg.save.activeWorld.chunkController.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).addEntityToList(item);
+                    this.sg.save.activeWorld.addEntity(new EntityItem(x + 0.5, y + 0.5, z + 0.5, outputItem, Item.NULL_ITEM_METADATA, (byte) 1, Item.list[outputItem].durability));
                     this.sg.save.thePlayer.removeItemFromInventory();
                     this.sg.save.activeWorld.delayWhenExitingUI = 60;
                     Tech.techUpdateEvent(Tech.UPDATE_EVENT_CRAFT_STONE_HAND_TOOL);
+                }
+
+                if(this.Gui instanceof GuiCraftingPottery){
+                    int x = ((GuiCraftingPottery) this.Gui).x;
+                    int y = ((GuiCraftingPottery) this.Gui).y;
+                    int z = ((GuiCraftingPottery) this.Gui).z;
+                    short outputItem = ((GuiCraftingPottery) this.Gui).outputItemID;
+                    short outputBlockID = ((GuiCraftingPottery)this.Gui).outputBlockID;
+                    this.sg.save.activeWorld.setBlockWithNotify(x,y,z, Block.air.ID);
+                    if(outputItem == Item.block.ID){
+                        this.sg.save.activeWorld.addEntity(new EntityBlock(x + 0.5, y + 0.5, z + 0.5, outputBlockID, (byte)1));
+                    } else {
+                        this.sg.save.activeWorld.addEntity(new EntityItem(x + 0.5, y + 0.5, z + 0.5, outputItem, Item.NULL_ITEM_METADATA, (byte) 1, Item.list[outputItem].durability));
+                    }
+                    for(int i = 0; i < ((GuiCraftingPottery)this.Gui).consumedClayCount; i++){
+                        this.sg.save.thePlayer.removeSpecificItemFromInventory(Item.clay.ID);
+                    }
+                    this.sg.save.activeWorld.delayWhenExitingUI = 60;
                 }
 
                 this.sg.setNewGui(new GuiInGame(this.sg));

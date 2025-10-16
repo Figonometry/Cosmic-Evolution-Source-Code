@@ -1,5 +1,7 @@
 package spacegame.block;
 
+import spacegame.core.Sound;
+import spacegame.core.SoundPlayer;
 import spacegame.core.SpaceGame;
 import spacegame.entity.EntityParticle;
 import spacegame.world.Chunk;
@@ -27,44 +29,7 @@ public final class BlockCampFireLit extends BlockCampFire implements ITickable, 
     @Override
     public void tick(int x, int y, int z, World world) {
         this.generateParticles(x,y,z);
-        this.reduceFireLightLevel(x,y,z);
+        new SoundPlayer(SpaceGame.instance).playSound(x, y, z, new Sound(Sound.fireCrackling, false), SpaceGame.globalRand.nextFloat(0.75f, 1));
     }
 
-    private void reduceFireLightLevel(int x, int y, int z){
-        if(true){
-            return;
-        }
-        if(SpaceGame.instance.save.time % 7200 != 0){return;}
-        SpaceGame.instance.save.activeWorld.setBlockWithNotify(x, y, z, air.ID);
-        switch (this.lightBlockValue) {
-            case 14 ->
-                    SpaceGame.instance.save.activeWorld.setBlockWithNotify(x, y, z, campFireLitLight13.ID);
-            case 13 ->
-                    SpaceGame.instance.save.activeWorld.setBlockWithNotify(x, y, z, campFireLitLight12.ID);
-            case 12 ->
-                    SpaceGame.instance.save.activeWorld.setBlockWithNotify(x, y, z, campFireLitLight11.ID);
-            case 11 ->
-                    SpaceGame.instance.save.activeWorld.setBlockWithNotify(x, y, z, campFireLitLight10.ID);
-            case 10 ->
-                    SpaceGame.instance.save.activeWorld.setBlockWithNotify(x, y, z, campFireLitLight9.ID);
-            case 9 ->
-                    SpaceGame.instance.save.activeWorld.setBlockWithNotify(x, y, z, campFireLitLight8.ID);
-            case 8 ->
-                    SpaceGame.instance.save.activeWorld.setBlockWithNotify(x, y, z, campFireLitLight7.ID);
-            case 7 ->
-                    SpaceGame.instance.save.activeWorld.setBlockWithNotify(x, y, z, campFireLitLight6.ID);
-            case 6 ->
-                    SpaceGame.instance.save.activeWorld.setBlockWithNotify(x, y, z, campFireLitLight5.ID);
-            case 5 ->
-                    SpaceGame.instance.save.activeWorld.setBlockWithNotify(x, y, z, campFireLitLight4.ID);
-            case 4 ->
-                    SpaceGame.instance.save.activeWorld.setBlockWithNotify(x, y, z, campFireLitLight3.ID);
-            case 3 ->
-                    SpaceGame.instance.save.activeWorld.setBlockWithNotify(x, y, z, campFireLitLight2.ID);
-            case 2 ->
-                    SpaceGame.instance.save.activeWorld.setBlockWithNotify(x, y, z, campFireLitLight1.ID);
-            case 1 ->
-                    SpaceGame.instance.save.activeWorld.setBlockWithNotify(x, y, z, campFireBurnedOut.ID);
-        }
-    }
 }

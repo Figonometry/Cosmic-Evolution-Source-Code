@@ -138,26 +138,49 @@ public final class GuiMainMenu extends Gui {
             fontRenderer.drawString(this.sg.title, x, y, depth, 16711875, 50);
             y -= 60;
             fontRenderer.toggleItalics();
-            fontRenderer.drawString("Added a crash window that will pop up if the main thread crashes,", x, y, depth, green, 50);
+            fontRenderer.drawString("SAVE FORMAT HAS CHANGED, PREVIOUS SAVES WILL NOT LOAD", x, y, depth, red, 75);
             y -= 30;
-            fontRenderer.drawString("this will not catch OpenGL driver crashes", x, y, depth, green, 50);
+            fontRenderer.drawString("Improved text field typing", x, y, depth, yellow, 50);
             y -= 30;
-            fontRenderer.drawString("Tech update event now displays properly when a tech is known and locked", x, y, depth, yellow, 50);
+            fontRenderer.drawString("Added sounds for left and right clicking on stone crafting UI", x, y, depth, green, 50);
             y -= 30;
-            fontRenderer.drawString("Foraging I and Stone Hand Tools descriptions are now properly aligned", x, y, depth, yellow, 50);
+            fontRenderer.drawString("You can now right click to replace crafting materials in the stone crafting UI", x, y, depth, yellow, 50);
             y -= 30;
-            fontRenderer.drawString("Added a tech description for Hunting I", x, y, depth, green, 50);
+            fontRenderer.drawString("Fixed a typo with Foraging II unlock requirement", x, y, depth, yellow, 50);
             y -= 30;
-            fontRenderer.drawString("Deer now take fall damage", x, y, depth, yellow, 50);
+            fontRenderer.drawString("Added a tech description for Pottery I", x, y, depth, green, 50);
             y -= 30;
-            fontRenderer.drawString("Deer are now properly affected by fog", x, y, depth, yellow, 50);
+            fontRenderer.drawString("Added the tech event for cooking clay", x, y, depth, green, 50);
             y -= 30;
-            fontRenderer.drawString("Block models are now accurate for block type when held in hand", x, y, depth, yellow, 50);
+            fontRenderer.drawString("Grass now spreads properly", x, y, depth, yellow, 50);
             y -= 30;
-            fontRenderer.drawString("Block models are now accurate for block type when on the ground as an entity", x, y, depth, yellow, 50);
+            fontRenderer.drawString("Added clay blobs to world generation", x, y, depth, green, 50);
             y -= 30;
-            fontRenderer.drawString("Block models are now accurate for block type when in the inventory", x, y, depth, yellow, 50);
-
+            fontRenderer.drawString("Added clay adobe bricks and clay cooking pots", x, y, depth, green, 50);
+            y -= 30;
+            fontRenderer.drawString("Added a pottery crafting UI", x, y, depth, green, 50);
+            y -= 30;
+            fontRenderer.drawString("Straw chest blocks now show up properly in the crafting UI", x, y, depth, yellow, 50);
+            y -= 30;
+            fontRenderer.drawString("Knives no longer take durability when hitting item entities", x, y, depth, yellow, 50);
+            y -= 30;
+            fontRenderer.drawString("Crashes should now correctly trigger the crash window", x, y, depth, yellow ,50);
+            y -= 30;
+            fontRenderer.drawString("Added pit kilns for firing clay", x, y, depth, green, 50);
+            y -= 30;
+            fontRenderer.drawString("Added fire crackling sound effect for campfires and pit kilns", x, y, depth, green, 50);
+            y -= 30;
+            fontRenderer.drawString("Added clay step sound effect", x, y, depth, green, 50);
+            y -= 30;
+            fontRenderer.drawString("Center buttons no longer render when pressing bug report button", x, y, depth, yellow, 50);
+            y -= 30;
+            fontRenderer.drawString("Oak logs now drop full size logs", x, y, depth, yellow, 50);
+            y -= 30;
+            fontRenderer.drawString("Torches should now stack properly", x, y ,depth, yellow, 50);
+            y -= 30;
+            fontRenderer.drawString("Exiting inventories with an itemstack on the mouse will now drop the item", x, y, depth, yellow, 50);
+            y -= 30;
+            fontRenderer.drawString("Stone plays a step sound again", x, y, depth, yellow, 50);
             fontRenderer.toggleItalics();
 
 
@@ -176,7 +199,7 @@ public final class GuiMainMenu extends Gui {
             GL46.glDisable(GL46.GL_BLEND);
         }
 
-        if(!this.subMenu) {
+        if(!this.subMenu && !this.subMenu2) {
             this.singlePlayer.renderButton();
             this.multiPlayer.renderButton();
             this.settings.renderButton();

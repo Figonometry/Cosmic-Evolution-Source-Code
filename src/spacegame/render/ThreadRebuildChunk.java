@@ -218,6 +218,8 @@ public final class ThreadRebuildChunk implements Runnable {
             }
             case "BERRY_BUSH" -> renderBlocks.renderBerryBush(this.workingChunk, this.parentWorld, block, index, face);
             case "GRASS" -> renderBlocks.renderGrassBlock(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);
+            case "GRASS_WITH_CLAY" -> renderBlocks.renderGrassBlockWithClay(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);
+            case "UNLIT_PIT_KILN", "PIT_KILN" -> renderBlocks.renderPitKiln(this.workingChunk, this.parentWorld, block, index, face);
             case "ITEM_STONE" -> renderBlocks.renderItemStone(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);
             case "ITEM_STICK" -> renderBlocks.renderItemStick(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);
             case "LEAF" -> {

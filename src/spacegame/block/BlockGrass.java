@@ -26,6 +26,13 @@ public final class BlockGrass extends Block implements ITickable {
                 }
             }
         }
+        if(SpaceGame.globalRand.nextInt(100000) == 0){
+            if((world.getBlockLightValue(x, y + 1, z) >= 9 || world.getBlockSkyLightValue(x, y + 1, z) >= 9) && world.getBlockID(x,y + 1, z) == Block.air.ID){
+                if(world.chunkFullySurrounded(x >> 5, (y + 1) >> 5, z >> 5)){
+                    world.setBlockWithNotify(x, y + 1, z, Block.tallGrass.ID);
+                }
+            }
+        }
     }
 
     private boolean canBlockDecayGrass(int x, int y, int z, World world){

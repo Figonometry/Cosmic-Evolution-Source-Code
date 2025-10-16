@@ -103,7 +103,6 @@ public final class Logger {
         panel.add(scrollPane);
         frame.add(panel);
         frame.setVisible(true);
-
     }
 
 

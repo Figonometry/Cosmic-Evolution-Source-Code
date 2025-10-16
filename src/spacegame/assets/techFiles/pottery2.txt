@@ -1,5 +1,5 @@
 techName:Pottery II
-techUpdateEvent:Berry Collection
+techUpdateEvent:Cook Clay
 unlockedTech:Pottery III
 unlockRequirementAmount:50
 requiredTech:Pottery I

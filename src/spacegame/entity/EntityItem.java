@@ -5,6 +5,7 @@ import spacegame.core.MathUtil;
 import spacegame.core.Sound;
 import spacegame.core.SoundPlayer;
 import spacegame.core.SpaceGame;
+import spacegame.item.Item;
 import spacegame.render.RenderEntityItem;
 import spacegame.world.AxisAlignedBB;
 
@@ -47,7 +48,7 @@ public final class EntityItem extends EntityNonLiving {
         this.boundingBox.scale(0.5);
         if (SpaceGame.instance.save.thePlayer.boundingBox != null) {
             if (this.boundingBox.clip(SpaceGame.instance.save.thePlayer.boundingBox) && this.pickupTimer >= 60) {
-                if (SpaceGame.instance.save.thePlayer.addItemToInventory(this.item, (byte) 1, this.count, this.itemDurability)) {
+                if (SpaceGame.instance.save.thePlayer.addItemToInventory(this.item, Item.NULL_ITEM_METADATA, this.count, this.itemDurability)) {
                     new SoundPlayer(SpaceGame.instance).playSound(this.x, this.y, this.z, new Sound(Sound.itemPickup, false), new Random().nextFloat(1.5F, 1.9F));
                     this.despawn = true;
                 }

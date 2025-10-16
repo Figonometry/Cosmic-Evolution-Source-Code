@@ -631,6 +631,7 @@ public final class ChunkController {
                         NBTTagCompound chunkData = chunkTag.getCompoundTag("Chunk");
                         NBTTagCompound entity = chunkData.getCompoundTag("Entity");
                         NBTTagCompound chest = chunkData.getCompoundTag("Chest");
+                        NBTTagCompound timeEvents = chunkTag.getCompoundTag("TimeEvents");
                         chunk = new Chunk(x, y, z, SpaceGame.instance.save.activeWorld);
 
                         chunk.containsWater = chunkData.getBoolean("containsWater");
@@ -688,6 +689,15 @@ public final class ChunkController {
                                 }
                             }
                             chunk.addChestLocation(index, chestInventory);
+                        }
+
+                        int eventCount  = chest.getInteger("eventCount");
+                        NBTTagCompound eventLoadedTag;
+                        for(int i = 0; i < eventCount; i++){
+                            eventLoadedTag = timeEvents.getCompoundTag("event" + i);
+                            short index = eventLoadedTag.getShort("index");
+                            long updateTime = eventLoadedTag.getLong("updateTime");
+                            chunk.addTimeUpdateEvent(index, updateTime);
                         }
 
 

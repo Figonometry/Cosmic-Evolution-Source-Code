@@ -1,0 +1,8 @@
+blockName:PIT_KILN
+blockModel:standardBlockModel
+stepSound:grass
+breakTimer:60
+hardness:0.05
+isLightBlock:true
+lightBlockValue:14
+itemDropChance:0

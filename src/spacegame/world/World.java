@@ -1,6 +1,7 @@
 package spacegame.world;
 
 import org.joml.Vector3f;
+import org.lwjgl.glfw.GLFW;
 import spacegame.block.*;
 import spacegame.core.*;
 import spacegame.entity.Entity;
@@ -98,10 +99,7 @@ public abstract class World {
     }
 
     public synchronized void setBlockWithNotify(int x, int y, int z, short blockID) {
-        boolean destroyLight = false;
-        if (Block.list[this.getBlockID(x, y, z)].isLightBlock && blockID == Block.air.ID) {
-            destroyLight = true;
-        }
+        boolean destroyLight = Block.list[this.getBlockID(x, y, z)].isLightBlock && blockID == Block.air.ID;
         Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
         chunk.setBlockWithNotify(x, y, z, blockID);
         if (blockID == Block.air.ID) {
@@ -1121,14 +1119,99 @@ public abstract class World {
             }
         }
 
-        if(block instanceof BlockContainer && MouseListener.rightClickReleased){
+        if(block.ID == Block.strawChest.ID && MouseListener.rightClickReleased){
             ChestLocation location = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).getChestLocation(x,y,z);
             this.sg.setNewGui(new GuiInventoryStrawChest(this.sg, this.sg.save.thePlayer.inventory, location.inventory));
             MouseListener.rightClickReleased = false;
             return;
         }
 
+        if(block.ID == Block.itemClay.ID && playerHeldItem == Item.clay.ID && MouseListener.rightClickReleased){
+            this.sg.setNewGui(new GuiCraftingPottery(this.sg, x, y, z));
+            MouseListener.rightClickReleased = false;
+            return;
+        }
 
+        if(block.ID == Block.rawRedClayCookingPot.ID && playerHeldItem == Item.straw.ID && MouseListener.rightClickReleased && this.isBlockSuitableForPitKiln(x,y,z)){
+            this.setBlockWithNotify(x,y,z, Block.pitKilnUnlit1.ID);
+            Inventory kilnInventory = new Inventory(1,1);
+            kilnInventory.addItemToInventory(Item.block.ID, Block.rawRedClayCookingPot.ID, (byte)1, Item.NULL_ITEM_DURABILITY);
+            this.addChestLocation(x,y,z, kilnInventory);
+            this.sg.save.thePlayer.removeItemFromInventory();
+            MouseListener.rightClickReleased = false;
+            return;
+        }
+
+        if(block instanceof BlockPitKilnUnlit && (playerHeldItem == Item.straw.ID || playerHeldItem == Item.fireWood.ID) && this.isBlockSuitableForPitKiln(x,y,z) && MouseListener.rightClickReleased){
+
+            if(playerHeldItem == Item.straw.ID){ //Adds straw
+                switch (block.ID) {
+                    case 74, 75, 76, 77, 78, 79, 80 -> {
+                        this.setBlockWithNotify(x, y, z, (short) (block.ID + 1));
+                        this.sg.save.thePlayer.removeItemFromInventory();
+                    }
+                }
+            }
+
+            if(this.sg.save.thePlayer.getHeldItem() == Item.fireWood.ID){ //Adds logs
+                switch (block.ID) {
+                    case 81 -> {
+                        this.setBlockWithNotify(x, y, z, Block.pitKilnUnlitLog1.ID);
+                        this.sg.save.thePlayer.removeItemFromInventory();
+                    }
+                    case 95, 96, 97 -> {
+                        this.setBlockWithNotify(x, y, z, (short) (block.ID + 1));
+                        this.sg.save.thePlayer.removeItemFromInventory();
+                    }
+                }
+            }
+            MouseListener.rightClickReleased = false;
+            return;
+        }
+
+        if(block.ID == Block.pitKilnUnlit.ID && playerHeldItem == Item.torch.ID && KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT)){
+            this.setBlockWithNotify(x,y,z, Block.pitKilnLit.ID);
+
+            this.addTimeEvent(x,y,z, SpaceGame.instance.save.time + BlockPitKilnLit.updateTime);
+
+            if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT)) {
+                KeyListener.setKeyReleased(GLFW.GLFW_KEY_RIGHT_SHIFT);
+            } else if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT)){
+                KeyListener.setKeyReleased(GLFW.GLFW_KEY_LEFT_SHIFT);
+            }
+
+            this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).addTickableBlockToArray((short) Chunk.getBlockIndexFromCoordinates(x,y,z));
+            return;
+        }
+    }
+
+
+    public void addTimeEvent(int x, int y, int z, long updateTime){
+        this.findChunkFromChunkCoordinates(x >> 5, y >> 5,z >> 5).addTimeUpdateEvent(x,y,z, updateTime);
+    }
+
+    public void removeTimeEvent(int x, int y, int z){
+        this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).removeTimeUpdateEvent(x,y,z);
+    }
+
+    public void addChestLocation(int x, int y, int z, Inventory inventory){
+        this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).addChestLocation(x,y,z, inventory);
+    }
+
+    public void removeChestLocation(int x, int y, int z){
+        this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).removeChestLocation((short) Chunk.getBlockIndexFromCoordinates(x,y,z));
+    }
+
+    public ChestLocation getChestLocation(int x, int y, int z){
+        return this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).getChestLocation(x,y,z);
+    }
+
+    private boolean isBlockSuitableForPitKiln(int x, int y, int z){
+        return Block.list[this.getBlockID(x - 1, y, z)].blockModel.equals(Block.standardBlockModel) &&
+                Block.list[this.getBlockID(x + 1, y, z)].blockModel.equals(Block.standardBlockModel) &&
+                Block.list[this.getBlockID(x, y - 1, z)].blockModel.equals(Block.standardBlockModel) &&
+                Block.list[this.getBlockID(x, y, z - 1)].blockModel.equals(Block.standardBlockModel) &&
+                Block.list[this.getBlockID(x, y, z + 1)].blockModel.equals(Block.standardBlockModel);
     }
 
     private Chunk[] getSurroundingChunksAndCurrentChunk(int x, int y, int z){
@@ -1192,6 +1275,7 @@ public abstract class World {
         ArrayList<Entity> entities = this.getEntitiesInChunks(this.getSurroundingChunksAndCurrentChunk(chunkX, chunkY, chunkZ));
 
         for(int i = 0; i < entities.size(); i++){
+            if(entities.get(i) instanceof EntityItem || entities.get(i) instanceof EntityBlock)continue;
             if(entities.get(i).boundingBox.pointInsideBoundingBox(x,y,z)) { //This determines if you hit an entity
                 entities.get(i).damage(movementVector, this.sg.save.thePlayer.getAttackDamageValue());
                 entities.get(i).setLastEntityToHit(this.sg.save.thePlayer);
@@ -1243,10 +1327,12 @@ public abstract class World {
                             if(checkedBlock.droppedItemID != Item.NULL_ITEM_REFERENCE) {
                                 if (checkedBlock.droppedItemID != Item.block.ID) {
                                     if(checkedBlock.itemDropChance > SpaceGame.globalRand.nextFloat()) {
-                                        this.findChunkFromChunkCoordinates(blockX >> 5, blockY >> 5, blockZ >> 5).addEntityToList(new EntityItem(blockX + 0.5 + new Random().nextDouble(-0.3, 0.3), blockY + 0.5 + new Random().nextDouble(-0.3, 0.3), blockZ + 0.5 + new Random().nextDouble(-0.3, 0.3), checkedBlock.droppedItemID, (short)0, (byte) 1, Item.list[checkedBlock.droppedItemID].durability));
+                                        this.findChunkFromChunkCoordinates(blockX >> 5, blockY >> 5, blockZ >> 5).addEntityToList(new EntityItem(blockX + 0.5 + SpaceGame.globalRand.nextDouble(-0.3, 0.3), blockY + 0.5 + SpaceGame.globalRand.nextDouble(-0.3, 0.3), blockZ + 0.5 + SpaceGame.globalRand.nextDouble(-0.3, 0.3), checkedBlock.droppedItemID, Item.NULL_ITEM_METADATA, (byte) 1, Item.list[checkedBlock.droppedItemID].durability));
                                     }
                                 } else {
-                                    this.findChunkFromChunkCoordinates(blockX >> 5, blockY >> 5, blockZ >> 5).addEntityToList(new EntityBlock(blockX + 0.5 + new Random().nextDouble(-0.3, 0.3), blockY + 0.5 + new Random().nextDouble(-0.3, 0.3), blockZ + 0.5 + new Random().nextDouble(-0.3, 0.3), checkedBlock.itemMetadata, (byte) 1));
+                                    if (checkedBlock.itemDropChance > SpaceGame.globalRand.nextFloat()) {
+                                        this.findChunkFromChunkCoordinates(blockX >> 5, blockY >> 5, blockZ >> 5).addEntityToList(new EntityBlock(blockX + 0.5 + SpaceGame.globalRand.nextDouble(-0.3, 0.3), blockY + 0.5 + SpaceGame.globalRand.nextDouble(-0.3, 0.3), blockZ + 0.5 + SpaceGame.globalRand.nextDouble(-0.3, 0.3), checkedBlock.itemMetadata, (byte) 1));
+                                    }
                                 }
                             }
                             this.sg.save.thePlayer.breakTimer = 0;

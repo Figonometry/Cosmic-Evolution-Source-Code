@@ -4,6 +4,7 @@ import org.joml.Vector3f;
 import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
 import spacegame.block.ITickable;
+import spacegame.block.ITimeUpdate;
 import spacegame.core.MathUtil;
 import spacegame.core.SpaceGame;
 import spacegame.entity.Entity;
@@ -69,6 +70,7 @@ public final class Chunk implements Comparable<Chunk> {
     public FloatBuffer vertexBufferTransparent;
     public IntBuffer elementBufferTransparent;
     public ArrayList<ChestLocation> chestLocations = new ArrayList<>();
+    public ArrayList<TimeUpdateEvent> updateEvents = new ArrayList<>();
     public int opaqueVBOID = -10;
     public int opaqueVAOID = -10;
     public int opaqueEBOID = -10;
@@ -1103,6 +1105,19 @@ public final class Chunk implements Comparable<Chunk> {
                         }
                     }
             }
+            //Check the time events to see if they need to execute
+            TimeUpdateEvent event;
+            for(int i = 0; i < this.updateEvents.size(); i++){
+                event = this.updateEvents.get(i);
+                if(SpaceGame.instance.save.time >= event.updateTime) {
+                    int x = this.getBlockXFromIndex(event.index);
+                    int y = this.getBlockYFromIndex(event.index);
+                    int z = this.getBlockZFromIndex(event.index);
+                    if (Block.list[this.blocks[event.index]] instanceof ITimeUpdate) {
+                        ((ITimeUpdate) Block.list[this.blocks[event.index]]).onTimeUpdate(x, y, z, this.parentWorld);
+                    }
+                }
+            }
         }
     }
 
@@ -1121,6 +1136,25 @@ public final class Chunk implements Comparable<Chunk> {
         } else {
             this.tickableBlockIndex = new short[0];
         }
+    }
+
+    public void addTickableBlockToArray(short index){
+        short[] newArray = new short[this.tickableBlockIndex.length + 1];
+        for(int i = 0; i < this.tickableBlockIndex.length; i++){
+            newArray[i] = this.tickableBlockIndex[i];
+        }
+        newArray[this.tickableBlockIndex.length] = index;
+        this.tickableBlockIndex = newArray;
+    }
+
+    public void removeTickableBlockFromArray(short index){
+        short[] newArray = new short[this.tickableBlockIndex.length - 1];
+        for(int i = 0; i < newArray.length; i++){
+            if(this.tickableBlockIndex[i] != index) {
+                newArray[i] = this.tickableBlockIndex[i];
+            }
+        }
+        this.tickableBlockIndex = newArray;
     }
 
     public void addChestLocation(int x, int y, int z, Inventory inventory){
@@ -1150,6 +1184,25 @@ public final class Chunk implements Comparable<Chunk> {
             }
         }
         this.chestLocations.trimToSize();
+    }
+
+    public void addTimeUpdateEvent(int x, int y, int z, long updateTime){
+        this.updateEvents.add(new TimeUpdateEvent((short) getBlockIndexFromCoordinates(x,y,z), updateTime));
+    }
+
+    public void addTimeUpdateEvent(short index, long updateTime){
+        this.updateEvents.add(new TimeUpdateEvent(index, updateTime));
+    }
+
+    public void removeTimeUpdateEvent(int x, int y, int z){
+        int index = getBlockIndexFromCoordinates(x,y,z);
+        for(int i = 0; i < this.updateEvents.size(); i++){
+            if(this.updateEvents.get(i).index == index){
+                this.updateEvents.remove(i);
+                break;
+            }
+        }
+        this.updateEvents.trimToSize();
     }
 
     private void clearInventoryFromChest(Inventory inventory, int index){
