@@ -115,8 +115,7 @@ public class Button {
             }
             case VSYNC -> {
                 GameSettings.vsync = !GameSettings.vsync;
-                this.sg.vsync = GameSettings.vsync;
-                GLFW.glfwSwapInterval(this.sg.vsync ? 1 : 0);
+                GLFW.glfwSwapInterval(GameSettings.vsync ? 1 : 0);
             }
             case INVERT_MOUSE -> {
                 GameSettings.invertMouse = !GameSettings.invertMouse;
@@ -407,7 +406,13 @@ public class Button {
                     short outputItem = ((GuiCraftingStoneTools) this.Gui).outputItemID;
                     this.sg.save.activeWorld.setBlockWithNotify(x,y,z, Block.air.ID);
                     this.sg.save.activeWorld.addEntity(new EntityItem(x + 0.5, y + 0.5, z + 0.5, outputItem, Item.NULL_ITEM_METADATA, (byte) 1, Item.list[outputItem].durability));
-                    this.sg.save.thePlayer.removeItemFromInventory();
+
+                    for(int i = 0; i < ((GuiCraftingStoneTools) this.Gui).activeRecipe.requiredItemCount.length; i++){
+                        for(int j = 0; j <  ((GuiCraftingStoneTools) this.Gui).activeRecipe.requiredItemCount[i]; j++){
+                            this.sg.save.thePlayer.removeSpecificItemFromInventory(((GuiCraftingStoneTools) this.Gui).activeRecipe.requiredItems[i]);
+                        }
+                    }
+
                     this.sg.save.activeWorld.delayWhenExitingUI = 60;
                     Tech.techUpdateEvent(Tech.UPDATE_EVENT_CRAFT_STONE_HAND_TOOL);
                 }
@@ -424,8 +429,10 @@ public class Button {
                     } else {
                         this.sg.save.activeWorld.addEntity(new EntityItem(x + 0.5, y + 0.5, z + 0.5, outputItem, Item.NULL_ITEM_METADATA, (byte) 1, Item.list[outputItem].durability));
                     }
-                    for(int i = 0; i < ((GuiCraftingPottery)this.Gui).consumedClayCount; i++){
-                        this.sg.save.thePlayer.removeSpecificItemFromInventory(Item.clay.ID);
+                    for(int i = 0; i < ((GuiCraftingPottery) this.Gui).activeRecipe.requiredItemCount.length; i++){
+                        for(int j = 0; j <  ((GuiCraftingPottery) this.Gui).activeRecipe.requiredItemCount[i]; j++){
+                            this.sg.save.thePlayer.removeSpecificItemFromInventory(((GuiCraftingPottery) this.Gui).activeRecipe.requiredItems[i]);
+                        }
                     }
                     this.sg.save.activeWorld.delayWhenExitingUI = 60;
                 }

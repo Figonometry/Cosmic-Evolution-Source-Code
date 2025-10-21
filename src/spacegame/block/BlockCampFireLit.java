@@ -29,7 +29,7 @@ public final class BlockCampFireLit extends BlockCampFire implements ITickable, 
     @Override
     public void tick(int x, int y, int z, World world) {
         this.generateParticles(x,y,z);
-        new SoundPlayer(SpaceGame.instance).playSound(x, y, z, new Sound(Sound.fireCrackling, false), SpaceGame.globalRand.nextFloat(0.75f, 1));
+        SpaceGame.instance.soundPlayer.playSound(x, y, z, new Sound(Sound.fireCrackling, false), SpaceGame.globalRand.nextFloat(0.75f, 1));
     }
 
 }

@@ -91,7 +91,7 @@ public final class ThreadChunkColumnLoader implements Runnable {
                             NBTTagCompound inventory = chestLoadedTag.getCompoundTag("Inventory");
                             short index = chestLoadedTag.getShort("index");
                             NBTTagCompound item;
-                            Inventory chestInventory = new Inventory(((BlockContainer)(Block.list[chunk.blocks[index]])).inventorySize, 9);
+                            Inventory chestInventory = new Inventory(((BlockContainer)(Block.list[chunk.blocks[index]])).inventoryWidth, ((BlockContainer)(Block.list[chunk.blocks[index]])).inventoryHeight);
                             for(int j = 0; j < chestInventory.itemStacks.length; j++) {
                                 item = inventory.getCompoundTag("slot " + j);
                                 if (item != null) {

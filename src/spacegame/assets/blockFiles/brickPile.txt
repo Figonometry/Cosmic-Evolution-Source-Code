@@ -1,0 +1,8 @@
+blockName:BRICK_PILE
+boundingBox:quarterBlock
+blockModel:standardBlockModel
+stepSound:clay
+requiresTool:true
+toolType:unbreakable
+breakTimer:120
+hardness:10

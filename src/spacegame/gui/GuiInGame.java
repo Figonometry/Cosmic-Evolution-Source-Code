@@ -129,7 +129,7 @@ public final class GuiInGame extends Gui {
             tessellator.toggleOrtho();
             GL46.glDisable(GL46.GL_BLEND);
             renderAirBar();
-        } else if (blockPlayerHeadIsIn != Block.air.ID && Block.list[blockPlayerHeadIsIn].isSolid) {
+        } else if (blockPlayerHeadIsIn != Block.air.ID && Block.list[blockPlayerHeadIsIn].isSolid && blockPlayerHeadIsIn != Block.leaf.ID) {
             int textureID = Block.list[blockPlayerHeadIsIn].textureID;
             tessellator.toggleOrtho();
             tessellator.addVertexTextureArray(4144959, (float) -SpaceGame.width /2, (float) -SpaceGame.height /2, -900, 3, textureID, 2);

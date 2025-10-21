@@ -118,7 +118,7 @@ public final class ThreadChunkUnloader implements Runnable {
             if(this.chunk.updateEvents.size() > 0){
                 TimeUpdateEvent timeUpdateEvent;
                 int eventCount = 0;
-                NBTTagCompound[] events = new NBTTagCompound[this.chunk.chestLocations.size()];
+                NBTTagCompound[] events = new NBTTagCompound[this.chunk.updateEvents.size()];
                 for(int i = 0; i < events.length; i++){
                     timeUpdateEvent = this.chunk.updateEvents.get(i);
                     events[i] = new NBTTagCompound();

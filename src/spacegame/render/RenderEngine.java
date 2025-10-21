@@ -372,6 +372,7 @@ public final class RenderEngine {
                 case 13 -> "strawBasket";
                 case 14 -> "clay";
                 case 15 -> "rawClayAdobeBrick";
+                case 16 -> "clayAdobeBrick";
                 default -> "missing";
             };
         }

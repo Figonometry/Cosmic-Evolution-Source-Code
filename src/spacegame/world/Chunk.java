@@ -1175,6 +1175,15 @@ public final class Chunk implements Comparable<Chunk> {
         return null;
     }
 
+    public ChestLocation getChestLocation(int index){
+        for(int i = 0; i < this.chestLocations.size(); i++){
+            if(this.chestLocations.get(i).index == index){
+                return this.chestLocations.get(i);
+            }
+        }
+        return null;
+    }
+
     public void removeChestLocation(short index){
         for(int i = 0; i < this.chestLocations.size(); i++){
             if(this.chestLocations.get(i).index == index){

@@ -24,7 +24,8 @@ public class Item {
     public static final Item straw = new Item((short)12, 12, "src/spacegame/assets/itemFiles/straw.txt");
     public static final Item strawBasket = new Item((short)13, 13, "src/spacegame/assets/itemFiles/strawBasket.txt");
     public static final Item clay = new Item((short)14, 14, "src/spacegame/assets/itemFiles/clay.txt");
-    public static final Item clayAdobeBrick = new Item((short)15, 15, "src/spacegame/assets/itemFiles/clayAdobeBrick.txt");
+    public static final Item rawClayAdobeBrick = new Item((short)15, 15, "src/spacegame/assets/itemFiles/rawClayAdobeBrick.txt");
+    public static final Item firedRedClayAdobeBrick = new Item((short)16, 16, "src/spacegame/assets/itemFiles/firedRedClayAdobeBrick.txt");
     public final short ID;
     public final int textureID;
     public float hardness = 0;

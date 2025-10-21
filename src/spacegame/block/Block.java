@@ -1,9 +1,8 @@
 package spacegame.block;
 
-import spacegame.core.MouseListener;
-import spacegame.core.Sound;
-import spacegame.core.SoundPlayer;
-import spacegame.core.SpaceGame;
+import org.lwjgl.glfw.GLFW;
+import spacegame.core.*;
+import spacegame.entity.EntityBlock;
 import spacegame.entity.EntityItem;
 import spacegame.entity.EntityPlayer;
 import spacegame.item.Inventory;
@@ -38,6 +37,7 @@ public class Block {
     public static final ModelLoader itemClayModel = new ModelLoader("src/spacegame/assets/models/blockModels/itemClay.obj");
     public static final ModelLoader clayCookingPotModel = new ModelLoader("src/spacegame/assets/models/blockModels/clayCookingPot.obj");
     public static final ModelLoader largeFireWood = new ModelLoader("src/spacegame/assets/models/blockModels/largeFireWood.obj");
+    public static final ModelLoader brick = new ModelLoader("src/spacegame/assets/models/blockModels/brick.obj");
     public static final ModelLoader size15NormalModel = standardBlockModel.alterStandardBlockModel(1,0,1);
     public static final ModelLoader size14NormalModel = standardBlockModel.alterStandardBlockModel(2,0,2);
     public static final ModelLoader size13NormalModel = standardBlockModel.alterStandardBlockModel(3,0,3);
@@ -84,8 +84,11 @@ public class Block {
     public static final ModelLoader size2EastWestModel = standardBlockModel.alterStandardBlockModel(14,14,0);
     public static final ModelLoader size1EastWestModel = standardBlockModel.alterStandardBlockModel(15,15,0);
     public static final AxisAlignedBB standardBlock = new AxisAlignedBB(0,0,0,1,1,1);
+    public static final AxisAlignedBB fullBlock = new AxisAlignedBB(0, 0, 0, 1, 1, 1);
     public static final AxisAlignedBB itemStoneBoundingBox = new AxisAlignedBB(0,0,0,1,0.125,1);
+    public static final AxisAlignedBB quarterBlock = new AxisAlignedBB(0, 0, 0, 1, 0.25f, 1);
     public static final AxisAlignedBB slab = new AxisAlignedBB(0, 0, 0, 1, 0.5, 1);
+    public static final AxisAlignedBB threeQuartersBlock = new AxisAlignedBB(0, 0, 0, 1, 0.75f, 1);
     public static final Block[] list = new Block[Short.MAX_VALUE];
     public static final Block air = new Block((short) 0, -1, "src/spacegame/assets/blockFiles/air.txt");
     public static final Block grass = new BlockGrass((short) 1, 2, "src/spacegame/assets/blockFiles/grass.txt");
@@ -161,14 +164,14 @@ public class Block {
     public static final Block clay = new BlockClay((short)71, 13, "src/spacegame/assets/blockFiles/clay.txt");
     public static final Block itemClay = new Block((short)72, 13, "src/spacegame/assets/blockFiles/itemClay.txt");
     public static final Block rawRedClayCookingPot = new Block((short)73, 13, "src/spacegame/assets/blockFiles/rawClayCookingPot.txt");
-    public static final Block pitKilnUnlit1 = new BlockPitKilnUnlit((short)74, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1);
-    public static final Block pitKilnUnlit2 = new BlockPitKilnUnlit((short)75, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1);
-    public static final Block pitKilnUnlit3 = new BlockPitKilnUnlit((short)76, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1);
-    public static final Block pitKilnUnlit4 = new BlockPitKilnUnlit((short)77, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1);
-    public static final Block pitKilnUnlit5 = new BlockPitKilnUnlit((short)78, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1);
-    public static final Block pitKilnUnlit6 = new BlockPitKilnUnlit((short)79, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1);
-    public static final Block pitKilnUnlit7 = new BlockPitKilnUnlit((short)80, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1);
-    public static final Block pitKilnUnlit8 = new BlockPitKilnUnlit((short)81, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1);
+    public static final Block pitKilnUnlit1 = new BlockPitKilnUnlit((short)74, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1,1);
+    public static final Block pitKilnUnlit2 = new BlockPitKilnUnlit((short)75, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1,1);
+    public static final Block pitKilnUnlit3 = new BlockPitKilnUnlit((short)76, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1,1);
+    public static final Block pitKilnUnlit4 = new BlockPitKilnUnlit((short)77, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1,1);
+    public static final Block pitKilnUnlit5 = new BlockPitKilnUnlit((short)78, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1,1);
+    public static final Block pitKilnUnlit6 = new BlockPitKilnUnlit((short)79, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1,1);
+    public static final Block pitKilnUnlit7 = new BlockPitKilnUnlit((short)80, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1,1);
+    public static final Block pitKilnUnlit8 = new BlockPitKilnUnlit((short)81, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1,1);
     public static final Block redClayCookingPot = new Block((short)82, 17, "src/spacegame/assets/blockFiles/redClayCookingPot.txt");
     public static final Block grassBlockLower = new Block((short)83, 20, "src/spacegame/assets/blockFiles/grassBlockLower.txt");
     public static final Block cactus = new BlockCactus((short)84, 21, "src/spacegame/assets/blockFiles/cactus.txt");
@@ -178,16 +181,18 @@ public class Block {
     public static final Block tallGrass = new Block((short)88, 30, "src/spacegame/assets/blockFiles/tallGrass.txt");
     public static final Block campFire4FireWood = new BlockCampFireUnlit((short) 89, 16, "src/spacegame/assets/blockFiles/campFireUnlit.txt");
     public static final Block fireWoodBlock = new Block((short)90, 31, "src/spacegame/assets/blockFiles/fireWood.txt");
-    public static final Block strawChest = new BlockStrawChest((short)91, 32, "src/spacegame/assets/blockFiles/strawChest.txt");
+    public static final Block strawChest = new BlockStrawChest((short)91, 32, "src/spacegame/assets/blockFiles/strawChest.txt",2, 9);
     public static final Block strawChestTier0 = new Block((short)92, 32, "src/spacegame/assets/blockFiles/strawChestBuilding0.txt");
     public static final Block strawBasketTier0 = new Block((short)93, 32, "src/spacegame/assets/blockFiles/strawBasketBuilding.txt");
     public static final Block strawChestTier1 = new Block((short)94, 32, "src/spacegame/assets/blockFiles/strawChestBuilding1.txt");
-    public static final Block pitKilnUnlitLog1 = new BlockPitKilnUnlit((short)95, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1);
-    public static final Block pitKilnUnlitLog2 = new BlockPitKilnUnlit((short)96, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1);
-    public static final Block pitKilnUnlitLog3 = new BlockPitKilnUnlit((short)97, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1);
-    public static final Block pitKilnUnlit = new BlockPitKilnUnlit((short)98, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1);
-    public static final Block pitKilnLit = new BlockPitKilnLit((short)99, 15, "src/spacegame/assets/blockFiles/pitKilnLit.txt", 1);
+    public static final Block pitKilnUnlitLog1 = new BlockPitKilnUnlit((short)95, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1,1);
+    public static final Block pitKilnUnlitLog2 = new BlockPitKilnUnlit((short)96, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1,1);
+    public static final Block pitKilnUnlitLog3 = new BlockPitKilnUnlit((short)97, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1,1);
+    public static final Block pitKilnUnlit = new BlockPitKilnUnlit((short)98, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1,1);
+    public static final Block pitKilnLit = new BlockPitKilnLit((short)99, 15, "src/spacegame/assets/blockFiles/pitKilnLit.txt", 1,1);
     public static final Block largeFireWoodBlock = new Block((short)100, 31, "src/spacegame/assets/blockFiles/firewood.txt");
+    public static final Block logPile = new BlockPile((short)101, 31, "src/spacegame/assets/blockFiles/logPile.txt", Item.fireWood.ID, 1, 1);
+    public static final Block brickPile = new BlockPile((short)102, 13, "src/spacegame/assets/blockFiles/brickPile.txt", Item.rawClayAdobeBrick.ID, 1, 1);
     public final short ID;
     public final int textureID;
     public static int facingDirection;
@@ -210,6 +215,7 @@ public class Block {
     public float itemDropChance = 1;
     public AxisAlignedBB standardCollisionBoundingBox = standardBlock;
     public String displayName = "Undefined Name";
+    public boolean requireSolidBlockBelow;
 
     public Block(short ID, int textureID, String filepath) {
         if (list[ID] != null) {
@@ -251,6 +257,10 @@ public class Block {
                 this.isSolid = Boolean.parseBoolean(properties[1]);
             }
 
+            if(properties[0].equals("requireSolidBlockBelow")){
+                this.requireSolidBlockBelow = Boolean.parseBoolean(properties[1]);
+            }
+
             if (properties[0].equals("canBeBroken")) {
                 this.canBeBroken = Boolean.parseBoolean(properties[1]);
             }
@@ -283,6 +293,9 @@ public class Block {
                 switch (properties[1]){
                     case "itemStoneBoundingBox" -> this.standardCollisionBoundingBox = itemStoneBoundingBox;
                     case "slab" -> this.standardCollisionBoundingBox = slab;
+                    case "quarterBlock" -> this.standardCollisionBoundingBox = quarterBlock;
+                    case "threeQuartersBlock" -> this.standardCollisionBoundingBox = threeQuartersBlock;
+                    case "fullBlock" -> this.standardCollisionBoundingBox = fullBlock;
                 }
             }
 
@@ -423,14 +436,90 @@ public class Block {
             }
         }
     }
+
+    public void onLeftClickWithNoSpecialFunctions(int x, int y, int z, World world, EntityPlayer player){
+        if (!this.canBeBroken) {return;}
+        world.setBlockWithNotify(x, y, z, Block.air.ID);
+
+        if(this instanceof ITickable){
+            world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).removeTickableBlockFromArray((short) Chunk.getBlockIndexFromCoordinates(x,y,z));
+        }
+    }
     public void onLeftClick(int x, int y, int z, World world, EntityPlayer player) {
         if (!this.canBeBroken) {return;}
         this.handleSpecialLeftClickFunctions(x,y,z,world,player);
         world.setBlockWithNotify(x, y, z, Block.air.ID);
+
+
+        if(this.isSolid) {
+            short blockID = 0;
+            int blockX = 0;
+            int blockY = 0;
+            int blockZ = 0;
+            if (list[world.getBlockID(x, y + 1, z)].requireSolidBlockBelow) {
+                blockID = world.getBlockID(x, y + 1, z);
+                blockX = MathUtil.floorDouble(x);
+                blockY = MathUtil.floorDouble(y + 1);
+                blockZ = MathUtil.floorDouble(z);
+                list[blockID].onLeftClickWithNoSpecialFunctions(x, y + 1, z, world, player);
+            }
+
+            if (world.getBlockID(x - 1, y, z) == torchNorth.ID) {
+                blockID = world.getBlockID(x - 1, y, z);
+                blockX = MathUtil.floorDouble(x - 1);
+                blockY = MathUtil.floorDouble(y);
+                blockZ = MathUtil.floorDouble(z);
+                torchNorth.onLeftClickWithNoSpecialFunctions(x - 1, y, z, world, player);
+            }
+
+            if (world.getBlockID(x + 1, y, z) == torchSouth.ID) {
+                blockID = world.getBlockID(x + 1, y, z);
+                blockX = MathUtil.floorDouble(x + 1);
+                blockY = MathUtil.floorDouble(y);
+                blockZ = MathUtil.floorDouble(z);
+                torchSouth.onLeftClickWithNoSpecialFunctions(x + 1, y, z, world, player);
+            }
+
+            if (world.getBlockID(x, y, z - 1) == torchEast.ID) {
+                blockID = world.getBlockID(x, y, z - 1);
+                blockX = MathUtil.floorDouble(x);
+                blockY = MathUtil.floorDouble(y);
+                blockZ = MathUtil.floorDouble(z - 1);
+                torchEast.onLeftClickWithNoSpecialFunctions(x, y, z - 1, world, player);
+            }
+
+            if (world.getBlockID(x, y, z + 1) == torchWest.ID) {
+                blockID = world.getBlockID(x, y, z + 1);
+                blockX = MathUtil.floorDouble(x);
+                blockY = MathUtil.floorDouble(y);
+                blockZ = MathUtil.floorDouble(z + 1);
+                torchWest.onLeftClickWithNoSpecialFunctions(x, y, z + 1, world, player);
+            }
+
+            if (blockID == torchNorth.ID || blockID == torchSouth.ID || blockID == torchEast.ID || blockID == torchWest.ID || list[blockID].requireSolidBlockBelow) {
+                if (list[blockID].droppedItemID != Item.NULL_ITEM_REFERENCE) {
+                    if (list[blockID].droppedItemID != Item.block.ID) {
+                        if (list[blockID].itemDropChance > SpaceGame.globalRand.nextFloat()) {
+                            world.findChunkFromChunkCoordinates(blockX >> 5, blockY >> 5, blockZ >> 5).addEntityToList(new EntityItem(blockX + 0.5 + SpaceGame.globalRand.nextDouble(-0.3, 0.3), blockY + 0.5 + SpaceGame.globalRand.nextDouble(-0.3, 0.3), blockZ + 0.5 + SpaceGame.globalRand.nextDouble(-0.3, 0.3), list[blockID].droppedItemID, Item.NULL_ITEM_METADATA, (byte) 1, Item.list[list[blockID].droppedItemID].durability));
+                        }
+                    } else {
+                        if (list[blockID].itemDropChance > SpaceGame.globalRand.nextFloat()) {
+                            world.findChunkFromChunkCoordinates(blockX >> 5, blockY >> 5, blockZ >> 5).addEntityToList(new EntityBlock(blockX + 0.5 + SpaceGame.globalRand.nextDouble(-0.3, 0.3), blockY + 0.5 + SpaceGame.globalRand.nextDouble(-0.3, 0.3), blockZ + 0.5 + SpaceGame.globalRand.nextDouble(-0.3, 0.3), list[blockID].itemMetadata, (byte) 1));
+                        }
+                    }
+                }
+            }
+        }
+
+        if(this instanceof ITimeUpdate){
+            world.removeTimeEvent(x,y,z);
+        }
+
         if(this instanceof ITickable){
             world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).removeTickableBlockFromArray((short) Chunk.getBlockIndexFromCoordinates(x,y,z));
         }
-        new SoundPlayer(SpaceGame.instance).playSound(x, y, z, new Sound(this.stepSound, false), new Random().nextFloat(0.6F, 1));
+
+        SpaceGame.instance.soundPlayer.playSound(x, y, z, new Sound(this.getStepSound(x,y,z), false), new Random().nextFloat(0.6F, 1));
         player.reduceHeldItemDurability();
     }
 
@@ -447,6 +536,7 @@ public class Block {
         if (player.isHoldingBlock()) {
             heldBlock = player.getHeldBlock();
         } else if (heldItem == Item.torch.ID) {
+            if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT))return;
             heldBlock = switch (facingDirection) {
                 case 1 -> Block.torchNorth.ID;
                 case 2 -> Block.torchSouth.ID;
@@ -456,13 +546,33 @@ public class Block {
             };
         }
 
-        heldBlock = switch (Item.list[heldItem].itemName) { //Convert held item into an equivalent block id to place, if one exists, otherwise default to the held block
-            case "RAW_STONE" -> itemStone.ID;
-            case "RAW_STICK" -> itemStick.ID;
-            case "CLAY" -> itemClay.ID;
-            case "STRAW" -> campFireNoFirewood.ID;
-            default -> heldBlock;
+        switch (Item.list[heldItem].itemName) { //Convert held item into an equivalent block id to place, if one exists, otherwise default to the held block
+            case "RAW_STONE" -> heldBlock = itemStone.ID;
+            case "RAW_STICK" -> heldBlock = itemStick.ID;
+            case "CLAY" -> heldBlock = itemClay.ID;
+            case "STRAW" -> heldBlock = campFireNoFirewood.ID;
+            case "FIRE_WOOD" -> {
+                if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) && KeyListener.keyReleased[GLFW.GLFW_KEY_LEFT_SHIFT] && world.getBlockID(player.blockLookingAt[0], player.blockLookingAt[1], player.blockLookingAt[2]) != logPile.ID) {;
+                    heldBlock = logPile.ID;
+                    player.removeItemFromInventory();
+                    KeyListener.setKeyReleased(GLFW.GLFW_KEY_LEFT_SHIFT);
+                } else {
+                    return;
+                }
+            }
+            case "RAW_CLAY_ADOBE_BRICK", "CLAY_ADOBE_BRICK" ->{
+                if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) && KeyListener.keyReleased[GLFW.GLFW_KEY_LEFT_SHIFT] && world.getBlockID(player.blockLookingAt[0], player.blockLookingAt[1], player.blockLookingAt[2]) != logPile.ID) {;
+                    heldBlock = brickPile.ID;
+                    KeyListener.setKeyReleased(GLFW.GLFW_KEY_LEFT_SHIFT);
+                } else {
+                    return;
+                }
+            }
         };
+
+        if(Block.list[heldBlock] instanceof ITimeUpdate){
+            chunk.addTimeUpdateEvent(x,y,z, SpaceGame.instance.save.time + ((ITimeUpdate) Block.list[heldBlock]).getUpdateTime());
+        }
 
 
         if(Block.list[heldBlock] instanceof ITickable){
@@ -470,10 +580,17 @@ public class Block {
         }
 
         if(Block.list[heldBlock] instanceof BlockContainer){
-            chunk.addChestLocation(x,y,z, new Inventory(((BlockContainer)(Block.list[heldBlock])).inventorySize, 9));
+            chunk.addChestLocation(x,y,z, new Inventory(((BlockContainer)(Block.list[heldBlock])).inventoryWidth, ((BlockContainer)(Block.list[heldBlock])).inventoryHeight));
+            if(heldBlock == logPile.ID){
+                chunk.getChestLocation(x,y,z).inventory.itemStacks[0].count = 2;
+            }
+            if(heldBlock == brickPile.ID ){
+                chunk.getChestLocation(x,y,z).inventory.itemStacks[0].count = 1;
+                chunk.getChestLocation(x,y,z).inventory.itemStacks[0].item = Item.list[heldItem];
+            }
         }
 
-        new SoundPlayer(SpaceGame.instance).playSound(x, y, z, new Sound(list[player.getHeldBlock()].stepSound, false), new Random().nextFloat(0.6F, 1));
+        SpaceGame.instance.soundPlayer.playSound(x, y, z, new Sound(list[player.getHeldBlock()].stepSound, false), new Random().nextFloat(0.6F, 1));
         player.removeItemFromInventory();
         world.setBlockWithNotify(x, y, z, heldBlock);
         player.isSwinging = true;
@@ -482,6 +599,10 @@ public class Block {
 
     public static int getRandomTickRate(){
         return 60;
+    }
+
+    public String getStepSound(int x, int y, int z){
+        return this.stepSound;
     }
 
     public int getDynamicBreakTimer(){

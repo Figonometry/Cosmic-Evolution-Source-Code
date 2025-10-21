@@ -13,7 +13,7 @@ public abstract class Assets {
     }
 
     public static void enableItemTextureArray(){
-        itemTextureArray = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/item/", RenderEngine.TEXTURE_TYPE_2D_ARRAY, 16); //This is one higher than the actual number of item textures
+        itemTextureArray = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/item/", RenderEngine.TEXTURE_TYPE_2D_ARRAY, 17); //This is one higher than the actual number of item textures
     }
 
     public static void disableBlockTextureArray(){

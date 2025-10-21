@@ -1,2 +1,3 @@
 itemName:FIRE_WOOD
 displayName:Firewood
+canPlaceOnGround:true

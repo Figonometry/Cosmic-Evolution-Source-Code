@@ -7,6 +7,7 @@ import spacegame.core.MouseListener;
 import spacegame.core.SpaceGame;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
+import spacegame.world.Chunk;
 
 public final class GuiLightFire extends GuiAction {
     public int campFire;
@@ -98,12 +99,14 @@ public final class GuiLightFire extends GuiAction {
             if (this.sg.currentlySelectedMoveableObject.equals(this.stone1)) {
                 if (this.stone2.isMouseHoveredOver() && this.sg.currentlySelectedMoveableObject.pickedUp && Math.abs(x) <= 256 && Math.abs(y) <= 256) {
                    this.sg.save.activeWorld.setBlockWithNotify(this.x, this.y, this.z, Block.campfireLit.ID);
+                   this.sg.save.activeWorld.findChunkFromChunkCoordinates(this.x >> 5, this.y >> 5, this.z >> 5).addTickableBlockToArray((short) Chunk.getBlockIndexFromCoordinates(this.x,this.y,this.z));
                    GLFW.glfwSetInputMode(this.sg.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
                    this.sg.setNewGui(new GuiInGame(this.sg));
                 }
             } else if (this.sg.currentlySelectedMoveableObject.equals(this.stone2)) {
                 if (this.stone1.isMouseHoveredOver() && this.sg.currentlySelectedMoveableObject.pickedUp && Math.abs(x) <= 256 && Math.abs(y) <= 256) {
                     this.sg.save.activeWorld.setBlockWithNotify(this.x, this.y, this.z, Block.campfireLit.ID);
+                    this.sg.save.activeWorld.findChunkFromChunkCoordinates(this.x >> 5, this.y >> 5, this.z >> 5).addTickableBlockToArray((short) Chunk.getBlockIndexFromCoordinates(this.x,this.y,this.z));
                     GLFW.glfwSetInputMode(this.sg.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
                     this.sg.setNewGui(new GuiInGame(this.sg));
                 }

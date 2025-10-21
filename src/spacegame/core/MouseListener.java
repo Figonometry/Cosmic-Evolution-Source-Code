@@ -10,6 +10,8 @@ public final class MouseListener {
     public boolean isDragging;
     public static boolean leftClickReleased;
     public static boolean rightClickReleased;
+    public static long timeHeldRightClick;
+    public static long timeHeldLeftClick;
 
     public MouseListener() {
         this.scrollX = 0.0F;

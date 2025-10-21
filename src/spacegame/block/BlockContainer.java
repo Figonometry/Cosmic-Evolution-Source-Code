@@ -5,10 +5,12 @@ import spacegame.world.Chunk;
 import spacegame.world.World;
 
 public abstract class BlockContainer extends Block {
-    public int inventorySize;
-    public BlockContainer(short ID, int textureID, String filepath, int inventorySize) {
+    public int inventoryWidth;
+    public int inventoryHeight;
+    public BlockContainer(short ID, int textureID, String filepath, int inventoryWidth, int inventoryHeight) {
         super(ID, textureID, filepath);
-        this.inventorySize = inventorySize;
+        this.inventoryWidth = inventoryWidth;
+        this.inventoryHeight = inventoryHeight;
     }
 
 

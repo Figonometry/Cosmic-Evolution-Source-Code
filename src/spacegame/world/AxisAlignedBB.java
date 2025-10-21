@@ -1,6 +1,7 @@
 package spacegame.world;
 
 import spacegame.block.Block;
+import spacegame.core.SpaceGame;
 import spacegame.entity.Entity;
 import spacegame.entity.EntityItem;
 import spacegame.entity.EntityLiving;
@@ -29,7 +30,7 @@ public final class AxisAlignedBB {
 
 
     public void adjustBlockBoundingBox(int x, int y, int z, short blockID, double entityX, double entityZ) {
-        if(!Block.list[blockID].isSolid){
+        if(!Block.list[blockID].isSolid && Block.list[blockID].standardCollisionBoundingBox.equals(Block.standardBlock)){
             this.minX = x;
             this.maxX = x + 1;
             this.minY = y;
@@ -38,12 +39,76 @@ public final class AxisAlignedBB {
             this.maxZ = z + 1;
             this.air = true;
         } else {
-            this.minX = x + Block.list[blockID].standardCollisionBoundingBox.minX;
-            this.maxX = x + Block.list[blockID].standardCollisionBoundingBox.maxX;
-            this.minY = y + Block.list[blockID].standardCollisionBoundingBox.minY;
-            this.maxY = y + Block.list[blockID].standardCollisionBoundingBox.maxY;
-            this.minZ = z + Block.list[blockID].standardCollisionBoundingBox.minZ;
-            this.maxZ = z + Block.list[blockID].standardCollisionBoundingBox.maxZ;
+            if(blockID == Block.logPile.ID){
+                int logCount = SpaceGame.instance.save.activeWorld.getChestLocation(x,y,z).inventory.itemStacks[0].count / 2;
+                if(logCount <= 4){
+                    this.minX = x + Block.quarterBlock.minX;
+                    this.maxX = x + Block.quarterBlock.maxX;
+                    this.minY = y + Block.quarterBlock.minY;
+                    this.maxY = y + Block.quarterBlock.maxY;
+                    this.minZ = z + Block.quarterBlock.minZ;
+                    this.maxZ = z + Block.quarterBlock.maxZ;
+                } else if(logCount <= 8){
+                    this.minX = x + Block.slab.minX;
+                    this.maxX = x + Block.slab.maxX;
+                    this.minY = y + Block.slab.minY;
+                    this.maxY = y + Block.slab.maxY;
+                    this.minZ = z + Block.slab.minZ;
+                    this.maxZ = z + Block.slab.maxZ;
+                } else if(logCount <= 12){
+                    this.minX = x + Block.threeQuartersBlock.minX;
+                    this.maxX = x + Block.threeQuartersBlock.maxX;
+                    this.minY = y + Block.threeQuartersBlock.minY;
+                    this.maxY = y + Block.threeQuartersBlock.maxY;
+                    this.minZ = z + Block.threeQuartersBlock.minZ;
+                    this.maxZ = z + Block.threeQuartersBlock.maxZ;
+                } else {
+                    this.minX = x + Block.standardBlock.minX;
+                    this.maxX = x + Block.standardBlock.maxX;
+                    this.minY = y + Block.standardBlock.minY;
+                    this.maxY = y + Block.standardBlock.maxY;
+                    this.minZ = z + Block.standardBlock.minZ;
+                    this.maxZ = z + Block.standardBlock.maxZ;
+                }
+            } else if(blockID == Block.brickPile.ID){
+                int brickCount = SpaceGame.instance.save.activeWorld.getChestLocation(x,y,z).inventory.itemStacks[0].count;
+                if(brickCount <= 12){
+                    this.minX = x + Block.quarterBlock.minX;
+                    this.maxX = x + Block.quarterBlock.maxX;
+                    this.minY = y + Block.quarterBlock.minY;
+                    this.maxY = y + Block.quarterBlock.maxY;
+                    this.minZ = z + Block.quarterBlock.minZ;
+                    this.maxZ = z + Block.quarterBlock.maxZ;
+                } else if(brickCount <= 24){
+                    this.minX = x + Block.slab.minX;
+                    this.maxX = x + Block.slab.maxX;
+                    this.minY = y + Block.slab.minY;
+                    this.maxY = y + Block.slab.maxY;
+                    this.minZ = z + Block.slab.minZ;
+                    this.maxZ = z + Block.slab.maxZ;
+                } else if(brickCount <= 36){
+                    this.minX = x + Block.threeQuartersBlock.minX;
+                    this.maxX = x + Block.threeQuartersBlock.maxX;
+                    this.minY = y + Block.threeQuartersBlock.minY;
+                    this.maxY = y + Block.threeQuartersBlock.maxY;
+                    this.minZ = z + Block.threeQuartersBlock.minZ;
+                    this.maxZ = z + Block.threeQuartersBlock.maxZ;
+                } else {
+                    this.minX = x + Block.standardBlock.minX;
+                    this.maxX = x + Block.standardBlock.maxX;
+                    this.minY = y + Block.standardBlock.minY;
+                    this.maxY = y + Block.standardBlock.maxY;
+                    this.minZ = z + Block.standardBlock.minZ;
+                    this.maxZ = z + Block.standardBlock.maxZ;
+                }
+            } else {
+                this.minX = x + Block.list[blockID].standardCollisionBoundingBox.minX;
+                this.maxX = x + Block.list[blockID].standardCollisionBoundingBox.maxX;
+                this.minY = y + Block.list[blockID].standardCollisionBoundingBox.minY;
+                this.maxY = y + Block.list[blockID].standardCollisionBoundingBox.maxY;
+                this.minZ = z + Block.list[blockID].standardCollisionBoundingBox.minZ;
+                this.maxZ = z + Block.list[blockID].standardCollisionBoundingBox.maxZ;
+            }
             this.air = false;
         }
     }

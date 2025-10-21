@@ -1389,6 +1389,57 @@ public final class ModelLoader{
         return translatedModel;
     }
 
+    public ModelLoader rotateModel(float deg, float x, float y, float z){
+        float rad = (float) Math.toRadians(deg);
+        ModelLoader rotatedModel = new ModelLoader();
+        ModelFace rotatedFace;
+        for(int i = 0; i < this.modelFaces.length; i++){
+            if(this.modelFaces[i] != null){
+                rotatedFace = new ModelFace(this.modelFaces[i].faceType);
+                for(int j = 0; j < rotatedFace.vertices.length; j++){
+                    rotatedFace.vertices[j].x = this.modelFaces[i].vertices[j].x;
+                    rotatedFace.vertices[j].y = this.modelFaces[i].vertices[j].y;
+                    rotatedFace.vertices[j].z = this.modelFaces[i].vertices[j].z;
+
+                    if(x == 1){
+                        rotatedFace.vertices[j].rotateX(rad);
+                    }
+                    if(y == 1) {
+                        rotatedFace.vertices[j].rotateY(rad);
+                    }
+                    if(z == 1){
+                        rotatedFace.vertices[j].rotateZ(rad);
+                    }
+                }
+                rotatedFace.setNormal(this.modelFaces[i].normal.x, this.modelFaces[i].normal.y, this.modelFaces[i].normal.z);
+                if(x == 1){
+                    rotatedFace.normal.rotateX(rad);
+                }
+                if(y == 1) {
+                    rotatedFace.normal.rotateY(rad);
+                }
+                if(z == 1){
+                    rotatedFace.normal.rotateZ(rad);
+                }
+                rotatedModel.addModelFace(rotatedFace);
+            }
+        }
+
+        int modelFacesSize = 0;
+        for(int i = 0; i < rotatedModel.modelFaces.length; i++){
+            if(rotatedModel.modelFaces[i] != null){
+                modelFacesSize++;
+            }
+        }
+
+        ModelFace[] newModelFaces = new ModelFace[modelFacesSize];
+        for(int i = 0; i < newModelFaces.length; i++){
+            newModelFaces[i] = rotatedModel.modelFaces[i];
+        }
+        rotatedModel.modelFaces = newModelFaces;
+        return rotatedModel;
+    }
+
     public ModelLoader alterStandardBlockModel(int xFactor, int yFactor, int zFactor){
         final float changeConstant = 0.03125F;
         ModelLoader alteredModel = new ModelLoader();

@@ -60,9 +60,9 @@ public final class EntityPlayer extends EntityLiving {
         this.width = 0.5;
         this.depth = 0.5;
         this.height = 1.79;
-        this.chunkX = (int) (this.x / 32);
-        this.chunkY = (int) (this.y / 32);
-        this.chunkZ = (int) (this.z / 32);
+        this.chunkX = MathUtil.floorDouble(this.x) >> 5;
+        this.chunkY = MathUtil.floorDouble(this.y) >> 5;
+        this.chunkZ = MathUtil.floorDouble(this.z) >> 5;
         this.health = 100;
         this.maxHealth = 100;
         this.playerFile = new File(this.sg.save.saveFolder + "/player.dat");
@@ -77,9 +77,9 @@ public final class EntityPlayer extends EntityLiving {
         this.width = 0.5;
         this.depth = 0.5;
         this.height = 1.79;
-        this.chunkX = (int) (this.x / 32);
-        this.chunkY = (int) (this.y / 32);
-        this.chunkZ = (int) (this.z / 32);
+        this.chunkX = MathUtil.floorDouble(this.x) >> 5;
+        this.chunkY = MathUtil.floorDouble(this.y) >> 5;
+        this.chunkZ = MathUtil.floorDouble(this.z) >> 5;
         this.maxHealth = 100;
         this.playerFile = playerFile;
         this.loadedFromFile = true;
@@ -511,13 +511,17 @@ public final class EntityPlayer extends EntityLiving {
         int playerYHead = MathUtil.floorDouble(this.y + (this.height * 0.25));
         int playerYFoot = MathUtil.floorDouble(this.y - (this.height * 0.25));
         int playerZ = MathUtil.floorDouble(this.z);
+
         this.blockUnderPlayer = this.sg.save.activeWorld.getBlockID(playerX, MathUtil.floorDouble(this.y - (this.height/2) - 0.1), playerZ);
         if(Block.list[this.blockUnderPlayer].isSolid && !this.inWater){
             this.handleFallDamage();
             this.lastYOnGround = this.y;
         }
+
+
         this.inWater = Block.list[this.sg.save.activeWorld.getBlockID(playerX, playerYFoot, playerZ)].ID == Block.water.ID || Block.list[this.sg.save.activeWorld.getBlockID(playerX, playerYHead, playerZ)].ID == Block.water.ID;
         short headBlock = Block.list[this.sg.save.activeWorld.getBlockID(playerX, playerYHead, playerZ)].ID;
+        short footBlock = Block.list[this.sg.save.activeWorld.getBlockID(playerX, playerYFoot, playerZ)].ID;
         if(headBlock == Block.water.ID){
             Shader.worldShaderTextureArray.uploadBoolean("underwater", true);
             this.drowningTimer++;
@@ -530,6 +534,11 @@ public final class EntityPlayer extends EntityLiving {
         } else {
             Shader.worldShaderTextureArray.uploadBoolean("underwater", false);
             this.drowningTimer = 0;
+        }
+
+        if(this.blockUnderPlayer == Block.campfireLit.ID || this.blockUnderPlayer == Block.pitKilnLit.ID || headBlock == Block.campfireLit.ID ||
+                headBlock == Block.pitKilnLit.ID || footBlock == Block.campfireLit.ID || footBlock == Block.pitKilnLit.ID){
+            this.damage(5);
         }
 
         if(this.inWater){
@@ -581,11 +590,11 @@ public final class EntityPlayer extends EntityLiving {
         }
 
         if(this.inWater && !this.prevInWater){
-            new SoundPlayer(this.sg).playSound(this.x, this.y - 2 ,this.z, new Sound(Sound.waterSplash, false), new Random().nextFloat(0.4F, 0.7F));
+            SpaceGame.instance.soundPlayer.playSound(this.x, this.y - 2 ,this.z, new Sound(Sound.waterSplash, false), new Random().nextFloat(0.4F, 0.7F));
         }
 
         if(this.prevBlockUnderPlayer != this.blockUnderPlayer){
-            new SoundPlayer(this.sg).playSound(this.x, this.y - 2 ,this.z, new Sound(Block.list[this.blockUnderPlayer].stepSound, false), new Random().nextFloat(0.4F, 0.7F));
+            SpaceGame.instance.soundPlayer.playSound(this.x, this.y - 2 ,this.z, new Sound(Block.list[this.blockUnderPlayer].getStepSound(MathUtil.floorDouble(this.x), MathUtil.floorDouble(this.y - (this.height/2) - 0.1), MathUtil.floorDouble(this.z)), false), new Random().nextFloat(0.4F, 0.7F));
         }
 
         this.damageTimer--;
@@ -708,7 +717,7 @@ public final class EntityPlayer extends EntityLiving {
         if(this.lastYOnGround - this.y > 3){
             this.health -= this.lastYOnGround - this.y;
             this.runDamageTilt = true;
-            new SoundPlayer(this.sg).playSound(this.x, this.y, this.z, new Sound(Sound.fallDamage, false), new Random().nextFloat(0.4F, 0.7F));
+            SpaceGame.instance.soundPlayer.playSound(this.x, this.y, this.z, new Sound(Sound.fallDamage, false), new Random().nextFloat(0.4F, 0.7F));
         }
     }
 
@@ -801,12 +810,13 @@ public final class EntityPlayer extends EntityLiving {
 
     @Override
     public void damage(float healthReduction){
+        if(!this.canDamage)return;
         this.health -= healthReduction;
         this.runDamageTilt = true;
         this.damageTimer = 30;
         this.roll = 0;
         this.canDamage = false;
-        new SoundPlayer(this.sg).playSound(this.x, this.y, this.z, new Sound(Sound.fallDamage, false), new Random().nextFloat(0.4F, 0.7F));
+        SpaceGame.instance.soundPlayer.playSound(this.x, this.y, this.z, new Sound(Sound.fallDamage, false), new Random().nextFloat(0.4F, 0.7F));
     }
 
     @Override

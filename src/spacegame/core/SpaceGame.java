@@ -45,7 +45,6 @@ public final class SpaceGame implements Runnable {
     public static final Random globalRand = new Random();
     public volatile boolean running;
     public String title;
-    public boolean vsync;
     public static int width = 1920;
     public static int height = 1080;
     public long window;
@@ -59,6 +58,7 @@ public final class SpaceGame implements Runnable {
     public MoveableObject currentlySelectedMoveableObject;
     public Universe everything;
     public RenderEngine renderEngine;
+    public SoundPlayer soundPlayer = new SoundPlayer(this);
 
 
     public static void main(String[] args) {
@@ -80,8 +80,6 @@ public final class SpaceGame implements Runnable {
             throw new RuntimeException("Main Class already initialized");
         }
         this.launcherDirectory = new File(launcherDirectory);
-        GameSettings.loadOptionsFromFile(this.launcherDirectory);
-        this.vsync = GameSettings.vsync;
         instance = this;
     }
 
@@ -102,7 +100,8 @@ public final class SpaceGame implements Runnable {
     }
 
     private void startGame() {
-        this.title = "Cosmic Evolution Alpha v0.29";
+        this.title = "Cosmic Evolution Alpha v0.30";
+        GameSettings.loadOptionsFromFile(this.launcherDirectory);
         this.clearLogFiles(new File(this.launcherDirectory + "/crashReports"));
         this.initLWJGL();
         this.renderEngine = new RenderEngine();
@@ -163,7 +162,7 @@ public final class SpaceGame implements Runnable {
 
         GLFW.glfwMakeContextCurrent(this.window);
 
-        GLFW.glfwSwapInterval(this.vsync ? 1 : 0);
+        GLFW.glfwSwapInterval(GameSettings.vsync ? 1 : 0);
 
         GLFW.glfwShowWindow(this.window);
 
@@ -344,22 +343,22 @@ public final class SpaceGame implements Runnable {
       //        KeyListener.setKeyReleased(GLFW.GLFW_KEY_G);
       //    }
 //
-       //   if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_MINUS)){
-       //       this.save.time -= 216000;
-       //       KeyListener.setKeyReleased(GLFW.GLFW_KEY_MINUS);
-       //   }
-       //   if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_EQUAL)){
-       //       this.save.time += 216000;
-       //       KeyListener.setKeyReleased(GLFW.GLFW_KEY_EQUAL);
-       //   }
-       //   if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_COMMA)){
-       //       this.save.time -= 1000;
-       //       KeyListener.setKeyReleased(GLFW.GLFW_KEY_COMMA);
-       //   }
-       //   if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_PERIOD)){
-       //       this.save.time += 1000;
-       //       KeyListener.setKeyReleased(GLFW.GLFW_KEY_PERIOD);
-       //   }
+   //      if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_MINUS)){
+   //          this.save.time -= 216000;
+   //          KeyListener.setKeyReleased(GLFW.GLFW_KEY_MINUS);
+   //      }
+   //      if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_EQUAL)){
+   //          this.save.time += 216000;
+   //          KeyListener.setKeyReleased(GLFW.GLFW_KEY_EQUAL);
+   //      }
+   //      if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_COMMA)){
+   //          this.save.time -= 1000;
+   //          KeyListener.setKeyReleased(GLFW.GLFW_KEY_COMMA);
+   //      }
+   //      if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_PERIOD)){
+   //          this.save.time += 1000;
+   //          KeyListener.setKeyReleased(GLFW.GLFW_KEY_PERIOD);
+   //      }
 
 
         if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_1) && this.currentGui instanceof GuiInGame){
@@ -511,11 +510,22 @@ public final class SpaceGame implements Runnable {
         }
         if (!MouseListener.mouseButtonDown(GLFW.GLFW_MOUSE_BUTTON_LEFT)) {
             MouseListener.leftClickReleased = true;
+            MouseListener.timeHeldLeftClick = 0;
         }
 
         if (!MouseListener.mouseButtonDown(GLFW.GLFW_MOUSE_BUTTON_RIGHT)) {
             MouseListener.rightClickReleased = true;
+            MouseListener.timeHeldRightClick = 0;
         }
+
+        if(MouseListener.mouseButtonDown(GLFW.GLFW_MOUSE_BUTTON_LEFT) && MouseListener.timeHeldLeftClick == 0 && this.save != null){
+            MouseListener.timeHeldLeftClick = this.save.time;
+        }
+
+        if(MouseListener.mouseButtonDown(GLFW.GLFW_MOUSE_BUTTON_RIGHT) && MouseListener.timeHeldRightClick == 0 && this.save != null){
+            MouseListener.timeHeldRightClick = this.save.time;
+        }
+
         KeyListener.checkIfKeysArePressed();
     }
 
@@ -523,29 +533,25 @@ public final class SpaceGame implements Runnable {
         if(this.save != null) {
             this.save.handleLeftClick();
         }
-        if(this.currentGui instanceof GuiInventory){
+        if(this.currentGui instanceof GuiInventory && MouseListener.leftClickReleased){
             ItemStack stack;
             stack = ((GuiInventory)this.currentGui).getHoveredItemStack();
             if(stack != null) {
                 if(ItemStack.itemStackOnMouse.item != null) {
-                    if(ItemStack.itemStackOnMouse.item.equals(stack.item)){
+                    if(ItemStack.itemStackOnMouse.item.equals(stack.item) && (stack.metadata == ItemStack.itemStackOnMouse.metadata)){
                         if(stack.count + ItemStack.itemStackOnMouse.count <= stack.item.stackLimit) {
-                            if (stack.metadata == ItemStack.itemStackOnMouse.metadata) {
-                                if (MouseListener.leftClickReleased) {
-                                    stack.mergeStack(ItemStack.itemStackOnMouse);
-                                    ItemStack.itemStackOnMouse.item = null;
-                                    ItemStack.itemStackOnMouse.count = 0;
-                                    ItemStack.itemStackOnMouse.metadata = Item.NULL_ITEM_METADATA;
-                                    ItemStack.itemStackOnMouse.durability = Item.NULL_ITEM_DURABILITY;
-                                }
+                            if (MouseListener.leftClickReleased) {
+                                stack.mergeStack(ItemStack.itemStackOnMouse);
+                                ItemStack.itemStackOnMouse.item = null;
+                                ItemStack.itemStackOnMouse.count = 0;
+                                ItemStack.itemStackOnMouse.metadata = Item.NULL_ITEM_METADATA;
+                                ItemStack.itemStackOnMouse.durability = Item.NULL_ITEM_DURABILITY;
                             }
                         } else {
-                            if (stack.metadata == ItemStack.itemStackOnMouse.metadata) {
-                                if (MouseListener.leftClickReleased) {
-                                    while(stack.count < stack.item.stackLimit){
-                                        stack.count++;
-                                        ItemStack.itemStackOnMouse.count--;
-                                    }
+                            if (MouseListener.leftClickReleased) {
+                                while (stack.count < stack.item.stackLimit) {
+                                    stack.count++;
+                                    ItemStack.itemStackOnMouse.count--;
                                 }
                             }
                         }
@@ -574,6 +580,22 @@ public final class SpaceGame implements Runnable {
                                 ItemStack.itemStackOnMouse.durability = Item.NULL_ITEM_DURABILITY;
                             }
                         }
+                    } else if(!stack.item.equals(ItemStack.itemStackOnMouse.item) || (stack.metadata != ItemStack.itemStackOnMouse.metadata)){
+                        ItemStack tempStack = new ItemStack(null, (byte)0, 0,0);
+                        tempStack.item = stack.item;
+                        tempStack.count = stack.count;
+                        tempStack.durability = stack.durability;
+                        tempStack.metadata = stack.metadata;
+
+                        stack.item = ItemStack.itemStackOnMouse.item;;
+                        stack.count = ItemStack.itemStackOnMouse.count;
+                        stack.durability = ItemStack.itemStackOnMouse.durability;
+                        stack.metadata = ItemStack.itemStackOnMouse.metadata;
+
+                        ItemStack.itemStackOnMouse.item = tempStack.item;
+                        ItemStack.itemStackOnMouse.count = tempStack.count;
+                        ItemStack.itemStackOnMouse.durability = tempStack.durability;
+                        ItemStack.itemStackOnMouse.metadata = tempStack.metadata;
                     }
                 } else if(stack.item != null) {
                     if (MouseListener.leftClickReleased) {
@@ -597,9 +619,9 @@ public final class SpaceGame implements Runnable {
         if(button != null){
             if(MouseListener.leftClickReleased) {
                 if(this.save != null) {
-                    new SoundPlayer(SpaceGame.instance).playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound("src/spacegame/assets/sound/buttonPress.ogg", false), 1);
+                    SpaceGame.instance.soundPlayer.playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound("src/spacegame/assets/sound/buttonPress.ogg", false), 1);
                 } else {
-                    new SoundPlayer(SpaceGame.instance).playSound(SpaceGame.camera.position.x, SpaceGame.camera.position.y, SpaceGame.camera.position.z, new Sound("src/spacegame/assets/sound/buttonPress.ogg", false), 1);
+                    SpaceGame.instance.soundPlayer.playSound(SpaceGame.camera.position.x, SpaceGame.camera.position.y, SpaceGame.camera.position.z, new Sound("src/spacegame/assets/sound/buttonPress.ogg", false), 1);
                 }
                     button.onLeftClick();
             }
@@ -625,10 +647,10 @@ public final class SpaceGame implements Runnable {
                     material.deactivate();
                     switch (material.type){
                         case "stone":
-                            new SoundPlayer(this).playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound(Sound.leftClickStoneCraftingMaterial, false), globalRand.nextFloat(0.5f, 1));
+                            SpaceGame.instance.soundPlayer.playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound(Sound.leftClickStoneCraftingMaterial, false), globalRand.nextFloat(0.5f, 1));
                             break;
                         case "clay":
-                            new SoundPlayer(this).playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound(Sound.clay, false), globalRand.nextFloat(0.5f, 1));
+                            SpaceGame.instance.soundPlayer.playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound(Sound.clay, false), globalRand.nextFloat(0.5f, 1));
                             break;
                     }
                 }
@@ -637,18 +659,20 @@ public final class SpaceGame implements Runnable {
 
         if(this.currentGui instanceof GuiCraftingStoneTools){
             RecipeSelector recipeSelector = ((GuiCraftingStoneTools)this.currentGui).getSelectedRecipeSelector();
-            if(recipeSelector != null){
+            if(recipeSelector != null && recipeSelector.meetsCriteriaToMakeRecipe(SpaceGame.instance.save.thePlayer)){
                 ((GuiCraftingStoneTools)this.currentGui).selectedItemID = recipeSelector.itemID;
                 ((GuiCraftingStoneTools)this.currentGui).selectableRecipes = null;
+                ((GuiCraftingStoneTools)this.currentGui).activeRecipe = recipeSelector;
                 ((GuiCraftingStoneTools)this.currentGui).activateRecipeOverlay();
             }
         }
 
         if(this.currentGui instanceof GuiCraftingPottery){
             RecipeSelector recipeSelector = ((GuiCraftingPottery)this.currentGui).getSelectedRecipeSelector();
-            if(recipeSelector != null){
+            if(recipeSelector != null && recipeSelector.meetsCriteriaToMakeRecipe(SpaceGame.instance.save.thePlayer)){
                 ((GuiCraftingPottery)this.currentGui).selectedItemID = recipeSelector.itemID;
                 ((GuiCraftingPottery)this.currentGui).selectableRecipes = null;
+                ((GuiCraftingPottery)this.currentGui).activeRecipe = recipeSelector;
                 ((GuiCraftingPottery)this.currentGui).activateRecipeOverlay();
             }
         }
@@ -723,10 +747,10 @@ public final class SpaceGame implements Runnable {
                     material.active = true;
                     switch (material.type){
                         case "stone":
-                            new SoundPlayer(this).playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound(Sound.rightClickStoneCraftingMaterial, false), globalRand.nextFloat(0.5f, 1));
+                            SpaceGame.instance.soundPlayer.playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound(Sound.rightClickStoneCraftingMaterial, false), globalRand.nextFloat(0.5f, 1));
                             break;
                         case "clay":
-                            new SoundPlayer(this).playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound(Sound.clay, false), globalRand.nextFloat(0.5f, 1));
+                            SpaceGame.instance.soundPlayer.playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound(Sound.clay, false), globalRand.nextFloat(0.5f, 1));
                             break;
                     }
                 }

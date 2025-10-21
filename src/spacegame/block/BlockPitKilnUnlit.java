@@ -5,8 +5,8 @@ import spacegame.item.Item;
 import spacegame.world.World;
 
 public class BlockPitKilnUnlit extends BlockContainer {
-    public BlockPitKilnUnlit(short ID, int textureID, String filepath, int inventorySize) {
-        super(ID, textureID, filepath, inventorySize);
+    public BlockPitKilnUnlit(short ID, int textureID, String filepath, int inventoryWidth, int inventoryHeight) {
+        super(ID, textureID, filepath, inventoryWidth, inventoryHeight);
     }
 
     public int getStrawHeight() {

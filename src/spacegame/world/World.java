@@ -1026,6 +1026,7 @@ public abstract class World {
                 }
                 if(logCount != 4){
                     this.sg.save.thePlayer.removeItemFromInventory();
+                    SpaceGame.instance.soundPlayer.playSound(x, y, z, new Sound(Sound.wood, false), new Random().nextFloat(0.6F, 1));
                 }
                 MouseListener.rightClickReleased = false;
                 return;
@@ -1042,7 +1043,7 @@ public abstract class World {
             }
         }
 
-        if(block instanceof BlockCampFire && MouseListener.rightClickReleased){
+        if(block.ID == Block.campfireLit.ID && MouseListener.rightClickReleased){
             if(playerHeldItem == Item.unlitTorch.ID) {
                 SpaceGame.instance.save.thePlayer.removeItemFromInventory();
                 if (!SpaceGame.instance.save.thePlayer.addItemToInventory(Item.torch.ID, Item.NULL_ITEM_METADATA, (byte) 1, Item.NULL_ITEM_DURABILITY)) {
@@ -1073,11 +1074,8 @@ public abstract class World {
 
         if(block.ID == Block.campFireNoFirewood.ID && MouseListener.rightClickReleased){
            if(playerHeldItem != Item.NULL_ITEM_REFERENCE){
-               if(Item.list[playerHeldItem].toolType.equals(Item.ITEM_TOOL_TYPE_KNIFE) && this.sg.save.thePlayer.containsAmountOfItem(Item.straw.ID, 8)){
+               if(Item.list[playerHeldItem].toolType.equals(Item.ITEM_TOOL_TYPE_KNIFE)){
                    this.sg.setNewGui(new GuiCraftingStrawStorage(this.sg, x, y, z));
-                   for(int i = 0; i < 8; i++){
-                       this.sg.save.thePlayer.removeSpecificItemFromInventory(Item.straw.ID);
-                   }
                    MouseListener.rightClickReleased = false;
                    return;
                }
@@ -1098,7 +1096,7 @@ public abstract class World {
         if(block.ID == Block.strawChestTier1.ID && playerHeldItem == Item.straw.ID && MouseListener.rightClickReleased){
             if(this.sg.save.thePlayer.getHeldItemCount() >= 8){
                 this.setBlockWithNotify(x,y,z, Block.strawChest.ID);
-                this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).addChestLocation(x, y, z,  new Inventory(((BlockContainer)(Block.strawChest)).inventorySize, 9));
+                this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).addChestLocation(x, y, z,  new Inventory(((BlockContainer)(Block.strawChest)).inventoryWidth, ((BlockContainer)(Block.strawChest)).inventoryHeight));
                 for(int i = 0; i < 8; i++){
                     this.sg.save.thePlayer.removeItemFromInventory();
                 }
@@ -1132,11 +1130,14 @@ public abstract class World {
             return;
         }
 
-        if(block.ID == Block.rawRedClayCookingPot.ID && playerHeldItem == Item.straw.ID && MouseListener.rightClickReleased && this.isBlockSuitableForPitKiln(x,y,z)){
-            this.setBlockWithNotify(x,y,z, Block.pitKilnUnlit1.ID);
+        if(this.isBlockAbleToBecomePitKiln(block, x, y, z) && playerHeldItem == Item.straw.ID && MouseListener.rightClickReleased && this.isBlockSuitableForPitKiln(x,y,z)){
             Inventory kilnInventory = new Inventory(1,1);
-            kilnInventory.addItemToInventory(Item.block.ID, Block.rawRedClayCookingPot.ID, (byte)1, Item.NULL_ITEM_DURABILITY);
+            kilnInventory.addItemToInventory(this.pitKilnItemType(block.ID, x,y,z), this.getBlockID(x,y,z), this.pitKilnItemCount(block.ID, x,y,z), Item.NULL_ITEM_DURABILITY);
+            if(block.ID == Block.brickPile.ID){
+                this.clearChestLocation(x,y,z);
+            }
             this.addChestLocation(x,y,z, kilnInventory);
+            this.setBlockWithNotify(x,y,z, Block.pitKilnUnlit1.ID);
             this.sg.save.thePlayer.removeItemFromInventory();
             MouseListener.rightClickReleased = false;
             return;
@@ -1149,6 +1150,7 @@ public abstract class World {
                     case 74, 75, 76, 77, 78, 79, 80 -> {
                         this.setBlockWithNotify(x, y, z, (short) (block.ID + 1));
                         this.sg.save.thePlayer.removeItemFromInventory();
+                        SpaceGame.instance.soundPlayer.playSound(x, y, z, new Sound(Sound.grass, false), new Random().nextFloat(0.6F, 1));
                     }
                 }
             }
@@ -1158,10 +1160,12 @@ public abstract class World {
                     case 81 -> {
                         this.setBlockWithNotify(x, y, z, Block.pitKilnUnlitLog1.ID);
                         this.sg.save.thePlayer.removeItemFromInventory();
+                        SpaceGame.instance.soundPlayer.playSound(x, y, z, new Sound(Sound.wood, false), new Random().nextFloat(0.6F, 1));
                     }
                     case 95, 96, 97 -> {
                         this.setBlockWithNotify(x, y, z, (short) (block.ID + 1));
                         this.sg.save.thePlayer.removeItemFromInventory();
+                        SpaceGame.instance.soundPlayer.playSound(x, y, z, new Sound(Sound.wood, false), new Random().nextFloat(0.6F, 1));
                     }
                 }
             }
@@ -1172,7 +1176,7 @@ public abstract class World {
         if(block.ID == Block.pitKilnUnlit.ID && playerHeldItem == Item.torch.ID && KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT)){
             this.setBlockWithNotify(x,y,z, Block.pitKilnLit.ID);
 
-            this.addTimeEvent(x,y,z, SpaceGame.instance.save.time + BlockPitKilnLit.updateTime);
+            this.addTimeEvent(x,y,z, SpaceGame.instance.save.time + ((ITimeUpdate) Block.pitKilnLit).getUpdateTime());
 
             if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT)) {
                 KeyListener.setKeyReleased(GLFW.GLFW_KEY_RIGHT_SHIFT);
@@ -1181,6 +1185,69 @@ public abstract class World {
             }
 
             this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).addTickableBlockToArray((short) Chunk.getBlockIndexFromCoordinates(x,y,z));
+            return;
+        }
+
+        if(block.ID == Block.logPile.ID && playerHeldItem == Item.fireWood.ID && this.sg.save.thePlayer.getHeldItemCount() >= 2 && KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) && (MouseListener.timeHeldRightClick == 0 || (((this.sg.save.time - MouseListener.timeHeldRightClick) % 15) == 0))){
+            ChestLocation chest = this.getChestLocation(x,y,z);
+            if(chest.inventory.itemStacks[0].count >= 32)return;
+            chest.inventory.itemStacks[0].count += 2;
+            this.sg.save.thePlayer.removeItemFromInventory();
+            this.sg.save.thePlayer.removeItemFromInventory();
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_LEFT_SHIFT);
+            SpaceGame.instance.soundPlayer.playSound(x, y, z, new Sound(Sound.wood, false), new Random().nextFloat(0.6F, 1));
+            this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).notifyBlock(x,y,z);
+            return;
+        }
+
+        if(block.ID == Block.logPile.ID && !KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) && this.sg.save.thePlayer.addItemToInventory(Item.fireWood.ID, Item.NULL_ITEM_METADATA, (byte)2, Item.NULL_ITEM_DURABILITY) && (MouseListener.timeHeldRightClick == 0 || (((this.sg.save.time - MouseListener.timeHeldRightClick) % 15) == 0))){
+            ChestLocation chest = this.getChestLocation(x,y,z);
+            chest.inventory.itemStacks[0].count -= 2;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_LEFT_SHIFT);
+            SpaceGame.instance.soundPlayer.playSound(x, y, z, new Sound(Sound.wood, false), new Random().nextFloat(0.6F, 1));
+
+            if(chest.inventory.itemStacks[0].count <= 0){
+                chest.inventory.itemStacks[0].item = null;
+                chest.inventory.itemStacks[0].count = 0;
+                chest.inventory.itemStacks[0].metadata = Item.NULL_ITEM_METADATA;
+                chest.inventory.itemStacks[0].durability = Item.NULL_ITEM_DURABILITY;
+                this.removeChestLocation(x,y,z);
+                this.setBlockWithNotify(x,y,z, Block.air.ID);
+            }
+
+            this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).notifyBlock(x,y,z);
+
+            return;
+        }
+
+        if(block.ID == Block.brickPile.ID && (playerHeldItem == Item.rawClayAdobeBrick.ID || playerHeldItem == Item.firedRedClayAdobeBrick.ID) && this.sg.save.thePlayer.getHeldItemCount() >= 1 && KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) && (MouseListener.timeHeldRightClick == 0 || (((this.sg.save.time - MouseListener.timeHeldRightClick) % 15) == 0))){
+            ChestLocation chest = this.getChestLocation(x,y,z);
+            if(chest.inventory.itemStacks[0].count >= 48)return;
+            chest.inventory.itemStacks[0].count++;
+            this.sg.save.thePlayer.removeItemFromInventory();
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_LEFT_SHIFT);
+            SpaceGame.instance.soundPlayer.playSound(x, y, z, new Sound(playerHeldItem == Item.rawClayAdobeBrick.ID ? Sound.clay : Sound.stone, false), new Random().nextFloat(0.6F, 1));
+            this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).notifyBlock(x,y,z);
+            return;
+        }
+
+        if(block.ID == Block.brickPile.ID && !KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) && this.sg.save.thePlayer.addItemToInventory(this.getChestLocation(x,y,z).inventory.itemStacks[0].item.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY) && (MouseListener.timeHeldRightClick == 0 || (((this.sg.save.time - MouseListener.timeHeldRightClick) % 15) == 0))){
+            ChestLocation chest = this.getChestLocation(x,y,z);
+            chest.inventory.itemStacks[0].count--;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_LEFT_SHIFT);
+            SpaceGame.instance.soundPlayer.playSound(x, y, z, new Sound( chest.inventory.itemStacks[0].item.ID == Item.rawClayAdobeBrick.ID ? Sound.clay : Sound.stone, false), new Random().nextFloat(0.6F, 1));
+
+            if(chest.inventory.itemStacks[0].count <= 0){
+                chest.inventory.itemStacks[0].item = null;
+                chest.inventory.itemStacks[0].count = 0;
+                chest.inventory.itemStacks[0].metadata = Item.NULL_ITEM_METADATA;
+                chest.inventory.itemStacks[0].durability = Item.NULL_ITEM_DURABILITY;
+                this.removeChestLocation(x,y,z);
+                this.setBlockWithNotify(x,y,z, Block.air.ID);
+            }
+
+            this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).notifyBlock(x,y,z);
+
             return;
         }
     }
@@ -1206,12 +1273,55 @@ public abstract class World {
         return this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).getChestLocation(x,y,z);
     }
 
+    public void clearChestLocation(int x, int y, int z){ //Destroys the item before deleting the chest inventory in case a item data transfer occurs internally between two chest locations
+        ChestLocation chestLocation = this.getChestLocation(x,y,z);
+        chestLocation.inventory.itemStacks[0].item = null;
+        chestLocation.inventory.itemStacks[0].count = 0;
+        chestLocation.inventory.itemStacks[0].metadata = Item.NULL_ITEM_METADATA;
+        chestLocation.inventory.itemStacks[0].durability = Item.NULL_ITEM_DURABILITY;
+        this.removeChestLocation(x,y,z);
+    }
+
     private boolean isBlockSuitableForPitKiln(int x, int y, int z){
         return Block.list[this.getBlockID(x - 1, y, z)].blockModel.equals(Block.standardBlockModel) &&
                 Block.list[this.getBlockID(x + 1, y, z)].blockModel.equals(Block.standardBlockModel) &&
                 Block.list[this.getBlockID(x, y - 1, z)].blockModel.equals(Block.standardBlockModel) &&
                 Block.list[this.getBlockID(x, y, z - 1)].blockModel.equals(Block.standardBlockModel) &&
                 Block.list[this.getBlockID(x, y, z + 1)].blockModel.equals(Block.standardBlockModel);
+    }
+
+    private boolean isBlockAbleToBecomePitKiln(Block block, int x, int y, int z){
+        if(block.ID == Block.rawRedClayCookingPot.ID){
+            return true;
+        }
+        if(block.ID == Block.brickPile.ID){
+            ChestLocation chestLocation = this.getChestLocation(x,y,z);
+            return chestLocation.inventory.itemStacks[0].count <= 12 && chestLocation.inventory.itemStacks[0].item == Item.rawClayAdobeBrick;
+        }
+
+        return false;
+    }
+
+    private byte pitKilnItemCount(short blockID, int x, int y, int z){
+        if(blockID == Block.rawRedClayCookingPot.ID){
+            return 1;
+        }
+        if(blockID == Block.brickPile.ID){
+            ChestLocation chestLocation = this.getChestLocation(x,y,z);
+            return chestLocation.inventory.itemStacks[0].count;
+        }
+        return 1;
+    }
+
+    private short pitKilnItemType(short blockID, int x, int y, int z){
+        if(blockID == Block.rawRedClayCookingPot.ID){
+            return Item.block.ID;
+        }
+        if(blockID == Block.brickPile.ID){
+            ChestLocation chestLocation = this.getChestLocation(x,y,z);
+            return chestLocation.inventory.itemStacks[0].item.ID;
+        }
+        return 1;
     }
 
     private Chunk[] getSurroundingChunksAndCurrentChunk(int x, int y, int z){
@@ -1337,7 +1447,7 @@ public abstract class World {
                             }
                             this.sg.save.thePlayer.breakTimer = 0;
                         } else if(this.sg.save.time % 20 == 0) {
-                            new SoundPlayer(this.sg).playSound(blockX, blockY, blockZ, new Sound(checkedBlock.stepSound, false),  new Random().nextFloat(0.4F, 0.7F));
+                            SpaceGame.instance.soundPlayer.playSound(blockX, blockY, blockZ, new Sound(checkedBlock.stepSound, false),  new Random().nextFloat(0.4F, 0.7F));
                         }
                     } else {
                         this.sg.save.thePlayer.breakTimer = 0;
@@ -1351,7 +1461,7 @@ public abstract class World {
     }
 
     public void handleRightClick() {
-        if (this.sg.save.thePlayer != null && !this.paused && MouseListener.rightClickReleased && this.sg.currentGui instanceof GuiInGame && this.delayWhenExitingUI <= 0) {
+        if (this.sg.save.thePlayer != null && !this.paused && (MouseListener.timeHeldRightClick == 0 || (((this.sg.save.time - MouseListener.timeHeldRightClick) % 15) == 0)) && this.sg.currentGui instanceof GuiInGame && this.delayWhenExitingUI <= 0) {
             short item = SpaceGame.instance.save.thePlayer.getHeldItem();
             if(item != Item.NULL_ITEM_REFERENCE) {
                 Item.list[item].onRightClick(MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.x), MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.y),  MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.z), this, SpaceGame.instance.save.thePlayer);

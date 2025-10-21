@@ -1,15 +1,13 @@
 package spacegame.gui;
 
+import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
 import spacegame.core.MathUtil;
 import spacegame.core.SpaceGame;
 import spacegame.item.Item;
-import spacegame.render.Assets;
-import spacegame.render.RenderBlocks;
-import spacegame.render.RenderEngine;
-import spacegame.render.Shader;
+import spacegame.render.*;
 
 public final class GuiCraftingStrawStorage extends GuiCrafting {
     public RecipeSelector[] selectableRecipes;
@@ -40,8 +38,8 @@ public final class GuiCraftingStrawStorage extends GuiCrafting {
 
         for(int i = 0; i < this.selectableRecipes.length; i++){
             switch (i) {
-                case 0 -> this.selectableRecipes[i] = new RecipeSelector(Item.strawBasket.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.strawBasket.getDisplayName(Item.NULL_ITEM_REFERENCE));
-                case 1 -> this.selectableRecipes[i] = new RecipeSelector(Item.block.ID, Block.strawChest.ID,selectableX, selectableY, selectableWidth, selectableHeight, Item.block.getDisplayName(Block.strawChest.ID));
+                case 0 -> this.selectableRecipes[i] = new RecipeSelector(Item.strawBasket.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.strawBasket.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.straw.ID}, new int[]{8});
+                case 1 -> this.selectableRecipes[i] = new RecipeSelector(Item.block.ID, Block.strawChest.ID,selectableX, selectableY, selectableWidth, selectableHeight, Item.block.getDisplayName(Block.strawChest.ID), new short[]{Item.straw.ID}, new int[]{8});
             }
             selectableX += 64;
         }
@@ -126,15 +124,43 @@ public final class GuiCraftingStrawStorage extends GuiCrafting {
         tessellator.drawVertexArray(Assets.itemTextureArray, Shader.screenTextureArray, SpaceGame.camera);
 
         for (int i = 0; i < this.selectableRecipes.length; i++) {
-            if(!this.selectableRecipes[i].isBlock)continue;
-            tessellator.addVertexTextureArray(16777215, this.selectableRecipes[i].x - (this.selectableRecipes[i].width / 2), this.selectableRecipes[i].y - (this.selectableRecipes[i].height / 2), selectableZ, 3, this.selectableRecipes[i].blockID, RenderBlocks.WEST_FACE);
-            tessellator.addVertexTextureArray(16777215, this.selectableRecipes[i].x + (this.selectableRecipes[i].width / 2), this.selectableRecipes[i].y + (this.selectableRecipes[i].height / 2), selectableZ, 1, this.selectableRecipes[i].blockID, RenderBlocks.WEST_FACE);
-            tessellator.addVertexTextureArray(16777215, this.selectableRecipes[i].x - (this.selectableRecipes[i].width / 2), this.selectableRecipes[i].y + (this.selectableRecipes[i].height / 2), selectableZ, 2, this.selectableRecipes[i].blockID, RenderBlocks.WEST_FACE);
-            tessellator.addVertexTextureArray(16777215, this.selectableRecipes[i].x + (this.selectableRecipes[i].width / 2), this.selectableRecipes[i].y - (this.selectableRecipes[i].height / 2), selectableZ, 0, this.selectableRecipes[i].blockID, RenderBlocks.WEST_FACE);
-            tessellator.addElements();
-        }
+            if (!this.selectableRecipes[i].isBlock) continue;
+            ModelLoader model = Block.list[this.selectableRecipes[i].blockID].blockModel.copyModel().translateModel(-0.5f, 0, -0.5f);
+            ModelFace[] faces;
+            float textureID;
+            Vector3f vertex1;
+            Vector3f vertex2;
+            Vector3f vertex3;
+            Vector3f vertex4;
+            Vector3f position = new Vector3f(this.selectableRecipes[i].x, this.selectableRecipes[i].y - 16, -50);
+            int red = 255;
+            int green = 255;
+            int blue = 255;
+            float[] UVSamples;
+            for (int face = 0; face < 6; face++) {
+                faces = model.getModelFaceOfType(face);
+                for (int j = 0; j < faces.length; j++) {
+                    if (faces[j] == null) continue;
+                    textureID = Block.list[this.selectableRecipes[i].blockID].getBlockTexture(this.selectableRecipes[i].blockID, face);
+                    UVSamples = face == RenderBlocks.TOP_FACE || face == RenderBlocks.BOTTOM_FACE ? RenderBlocks.autoUVTopBottom(RenderBlocks.getFaceWidth(faces[j]), RenderBlocks.getFaceHeight(faces[j])) : RenderBlocks.autoUVNSEW(RenderBlocks.getFaceWidth(faces[j]), RenderBlocks.getFaceHeight(faces[j]));
+                    vertex1 = new Vector3f(faces[j].vertices[0].x, faces[j].vertices[0].y, faces[j].vertices[0].z).mul(38).rotateY((float) (0.25 * Math.PI)).rotateX((float) (0.20 * Math.PI)).add(position);
+                    vertex2 = new Vector3f(faces[j].vertices[1].x, faces[j].vertices[1].y, faces[j].vertices[1].z).mul(38).rotateY((float) (0.25 * Math.PI)).rotateX((float) (0.20 * Math.PI)).add(position);
+                    vertex3 = new Vector3f(faces[j].vertices[2].x, faces[j].vertices[2].y, faces[j].vertices[2].z).mul(38).rotateY((float) (0.25 * Math.PI)).rotateX((float) (0.20 * Math.PI)).add(position);
+                    vertex4 = new Vector3f(faces[j].vertices[3].x, faces[j].vertices[3].y, faces[j].vertices[3].z).mul(38).rotateY((float) (0.25 * Math.PI)).rotateX((float) (0.20 * Math.PI)).add(position);
 
-        tessellator.drawVertexArray(Assets.blockTextureArray, Shader.screenTextureArray, SpaceGame.camera);
+                    tessellator.addVertexTextureArrayWithSampling(((red << 16) | (green << 8) | blue), vertex1.x, vertex1.y, vertex1.z, 3, textureID, UVSamples[0], UVSamples[1]);
+                    tessellator.addVertexTextureArrayWithSampling(((red << 16) | (green << 8) | blue), vertex2.x, vertex2.y, vertex2.z, 1, textureID, UVSamples[2], UVSamples[3]);
+                    tessellator.addVertexTextureArrayWithSampling(((red << 16) | (green << 8) | blue), vertex3.x, vertex3.y, vertex3.z, 2, textureID, UVSamples[4], UVSamples[5]);
+                    tessellator.addVertexTextureArrayWithSampling(((red << 16) | (green << 8) | blue), vertex4.x, vertex4.y, vertex4.z, 0, textureID, UVSamples[6], UVSamples[7]);
+                    tessellator.addElements();
+
+                    red -= 10;
+                    green -= 10;
+                    blue -= 10;
+                }
+            }
+            tessellator.drawVertexArray(Assets.blockTextureArray, Shader.screenTextureArray, SpaceGame.camera);
+        }
 
         selectableZ = -87;
         for (int i = 0; i < this.selectableRecipes.length; i++) {
@@ -187,6 +213,11 @@ public final class GuiCraftingStrawStorage extends GuiCrafting {
             this.sg.save.activeWorld.setBlockWithNotify(x,y,z, Block.strawChestTier0.ID);
         } else {
             this.sg.save.activeWorld.setBlockWithNotify(x,y,z, Block.strawBasketTier0.ID);
+        }
+        for(int i = 0; i < selectedRecipe.requiredItemCount.length; i++){
+            for(int j = 0; j < selectedRecipe.requiredItemCount[i]; j++){
+                this.sg.save.thePlayer.removeSpecificItemFromInventory(selectedRecipe.requiredItems[i]);
+            }
         }
         GLFW.glfwSetInputMode(this.sg.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
         this.sg.setNewGui(new GuiInGame(this.sg));

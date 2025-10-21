@@ -1,14 +1,14 @@
 package spacegame.render;
 
 import org.joml.Vector3f;
-import spacegame.block.Block;
-import spacegame.block.BlockCampFire;
-import spacegame.block.BlockLog;
-import spacegame.block.BlockPitKilnUnlit;
+import spacegame.block.*;
 import spacegame.core.MathUtil;
+import spacegame.item.Item;
+import spacegame.world.ChestLocation;
 import spacegame.world.Chunk;
 import spacegame.world.World;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 public class RenderBlocks {
@@ -18,6 +18,8 @@ public class RenderBlocks {
     public float skyLightValue = 1.0f;
     public short grayScaleImageMultiplier;
     private float highestChannel = 1.0f;
+    public ArrayList<int[]> fireWoodPileLogCounts = new ArrayList<>(); //Index then log count, size 2
+    public ArrayList<int[]> brickPileBrickCounts = new ArrayList<>();
     public static final int TOP_FACE = 0;
     public static final int BOTTOM_FACE = 1;
     public static final int NORTH_FACE = 2;
@@ -349,6 +351,278 @@ public class RenderBlocks {
                 modelFace = baseModel.copyModel().translateModel(0.5f, 1, 0.125f).getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
         }
+
+        ChestLocation chest = chunk.getChestLocation(chunk.getBlockXFromIndex(index), chunk.getBlockYFromIndex(index), chunk.getBlockZFromIndex(index));
+        block = chest.inventory.itemStacks[0].metadata;
+        if(block == Block.rawRedClayCookingPot.ID) {
+            this.renderStandardBlock(chunk, world, block, index, face, new int[2]);
+        } else if(block == Block.brickPile.ID){
+            this.renderBrickPile(chunk, world, block, index, face);
+        }
+    }
+
+    public void renderLogPile(Chunk chunk, World world, short block, int index, int face){
+        int numberOfLogs = chunk.getChestLocation(index).inventory.itemStacks[0].count / 2;
+
+        int[] recordedLogCount = null;
+        int[] storedLogCount = null;
+        for(int i = 0; i < this.fireWoodPileLogCounts.size(); i++){
+            storedLogCount = this.fireWoodPileLogCounts.get(i);
+            if(storedLogCount[0] != index)continue;
+
+            if(storedLogCount[1] != numberOfLogs){
+                numberOfLogs = storedLogCount[1];
+                recordedLogCount = storedLogCount;
+                break;
+            }
+        }
+
+        if(recordedLogCount == null){
+            this.fireWoodPileLogCounts.add(new int[]{index, numberOfLogs});
+        }
+
+        block = Block.largeFireWoodBlock.ID;
+        ModelLoader baseModel = Block.largeFireWood;
+        ModelFace modelFace;
+        switch (numberOfLogs){
+            case 16:
+                modelFace = baseModel.copyModel().translateModel(0.5f, 0.875f, 0.875f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
+            case 15:
+                modelFace = baseModel.copyModel().translateModel(0.5f, 0.875f, 0.625f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
+            case 14:
+                modelFace = baseModel.copyModel().translateModel(0.5f, 0.875f, 0.375f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
+            case 13:
+                modelFace = baseModel.copyModel().translateModel(0.5f, 0.875f, 0.125f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
+            case 12:
+                modelFace = baseModel.copyModel().translateModel(0.5f, 0.625f, 0.875f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
+            case 11:
+                modelFace = baseModel.copyModel().translateModel(0.5f, 0.625f, 0.625f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
+            case 10:
+                modelFace = baseModel.copyModel().translateModel(0.5f, 0.625f, 0.375f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
+            case 9:
+                modelFace = baseModel.copyModel().translateModel(0.5f, 0.625f, 0.125f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
+            case 8:
+                modelFace = baseModel.copyModel().translateModel(0.5f, 0.375f, 0.875f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
+            case 7:
+                modelFace = baseModel.copyModel().translateModel(0.5f, 0.375f, 0.625f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
+            case 6:
+                modelFace = baseModel.copyModel().translateModel(0.5f, 0.375f, 0.375f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
+            case 5:
+                modelFace = baseModel.copyModel().translateModel(0.5f, 0.375f, 0.125f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
+            case 4:
+                modelFace = baseModel.copyModel().translateModel(0.5f, 0.125f, 0.875f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
+            case 3:
+                modelFace = baseModel.copyModel().translateModel(0.5f, 0.125f, 0.625f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
+            case 2:
+                modelFace = baseModel.copyModel().translateModel(0.5f, 0.125f, 0.375f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
+            case 1:
+                modelFace = baseModel.copyModel().translateModel(0.5f, 0.125f, 0.125f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, new int[2]);
+        }
+    }
+
+
+    public void renderBrickPile(Chunk chunk, World world, short block, int index, int face){
+        ChestLocation chestLocation = chunk.getChestLocation(index);
+        int numberOfBricks = chestLocation.inventory.itemStacks[0].count;
+
+        if(chestLocation.inventory.itemStacks[0].item.ID == Item.rawClayAdobeBrick.ID){
+            block = Block.clay.ID;
+        }
+
+        if(chestLocation.inventory.itemStacks[0].item.ID == Item.firedRedClayAdobeBrick.ID){
+            block = Block.redClayCookingPot.ID;
+        }
+
+        int[] recordedBrickCount = null;
+        int[] storedBrickCount = null;
+        for(int i = 0; i < this.brickPileBrickCounts.size(); i++){
+            storedBrickCount = this.brickPileBrickCounts.get(i);
+            if(storedBrickCount[0] != index)continue;
+
+            if(storedBrickCount[1] != numberOfBricks){
+                numberOfBricks = storedBrickCount[1];
+                recordedBrickCount = storedBrickCount;
+                break;
+            }
+        }
+
+        if(recordedBrickCount == null){
+            this.brickPileBrickCounts.add(new int[]{index, numberOfBricks});
+        }
+
+        ModelLoader baseModel = Block.brick;
+        ModelFace modelFace = baseModel.getModelFace(face);
+        float[] UVSamples = face == TOP_FACE || face == BOTTOM_FACE ? autoUVTopBottom(this.getFaceWidth(modelFace), this.getFaceHeight(modelFace)) : autoUVNSEW(this.getFaceWidth(modelFace), this.getFaceHeight(modelFace));;
+
+        switch (numberOfBricks){ //alternate pushing the stacks inwards by 1 voxel to give depth to the stack
+            case 48:
+                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.15625f, 0.9375f, 0.75f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+            case 47:
+                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.5f, 0.9375f, 0.75f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+            case 46:
+                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.84375f, 0.9375f, 0.75f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+            case 45:
+                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.15625f, 0.9375f, 0.25f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+            case 44:
+                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.5f, 0.9375f, 0.25f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+            case 43:
+                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.84375f, 0.9375f, 0.25f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+
+            case 42:
+                modelFace = baseModel.copyModel().translateModel(0.78125f, 0.8125f, 0.875f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+            case 41:
+                modelFace = baseModel.copyModel().translateModel(0.78125f, 0.8125f, 0.5f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+            case 40:
+                modelFace = baseModel.copyModel().translateModel(0.78125f, 0.8125f, 0.125f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+            case 39:
+                modelFace = baseModel.copyModel().translateModel(0.21875f, 0.8125f, 0.875f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+            case 38:
+                modelFace = baseModel.copyModel().translateModel(0.21875f, 0.8125f, 0.5f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+            case 37:
+                modelFace = baseModel.copyModel().translateModel(0.21875f, 0.8125f, 0.125f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+
+            case 36:
+                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.15625f, 0.6875f, 0.75f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+            case 35:
+                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.5f, 0.6875f, 0.75f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+            case 34:
+                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.84375f, 0.6875f, 0.75f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+            case 33:
+                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.15625f, 0.6875f, 0.25f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+            case 32:
+                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.5f, 0.6875f, 0.25f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+            case 31:
+                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.84375f, 0.6875f, 0.25f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+
+            case 30:
+                modelFace = baseModel.copyModel().translateModel(0.78125f, 0.5625f, 0.875f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+            case 29:
+                modelFace = baseModel.copyModel().translateModel(0.78125f, 0.5625f, 0.5f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+            case 28:
+                modelFace = baseModel.copyModel().translateModel(0.78125f, 0.5625f, 0.125f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+            case 27:
+                modelFace = baseModel.copyModel().translateModel(0.21875f, 0.5625f, 0.875f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+            case 26:
+                modelFace = baseModel.copyModel().translateModel(0.21875f, 0.5625f, 0.5f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+            case 25:
+                modelFace = baseModel.copyModel().translateModel(0.21875f, 0.5625f, 0.125f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+
+            case 24:
+                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.15625f, 0.4375f, 0.75f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+            case 23:
+                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.5f, 0.4375f, 0.75f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+            case 22:
+                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.84375f, 0.4375f, 0.75f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+            case 21:
+                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.15625f, 0.4375f, 0.25f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+            case 20:
+                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.5f, 0.4375f, 0.25f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+            case 19:
+                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.84375f, 0.4375f, 0.25f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+
+            case 18:
+                modelFace = baseModel.copyModel().translateModel(0.78125f, 0.3125f, 0.875f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+            case 17:
+                modelFace = baseModel.copyModel().translateModel(0.78125f, 0.3125f, 0.5f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+            case 16:
+                modelFace = baseModel.copyModel().translateModel(0.78125f, 0.3125f, 0.125f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+            case 15:
+                modelFace = baseModel.copyModel().translateModel(0.21875f, 0.3125f, 0.875f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+            case 14:
+                modelFace = baseModel.copyModel().translateModel(0.21875f, 0.3125f, 0.5f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+            case 13:
+                modelFace = baseModel.copyModel().translateModel(0.21875f, 0.3125f, 0.125f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+
+            case 12:
+                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.15625f, 0.1875f, 0.75f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+            case 11:
+                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.5f, 0.1875f, 0.75f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+            case 10:
+                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.84375f, 0.1875f, 0.75f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+            case 9:
+                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.15625f, 0.1875f, 0.25f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+            case 8:
+                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.5f, 0.1875f, 0.25f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+            case 7:
+                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.84375f, 0.1875f, 0.25f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+
+            case 6:
+                modelFace = baseModel.copyModel().translateModel(0.78125f, 0.0625f, 0.875f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+            case 5:
+                modelFace = baseModel.copyModel().translateModel(0.78125f, 0.0625f, 0.5f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+            case 4:
+                modelFace = baseModel.copyModel().translateModel(0.78125f, 0.0625f, 0.125f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+            case 3:
+                modelFace = baseModel.copyModel().translateModel(0.21875f, 0.0625f, 0.875f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+            case 2:
+                modelFace = baseModel.copyModel().translateModel(0.21875f, 0.0625f, 0.5f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+            case 1:
+                modelFace = baseModel.copyModel().translateModel(0.21875f, 0.0625f, 0.125f).getModelFace(face);
+                renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, new int[2]);
+        }
     }
 
     public void renderItemStone(Chunk chunk, World world, short block, int index, int face, int[] greedyMeshSize) {
@@ -446,22 +720,22 @@ public class RenderBlocks {
         Vector3f translation = new Vector3f();
         switch (face){
             case TOP_FACE -> {
-                translation.y = 0.01f;
+                translation.y = 0.02f;
             }
             case BOTTOM_FACE -> {
-                translation.y = -0.01f;
+                translation.y = -0.02f;
             }
             case NORTH_FACE -> {
-                translation.x = -0.01f;
+                translation.x = -0.02f;
             }
             case SOUTH_FACE -> {
                 translation.x = 0.02f; //You'd think this would also be 0.01 but fun fact, no!. I assume this is due to the float to half-float conversion later on
             }
             case EAST_FACE -> {
-                translation.z = -0.01f;
+                translation.z = -0.02f;
             }
             case WEST_FACE -> {
-                translation.z = 0.01f;
+                translation.z = 0.02f;
             }
         }
         if(block == Block.berryBush.ID){

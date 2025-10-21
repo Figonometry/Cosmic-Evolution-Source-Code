@@ -49,7 +49,7 @@ public final class EntityItem extends EntityNonLiving {
         if (SpaceGame.instance.save.thePlayer.boundingBox != null) {
             if (this.boundingBox.clip(SpaceGame.instance.save.thePlayer.boundingBox) && this.pickupTimer >= 60) {
                 if (SpaceGame.instance.save.thePlayer.addItemToInventory(this.item, Item.NULL_ITEM_METADATA, this.count, this.itemDurability)) {
-                    new SoundPlayer(SpaceGame.instance).playSound(this.x, this.y, this.z, new Sound(Sound.itemPickup, false), new Random().nextFloat(1.5F, 1.9F));
+                    SpaceGame.instance.soundPlayer.playSound(this.x, this.y, this.z, new Sound(Sound.itemPickup, false), new Random().nextFloat(1.5F, 1.9F));
                     this.despawn = true;
                 }
             }
