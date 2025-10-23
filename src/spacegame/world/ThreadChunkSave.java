@@ -1,7 +1,7 @@
 package spacegame.world;
 
+import spacegame.core.CosmicEvolution;
 import spacegame.core.Logger;
-import spacegame.core.SpaceGame;
 import spacegame.entity.Entity;
 import spacegame.entity.EntityBlock;
 import spacegame.entity.EntityDeer;
@@ -22,7 +22,7 @@ public final class ThreadChunkSave implements Runnable {
 
     @Override
     public void run() {
-        File file = new File(SpaceGame.instance.save.activeWorld.worldFolder + "/Chunk." + chunk.x + "." + chunk.y + "." + chunk.z + ".dat");
+        File file = new File(CosmicEvolution.instance.save.activeWorld.worldFolder + "/Chunk." + chunk.x + "." + chunk.y + "." + chunk.z + ".dat");
         try {
             FileOutputStream outputStream = new FileOutputStream(file);
             NBTTagCompound chunkTag = new NBTTagCompound();

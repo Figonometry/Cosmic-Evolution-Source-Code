@@ -9,6 +9,9 @@ public final class Timer {
     private float ticksPerSecond;
     public static long elapsedTime = 0L;
     public static long elapseFrames = 0L;
+    public static final long DAY = 216000;
+    public static final long HOUR = DAY / 24;
+    public static final long MINUTE = HOUR / 60;
     private long lastTime;
     public int ticks;
     public float a;
@@ -35,9 +38,9 @@ public final class Timer {
         this.passedTime += (float) passedNs * this.timeScale * this.ticksPerSecond / 1.0E9F;
         this.ticks = (int) this.passedTime;
         elapsedTime += this.ticks;
-        if(SpaceGame.instance.save != null){
-            if(!SpaceGame.instance.save.activeWorld.paused){
-                SpaceGame.instance.save.time += this.ticks;
+        if(CosmicEvolution.instance.save != null){
+            if(!CosmicEvolution.instance.save.activeWorld.paused){
+                CosmicEvolution.instance.save.time += this.ticks;
             }
         }
         if (this.ticks > 100) {

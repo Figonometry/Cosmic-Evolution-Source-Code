@@ -32,7 +32,7 @@ public abstract class World {
     public int resetLightZ;
     public byte delayWhenExitingUI;
     public float sunAngle;
-    public SpaceGame sg;
+    public CosmicEvolution ce;
     public byte skyLightLevel;
     public float[] skyColor; //used for glClear on the color buffer
     public float[] defaultSkyColor;
@@ -45,8 +45,8 @@ public abstract class World {
     public ChunkController chunkController;
     public boolean paused = false;
 
-    public World(SpaceGame spaceGame, int size) {
-        this.sg = spaceGame;
+    public World(CosmicEvolution cosmicEvolution, int size) {
+        this.ce = cosmicEvolution;
         this.size = size;
         this.chunkController = new ChunkController(this);
     }
@@ -143,7 +143,7 @@ public abstract class World {
         y >>= 5;
         y -= 1;
         Chunk chunk;
-        while (y >= this.sg.save.thePlayer.chunkY - GameSettings.chunkColumnHeight) {
+        while (y >= this.ce.save.thePlayer.chunkY - GameSettings.chunkColumnHeight) {
             chunk = this.findChunkFromChunkCoordinates(x, y, z);
             if (chunk != null) {
                 chunk.updateSkylight = true;
@@ -848,7 +848,7 @@ public abstract class World {
 
 
     public double getPortionOfOrbit(){
-        return ((double) (SpaceGame.instance.save.time % SpaceGame.instance.everything.earth.orbitalPeriod) / SpaceGame.instance.everything.earth.orbitalPeriod);
+        return ((double) (CosmicEvolution.instance.save.time % CosmicEvolution.instance.everything.earth.orbitalPeriod) / CosmicEvolution.instance.everything.earth.orbitalPeriod);
     }
 
     public double getTempVarianceFromLat(double latitude){
@@ -996,265 +996,13 @@ public abstract class World {
         this.chunkController.renderWorld();
     }
 
-    public void handleSpecialBlockRightClickFunctions(Block block, int x, int y, int z){
-        if(block == Block.air)return;
-        short playerHeldItem = this.sg.save.thePlayer.getHeldItem();
-
-        if(block instanceof BlockBerryBush && MouseListener.rightClickReleased){
-            if(this.sg.save.thePlayer.getHeldItem() != Item.block.ID && this.sg.save.thePlayer.getHeldItem() != Item.torch.ID){
-                block.onRightClick(x, y, z, this, this.sg.save.thePlayer);
-                MouseListener.rightClickReleased = false;
-                return;
-            }
-        }
-        if(block instanceof BlockLog && playerHeldItem != Item.NULL_ITEM_REFERENCE && MouseListener.rightClickReleased){
-            if(Item.list[playerHeldItem] instanceof ItemAxe){
-                Item.list[playerHeldItem].onRightClick(x, y, z, this, this.sg.save.thePlayer);
-                MouseListener.rightClickReleased = false;
-                return;
-            }
-        }
-
-        if(block instanceof BlockCampFireUnlit && playerHeldItem != Item.NULL_ITEM_REFERENCE && MouseListener.rightClickReleased){
-            if(playerHeldItem == Item.fireWood.ID) {
-                int logCount = ((BlockCampFireUnlit) block).getLogCount();
-                switch (logCount) {
-                    case 0 -> this.setBlockWithNotify(x, y, z, Block.campFire1FireWood.ID);
-                    case 1 -> this.setBlockWithNotify(x, y, z, Block.campFire2FireWood.ID);
-                    case 2 -> this.setBlockWithNotify(x, y, z, Block.campFire3Firewood.ID);
-                    case 3 -> this.setBlockWithNotify(x, y, z, Block.campFire4FireWood.ID);
-                }
-                if(logCount != 4){
-                    this.sg.save.thePlayer.removeItemFromInventory();
-                    SpaceGame.instance.soundPlayer.playSound(x, y, z, new Sound(Sound.wood, false), new Random().nextFloat(0.6F, 1));
-                }
-                MouseListener.rightClickReleased = false;
-                return;
-            }
-        }
-
-        if(block instanceof BlockCampFireUnlit && MouseListener.rightClickReleased){
-            if((((BlockCampFireUnlit) block).getLogCount() == 4)){
-                if (playerHeldItem == Item.stoneFragments.ID) {
-                    this.sg.setNewGui(new GuiLightFire(SpaceGame.instance, x, y, z));
-                    MouseListener.rightClickReleased = false;
-                    return;
-                }
-            }
-        }
-
-        if(block.ID == Block.campfireLit.ID && MouseListener.rightClickReleased){
-            if(playerHeldItem == Item.unlitTorch.ID) {
-                SpaceGame.instance.save.thePlayer.removeItemFromInventory();
-                if (!SpaceGame.instance.save.thePlayer.addItemToInventory(Item.torch.ID, Item.NULL_ITEM_METADATA, (byte) 1, Item.NULL_ITEM_DURABILITY)) {
-                    this.addEntity(new EntityItem(SpaceGame.instance.save.thePlayer.x, SpaceGame.instance.save.thePlayer.y, SpaceGame.instance.save.thePlayer.z, Item.torch.ID, Item.NULL_ITEM_METADATA, (byte) 1, Item.NULL_ITEM_DURABILITY));
-                    MouseListener.rightClickReleased = false;
-                    return;
-                }
-            }
-        }
-
-
-        if(block.ID == Block.itemStone.ID && MouseListener.rightClickReleased){
-            if(playerHeldItem == Item.stone.ID){
-                this.sg.setNewGui(new GuiCraftingStoneTools(this.sg, x,y,z));
-                MouseListener.rightClickReleased = false;
-                return;
-            }
-        }
-
-        if(block.ID == Block.itemStick.ID && MouseListener.rightClickReleased){
-            if(playerHeldItem == Item.stoneFragments.ID){
-                this.setBlockWithNotify(x,y,z, Block.air.ID);
-                this.addEntity(new EntityItem(x + 0.5, y + 0.1, z + 0.5, Item.unlitTorch.ID, Item.NULL_ITEM_METADATA, (byte) 1, Item.NULL_ITEM_DURABILITY));
-                MouseListener.rightClickReleased = false;
-                return;
-            }
-        }
-
-        if(block.ID == Block.campFireNoFirewood.ID && MouseListener.rightClickReleased){
-           if(playerHeldItem != Item.NULL_ITEM_REFERENCE){
-               if(Item.list[playerHeldItem].toolType.equals(Item.ITEM_TOOL_TYPE_KNIFE)){
-                   this.sg.setNewGui(new GuiCraftingStrawStorage(this.sg, x, y, z));
-                   MouseListener.rightClickReleased = false;
-                   return;
-               }
-           }
-        }
-
-        if(block.ID == Block.strawChestTier0.ID && playerHeldItem == Item.straw.ID && MouseListener.rightClickReleased){
-            if(this.sg.save.thePlayer.getHeldItemCount() >= 8){
-                this.setBlockWithNotify(x,y,z, Block.strawChestTier1.ID);
-                for(int i = 0; i < 8; i++){
-                    this.sg.save.thePlayer.removeItemFromInventory();
-                }
-                MouseListener.rightClickReleased = false;
-                return;
-            }
-        }
-
-        if(block.ID == Block.strawChestTier1.ID && playerHeldItem == Item.straw.ID && MouseListener.rightClickReleased){
-            if(this.sg.save.thePlayer.getHeldItemCount() >= 8){
-                this.setBlockWithNotify(x,y,z, Block.strawChest.ID);
-                this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).addChestLocation(x, y, z,  new Inventory(((BlockContainer)(Block.strawChest)).inventoryWidth, ((BlockContainer)(Block.strawChest)).inventoryHeight));
-                for(int i = 0; i < 8; i++){
-                    this.sg.save.thePlayer.removeItemFromInventory();
-                }
-                MouseListener.rightClickReleased = false;
-                return;
-            }
-        }
-
-        if(block.ID == Block.strawBasketTier0.ID && playerHeldItem == Item.straw.ID && MouseListener.rightClickReleased){
-            if(this.sg.save.thePlayer.getHeldItemCount() >= 4){
-                this.setBlockWithNotify(x,y,z, Block.air.ID);
-                this.addEntity(new EntityItem(x + 0.5, y + 0.5, z + 0.5, Item.strawBasket.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY));
-                for(int i = 0; i < 4; i++){
-                    this.sg.save.thePlayer.removeItemFromInventory();
-                }
-                MouseListener.rightClickReleased = false;
-                return;
-            }
-        }
-
-        if(block.ID == Block.strawChest.ID && MouseListener.rightClickReleased){
-            ChestLocation location = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).getChestLocation(x,y,z);
-            this.sg.setNewGui(new GuiInventoryStrawChest(this.sg, this.sg.save.thePlayer.inventory, location.inventory));
-            MouseListener.rightClickReleased = false;
-            return;
-        }
-
-        if(block.ID == Block.itemClay.ID && playerHeldItem == Item.clay.ID && MouseListener.rightClickReleased){
-            this.sg.setNewGui(new GuiCraftingPottery(this.sg, x, y, z));
-            MouseListener.rightClickReleased = false;
-            return;
-        }
-
-        if(this.isBlockAbleToBecomePitKiln(block, x, y, z) && playerHeldItem == Item.straw.ID && MouseListener.rightClickReleased && this.isBlockSuitableForPitKiln(x,y,z)){
-            Inventory kilnInventory = new Inventory(1,1);
-            kilnInventory.addItemToInventory(this.pitKilnItemType(block.ID, x,y,z), this.getBlockID(x,y,z), this.pitKilnItemCount(block.ID, x,y,z), Item.NULL_ITEM_DURABILITY);
-            if(block.ID == Block.brickPile.ID){
-                this.clearChestLocation(x,y,z);
-            }
-            this.addChestLocation(x,y,z, kilnInventory);
-            this.setBlockWithNotify(x,y,z, Block.pitKilnUnlit1.ID);
-            this.sg.save.thePlayer.removeItemFromInventory();
-            MouseListener.rightClickReleased = false;
-            return;
-        }
-
-        if(block instanceof BlockPitKilnUnlit && (playerHeldItem == Item.straw.ID || playerHeldItem == Item.fireWood.ID) && this.isBlockSuitableForPitKiln(x,y,z) && MouseListener.rightClickReleased){
-
-            if(playerHeldItem == Item.straw.ID){ //Adds straw
-                switch (block.ID) {
-                    case 74, 75, 76, 77, 78, 79, 80 -> {
-                        this.setBlockWithNotify(x, y, z, (short) (block.ID + 1));
-                        this.sg.save.thePlayer.removeItemFromInventory();
-                        SpaceGame.instance.soundPlayer.playSound(x, y, z, new Sound(Sound.grass, false), new Random().nextFloat(0.6F, 1));
-                    }
-                }
-            }
-
-            if(this.sg.save.thePlayer.getHeldItem() == Item.fireWood.ID){ //Adds logs
-                switch (block.ID) {
-                    case 81 -> {
-                        this.setBlockWithNotify(x, y, z, Block.pitKilnUnlitLog1.ID);
-                        this.sg.save.thePlayer.removeItemFromInventory();
-                        SpaceGame.instance.soundPlayer.playSound(x, y, z, new Sound(Sound.wood, false), new Random().nextFloat(0.6F, 1));
-                    }
-                    case 95, 96, 97 -> {
-                        this.setBlockWithNotify(x, y, z, (short) (block.ID + 1));
-                        this.sg.save.thePlayer.removeItemFromInventory();
-                        SpaceGame.instance.soundPlayer.playSound(x, y, z, new Sound(Sound.wood, false), new Random().nextFloat(0.6F, 1));
-                    }
-                }
-            }
-            MouseListener.rightClickReleased = false;
-            return;
-        }
-
-        if(block.ID == Block.pitKilnUnlit.ID && playerHeldItem == Item.torch.ID && KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT)){
-            this.setBlockWithNotify(x,y,z, Block.pitKilnLit.ID);
-
-            this.addTimeEvent(x,y,z, SpaceGame.instance.save.time + ((ITimeUpdate) Block.pitKilnLit).getUpdateTime());
-
-            if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT)) {
-                KeyListener.setKeyReleased(GLFW.GLFW_KEY_RIGHT_SHIFT);
-            } else if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT)){
-                KeyListener.setKeyReleased(GLFW.GLFW_KEY_LEFT_SHIFT);
-            }
-
-            this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).addTickableBlockToArray((short) Chunk.getBlockIndexFromCoordinates(x,y,z));
-            return;
-        }
-
-        if(block.ID == Block.logPile.ID && playerHeldItem == Item.fireWood.ID && this.sg.save.thePlayer.getHeldItemCount() >= 2 && KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) && (MouseListener.timeHeldRightClick == 0 || (((this.sg.save.time - MouseListener.timeHeldRightClick) % 15) == 0))){
-            ChestLocation chest = this.getChestLocation(x,y,z);
-            if(chest.inventory.itemStacks[0].count >= 32)return;
-            chest.inventory.itemStacks[0].count += 2;
-            this.sg.save.thePlayer.removeItemFromInventory();
-            this.sg.save.thePlayer.removeItemFromInventory();
-            KeyListener.setKeyReleased(GLFW.GLFW_KEY_LEFT_SHIFT);
-            SpaceGame.instance.soundPlayer.playSound(x, y, z, new Sound(Sound.wood, false), new Random().nextFloat(0.6F, 1));
-            this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).notifyBlock(x,y,z);
-            return;
-        }
-
-        if(block.ID == Block.logPile.ID && !KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) && this.sg.save.thePlayer.addItemToInventory(Item.fireWood.ID, Item.NULL_ITEM_METADATA, (byte)2, Item.NULL_ITEM_DURABILITY) && (MouseListener.timeHeldRightClick == 0 || (((this.sg.save.time - MouseListener.timeHeldRightClick) % 15) == 0))){
-            ChestLocation chest = this.getChestLocation(x,y,z);
-            chest.inventory.itemStacks[0].count -= 2;
-            KeyListener.setKeyReleased(GLFW.GLFW_KEY_LEFT_SHIFT);
-            SpaceGame.instance.soundPlayer.playSound(x, y, z, new Sound(Sound.wood, false), new Random().nextFloat(0.6F, 1));
-
-            if(chest.inventory.itemStacks[0].count <= 0){
-                chest.inventory.itemStacks[0].item = null;
-                chest.inventory.itemStacks[0].count = 0;
-                chest.inventory.itemStacks[0].metadata = Item.NULL_ITEM_METADATA;
-                chest.inventory.itemStacks[0].durability = Item.NULL_ITEM_DURABILITY;
-                this.removeChestLocation(x,y,z);
-                this.setBlockWithNotify(x,y,z, Block.air.ID);
-            }
-
-            this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).notifyBlock(x,y,z);
-
-            return;
-        }
-
-        if(block.ID == Block.brickPile.ID && (playerHeldItem == Item.rawClayAdobeBrick.ID || playerHeldItem == Item.firedRedClayAdobeBrick.ID) && this.sg.save.thePlayer.getHeldItemCount() >= 1 && KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) && (MouseListener.timeHeldRightClick == 0 || (((this.sg.save.time - MouseListener.timeHeldRightClick) % 15) == 0))){
-            ChestLocation chest = this.getChestLocation(x,y,z);
-            if(chest.inventory.itemStacks[0].count >= 48)return;
-            chest.inventory.itemStacks[0].count++;
-            this.sg.save.thePlayer.removeItemFromInventory();
-            KeyListener.setKeyReleased(GLFW.GLFW_KEY_LEFT_SHIFT);
-            SpaceGame.instance.soundPlayer.playSound(x, y, z, new Sound(playerHeldItem == Item.rawClayAdobeBrick.ID ? Sound.clay : Sound.stone, false), new Random().nextFloat(0.6F, 1));
-            this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).notifyBlock(x,y,z);
-            return;
-        }
-
-        if(block.ID == Block.brickPile.ID && !KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) && this.sg.save.thePlayer.addItemToInventory(this.getChestLocation(x,y,z).inventory.itemStacks[0].item.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY) && (MouseListener.timeHeldRightClick == 0 || (((this.sg.save.time - MouseListener.timeHeldRightClick) % 15) == 0))){
-            ChestLocation chest = this.getChestLocation(x,y,z);
-            chest.inventory.itemStacks[0].count--;
-            KeyListener.setKeyReleased(GLFW.GLFW_KEY_LEFT_SHIFT);
-            SpaceGame.instance.soundPlayer.playSound(x, y, z, new Sound( chest.inventory.itemStacks[0].item.ID == Item.rawClayAdobeBrick.ID ? Sound.clay : Sound.stone, false), new Random().nextFloat(0.6F, 1));
-
-            if(chest.inventory.itemStacks[0].count <= 0){
-                chest.inventory.itemStacks[0].item = null;
-                chest.inventory.itemStacks[0].count = 0;
-                chest.inventory.itemStacks[0].metadata = Item.NULL_ITEM_METADATA;
-                chest.inventory.itemStacks[0].durability = Item.NULL_ITEM_DURABILITY;
-                this.removeChestLocation(x,y,z);
-                this.setBlockWithNotify(x,y,z, Block.air.ID);
-            }
-
-            this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).notifyBlock(x,y,z);
-
-            return;
-        }
-    }
-
 
     public void addTimeEvent(int x, int y, int z, long updateTime){
         this.findChunkFromChunkCoordinates(x >> 5, y >> 5,z >> 5).addTimeUpdateEvent(x,y,z, updateTime);
+    }
+
+    public TimeUpdateEvent getTimeEvent(int x, int y, int z){
+        return this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).getTimeUpdateEvent(x,y,z);
     }
 
     public void removeTimeEvent(int x, int y, int z){
@@ -1282,7 +1030,7 @@ public abstract class World {
         this.removeChestLocation(x,y,z);
     }
 
-    private boolean isBlockSuitableForPitKiln(int x, int y, int z){
+    public boolean isBlockSuitableForPitKiln(int x, int y, int z){
         return Block.list[this.getBlockID(x - 1, y, z)].blockModel.equals(Block.standardBlockModel) &&
                 Block.list[this.getBlockID(x + 1, y, z)].blockModel.equals(Block.standardBlockModel) &&
                 Block.list[this.getBlockID(x, y - 1, z)].blockModel.equals(Block.standardBlockModel) &&
@@ -1290,7 +1038,7 @@ public abstract class World {
                 Block.list[this.getBlockID(x, y, z + 1)].blockModel.equals(Block.standardBlockModel);
     }
 
-    private boolean isBlockAbleToBecomePitKiln(Block block, int x, int y, int z){
+    public boolean isBlockAbleToBecomePitKiln(Block block, int x, int y, int z){
         if(block.ID == Block.rawRedClayCookingPot.ID){
             return true;
         }
@@ -1302,7 +1050,7 @@ public abstract class World {
         return false;
     }
 
-    private byte pitKilnItemCount(short blockID, int x, int y, int z){
+    public byte pitKilnItemCount(short blockID, int x, int y, int z){
         if(blockID == Block.rawRedClayCookingPot.ID){
             return 1;
         }
@@ -1313,7 +1061,7 @@ public abstract class World {
         return 1;
     }
 
-    private short pitKilnItemType(short blockID, int x, int y, int z){
+    public short pitKilnItemType(short blockID, int x, int y, int z){
         if(blockID == Block.rawRedClayCookingPot.ID){
             return Item.block.ID;
         }
@@ -1380,15 +1128,15 @@ public abstract class World {
         int chunkY = MathUtil.floorDouble(y) >> 5;
         int chunkZ = MathUtil.floorDouble(z) >> 5;
 
-        Vector3f movementVector = new Vector3f((float) (x - this.sg.save.thePlayer.x), 1f, (float) (z - this.sg.save.thePlayer.z)).normalize();
+        Vector3f movementVector = new Vector3f((float) (x - this.ce.save.thePlayer.x), 1f, (float) (z - this.ce.save.thePlayer.z)).normalize();
         movementVector.mul(0.1f);
         ArrayList<Entity> entities = this.getEntitiesInChunks(this.getSurroundingChunksAndCurrentChunk(chunkX, chunkY, chunkZ));
 
         for(int i = 0; i < entities.size(); i++){
             if(entities.get(i) instanceof EntityItem || entities.get(i) instanceof EntityBlock)continue;
             if(entities.get(i).boundingBox.pointInsideBoundingBox(x,y,z)) { //This determines if you hit an entity
-                entities.get(i).damage(movementVector, this.sg.save.thePlayer.getAttackDamageValue());
-                entities.get(i).setLastEntityToHit(this.sg.save.thePlayer);
+                entities.get(i).damage(movementVector, this.ce.save.thePlayer.getAttackDamageValue());
+                entities.get(i).setLastEntityToHit(this.ce.save.thePlayer);
                 return true;
             }
         }
@@ -1401,56 +1149,56 @@ public abstract class World {
 
 
     public void handleLeftClick() {
-        if (!this.paused && this.sg.currentGui instanceof GuiInGame && this.delayWhenExitingUI <= 0) {
-            double[] rayCast = SpaceGame.camera.rayCast(3);
+        if (!this.paused && this.ce.currentGui instanceof GuiInGame && this.delayWhenExitingUI <= 0) {
+            double[] rayCast = CosmicEvolution.camera.rayCast(3);
             final double multiplier = 0.05D;
-            final double xDif = (rayCast[0] - this.sg.save.thePlayer.x);
-            final double yDif = (rayCast[1] - (this.sg.save.thePlayer.y + this.sg.save.thePlayer.height/2));
-            final double zDif = (rayCast[2] - this.sg.save.thePlayer.z);
+            final double xDif = (rayCast[0] - this.ce.save.thePlayer.x);
+            final double yDif = (rayCast[1] - (this.ce.save.thePlayer.y + this.ce.save.thePlayer.height/2));
+            final double zDif = (rayCast[2] - this.ce.save.thePlayer.z);
 
             int blockX = 0;
             int blockY = 0;
             int blockZ = 0;
             for (int loopPass = 0; loopPass < 30; loopPass++) {
-                if(this.hasHitEntity(this.sg.save.thePlayer.x + xDif * multiplier * loopPass, this.sg.save.thePlayer.y  + this.sg.save.thePlayer.height/2 + yDif * multiplier * loopPass, this.sg.save.thePlayer.z + zDif * multiplier * loopPass))return;
-                blockX = MathUtil.floorDouble(this.sg.save.thePlayer.x + xDif * multiplier * loopPass);
-                blockY = MathUtil.floorDouble(this.sg.save.thePlayer.y  + this.sg.save.thePlayer.height/2 + yDif * multiplier * loopPass);
-                blockZ = MathUtil.floorDouble(this.sg.save.thePlayer.z + zDif * multiplier * loopPass);
+                if(this.hasHitEntity(this.ce.save.thePlayer.x + xDif * multiplier * loopPass, this.ce.save.thePlayer.y  + this.ce.save.thePlayer.height/2 + yDif * multiplier * loopPass, this.ce.save.thePlayer.z + zDif * multiplier * loopPass))return;
+                blockX = MathUtil.floorDouble(this.ce.save.thePlayer.x + xDif * multiplier * loopPass);
+                blockY = MathUtil.floorDouble(this.ce.save.thePlayer.y  + this.ce.save.thePlayer.height/2 + yDif * multiplier * loopPass);
+                blockZ = MathUtil.floorDouble(this.ce.save.thePlayer.z + zDif * multiplier * loopPass);
 
                 Block checkedBlock = Block.list[this.getBlockID(blockX, blockY, blockZ)];
 
-                if(!this.intersectsBlockBoundingBox(checkedBlock,this.sg.save.thePlayer.x + xDif * multiplier * loopPass, this.sg.save.thePlayer.y  + this.sg.save.thePlayer.height/2 + yDif * multiplier * loopPass, this.sg.save.thePlayer.z + zDif * multiplier * loopPass))continue;
+                if(!this.intersectsBlockBoundingBox(checkedBlock,this.ce.save.thePlayer.x + xDif * multiplier * loopPass, this.ce.save.thePlayer.y  + this.ce.save.thePlayer.height/2 + yDif * multiplier * loopPass, this.ce.save.thePlayer.z + zDif * multiplier * loopPass))continue;
 
                 if (GuiInGame.isBlockVisible(blockX, blockY, blockZ) && (checkedBlock.ID != Block.air.ID && checkedBlock.ID != Block.water.ID)) {
-                    if(this.sg.save.thePlayer.blockLookingAt[0] == blockX && this.sg.save.thePlayer.blockLookingAt[1] == blockY && this.sg.save.thePlayer.blockLookingAt[2] == blockZ){
-                        short playerHeldItem = SpaceGame.instance.save.thePlayer.getHeldItem();
+                    if(this.ce.save.thePlayer.blockLookingAt[0] == blockX && this.ce.save.thePlayer.blockLookingAt[1] == blockY && this.ce.save.thePlayer.blockLookingAt[2] == blockZ){
+                        short playerHeldItem = CosmicEvolution.instance.save.thePlayer.getHeldItem();
                         if(playerHeldItem == Item.NULL_ITEM_REFERENCE){playerHeldItem = 0;}
-                        this.sg.save.thePlayer.breakTimer++;
-                        if(checkedBlock.hardness > (SpaceGame.instance.save.thePlayer.hardnessThreshold + Item.list[playerHeldItem].hardness)){
-                            this.sg.save.thePlayer.breakTimer = 1;
+                        this.ce.save.thePlayer.breakTimer++;
+                        if(checkedBlock.hardness > (CosmicEvolution.instance.save.thePlayer.hardnessThreshold + Item.list[playerHeldItem].hardness)){
+                            this.ce.save.thePlayer.breakTimer = 1;
                         }
                         if(checkedBlock.requiresTool && !checkedBlock.toolType.equals(Item.list[playerHeldItem].toolType)){
-                            this.sg.save.thePlayer.breakTimer = 1;
+                            this.ce.save.thePlayer.breakTimer = 1;
                         }
-                        if(this.sg.save.thePlayer.breakTimer >= checkedBlock.getDynamicBreakTimer() && checkedBlock.breakTimer >= 0){
-                            checkedBlock.onLeftClick(blockX, blockY, blockZ, this, this.sg.save.thePlayer);
+                        if(this.ce.save.thePlayer.breakTimer >= checkedBlock.getDynamicBreakTimer() && checkedBlock.breakTimer >= 0){
+                            checkedBlock.onLeftClick(blockX, blockY, blockZ, this, this.ce.save.thePlayer);
                             if(checkedBlock.droppedItemID != Item.NULL_ITEM_REFERENCE) {
                                 if (checkedBlock.droppedItemID != Item.block.ID) {
-                                    if(checkedBlock.itemDropChance > SpaceGame.globalRand.nextFloat()) {
-                                        this.findChunkFromChunkCoordinates(blockX >> 5, blockY >> 5, blockZ >> 5).addEntityToList(new EntityItem(blockX + 0.5 + SpaceGame.globalRand.nextDouble(-0.3, 0.3), blockY + 0.5 + SpaceGame.globalRand.nextDouble(-0.3, 0.3), blockZ + 0.5 + SpaceGame.globalRand.nextDouble(-0.3, 0.3), checkedBlock.droppedItemID, Item.NULL_ITEM_METADATA, (byte) 1, Item.list[checkedBlock.droppedItemID].durability));
+                                    if(checkedBlock.itemDropChance > CosmicEvolution.globalRand.nextFloat()) {
+                                        this.findChunkFromChunkCoordinates(blockX >> 5, blockY >> 5, blockZ >> 5).addEntityToList(new EntityItem(blockX + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), blockY + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), blockZ + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), checkedBlock.droppedItemID, Item.NULL_ITEM_METADATA, (byte) 1, Item.list[checkedBlock.droppedItemID].durability));
                                     }
                                 } else {
-                                    if (checkedBlock.itemDropChance > SpaceGame.globalRand.nextFloat()) {
-                                        this.findChunkFromChunkCoordinates(blockX >> 5, blockY >> 5, blockZ >> 5).addEntityToList(new EntityBlock(blockX + 0.5 + SpaceGame.globalRand.nextDouble(-0.3, 0.3), blockY + 0.5 + SpaceGame.globalRand.nextDouble(-0.3, 0.3), blockZ + 0.5 + SpaceGame.globalRand.nextDouble(-0.3, 0.3), checkedBlock.itemMetadata, (byte) 1));
+                                    if (checkedBlock.itemDropChance > CosmicEvolution.globalRand.nextFloat()) {
+                                        this.findChunkFromChunkCoordinates(blockX >> 5, blockY >> 5, blockZ >> 5).addEntityToList(new EntityBlock(blockX + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), blockY + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), blockZ + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), checkedBlock.itemMetadata, (byte) 1));
                                     }
                                 }
                             }
-                            this.sg.save.thePlayer.breakTimer = 0;
-                        } else if(this.sg.save.time % 20 == 0) {
-                            SpaceGame.instance.soundPlayer.playSound(blockX, blockY, blockZ, new Sound(checkedBlock.stepSound, false),  new Random().nextFloat(0.4F, 0.7F));
+                            this.ce.save.thePlayer.breakTimer = 0;
+                        } else if(this.ce.save.time % 20 == 0) {
+                            CosmicEvolution.instance.soundPlayer.playSound(blockX, blockY, blockZ, new Sound(checkedBlock.stepSound, false),  new Random().nextFloat(0.4F, 0.7F));
                         }
                     } else {
-                        this.sg.save.thePlayer.breakTimer = 0;
+                        this.ce.save.thePlayer.breakTimer = 0;
                     }
                 }
                 if (checkedBlock.canBeBroken) {
@@ -1461,49 +1209,49 @@ public abstract class World {
     }
 
     public void handleRightClick() {
-        if (this.sg.save.thePlayer != null && !this.paused && (MouseListener.timeHeldRightClick == 0 || (((this.sg.save.time - MouseListener.timeHeldRightClick) % 15) == 0)) && this.sg.currentGui instanceof GuiInGame && this.delayWhenExitingUI <= 0) {
-            short item = SpaceGame.instance.save.thePlayer.getHeldItem();
+        if (this.ce.save.thePlayer != null && !this.paused && (MouseListener.timeHeldRightClick == 0 || (((this.ce.save.time - MouseListener.timeHeldRightClick) % 15) == 0)) && this.ce.currentGui instanceof GuiInGame && this.delayWhenExitingUI <= 0) {
+            short item = CosmicEvolution.instance.save.thePlayer.getHeldItem();
             if(item != Item.NULL_ITEM_REFERENCE) {
-                Item.list[item].onRightClick(MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.x), MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.y),  MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.z), this, SpaceGame.instance.save.thePlayer);
+                Item.list[item].onRightClick(MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x), MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.y),  MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z), this, CosmicEvolution.instance.save.thePlayer);
             }
-            double[] rayCast = SpaceGame.camera.rayCast(3);
+            double[] rayCast = CosmicEvolution.camera.rayCast(3);
             final double multiplier = 0.05D;
-            final double xDif = (rayCast[0] - this.sg.save.thePlayer.x);
-            final double yDif = (rayCast[1] - (this.sg.save.thePlayer.y + this.sg.save.thePlayer.height/2));
-            final double zDif = (rayCast[2] - this.sg.save.thePlayer.z);
+            final double xDif = (rayCast[0] - this.ce.save.thePlayer.x);
+            final double yDif = (rayCast[1] - (this.ce.save.thePlayer.y + this.ce.save.thePlayer.height/2));
+            final double zDif = (rayCast[2] - this.ce.save.thePlayer.z);
             int blockX = 0;
             int blockY = 0;
             int blockZ = 0;
 
             for (int loopPass = 0; loopPass < 30; loopPass++) {
-                blockX = MathUtil.floorDouble(this.sg.save.thePlayer.x + xDif * multiplier * loopPass);
-                blockY = MathUtil.floorDouble(this.sg.save.thePlayer.y  + this.sg.save.thePlayer.height/2 + yDif * multiplier * loopPass);
-                blockZ = MathUtil.floorDouble(this.sg.save.thePlayer.z + zDif * multiplier * loopPass);
+                blockX = MathUtil.floorDouble(this.ce.save.thePlayer.x + xDif * multiplier * loopPass);
+                blockY = MathUtil.floorDouble(this.ce.save.thePlayer.y  + this.ce.save.thePlayer.height/2 + yDif * multiplier * loopPass);
+                blockZ = MathUtil.floorDouble(this.ce.save.thePlayer.z + zDif * multiplier * loopPass);
                 Block checkedBlock = Block.list[this.getBlockID(blockX, blockY, blockZ)];
-                this.handleSpecialBlockRightClickFunctions(checkedBlock, blockX, blockY, blockZ);
+                checkedBlock.handleSpecialRightClickFunctions(blockX, blockY, blockZ, this, CosmicEvolution.instance.save.thePlayer);
                 if (checkedBlock.isSolid) {
                     if(checkedBlock.ID != Block.water.ID) {
                         loopPass--;
-                        if(this.sg.save.thePlayer.getHeldItem() != Item.block.ID && this.sg.save.thePlayer.getHeldItem() != Item.torch.ID){
-                            checkedBlock.onRightClick(blockX, blockY, blockZ, this, this.sg.save.thePlayer);
+                        if(this.ce.save.thePlayer.getHeldItem() != Item.block.ID && this.ce.save.thePlayer.getHeldItem() != Item.torch.ID){
+                            checkedBlock.onRightClick(blockX, blockY, blockZ, this, this.ce.save.thePlayer);
                         }
                     }
-                    if (loopPass < 10 && Block.list[this.sg.save.thePlayer.getHeldBlock()].isSolid && this.sg.save.thePlayer.pitch > -81 || loopPass < 18 && Block.list[this.sg.save.thePlayer.getHeldBlock()].isSolid && this.sg.save.thePlayer.pitch < -81) {
+                    if (loopPass < 10 && Block.list[this.ce.save.thePlayer.getHeldBlock()].isSolid && this.ce.save.thePlayer.pitch > -81 || loopPass < 18 && Block.list[this.ce.save.thePlayer.getHeldBlock()].isSolid && this.ce.save.thePlayer.pitch < -81) {
                         break;
                     } else {
-                        if (this.sg.save.thePlayer.getHeldItem() == Item.torch.ID) {
-                            if (!Block.list[this.getBlockID((int) (this.sg.save.thePlayer.x + xDif * multiplier * loopPass), (int) (this.sg.save.thePlayer.y + yDif * multiplier * (loopPass + 1)), (int) (this.sg.save.thePlayer.z + zDif * multiplier * (loopPass + 1)))].isSolid) {
-                                if ((float) ((this.sg.save.thePlayer.x + xDif * multiplier * (loopPass + 1)) - (this.sg.save.thePlayer.x + xDif * multiplier * loopPass)) > 0) {
+                        if (this.ce.save.thePlayer.getHeldItem() == Item.torch.ID) {
+                            if (!Block.list[this.getBlockID((int) (this.ce.save.thePlayer.x + xDif * multiplier * loopPass), (int) (this.ce.save.thePlayer.y + yDif * multiplier * (loopPass + 1)), (int) (this.ce.save.thePlayer.z + zDif * multiplier * (loopPass + 1)))].isSolid) {
+                                if ((float) ((this.ce.save.thePlayer.x + xDif * multiplier * (loopPass + 1)) - (this.ce.save.thePlayer.x + xDif * multiplier * loopPass)) > 0) {
                                     Block.facingDirection = 1;
                                 } else {
                                     Block.facingDirection = 2;
                                 }
-                            } else if (!Block.list[this.getBlockID((int) (this.sg.save.thePlayer.x + xDif * multiplier * (loopPass + 1)), (int) (this.sg.save.thePlayer.y + yDif * multiplier * loopPass), (int) (this.sg.save.thePlayer.z + zDif * multiplier * (loopPass + 1)))].isSolid) {
-                                if (!((float) ((this.sg.save.thePlayer.y  + this.sg.save.thePlayer.height/2 + yDif * multiplier * (loopPass + 1)) - (this.sg.save.thePlayer.y  + this.sg.save.thePlayer.height/2 + yDif * multiplier * loopPass)) < 0)) {
+                            } else if (!Block.list[this.getBlockID((int) (this.ce.save.thePlayer.x + xDif * multiplier * (loopPass + 1)), (int) (this.ce.save.thePlayer.y + yDif * multiplier * loopPass), (int) (this.ce.save.thePlayer.z + zDif * multiplier * (loopPass + 1)))].isSolid) {
+                                if (!((float) ((this.ce.save.thePlayer.y  + this.ce.save.thePlayer.height/2 + yDif * multiplier * (loopPass + 1)) - (this.ce.save.thePlayer.y  + this.ce.save.thePlayer.height/2 + yDif * multiplier * loopPass)) < 0)) {
                                     break;
                                 }
-                            } else if (!Block.list[this.getBlockID((int) (this.sg.save.thePlayer.x + xDif * multiplier * (loopPass + 1)), (int) (this.sg.save.thePlayer.y + yDif * multiplier * (loopPass + 1)), (int) (this.sg.save.thePlayer.z + zDif * multiplier * loopPass))].isSolid) {
-                                if ((float) ((this.sg.save.thePlayer.z + zDif * multiplier * (loopPass + 1)) - (this.sg.save.thePlayer.z + zDif * multiplier * loopPass)) > 0) {
+                            } else if (!Block.list[this.getBlockID((int) (this.ce.save.thePlayer.x + xDif * multiplier * (loopPass + 1)), (int) (this.ce.save.thePlayer.y + yDif * multiplier * (loopPass + 1)), (int) (this.ce.save.thePlayer.z + zDif * multiplier * loopPass))].isSolid) {
+                                if ((float) ((this.ce.save.thePlayer.z + zDif * multiplier * (loopPass + 1)) - (this.ce.save.thePlayer.z + zDif * multiplier * loopPass)) > 0) {
                                     Block.facingDirection = 3;
                                 } else {
                                     Block.facingDirection = 4;
@@ -1516,9 +1264,9 @@ public abstract class World {
                         final int origBlockZ = blockZ;
                         int difCount = 0;
 
-                        blockX = MathUtil.floorDouble(this.sg.save.thePlayer.x + xDif * multiplier * loopPass);
-                        blockY = MathUtil.floorDouble(this.sg.save.thePlayer.y  + this.sg.save.thePlayer.height/2 + yDif * multiplier * loopPass);
-                        blockZ = MathUtil.floorDouble(this.sg.save.thePlayer.z + zDif * multiplier * loopPass);
+                        blockX = MathUtil.floorDouble(this.ce.save.thePlayer.x + xDif * multiplier * loopPass);
+                        blockY = MathUtil.floorDouble(this.ce.save.thePlayer.y  + this.ce.save.thePlayer.height/2 + yDif * multiplier * loopPass);
+                        blockZ = MathUtil.floorDouble(this.ce.save.thePlayer.z + zDif * multiplier * loopPass);
 
                         boolean xChangePos = false;
                         boolean yChangePos = false;
@@ -1551,31 +1299,31 @@ public abstract class World {
                         }
 
                         if(difCount < 2) {
-                            checkedBlock.onRightClick(blockX, blockY, blockZ, this, this.sg.save.thePlayer);
+                            checkedBlock.onRightClick(blockX, blockY, blockZ, this, this.ce.save.thePlayer);
                             break;
                         } else {
 
                             if(xChangePos){
-                                checkedBlock.onRightClick(blockX - 1, blockY, blockZ, this, this.sg.save.thePlayer);
+                                checkedBlock.onRightClick(blockX - 1, blockY, blockZ, this, this.ce.save.thePlayer);
                                 break;
                             } else if(xChangeNeg){
-                                checkedBlock.onRightClick(blockX + 1, blockY, blockZ, this, this.sg.save.thePlayer);
+                                checkedBlock.onRightClick(blockX + 1, blockY, blockZ, this, this.ce.save.thePlayer);
                                 break;
                             }
 
                             if(yChangePos){
-                                checkedBlock.onRightClick(blockX, blockY - 1, blockZ, this, this.sg.save.thePlayer);
+                                checkedBlock.onRightClick(blockX, blockY - 1, blockZ, this, this.ce.save.thePlayer);
                                 break;
                             } else if(yChangeNeg){
-                                checkedBlock.onRightClick(blockX, blockY + 1, blockZ, this, this.sg.save.thePlayer);
+                                checkedBlock.onRightClick(blockX, blockY + 1, blockZ, this, this.ce.save.thePlayer);
                                 break;
                             }
 
                             if(zChangePos){
-                                checkedBlock.onRightClick(blockX, blockY, blockZ - 1, this, this.sg.save.thePlayer);
+                                checkedBlock.onRightClick(blockX, blockY, blockZ - 1, this, this.ce.save.thePlayer);
                                 break;
                             } else if(zChangeNeg){
-                                checkedBlock.onRightClick(blockX, blockY, blockZ + 1, this, this.sg.save.thePlayer);
+                                checkedBlock.onRightClick(blockX, blockY, blockZ + 1, this, this.ce.save.thePlayer);
                                 break;
                             }
                         }

@@ -1,10 +1,10 @@
 package spacegame.gui;
 
-import spacegame.core.SpaceGame;
+import spacegame.core.CosmicEvolution;
 
 public abstract class GuiAction extends Gui {
-    public GuiAction(SpaceGame spaceGame) {
-        super(spaceGame);
+    public GuiAction(CosmicEvolution cosmicEvolution) {
+        super(cosmicEvolution);
     }
 
     public abstract MoveableObject getHoveredObject();

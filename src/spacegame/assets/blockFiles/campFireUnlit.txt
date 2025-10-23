@@ -5,3 +5,4 @@ boundingBox:itemStoneBoundingBox
 canGreedyMesh:false
 isSolid:false
 breakTimer:60
+displayName:Campfire (Under Construction)

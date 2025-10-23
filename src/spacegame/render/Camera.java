@@ -2,10 +2,10 @@ package spacegame.render;
 
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
-import spacegame.core.SpaceGame;
+import spacegame.core.CosmicEvolution;
 
 public final class Camera {
-    private SpaceGame sg;
+    private CosmicEvolution ce;
     public Matrix4d projectionMatrix;
     public Matrix4d guiProjectionMatrix;
     public Matrix4d viewMatrix;
@@ -15,8 +15,8 @@ public final class Camera {
     public FrustumRayBuilderDouble ray = new FrustumRayBuilderDouble();
     public double farPlaneDistance = 1048576D;
 
-    public Camera(Vector3d position, SpaceGame sg, double nearDistance) {
-        this.sg = sg;
+    public Camera(Vector3d position, CosmicEvolution ce, double nearDistance) {
+        this.ce = ce;
         this.position = position;
         this.projectionMatrix = new Matrix4d();
         this.guiProjectionMatrix = new Matrix4d();
@@ -34,12 +34,12 @@ public final class Camera {
 
     public void adjustProjection(double fov, double nearDistance) {
         fov *= 100;
-        this.projectionMatrix.setPerspective(Math.toRadians(fov), (double)SpaceGame.width / (double)SpaceGame.height, nearDistance, this.farPlaneDistance); //znear MUST NEVER BE 0
+        this.projectionMatrix.setPerspective(Math.toRadians(fov), (double) CosmicEvolution.width / (double) CosmicEvolution.height, nearDistance, this.farPlaneDistance); //znear MUST NEVER BE 0
         Shader.terrainShader.uploadMat4d("uProjection", this.projectionMatrix);
     }
 
     public void adjustGuiMatrix() {
-        this.guiProjectionMatrix.setOrtho((double) -SpaceGame.width / 2, (double) SpaceGame.width / 2, (double) -SpaceGame.height / 2, (double) SpaceGame.height / 2, 0.1F, this.farPlaneDistance);
+        this.guiProjectionMatrix.setOrtho((double) -CosmicEvolution.width / 2, (double) CosmicEvolution.width / 2, (double) -CosmicEvolution.height / 2, (double) CosmicEvolution.height / 2, 0.1F, this.farPlaneDistance);
     }
 
     public void setViewMatrix() {
@@ -64,9 +64,9 @@ public final class Camera {
 
     public double[] rayCast(double distance) {
         ray.set(this.viewMatrix);
-        Vector3d currentPosition = new Vector3d(this.sg.save.thePlayer.x, this.sg.save.thePlayer.y + this.sg.save.thePlayer.height/2, this.sg.save.thePlayer.z);
+        Vector3d currentPosition = new Vector3d(this.ce.save.thePlayer.x, this.ce.save.thePlayer.y + this.ce.save.thePlayer.height/2, this.ce.save.thePlayer.z);
         Vector3d rayDirection = new Vector3d();
-        ray.dir(this.sg.save.thePlayer.yaw, this.sg.save.thePlayer.pitch, rayDirection);
+        ray.dir(this.ce.save.thePlayer.yaw, this.ce.save.thePlayer.pitch, rayDirection);
         rayDirection.mul(new Vector3d(distance, distance, distance));
 
         rayDirection.add(currentPosition);

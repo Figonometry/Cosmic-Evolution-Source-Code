@@ -1,9 +1,9 @@
 package spacegame.gui;
 
 import org.lwjgl.opengl.GL46;
+import spacegame.core.CosmicEvolution;
 import spacegame.core.MathUtil;
 import spacegame.core.MouseListener;
-import spacegame.core.SpaceGame;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
 import spacegame.world.Tech;
@@ -52,10 +52,10 @@ public final class TechBlock {
         tessellator.addVertex2DTexture(this.getTechBlockColor(), (this.x - this.width/2) * zoomFactor, (this.y + this.height/2) * zoomFactor, -95,2);
         tessellator.addVertex2DTexture(this.getTechBlockColor(), (this.x + this.width/2) * zoomFactor, (this.y - this.height/2) * zoomFactor, -95,0);
         tessellator.addElements();
-        tessellator.drawTexture2D(this.techTree.techBlock, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.techTree.techBlock, Shader.screen2DTexture, CosmicEvolution.camera);
         tessellator.toggleOrtho();
         FontRenderer fontRenderer = FontRenderer.instance;
-        fontRenderer.drawCenteredString(this.tech.getTechName(), this.x * zoomFactor - (25f * zoomFactor), this.y * zoomFactor - (25f * zoomFactor), (float) -93, 16777215, (int) (35f * zoomFactor));
+        fontRenderer.drawCenteredString(this.tech.getTechName(), this.x * zoomFactor - (25f * zoomFactor), this.y * zoomFactor - (25f * zoomFactor), (float) -93, 16777215, (int) (35f * zoomFactor), 255);
         this.drawConnectingLinesToChildren();
     }
 
@@ -77,7 +77,7 @@ public final class TechBlock {
             tessellator.addElements();
         }
 
-        tessellator.drawTexture2D(this.techTree.line, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.techTree.line, Shader.screen2DTexture, CosmicEvolution.camera);
         tessellator.toggleOrtho();
     }
 
@@ -97,23 +97,23 @@ public final class TechBlock {
         tessellator.addElements();
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-        tessellator.drawTexture2D(this.techTree.transparentBackground, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.techTree.transparentBackground, Shader.screen2DTexture, CosmicEvolution.camera);
         GL46.glDisable(GL46.GL_BLEND);
         tessellator.toggleOrtho();
 
 
         FontRenderer fontRenderer = FontRenderer.instance;//45 character limit at size 25 font
         if(this.tech.state == Tech.UNKNOWN){
-            fontRenderer.drawCenteredString("???", topLeftX + width * 0.4f, 460,-49,16777215, 50);
+            fontRenderer.drawCenteredString("???", topLeftX + width * 0.4f, 460,-49,16777215, 50, 255);
             fontRenderer.toggleItalics();
-            fontRenderer.drawString("This knowledge is shrouded in mystery", topLeftX, 400,  -49, 16777215, 25);
+            fontRenderer.drawString("This knowledge is shrouded in mystery", topLeftX, 400,  -49, 16777215, 25, 255);
             fontRenderer.toggleItalics();
         } else {
-            fontRenderer.drawCenteredString(this.tech.techName, topLeftX + width * 0.4f, 460, -49, this.tech.state == Tech.UNLOCKED ? 5046016 : 16766976, 50);
+            fontRenderer.drawCenteredString(this.tech.techName, topLeftX + width * 0.4f, 460, -49, this.tech.state == Tech.UNLOCKED ? 5046016 : 16766976, 50, 255);
             fontRenderer.toggleItalics();
             int textHeight = 400;
             for(int i = 0; i < this.tech.infoText.size(); i++){
-                fontRenderer.drawString(this.tech.infoText.get(i), topLeftX, textHeight, -49, 16777215, 25);
+                fontRenderer.drawString(this.tech.infoText.get(i), topLeftX, textHeight, -49, 16777215, 25, 255);
                 textHeight -= 30;
             }
             fontRenderer.toggleItalics();
@@ -121,23 +121,23 @@ public final class TechBlock {
             if(this.tech.state != Tech.UNLOCKED) {
                 int y = 60;
                 for (int i = 0; i < this.tech.unlockDescriptions.size(); i++) {
-                    fontRenderer.drawString("Unlocks: " + this.tech.unlockDescriptions.get(i), topLeftX, y, -49, 16777215, 30);
+                    fontRenderer.drawString("Unlocks: " + this.tech.unlockDescriptions.get(i), topLeftX, y, -49, 16777215, 30, 255);
                     y -= 30;
                 }
             }
 
             if(this.tech.state == Tech.LOCKED_KNOWN){
                 textHeight -= 500;
-                fontRenderer.drawCenteredString(this.tech.getTechUpdateName(), topLeftX + width * 0.45f, textHeight, -49, 16766976, 40);
+                fontRenderer.drawCenteredString(this.tech.getTechUpdateName(), topLeftX + width * 0.45f, textHeight, -49, 16766976, 40, 255);
                 textHeight -= 60;
-                fontRenderer.drawCenteredString(this.tech.progressAmountCompleted + " / " + this.tech.unlockRequirementAmount, topLeftX + width * 0.45f, textHeight, -49, 16766976, 40);
+                fontRenderer.drawCenteredString(this.tech.progressAmountCompleted + " / " + this.tech.unlockRequirementAmount, topLeftX + width * 0.45f, textHeight, -49, 16766976, 40, 255);
             }
 
             if(this.tech.state == Tech.LOCKED){
                 textHeight -= 500;
-                fontRenderer.drawCenteredString("???", topLeftX + width * 0.45f, textHeight, -49, 16766976, 40);
+                fontRenderer.drawCenteredString("???", topLeftX + width * 0.45f, textHeight, -49, 16766976, 40, 255);
                 textHeight -= 60;
-                fontRenderer.drawCenteredString("??? / ???", topLeftX + width * 0.45f, textHeight, -49, 16766976, 40);
+                fontRenderer.drawCenteredString("??? / ???", topLeftX + width * 0.45f, textHeight, -49, 16766976, 40, 255);
             }
 
         }
@@ -178,8 +178,8 @@ public final class TechBlock {
     }
 
     public boolean isMouseHoveredOver(){
-        double x = (MouseListener.instance.xPos - SpaceGame.width/2D);
-        double y = ((MouseListener.instance.yPos - SpaceGame.height/2D) * -1);
+        double x = (MouseListener.instance.xPos - CosmicEvolution.width/2D);
+        double y = ((MouseListener.instance.yPos - CosmicEvolution.height/2D) * -1);
         float adjustedButtonX = MathUtil.adjustXPosBasedOnScreenWidth(this.x) * zoomFactor;
         float adjustedButtonY = MathUtil.adjustYPosBasedOnScreenHeight(this.y) * zoomFactor;
         float adjustedButtonWidth = MathUtil.adjustWidthBasedOnScreenWidth(this.width) * zoomFactor;

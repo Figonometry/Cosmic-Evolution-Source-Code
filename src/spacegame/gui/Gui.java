@@ -1,18 +1,18 @@
 package spacegame.gui;
 
-import spacegame.core.SpaceGame;
+import spacegame.core.CosmicEvolution;
 import spacegame.render.Assets;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
 import spacegame.render.Texture;
 
 public abstract class Gui {
-    public SpaceGame sg;
+    public CosmicEvolution ce;
     public boolean subMenu;
     public boolean subMenu2;
 
-    public Gui(SpaceGame spaceGame) {
-        this.sg = spaceGame;
+    public Gui(CosmicEvolution cosmicEvolution) {
+        this.ce = cosmicEvolution;
     }
     public abstract void loadTextures();
 
@@ -30,12 +30,12 @@ public abstract class Gui {
 
         RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         tessellator.toggleOrtho();
-        tessellator.addVertex2DTextureWithAtlas(color, x, y, z, 3, textureID, fontID);
-        tessellator.addVertex2DTextureWithAtlas(color, x + 30, y + 30, z, 1, textureID, fontID);
-        tessellator.addVertex2DTextureWithAtlas(color, x, y + 30, z, 2, textureID, fontID);
-        tessellator.addVertex2DTextureWithAtlas(color, x + 30, y, z, 0, textureID, fontID);
+        tessellator.addVertex2DTextureWithAtlas(color, x, y, z, 3, textureID, fontID, 255);
+        tessellator.addVertex2DTextureWithAtlas(color, x + 30, y + 30, z, 1, textureID, fontID, 255);
+        tessellator.addVertex2DTextureWithAtlas(color, x, y + 30, z, 2, textureID, fontID, 255);
+        tessellator.addVertex2DTextureWithAtlas(color, x + 30, y, z, 0, textureID, fontID, 255);
         tessellator.addElements();
-        tessellator.drawTexture2DWithAtlas(Assets.fontTextureLoader, Shader.screen2DTextureAtlas, SpaceGame.camera);
+        tessellator.drawTexture2DWithAtlas(Assets.fontTextureLoader, Shader.screen2DTextureAtlas, CosmicEvolution.camera);
         tessellator.toggleOrtho();
     }
 

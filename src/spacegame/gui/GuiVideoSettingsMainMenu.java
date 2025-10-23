@@ -2,12 +2,12 @@ package spacegame.gui;
 
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
-import spacegame.core.SpaceGame;
+import spacegame.core.CosmicEvolution;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
 
 public final class GuiVideoSettingsMainMenu extends Gui {
-    private SpaceGame sg;
+    private CosmicEvolution ce;
     public Button vsync;
     public Button back;
     public Button showFPS;
@@ -30,44 +30,44 @@ public final class GuiVideoSettingsMainMenu extends Gui {
     public int page = 1;
 
 
-    public GuiVideoSettingsMainMenu(SpaceGame spaceGame){
-        super(spaceGame);
-        this.sg = spaceGame;
+    public GuiVideoSettingsMainMenu(CosmicEvolution cosmicEvolution){
+        super(cosmicEvolution);
+        this.ce = cosmicEvolution;
         //Page 1
-        this.viewBobbing = new Button(EnumButtonEffects.VIEW_BOB.name(), 512, 64, -587,150, this, this.sg);
-        this.shadowMap = new Button(EnumButtonEffects.SHADOW_MAP.name(), 512, 64, 0, 150, this, this.sg);
-        this.mouseSensitivity = new Button(EnumButtonEffects.MOUSE_SENSITIVITY.name(), 512, 64, 587, 150, this, this.sg);
-        this.showFPS = new Button(EnumButtonEffects.SHOW_FPS.name(), 512, 64, -587, 0, this, this.sg);
-        this.fullscreen = new Button(EnumButtonEffects.FULLSCREEN.name(), 512, 64, 0,0, this, this.sg);
-        this.fov = new Button(EnumButtonEffects.FOV.name(), 512, 64, 587, 0, this, this.sg);
-        this.vsync = new Button(EnumButtonEffects.VSYNC.name(), 512, 64, -587, -150,  this, this.sg);
-        this.chunkViewDistanceHorizontal = new Button(EnumButtonEffects.CHUNK_VIEW_HORIZONTAL.name(), 512,64, 0, -150, this, this.sg);
-        this.chunkViewDistanceVertical = new Button(EnumButtonEffects.CHUNK_VIEW_VERTICAL.name(), 512, 64, 587, -150, this, this.sg);
+        this.viewBobbing = new Button(EnumButtonEffects.VIEW_BOB.name(), 512, 64, -587,150, this, this.ce);
+        this.shadowMap = new Button(EnumButtonEffects.SHADOW_MAP.name(), 512, 64, 0, 150, this, this.ce);
+        this.mouseSensitivity = new Button(EnumButtonEffects.MOUSE_SENSITIVITY.name(), 512, 64, 587, 150, this, this.ce);
+        this.showFPS = new Button(EnumButtonEffects.SHOW_FPS.name(), 512, 64, -587, 0, this, this.ce);
+        this.fullscreen = new Button(EnumButtonEffects.FULLSCREEN.name(), 512, 64, 0,0, this, this.ce);
+        this.fov = new Button(EnumButtonEffects.FOV.name(), 512, 64, 587, 0, this, this.ce);
+        this.vsync = new Button(EnumButtonEffects.VSYNC.name(), 512, 64, -587, -150,  this, this.ce);
+        this.chunkViewDistanceHorizontal = new Button(EnumButtonEffects.CHUNK_VIEW_HORIZONTAL.name(), 512,64, 0, -150, this, this.ce);
+        this.chunkViewDistanceVertical = new Button(EnumButtonEffects.CHUNK_VIEW_VERTICAL.name(), 512, 64, 587, -150, this, this.ce);
         //Page 2
-        this.wavyWater = new Button(EnumButtonEffects.WAVY_WATER.name(), 512, 64, -587,150, this, this.sg);
-        this.wavyLeaves = new Button(EnumButtonEffects.WAVY_LEAVES.name(), 512, 64, 0, 150, this, this.sg);
-        this.transparentLeaves = new Button(EnumButtonEffects.TRANSPARENT_LEAVES.name(), 512, 64, 587, 150, this, this.sg);
+        this.wavyWater = new Button(EnumButtonEffects.WAVY_WATER.name(), 512, 64, -587,150, this, this.ce);
+        this.wavyLeaves = new Button(EnumButtonEffects.WAVY_LEAVES.name(), 512, 64, 0, 150, this, this.ce);
+        this.transparentLeaves = new Button(EnumButtonEffects.TRANSPARENT_LEAVES.name(), 512, 64, 587, 150, this, this.ce);
 
 
-        this.back = new Button(EnumButtonEffects.BACK.name(), 512, 64, 0, -400, this, this.sg);
-        this.pageLeft = new Button(EnumButtonEffects.PAGE_LEFT.name(), 256, 64, -400, -400, this, this.sg);
-        this.pageRight = new Button(EnumButtonEffects.PAGE_RIGHT.name(), 256, 64, 400, -400, this, this.sg);
+        this.back = new Button(EnumButtonEffects.BACK.name(), 512, 64, 0, -400, this, this.ce);
+        this.pageLeft = new Button(EnumButtonEffects.PAGE_LEFT.name(), 256, 64, -400, -400, this, this.ce);
+        this.pageRight = new Button(EnumButtonEffects.PAGE_RIGHT.name(), 256, 64, 400, -400, this, this.ce);
     }
 
     @Override
     public void loadTextures() {
-        this.star = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/star.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        this.title = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/videoSettings.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        this.earth = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/earth.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        this.background = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.star = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/star.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.title = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/videoSettings.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.earth = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/earth.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.background = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
     }
 
     @Override
     public void deleteTextures() {
-        SpaceGame.instance.renderEngine.deleteTexture(this.star);
-        SpaceGame.instance.renderEngine.deleteTexture(this.title);
-        SpaceGame.instance.renderEngine.deleteTexture(this.earth);
-        SpaceGame.instance.renderEngine.deleteTexture(this.background);
+        CosmicEvolution.instance.renderEngine.deleteTexture(this.star);
+        CosmicEvolution.instance.renderEngine.deleteTexture(this.title);
+        CosmicEvolution.instance.renderEngine.deleteTexture(this.earth);
+        CosmicEvolution.instance.renderEngine.deleteTexture(this.background);
     }
 
 
@@ -76,11 +76,11 @@ public final class GuiVideoSettingsMainMenu extends Gui {
     public void drawGui() {
         RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         tessellator.toggleOrtho();
-        GLFW.glfwSetInputMode(this.sg.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
+        GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
         for(int i = 0; i < GuiMainMenu.starCount; i++){
             GuiMainMenu.renderStar(i, tessellator);
         }
-        tessellator.drawTexture2D(this.star, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.star, Shader.screen2DTexture, CosmicEvolution.camera);
 
         int titleWidth = 1286;
         int titleHeight = 144;
@@ -92,7 +92,7 @@ public final class GuiVideoSettingsMainMenu extends Gui {
         tessellator.addVertex2DTexture(16777215, titleX - titleWidth/2, titleY + titleHeight/2, titleZ, 2);
         tessellator.addVertex2DTexture(16777215, titleX + titleWidth/2, titleY - titleHeight/2, titleZ, 0);
         tessellator.addElements();
-        tessellator.drawTexture2D(this.title, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.title, Shader.screen2DTexture, CosmicEvolution.camera);
 
         int earthSize = 256;
         int earthX = 0;
@@ -103,10 +103,10 @@ public final class GuiVideoSettingsMainMenu extends Gui {
         tessellator.addVertex2DTexture(16777215, earthX - earthSize, earthY + earthSize, earthZ, 2);
         tessellator.addVertex2DTexture(16777215, earthX + earthSize, earthY - earthSize, earthZ, 0);
         tessellator.addElements();
-        tessellator.drawTexture2D(this.earth, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.earth, Shader.screen2DTexture, CosmicEvolution.camera);
 
-        int backgroundWidth = SpaceGame.width;
-        int backgroundHeight = SpaceGame.height;
+        int backgroundWidth = CosmicEvolution.width;
+        int backgroundHeight = CosmicEvolution.height;
         int backgroundX = 0;
         int backgroundY = 0;
         int backgroundZ = -100;
@@ -117,7 +117,7 @@ public final class GuiVideoSettingsMainMenu extends Gui {
         tessellator.addElements();
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-        tessellator.drawTexture2D(this.background, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.background, Shader.screen2DTexture, CosmicEvolution.camera);
         GL46.glDisable(GL46.GL_BLEND);
 
         tessellator.toggleOrtho();

@@ -2,7 +2,7 @@ package spacegame.gui;
 
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
-import spacegame.core.SpaceGame;
+import spacegame.core.CosmicEvolution;
 import spacegame.item.Inventory;
 import spacegame.item.ItemStack;
 import spacegame.render.RenderEngine;
@@ -13,24 +13,24 @@ public final class GuiInventoryPlayer extends GuiInventory {
     public static int fillableColorWithShadedBottom;
     public static int flllableColor;
 
-    public GuiInventoryPlayer(SpaceGame spaceGame, Inventory associatedInventory) {
-        super(spaceGame);
+    public GuiInventoryPlayer(CosmicEvolution cosmicEvolution, Inventory associatedInventory) {
+        super(cosmicEvolution);
         this.associatedInventory = associatedInventory;
     }
 
     @Override
     public void loadTextures() {
-        this.inventoryUI = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInventory/playerInventory.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        fillableColorWithShadedBottom = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColorWithShadedBottom.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        fillableColor = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColor.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.inventoryUI = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInventory/playerInventory.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        fillableColorWithShadedBottom = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColorWithShadedBottom.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        fillableColor = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColor.png", RenderEngine.TEXTURE_TYPE_2D, 0);
         this.loadTexture();
     }
 
     @Override
     public void deleteTextures() {
-        SpaceGame.instance.renderEngine.deleteTexture(this.inventoryUI);
-        SpaceGame.instance.renderEngine.deleteTexture(fillableColorWithShadedBottom);
-        SpaceGame.instance.renderEngine.deleteTexture(fillableColor);
+        CosmicEvolution.instance.renderEngine.deleteTexture(this.inventoryUI);
+        CosmicEvolution.instance.renderEngine.deleteTexture(fillableColorWithShadedBottom);
+        CosmicEvolution.instance.renderEngine.deleteTexture(fillableColor);
         this.unloadTexture();
     }
 
@@ -39,7 +39,7 @@ public final class GuiInventoryPlayer extends GuiInventory {
         GuiInGame.renderGuiFromOtherGuis();
         RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         tessellator.toggleOrtho();
-        GLFW.glfwSetInputMode(this.sg.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
+        GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
         int backgroundWidth = 1920;
         int backgroundHeight = 1017;
         int backgroundX = 0;
@@ -52,7 +52,7 @@ public final class GuiInventoryPlayer extends GuiInventory {
         tessellator.addElements();
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-        tessellator.drawTexture2D(transparentBackground, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(transparentBackground, Shader.screen2DTexture, CosmicEvolution.camera);
         GL46.glDisable(GL46.GL_BLEND);
 
         int inventoryUIWidth = 1200;
@@ -65,7 +65,7 @@ public final class GuiInventoryPlayer extends GuiInventory {
         tessellator.addVertex2DTexture(16777215, inventoryUIX - inventoryUIWidth/2, inventoryUIY + inventoryUIHeight/2, inventoryUIZ, 2);
         tessellator.addVertex2DTexture(16777215, inventoryUIX + inventoryUIWidth/2, inventoryUIY - inventoryUIHeight/2, inventoryUIZ, 0);
         tessellator.addElements();
-        tessellator.drawTexture2D(this.inventoryUI, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.inventoryUI, Shader.screen2DTexture, CosmicEvolution.camera);
         tessellator.toggleOrtho();
 
         this.associatedInventory.renderInventory();

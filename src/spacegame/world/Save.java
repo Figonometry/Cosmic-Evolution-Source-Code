@@ -1,6 +1,6 @@
 package spacegame.world;
 
-import spacegame.core.SpaceGame;
+import spacegame.core.CosmicEvolution;
 import spacegame.entity.EntityPlayer;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
@@ -13,7 +13,7 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 
 public final class Save {
-    private SpaceGame sg;
+    private CosmicEvolution ce;
     public World activeWorld;
     public EntityPlayer thePlayer;
     public final File saveFolder;
@@ -27,9 +27,9 @@ public final class Save {
     public double spawnZ;
     public byte savedSkyLightLevel = 0;
 
-    public Save(SpaceGame spaceGame, int saveSlotNumber, String saveName, long seed, double x, double z) {
-        this.sg = spaceGame;
-        this.saveFolder = new File(this.sg.launcherDirectory + "/saves/save" + saveSlotNumber);
+    public Save(CosmicEvolution cosmicEvolution, int saveSlotNumber, String saveName, long seed, double x, double z) {
+        this.ce = cosmicEvolution;
+        this.saveFolder = new File(this.ce.launcherDirectory + "/saves/save" + saveSlotNumber);
         this.saveFile = new File(this.saveFolder + "/save.dat");
         this.saveFolder.mkdirs();
         Calendar calendar = new GregorianCalendar();
@@ -47,15 +47,15 @@ public final class Save {
         this.saveInitDataToFile(saveName, x, z);
     }
 
-    public Save(SpaceGame spaceGame, File saveFolder){
-        this.sg = spaceGame;
+    public Save(CosmicEvolution cosmicEvolution, File saveFolder){
+        this.ce = cosmicEvolution;
         this.saveFolder = saveFolder;
         this.saveFile = new File(this.saveFolder + "/save.dat");
         File playerFile = new File(this.saveFolder + "/player.dat");
         if(playerFile.exists()) {
-            this.thePlayer = new EntityPlayer(this.sg, playerFile, 0, 0 ,0);
+            this.thePlayer = new EntityPlayer(this.ce, playerFile, 0, 0 ,0);
         } else {
-            this.thePlayer = new EntityPlayer(this.sg, 0, 0, 0);
+            this.thePlayer = new EntityPlayer(this.ce, 0, 0, 0);
         }
         this.loadDataFromFile();
     }
@@ -175,7 +175,7 @@ public final class Save {
     }
 
     public static int doesSaveSlotExist(int saveNumber){
-        File save = new File(SpaceGame.instance.launcherDirectory + "/saves/save" + saveNumber);
+        File save = new File(CosmicEvolution.instance.launcherDirectory + "/saves/save" + saveNumber);
         File savePlayerDat = new File(save + "/player.dat");
         File saveWorldDat = new File(save + "/worlds");
         File saveSaveDat = new File(save + "/save.dat");

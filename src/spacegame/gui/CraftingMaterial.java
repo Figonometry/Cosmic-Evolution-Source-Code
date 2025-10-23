@@ -1,7 +1,7 @@
 package spacegame.gui;
 
+import spacegame.core.CosmicEvolution;
 import spacegame.core.MouseListener;
-import spacegame.core.SpaceGame;
 
 public final class CraftingMaterial {
     public int width;
@@ -29,8 +29,8 @@ public final class CraftingMaterial {
     }
 
     public boolean isMouseHoveredOver(){
-        double x = MouseListener.instance.xPos - SpaceGame.width/2D;
-        double y = (MouseListener.instance.yPos - SpaceGame.height/2D) * -1;
+        double x = MouseListener.instance.xPos - CosmicEvolution.width/2D;
+        double y = (MouseListener.instance.yPos - CosmicEvolution.height/2D) * -1;
         return x > this.x - (double) this.width /2 && x < this.x + (double) this.width /2 && y > this.y - (double) this.height /2 && y < this.y + (double) this.height /2;
     }
 

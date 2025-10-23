@@ -24,7 +24,7 @@ import java.io.FileOutputStream;
 import java.util.Random;
 
 public final class EntityPlayer extends EntityLiving {
-    private SpaceGame sg;
+    private CosmicEvolution ce;
     public static int selectedInventorySlot = 1;
     public int chunkX;
     public int chunkY;
@@ -37,6 +37,7 @@ public final class EntityPlayer extends EntityLiving {
     public int breakTimer = 0;
     public int[] blockLookingAt = new int[3];
     public int[] prevBlockLookingAt = new int[3];
+    public int[] blockLookingAtCoords = new int[3];
     public Inventory inventory;
     public final File playerFile;
     public boolean loadedFromFile;
@@ -50,10 +51,14 @@ public final class EntityPlayer extends EntityLiving {
     public byte viewBobDelay;
     public byte inventoryUpgradeLevel = 1;
     public float hardnessThreshold = 0.1f;
+    public short blockIDPlayerLookingAt;
+    public int spawnX;
+    public int spawnY;
+    public int spawnZ;
 
-    public EntityPlayer(SpaceGame spaceGame, double x, double y, double z) {
+    public EntityPlayer(CosmicEvolution cosmicEvolution, double x, double y, double z) {
         super(Integer.MAX_VALUE);
-        this.sg = spaceGame;
+        this.ce = cosmicEvolution;
         this.x = x;
         this.y = y;
         this.z = z;
@@ -65,12 +70,15 @@ public final class EntityPlayer extends EntityLiving {
         this.chunkZ = MathUtil.floorDouble(this.z) >> 5;
         this.health = 100;
         this.maxHealth = 100;
-        this.playerFile = new File(this.sg.save.saveFolder + "/player.dat");
+        this.spawnX = (int) this.ce.save.spawnX;
+        this.spawnY = (int) this.ce.save.spawnY;
+        this.spawnZ = (int) this.ce.save.spawnZ;
+        this.playerFile = new File(this.ce.save.saveFolder + "/player.dat");
         this.inventory = new Inventory(9,1, 10);
     }
-    public EntityPlayer(SpaceGame spaceGame, File playerFile, double x, double y, double z) {
+    public EntityPlayer(CosmicEvolution cosmicEvolution, File playerFile, double x, double y, double z) {
         super(Integer.MAX_VALUE);
-        this.sg = spaceGame;
+        this.ce = cosmicEvolution;
         this.x = x;
         this.y = y;
         this.z = z;
@@ -113,7 +121,9 @@ public final class EntityPlayer extends EntityLiving {
             this.lastYOnGround = player.getDouble("lastYOnGround");
             this.drowningTimer = player.getInteger("drowningTimer");
             this.inventoryUpgradeLevel = player.getByte("inventoryUpgradeLevel");
-
+            this.spawnX = player.getInteger("spawnX");
+            this.spawnY = player.getInteger("spawnY");
+            this.spawnZ = player.getInteger("spawnZ");
             this.inventory = new Inventory(9,this.inventoryUpgradeLevel, 10);
 
             NBTTagCompound item;
@@ -161,6 +171,9 @@ public final class EntityPlayer extends EntityLiving {
             playerData.setDouble("lastYOnGround", this.lastYOnGround);
             playerData.setInteger("drowningTimer", this.drowningTimer);
             playerData.setByte("inventoryUpgradeLevel", this.inventoryUpgradeLevel);
+            playerData.setInteger("spawnX", this.spawnX);
+            playerData.setInteger("spawnY", this.spawnY);
+            playerData.setInteger("spawnZ", this.spawnZ);
 
             ItemStack stack;
             NBTTagCompound[] items = new NBTTagCompound[this.inventory.itemStacks.length];
@@ -269,7 +282,7 @@ public final class EntityPlayer extends EntityLiving {
             newInventory.itemStacks[newInventory.itemStacks.length - 10] = this.inventory.itemStacks[this.inventory.itemStacks.length - 10];
 
             this.inventory = newInventory;
-            this.sg.setNewGui(new GuiInventoryPlayer(this.sg, this.inventory));
+            this.ce.setNewGui(new GuiInventoryPlayer(this.ce, this.inventory));
         } else {
             this.inventoryUpgradeLevel = storageLevel;
             Inventory newInventory = new Inventory(9, this.inventoryUpgradeLevel, 10);
@@ -283,18 +296,18 @@ public final class EntityPlayer extends EntityLiving {
 
                     if (this.inventory.itemStacks[i].item.ID == Item.block.ID) {
                         EntityBlock block = new EntityBlock(this.x, this.y, this.z, this.inventory.itemStacks[i].metadata, this.inventory.itemStacks[i].count);
-                        double[] vector = SpaceGame.camera.rayCast(1);
+                        double[] vector = CosmicEvolution.camera.rayCast(1);
                         Vector3d difVector = new Vector3d(vector[0] - this.x, (vector[1] - this.y) + this.height/2, vector[2] - this.z);
                         difVector.normalize();
                         block.setMovementVector(new Vector3f((float) difVector.x, (float) difVector.y, (float) difVector.z));
-                        this.sg.save.activeWorld.addEntity(block);
+                        this.ce.save.activeWorld.addEntity(block);
                     } else {
                         EntityItem item = new EntityItem(this.x, this.y, this.z, this.inventory.itemStacks[i].item.ID, Item.NULL_ITEM_METADATA, this.inventory.itemStacks[i].count, this.inventory.itemStacks[i].durability);
-                        double[] vector = SpaceGame.camera.rayCast(1);
+                        double[] vector = CosmicEvolution.camera.rayCast(1);
                         Vector3d difVector = new Vector3d(vector[0] - this.x, (vector[1] - this.y) + this.height/2, vector[2] - this.z);
                         difVector.normalize();
                         item.setMovementVector(new Vector3f((float) difVector.x, (float) difVector.y, (float) difVector.z));
-                        this.sg.save.activeWorld.addEntity(item);
+                        this.ce.save.activeWorld.addEntity(item);
                     }
 
                 }
@@ -314,7 +327,7 @@ public final class EntityPlayer extends EntityLiving {
             newInventory.itemStacks[newInventory.itemStacks.length - 10] = this.inventory.itemStacks[this.inventory.itemStacks.length - 10];
 
             this.inventory = newInventory;
-            this.sg.setNewGui(new GuiInventoryPlayer(this.sg, this.inventory));
+            this.ce.setNewGui(new GuiInventoryPlayer(this.ce, this.inventory));
         }
     }
 
@@ -343,33 +356,33 @@ public final class EntityPlayer extends EntityLiving {
             if (blockID != Block.air.ID) {
                 EntityBlock droppedBlock = new EntityBlock(this.x, this.y, this.z, blockID, (byte) 1);
                 this.removeItemFromInventory();
-                double[] vector = SpaceGame.camera.rayCast(1);
+                double[] vector = CosmicEvolution.camera.rayCast(1);
                 Vector3d difVector = new Vector3d(vector[0] - this.x, (vector[1] - this.y) + this.height/2, vector[2] - this.z);
                 difVector.normalize();
                 droppedBlock.setMovementVector(new Vector3f((float) difVector.x, (float) difVector.y, (float) difVector.z));
-                this.sg.save.activeWorld.findChunkFromChunkCoordinates(this.chunkX, this.chunkY, this.chunkZ).addEntityToList(droppedBlock);
+                this.ce.save.activeWorld.findChunkFromChunkCoordinates(this.chunkX, this.chunkY, this.chunkZ).addEntityToList(droppedBlock);
             }
         } else if(itemID != Item.NULL_ITEM_REFERENCE) {
             EntityItem droppedItem = new EntityItem(this.x, this.y, this.z, itemID, Item.NULL_ITEM_METADATA, (byte) 1, this.getHeldItemDurability());
             this.removeItemFromInventory();
-            double[] vector = SpaceGame.camera.rayCast(1);
+            double[] vector = CosmicEvolution.camera.rayCast(1);
             Vector3d difVector = new Vector3d(vector[0] - this.x, (vector[1] - this.y) + this.height/2, vector[2] - this.z);
             difVector.normalize();
             droppedItem.setMovementVector(new Vector3f((float) difVector.x, (float) difVector.y, (float) difVector.z));
-            this.sg.save.activeWorld.findChunkFromChunkCoordinates(this.chunkX, this.chunkY, this.chunkZ).addEntityToList(droppedItem);
+            this.ce.save.activeWorld.findChunkFromChunkCoordinates(this.chunkX, this.chunkY, this.chunkZ).addEntityToList(droppedItem);
         }
     }
 
 
     @Override
     public void tick() {
-        if (this.sg.save.activeWorld.chunkController.findChunkFromChunkCoordinates((int) (this.x) >> 5, (int) (this.y) >> 5, (int) (this.z) >> 5) != null && !this.sg.save.activeWorld.paused) {
-            if(this.sg.currentGui instanceof GuiInGame) {
+        if (this.ce.save.activeWorld.chunkController.findChunkFromChunkCoordinates((int) (this.x) >> 5, (int) (this.y) >> 5, (int) (this.z) >> 5) != null && !this.ce.save.activeWorld.paused) {
+            if(this.ce.currentGui instanceof GuiInGame) {
                 this.updateYawAndPitch();
             }
             this.setMovementAmount();
             this.doGravity();
-            if(!(this.sg.currentGui instanceof GuiInGame || this.sg.currentGui instanceof GuiInventory || this.sg.currentGui instanceof GuiAction || this.sg.currentGui instanceof GuiCrafting)){
+            if(!(this.ce.currentGui instanceof GuiInGame || this.ce.currentGui instanceof GuiInventory || this.ce.currentGui instanceof GuiAction || this.ce.currentGui instanceof GuiCrafting)){
                 this.deltaX = 0;
                 this.deltaY = 0;
                 this.deltaZ = 0;
@@ -408,17 +421,17 @@ public final class EntityPlayer extends EntityLiving {
 
         if (deltaYaw != this.prevDeltaYaw) {
             this.yaw -= rawDeltaYaw;
-            SpaceGame.camera.viewMatrix.rotateAround(new Quaterniond(0, 0, 0, 1).rotationAxis(new AxisAngle4f(-deltaYaw, 0.0F, 1.0F, 0.0F)), this.x - (this.chunkX * 32), this.y - (this.chunkY * 32), this.z - (this.chunkZ * 32)); //This needs to be fixed
-            if(SpaceGame.instance.save.activeWorld != null) {
-                SpaceGame.instance.save.activeWorld.chunkController.renderWorldScene.recalculateQueries = true;
+            CosmicEvolution.camera.viewMatrix.rotateAround(new Quaterniond(0, 0, 0, 1).rotationAxis(new AxisAngle4f(-deltaYaw, 0.0F, 1.0F, 0.0F)), this.x - (this.chunkX * 32), this.y - (this.chunkY * 32), this.z - (this.chunkZ * 32)); //This needs to be fixed
+            if(CosmicEvolution.instance.save.activeWorld != null) {
+                CosmicEvolution.instance.save.activeWorld.chunkController.renderWorldScene.recalculateQueries = true;
             }
         }
 
         if ((deltaPitch != this.prevDeltaPitch) && ((this.pitch + rawDeltaPitch < 90) && (this.pitch + rawDeltaPitch > -90))) {
             this.pitch += rawDeltaPitch;
-            SpaceGame.camera.viewMatrix.rotateLocalX(-deltaPitch);
-            if(SpaceGame.instance.save.activeWorld != null) {
-                SpaceGame.instance.save.activeWorld.chunkController.renderWorldScene.recalculateQueries = true;
+            CosmicEvolution.camera.viewMatrix.rotateLocalX(-deltaPitch);
+            if(CosmicEvolution.instance.save.activeWorld != null) {
+                CosmicEvolution.instance.save.activeWorld.chunkController.renderWorldScene.recalculateQueries = true;
             }
         }
 
@@ -496,12 +509,12 @@ public final class EntityPlayer extends EntityLiving {
     private void developerDebugMovement(){
            if ((KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT))) {
                this.y -= 1F * this.speed;
-               SpaceGame.camera.viewMatrix.translate(0, 1 * this.speed, 0);
+               CosmicEvolution.camera.viewMatrix.translate(0, 1 * this.speed, 0);
            }
 
            if ((KeyListener.isKeyPressed(GLFW.GLFW_KEY_SPACE))) {
                this.y += 1F * this.speed;
-               SpaceGame.camera.viewMatrix.translate(0, -1 * this.speed, 0);
+               CosmicEvolution.camera.viewMatrix.translate(0, -1 * this.speed, 0);
            }
     }
 
@@ -512,16 +525,16 @@ public final class EntityPlayer extends EntityLiving {
         int playerYFoot = MathUtil.floorDouble(this.y - (this.height * 0.25));
         int playerZ = MathUtil.floorDouble(this.z);
 
-        this.blockUnderPlayer = this.sg.save.activeWorld.getBlockID(playerX, MathUtil.floorDouble(this.y - (this.height/2) - 0.1), playerZ);
+        this.blockUnderPlayer = this.ce.save.activeWorld.getBlockID(playerX, MathUtil.floorDouble(this.y - (this.height/2) - 0.1), playerZ);
         if(Block.list[this.blockUnderPlayer].isSolid && !this.inWater){
             this.handleFallDamage();
             this.lastYOnGround = this.y;
         }
 
 
-        this.inWater = Block.list[this.sg.save.activeWorld.getBlockID(playerX, playerYFoot, playerZ)].ID == Block.water.ID || Block.list[this.sg.save.activeWorld.getBlockID(playerX, playerYHead, playerZ)].ID == Block.water.ID;
-        short headBlock = Block.list[this.sg.save.activeWorld.getBlockID(playerX, playerYHead, playerZ)].ID;
-        short footBlock = Block.list[this.sg.save.activeWorld.getBlockID(playerX, playerYFoot, playerZ)].ID;
+        this.inWater = Block.list[this.ce.save.activeWorld.getBlockID(playerX, playerYFoot, playerZ)].ID == Block.water.ID || Block.list[this.ce.save.activeWorld.getBlockID(playerX, playerYHead, playerZ)].ID == Block.water.ID;
+        short headBlock = Block.list[this.ce.save.activeWorld.getBlockID(playerX, playerYHead, playerZ)].ID;
+        short footBlock = Block.list[this.ce.save.activeWorld.getBlockID(playerX, playerYFoot, playerZ)].ID;
         if(headBlock == Block.water.ID){
             Shader.worldShaderTextureArray.uploadBoolean("underwater", true);
             this.drowningTimer++;
@@ -561,7 +574,7 @@ public final class EntityPlayer extends EntityLiving {
             this.isJumping = false;
             this.jumpTime = 0;
             this.deltaY = 0.1;
-            SpaceGame.camera.viewMatrix.translate(0, -0.1D, 0);
+            CosmicEvolution.camera.viewMatrix.translate(0, -0.1D, 0);
         }
 
 
@@ -584,17 +597,17 @@ public final class EntityPlayer extends EntityLiving {
                 this.isJumping = false;
             } else {
                 this.deltaY = 0.05D;
-                SpaceGame.camera.viewMatrix.translate(0, -0.05D, 0);
+                CosmicEvolution.camera.viewMatrix.translate(0, -0.05D, 0);
                 this.moveEntityUpDistance -= 0.05D;
             }
         }
 
         if(this.inWater && !this.prevInWater){
-            SpaceGame.instance.soundPlayer.playSound(this.x, this.y - 2 ,this.z, new Sound(Sound.waterSplash, false), new Random().nextFloat(0.4F, 0.7F));
+            CosmicEvolution.instance.soundPlayer.playSound(this.x, this.y - 2 ,this.z, new Sound(Sound.waterSplash, false), new Random().nextFloat(0.4F, 0.7F));
         }
 
         if(this.prevBlockUnderPlayer != this.blockUnderPlayer){
-            SpaceGame.instance.soundPlayer.playSound(this.x, this.y - 2 ,this.z, new Sound(Block.list[this.blockUnderPlayer].getStepSound(MathUtil.floorDouble(this.x), MathUtil.floorDouble(this.y - (this.height/2) - 0.1), MathUtil.floorDouble(this.z)), false), new Random().nextFloat(0.4F, 0.7F));
+            CosmicEvolution.instance.soundPlayer.playSound(this.x, this.y - 2 ,this.z, new Sound(Block.list[this.blockUnderPlayer].getStepSound(MathUtil.floorDouble(this.x), MathUtil.floorDouble(this.y - (this.height/2) - 0.1), MathUtil.floorDouble(this.z)), false), new Random().nextFloat(0.4F, 0.7F));
         }
 
         this.damageTimer--;
@@ -645,8 +658,8 @@ public final class EntityPlayer extends EntityLiving {
         this.z += this.deltaZ;
 
         if(this.x != this.prevX || this.y != this.prevY || this.z != this.prevZ){
-            if(SpaceGame.instance.save.activeWorld != null) {
-                SpaceGame.instance.save.activeWorld.chunkController.renderWorldScene.recalculateQueries = true;
+            if(CosmicEvolution.instance.save.activeWorld != null) {
+                CosmicEvolution.instance.save.activeWorld.chunkController.renderWorldScene.recalculateQueries = true;
             }
         }
 
@@ -655,16 +668,16 @@ public final class EntityPlayer extends EntityLiving {
         this.chunkZ = MathUtil.floorDouble(this.z) >> 5;
 
         if (this.chunkX != this.prevChunkX) {
-            SpaceGame.camera.viewMatrix.translate((this.chunkX - this.prevChunkX) * 32, 0, 0);
+            CosmicEvolution.camera.viewMatrix.translate((this.chunkX - this.prevChunkX) * 32, 0, 0);
         }
         if (this.chunkY != this.prevChunkY) {
-            SpaceGame.camera.viewMatrix.translate(0, (this.chunkY - this.prevChunkY) * 32, 0);
+            CosmicEvolution.camera.viewMatrix.translate(0, (this.chunkY - this.prevChunkY) * 32, 0);
         }
         if (this.chunkZ != this.prevChunkZ) {
-            SpaceGame.camera.viewMatrix.translate(0, 0, (this.chunkZ - this.prevChunkZ) * 32);
+            CosmicEvolution.camera.viewMatrix.translate(0, 0, (this.chunkZ - this.prevChunkZ) * 32);
         }
 
-        SpaceGame.camera.viewMatrix.translate(0, -this.height/2, 0);
+        CosmicEvolution.camera.viewMatrix.translate(0, -this.height/2, 0);
 
         this.prevChunkX = this.chunkX;
         this.prevChunkY = this.chunkY;
@@ -672,7 +685,7 @@ public final class EntityPlayer extends EntityLiving {
     }
 
     private void moveCamera() {
-        SpaceGame.camera.viewMatrix.translate(-this.deltaX, -this.deltaY, -this.deltaZ);
+        CosmicEvolution.camera.viewMatrix.translate(-this.deltaX, -this.deltaY, -this.deltaZ);
     }
 
     public void setPlayerActualPos(double x, double y, double z) {
@@ -693,12 +706,12 @@ public final class EntityPlayer extends EntityLiving {
         this.prevChunkX = 0;
         this.prevChunkY = 0;
         this.prevChunkZ = 0;
-        SpaceGame.camera.resetViewMatrix();
+        CosmicEvolution.camera.resetViewMatrix();
         this.setPlayerActualPos(x, y, z);
-        if(!this.sg.save.activeWorld.paused && GameSettings.viewBob) {
-            double xShift = 0.25 * ((MathUtil.sin((float) (((this.sg.save.thePlayer.viewBobTimer / 60f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
-            double yShift = 0.125 * ((MathUtil.sin((float) (((this.sg.save.thePlayer.viewBobTimer / 60f) - 0.125f) * (Math.PI * 4f))) * 0.5) + 0.5f);
-            SpaceGame.camera.viewMatrix.translateLocal(-xShift, -yShift, 0);
+        if(!this.ce.save.activeWorld.paused && GameSettings.viewBob) {
+            double xShift = 0.25 * ((MathUtil.sin((float) (((this.ce.save.thePlayer.viewBobTimer / 60f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
+            double yShift = 0.125 * ((MathUtil.sin((float) (((this.ce.save.thePlayer.viewBobTimer / 60f) - 0.125f) * (Math.PI * 4f))) * 0.5) + 0.5f);
+            CosmicEvolution.camera.viewMatrix.translateLocal(-xShift, -yShift, 0);
         }
         this.setRotation();
     }
@@ -707,9 +720,9 @@ public final class EntityPlayer extends EntityLiving {
         float pitch = (float) Math.toRadians(this.pitch);
         float yaw = (float) Math.toRadians(this.yaw);
         float roll = (float) Math.toRadians(this.roll);
-        SpaceGame.camera.viewMatrix.rotateLocalX(-pitch);
-        SpaceGame.camera.viewMatrix.rotateAround(new Quaterniond(0, 0, 0, 1).rotationAxis(new AxisAngle4f(yaw, 0.0F, 1.0F, 0.0F)), this.x - (this.chunkX * 32), this.y - (this.chunkY * 32), this.z - (this.chunkZ * 32));
-        SpaceGame.camera.viewMatrix.rotateLocalZ(-roll);
+        CosmicEvolution.camera.viewMatrix.rotateLocalX(-pitch);
+        CosmicEvolution.camera.viewMatrix.rotateAround(new Quaterniond(0, 0, 0, 1).rotationAxis(new AxisAngle4f(yaw, 0.0F, 1.0F, 0.0F)), this.x - (this.chunkX * 32), this.y - (this.chunkY * 32), this.z - (this.chunkZ * 32));
+        CosmicEvolution.camera.viewMatrix.rotateLocalZ(-roll);
     }
 
     @Override
@@ -717,7 +730,7 @@ public final class EntityPlayer extends EntityLiving {
         if(this.lastYOnGround - this.y > 3){
             this.health -= this.lastYOnGround - this.y;
             this.runDamageTilt = true;
-            SpaceGame.instance.soundPlayer.playSound(this.x, this.y, this.z, new Sound(Sound.fallDamage, false), new Random().nextFloat(0.4F, 0.7F));
+            CosmicEvolution.instance.soundPlayer.playSound(this.x, this.y, this.z, new Sound(Sound.fallDamage, false), new Random().nextFloat(0.4F, 0.7F));
         }
     }
 
@@ -734,22 +747,22 @@ public final class EntityPlayer extends EntityLiving {
     }
 
     public void setBlockPlayerLookingAt(){
-        if (!this.sg.save.activeWorld.paused) {
-            double[] rayCast = SpaceGame.camera.rayCast(3);
+        if (!this.ce.save.activeWorld.paused) {
+            double[] rayCast = CosmicEvolution.camera.rayCast(3);
             final double multiplier = 0.05D;
-            final double xDif = (rayCast[0] - this.sg.save.thePlayer.x);
-            final double yDif = (rayCast[1] - (this.sg.save.thePlayer.y + this.sg.save.thePlayer.height/2));
-            final double zDif = (rayCast[2] - this.sg.save.thePlayer.z);
+            final double xDif = (rayCast[0] - this.ce.save.thePlayer.x);
+            final double yDif = (rayCast[1] - (this.ce.save.thePlayer.y + this.ce.save.thePlayer.height/2));
+            final double zDif = (rayCast[2] - this.ce.save.thePlayer.z);
 
             int blockX = 0;
             int blockY = 0;
             int blockZ = 0;
             for (int loopPass = 0; loopPass < 30; loopPass++) {
-                blockX = MathUtil.floorDouble(this.sg.save.thePlayer.x + xDif * multiplier * loopPass);
-                blockY = MathUtil.floorDouble(this.sg.save.thePlayer.y  + this.sg.save.thePlayer.height/2 + yDif * multiplier * loopPass);
-                blockZ = MathUtil.floorDouble(this.sg.save.thePlayer.z + zDif * multiplier * loopPass);
+                blockX = MathUtil.floorDouble(this.ce.save.thePlayer.x + xDif * multiplier * loopPass);
+                blockY = MathUtil.floorDouble(this.ce.save.thePlayer.y  + this.ce.save.thePlayer.height/2 + yDif * multiplier * loopPass);
+                blockZ = MathUtil.floorDouble(this.ce.save.thePlayer.z + zDif * multiplier * loopPass);
 
-                if (GuiInGame.isBlockVisible(blockX, blockY, blockZ) && (Block.list[this.sg.save.activeWorld.getBlockID(blockX, blockY, blockZ)].ID != Block.air.ID && Block.list[this.sg.save.activeWorld.getBlockID(blockX, blockY, blockZ)].ID != Block.water.ID)) {
+                if (GuiInGame.isBlockVisible(blockX, blockY, blockZ) && (Block.list[this.ce.save.activeWorld.getBlockID(blockX, blockY, blockZ)].ID != Block.air.ID && Block.list[this.ce.save.activeWorld.getBlockID(blockX, blockY, blockZ)].ID != Block.water.ID)) {
                     this.blockLookingAt[0] = blockX;
                     this.blockLookingAt[1] = blockY;
                     this.blockLookingAt[2] = blockZ;
@@ -767,16 +780,72 @@ public final class EntityPlayer extends EntityLiving {
         }
     }
 
+    public short getPlayerLookingAtBlockID(){
+        if (!this.ce.save.activeWorld.paused) {
+            double[] rayCast = CosmicEvolution.camera.rayCast(3);
+            final double multiplier = 0.05D;
+            final double xDif = (rayCast[0] - this.ce.save.thePlayer.x);
+            final double yDif = (rayCast[1] - (this.ce.save.thePlayer.y + this.ce.save.thePlayer.height/2));
+            final double zDif = (rayCast[2] - this.ce.save.thePlayer.z);
+
+            int blockX = 0;
+            int blockY = 0;
+            int blockZ = 0;
+            for (int loopPass = 0; loopPass < 30; loopPass++) {
+                blockX = MathUtil.floorDouble(this.ce.save.thePlayer.x + xDif * multiplier * loopPass);
+                blockY = MathUtil.floorDouble(this.ce.save.thePlayer.y  + this.ce.save.thePlayer.height/2 + yDif * multiplier * loopPass);
+                blockZ = MathUtil.floorDouble(this.ce.save.thePlayer.z + zDif * multiplier * loopPass);
+
+                this.blockIDPlayerLookingAt = Block.air.ID;
+
+                if (GuiInGame.isBlockVisible(blockX, blockY, blockZ) && (Block.list[this.ce.save.activeWorld.getBlockID(blockX, blockY, blockZ)].ID != Block.air.ID && Block.list[this.ce.save.activeWorld.getBlockID(blockX, blockY, blockZ)].ID != Block.water.ID)) {
+                    this.blockIDPlayerLookingAt = this.ce.save.activeWorld.getBlockID(blockX, blockY,blockZ);
+                    break;
+                }
+            }
+        }
+        return this.blockIDPlayerLookingAt;
+    }
+
+    public int[] getPlayerLookingAtBlockCoords(){
+        if (!this.ce.save.activeWorld.paused) {
+            double[] rayCast = CosmicEvolution.camera.rayCast(3);
+            final double multiplier = 0.05D;
+            final double xDif = (rayCast[0] - this.ce.save.thePlayer.x);
+            final double yDif = (rayCast[1] - (this.ce.save.thePlayer.y + this.ce.save.thePlayer.height/2));
+            final double zDif = (rayCast[2] - this.ce.save.thePlayer.z);
+
+            int blockX = 0;
+            int blockY = 0;
+            int blockZ = 0;
+            for (int loopPass = 0; loopPass < 30; loopPass++) {
+                blockX = MathUtil.floorDouble(this.ce.save.thePlayer.x + xDif * multiplier * loopPass);
+                blockY = MathUtil.floorDouble(this.ce.save.thePlayer.y  + this.ce.save.thePlayer.height/2 + yDif * multiplier * loopPass);
+                blockZ = MathUtil.floorDouble(this.ce.save.thePlayer.z + zDif * multiplier * loopPass);
+
+                this.blockIDPlayerLookingAt = Block.air.ID;
+
+                if (GuiInGame.isBlockVisible(blockX, blockY, blockZ) && (Block.list[this.ce.save.activeWorld.getBlockID(blockX, blockY, blockZ)].ID != Block.air.ID && Block.list[this.ce.save.activeWorld.getBlockID(blockX, blockY, blockZ)].ID != Block.water.ID)) {
+                    this.blockLookingAtCoords[0] = blockX;
+                    this.blockLookingAtCoords[1] = blockY;
+                    this.blockLookingAtCoords[2] = blockZ;
+                    break;
+                }
+            }
+        }
+        return this.blockLookingAtCoords;
+    }
+
     @Override
     public void renderShadow(){
         int x = MathUtil.floorDouble(this.x);
         int y = MathUtil.floorDouble(this.y - (this.height/2) - 0.1);
         int z = MathUtil.floorDouble(this.z);
-        if(Block.list[this.sg.save.activeWorld.getBlockID(x,y,z)].isSolid) {
+        if(Block.list[this.ce.save.activeWorld.getBlockID(x,y,z)].isSolid) {
             Shader.worldShader2DTexture.uploadBoolean("useFog", true);
-            Shader.worldShader2DTexture.uploadFloat("fogRed", SpaceGame.instance.save.activeWorld.skyColor[0]);
-            Shader.worldShader2DTexture.uploadFloat("fogGreen", SpaceGame.instance.save.activeWorld.skyColor[1]);
-            Shader.worldShader2DTexture.uploadFloat("fogBlue", SpaceGame.instance.save.activeWorld.skyColor[2]);
+            Shader.worldShader2DTexture.uploadFloat("fogRed", CosmicEvolution.instance.save.activeWorld.skyColor[0]);
+            Shader.worldShader2DTexture.uploadFloat("fogGreen", CosmicEvolution.instance.save.activeWorld.skyColor[1]);
+            Shader.worldShader2DTexture.uploadFloat("fogBlue", CosmicEvolution.instance.save.activeWorld.skyColor[2]);
             Shader.worldShader2DTexture.uploadFloat("fogDistance", GameSettings.renderDistance * 20f);
             Vector3f chunkOffset = new Vector3f(0,0,0);
             Shader.worldShader2DTexture.uploadVec3f("chunkOffset", chunkOffset);
@@ -788,7 +857,7 @@ public final class EntityPlayer extends EntityLiving {
             tessellator.addElements();
             GL46.glEnable(GL46.GL_BLEND);
             GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-            tessellator.drawTexture2D(shadow, Shader.worldShader2DTexture, SpaceGame.camera);
+            tessellator.drawTexture2D(shadow, Shader.worldShader2DTexture, CosmicEvolution.camera);
             GL46.glDisable(GL46.GL_BLEND);
         }
     }
@@ -804,8 +873,8 @@ public final class EntityPlayer extends EntityLiving {
     public void handleDeath() {
         this.clearInventory();
         this.inventoryUpgradeLevel = 1;
-        this.sg.setNewGui(new GuiDeathScreen(this.sg));
-        this.sg.save.activeWorld.paused = true;
+        this.ce.setNewGui(new GuiDeathScreen(this.ce));
+        this.ce.save.activeWorld.paused = true;
     }
 
     @Override
@@ -816,7 +885,7 @@ public final class EntityPlayer extends EntityLiving {
         this.damageTimer = 30;
         this.roll = 0;
         this.canDamage = false;
-        SpaceGame.instance.soundPlayer.playSound(this.x, this.y, this.z, new Sound(Sound.fallDamage, false), new Random().nextFloat(0.4F, 0.7F));
+        CosmicEvolution.instance.soundPlayer.playSound(this.x, this.y, this.z, new Sound(Sound.fallDamage, false), new Random().nextFloat(0.4F, 0.7F));
     }
 
     @Override
@@ -830,7 +899,7 @@ public final class EntityPlayer extends EntityLiving {
     }
 
     private void clearInventory(){
-        Chunk chunk = this.sg.save.activeWorld.chunkController.findChunkFromChunkCoordinates(this.chunkX, this.chunkY, this.chunkZ);
+        Chunk chunk = this.ce.save.activeWorld.chunkController.findChunkFromChunkCoordinates(this.chunkX, this.chunkY, this.chunkZ);
         Random rand = new Random();
         for(int i = 0; i < this.inventory.itemStacks.length; i++) {
             if(this.inventory.itemStacks[i].item == Item.block) {
@@ -856,6 +925,10 @@ public final class EntityPlayer extends EntityLiving {
                 this.removeItemFromInventory();
             }
         }
+    }
+
+    public boolean isBlockSpawnPoint(int x, int y, int z){
+        return x == this.spawnX && y == this.spawnY && z == this.spawnZ;
     }
 
     public void updateSwingTimer(){

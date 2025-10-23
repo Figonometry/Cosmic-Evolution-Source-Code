@@ -1,6 +1,6 @@
 package spacegame.block;
 
-import spacegame.core.SpaceGame;
+import spacegame.core.CosmicEvolution;
 import spacegame.world.World;
 
 public final class BlockDirt extends Block implements ITickable {
@@ -10,7 +10,7 @@ public final class BlockDirt extends Block implements ITickable {
 
     @Override
     public void tick(int x, int y, int z, World world) {
-        if (SpaceGame.globalRand.nextInt(166) == 0) {
+        if (CosmicEvolution.globalRand.nextInt(166) == 0) {
             if ((world.getBlockLightValue(x, y + 1, z) >= 9 || world.getBlockSkyLightValue(x, y + 1, z) >= 9) && !Block.list[world.getBlockID(x, y + 1, z)].isSolid) {
                 if (this.isNearGrassBlock(x, y, z)) {
                     if(world.chunkFullySurrounded(x >> 5, y >> 5, z >> 5)) {
@@ -38,6 +38,6 @@ public final class BlockDirt extends Block implements ITickable {
     }
 
     private boolean isValidGrassBlockSpread(int x, int y, int z){
-        return (SpaceGame.instance.save.activeWorld.getBlockID(x,y,z) == Block.grass.ID || SpaceGame.instance.save.activeWorld.getBlockID(x,y,z) == Block.grassWithClay.ID) && !Block.list[SpaceGame.instance.save.activeWorld.getBlockID(x, y + 1, z)].isSolid;
+        return (CosmicEvolution.instance.save.activeWorld.getBlockID(x,y,z) == Block.grass.ID || CosmicEvolution.instance.save.activeWorld.getBlockID(x,y,z) == Block.grassWithClay.ID) && !Block.list[CosmicEvolution.instance.save.activeWorld.getBlockID(x, y + 1, z)].isSolid;
     }
 }

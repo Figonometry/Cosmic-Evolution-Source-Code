@@ -24,8 +24,8 @@ public final class TextField {
 
     public void renderTextFieldAndText(){
         RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
-        int textFieldOutline = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/outline32.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        int cursor = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColor.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        int textFieldOutline = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/outline32.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        int cursor = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColor.png", RenderEngine.TEXTURE_TYPE_2D, 0);
 
         tessellator.toggleOrtho();
 
@@ -35,7 +35,7 @@ public final class TextField {
         tessellator.addVertex2DTexture(16777215, this.x - this.width/2, this.y + this.height/2, outlineZ, 2);
         tessellator.addVertex2DTexture(16777215, this.x + this.width/2, this.y - this.height/2, outlineZ, 0);
         tessellator.addElements();
-        tessellator.drawTexture2D(textFieldOutline, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(textFieldOutline, Shader.screen2DTexture, CosmicEvolution.camera);
 
         if(this.typing && this.text.length() < 28) {
             if(Timer.elapsedTime % 60 <= 30) {
@@ -45,17 +45,17 @@ public final class TextField {
                 tessellator.addVertex2DTexture(16777215, this.x - this.width / 2 + ((this.text.length() + 1.2F) * 17), this.y + this.height / 2 - 5, cursorZ, 2);
                 tessellator.addVertex2DTexture(16777215, this.x - this.width / 2 + ((this.text.length() + 1.2F) * 17) + 9, this.y - this.height / 2 + 5, cursorZ, 0);
                 tessellator.addElements();
-                tessellator.drawTexture2D(cursor, Shader.screen2DTexture, SpaceGame.camera);
+                tessellator.drawTexture2D(cursor, Shader.screen2DTexture, CosmicEvolution.camera);
             }
         }
 
         tessellator.toggleOrtho();
 
-        SpaceGame.instance.renderEngine.deleteTexture(textFieldOutline);
-        SpaceGame.instance.renderEngine.deleteTexture(cursor);
+        CosmicEvolution.instance.renderEngine.deleteTexture(textFieldOutline);
+        CosmicEvolution.instance.renderEngine.deleteTexture(cursor);
 
         FontRenderer fontRenderer = FontRenderer.instance;
-        fontRenderer.drawString(this.text, this.x - this.width/2, this.y - this.height/2,-15, 16777215, 50);
+        fontRenderer.drawString(this.text, this.x - this.width/2, this.y - this.height/2,-15, 16777215, 50, 255);
     }
 
     public void scanForInputText() {
@@ -84,8 +84,8 @@ public final class TextField {
 
 
     public boolean isMouseHoveredOver(){
-        double x = MouseListener.instance.xPos - SpaceGame.width/2D;
-        double y = (MouseListener.instance.yPos - SpaceGame.height/2D) * -1;
+        double x = MouseListener.instance.xPos - CosmicEvolution.width/2D;
+        double y = (MouseListener.instance.yPos - CosmicEvolution.height/2D) * -1;
         return x > this.x - (double) this.width /2 && x < this.x + (double) this.width /2 && y > this.y - (double) this.height /2 && y < this.y + (double) this.height /2;
     }
 

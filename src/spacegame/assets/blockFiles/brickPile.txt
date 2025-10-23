@@ -5,4 +5,5 @@ stepSound:clay
 requiresTool:true
 toolType:unbreakable
 breakTimer:120
+displayName:Brick Pile
 hardness:10

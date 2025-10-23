@@ -1,8 +1,8 @@
 package spacegame.gui;
 
 import org.lwjgl.opengl.GL46;
+import spacegame.core.CosmicEvolution;
 import spacegame.core.MathUtil;
-import spacegame.core.SpaceGame;
 import spacegame.item.Inventory;
 import spacegame.item.ItemStack;
 import spacegame.render.RenderEngine;
@@ -12,18 +12,18 @@ public abstract class GuiInventory extends Gui {
     public Inventory associatedInventory;
     public static int fillableColor;
     public static int transparentBackground;
-    public GuiInventory(SpaceGame spaceGame) {
-        super(spaceGame);
+    public GuiInventory(CosmicEvolution cosmicEvolution) {
+        super(cosmicEvolution);
     }
 
     public void loadTexture(){
-        fillableColor = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColor.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        transparentBackground = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        fillableColor = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColor.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        transparentBackground = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
     }
 
     public void unloadTexture() {
-        SpaceGame.instance.renderEngine.deleteTexture(fillableColor);
-        SpaceGame.instance.renderEngine.deleteTexture(transparentBackground);
+        CosmicEvolution.instance.renderEngine.deleteTexture(fillableColor);
+        CosmicEvolution.instance.renderEngine.deleteTexture(transparentBackground);
     }
 
     public abstract ItemStack getHoveredItemStack();
@@ -50,13 +50,13 @@ public abstract class GuiInventory extends Gui {
         tessellator.addElements();
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-        tessellator.drawTexture2D(this.transparentBackground, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.transparentBackground, Shader.screen2DTexture, CosmicEvolution.camera);
         GL46.glDisable(GL46.GL_BLEND);
 
         tessellator.toggleOrtho();
 
 
-        fontRenderer.drawString(displayedName, x, y, -9, 16777215, font);
+        fontRenderer.drawString(displayedName, x, y, -9, 16777215, font, 255);
     }
 
 }

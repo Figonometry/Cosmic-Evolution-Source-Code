@@ -4,7 +4,7 @@ import org.joml.Matrix4d;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL46;
 import org.lwjgl.stb.STBImage;
-import spacegame.core.SpaceGame;
+import spacegame.core.CosmicEvolution;
 
 import java.io.File;
 import java.nio.ByteBuffer;
@@ -50,7 +50,7 @@ public final class RenderEngine {
 
                 File file = new File(filepath);
                 if (!file.exists()) {
-                    filepath = SpaceGame.imageFallbackPath;
+                    filepath = CosmicEvolution.imageFallbackPath;
                 }
 
 
@@ -115,7 +115,7 @@ public final class RenderEngine {
             case TEXTURE_TYPE_CUBEMAP -> {
                 File file = new File(filepath);
                 if (!file.exists()) {
-                    filepath = SpaceGame.imageFallbackPath;
+                    filepath = CosmicEvolution.imageFallbackPath;
                 }
 
 
@@ -294,7 +294,7 @@ public final class RenderEngine {
         String imageName = getBlockName(textureNumber, filepath);
         String imageFilepath = filepath + imageName + ".png";
         if (!new File(imageFilepath).exists()) {
-            imageFilepath = SpaceGame.imageFallbackPath;
+            imageFilepath = CosmicEvolution.imageFallbackPath;
         }
 
         IntBuffer width = BufferUtils.createIntBuffer(1);
@@ -400,12 +400,12 @@ public final class RenderEngine {
         //top, bottom, north, south, east, west
 
         private Tessellator() {
-            this.vboID = SpaceGame.instance.renderEngine.createBuffers();
-            this.eboID = SpaceGame.instance.renderEngine.createBuffers();
+            this.vboID = CosmicEvolution.instance.renderEngine.createBuffers();
+            this.eboID = CosmicEvolution.instance.renderEngine.createBuffers();
 
-            this.texture2DVAO = SpaceGame.instance.renderEngine.createVAO();
-            this.texture2DAtlasVAO = SpaceGame.instance.renderEngine.createVAO();
-            this.textureCubeMapVAO = SpaceGame.instance.renderEngine.createVAO();
+            this.texture2DVAO = CosmicEvolution.instance.renderEngine.createVAO();
+            this.texture2DAtlasVAO = CosmicEvolution.instance.renderEngine.createVAO();
+            this.textureCubeMapVAO = CosmicEvolution.instance.renderEngine.createVAO();
 
             int positionsSize = 3;
             int colorSize = 4;
@@ -413,27 +413,27 @@ public final class RenderEngine {
             int texCoordsSize = 2;
             int vertexSizeBytes = (positionsSize + colorSize + texCoordsSize + texIndexSize) * Float.BYTES;
 
-            SpaceGame.instance.renderEngine.setVertexAttribute(this.texture2DAtlasVAO, 0, positionsSize, vertexSizeBytes, 0, this.vboID);
-            SpaceGame.instance.renderEngine.setVertexAttribute(this.texture2DAtlasVAO, 1, colorSize, vertexSizeBytes, positionsSize * Float.BYTES, this.vboID);
-            SpaceGame.instance.renderEngine.setVertexAttribute(this.texture2DAtlasVAO, 2, texCoordsSize, vertexSizeBytes, (positionsSize + colorSize) * Float.BYTES, this.vboID);
-            SpaceGame.instance.renderEngine.setVertexAttribute(this.texture2DAtlasVAO, 3, texIndexSize, vertexSizeBytes, (positionsSize + colorSize + texCoordsSize) * Float.BYTES, this.vboID);
+            CosmicEvolution.instance.renderEngine.setVertexAttribute(this.texture2DAtlasVAO, 0, positionsSize, vertexSizeBytes, 0, this.vboID);
+            CosmicEvolution.instance.renderEngine.setVertexAttribute(this.texture2DAtlasVAO, 1, colorSize, vertexSizeBytes, positionsSize * Float.BYTES, this.vboID);
+            CosmicEvolution.instance.renderEngine.setVertexAttribute(this.texture2DAtlasVAO, 2, texCoordsSize, vertexSizeBytes, (positionsSize + colorSize) * Float.BYTES, this.vboID);
+            CosmicEvolution.instance.renderEngine.setVertexAttribute(this.texture2DAtlasVAO, 3, texIndexSize, vertexSizeBytes, (positionsSize + colorSize + texCoordsSize) * Float.BYTES, this.vboID);
 
             vertexSizeBytes = (positionsSize + colorSize + texCoordsSize) * Float.BYTES;
 
-            SpaceGame.instance.renderEngine.setVertexAttribute(this.texture2DVAO, 0, positionsSize, vertexSizeBytes, 0, this.vboID);
-            SpaceGame.instance.renderEngine.setVertexAttribute(this.texture2DVAO, 1, colorSize, vertexSizeBytes, positionsSize * Float.BYTES, this.vboID);
-            SpaceGame.instance.renderEngine.setVertexAttribute(this.texture2DVAO, 2, texCoordsSize, vertexSizeBytes, (positionsSize + colorSize) * Float.BYTES, this.vboID);
+            CosmicEvolution.instance.renderEngine.setVertexAttribute(this.texture2DVAO, 0, positionsSize, vertexSizeBytes, 0, this.vboID);
+            CosmicEvolution.instance.renderEngine.setVertexAttribute(this.texture2DVAO, 1, colorSize, vertexSizeBytes, positionsSize * Float.BYTES, this.vboID);
+            CosmicEvolution.instance.renderEngine.setVertexAttribute(this.texture2DVAO, 2, texCoordsSize, vertexSizeBytes, (positionsSize + colorSize) * Float.BYTES, this.vboID);
 
 
             vertexSizeBytes = (positionsSize + colorSize) * Float.BYTES;
-            SpaceGame.instance.renderEngine.setVertexAttribute(this.textureCubeMapVAO, 0, positionsSize, vertexSizeBytes, 0, this.vboID);
-            SpaceGame.instance.renderEngine.setVertexAttribute(this.textureCubeMapVAO, 1, colorSize, vertexSizeBytes, positionsSize * Float.BYTES, this.vboID);
+            CosmicEvolution.instance.renderEngine.setVertexAttribute(this.textureCubeMapVAO, 0, positionsSize, vertexSizeBytes, 0, this.vboID);
+            CosmicEvolution.instance.renderEngine.setVertexAttribute(this.textureCubeMapVAO, 1, colorSize, vertexSizeBytes, positionsSize * Float.BYTES, this.vboID);
         }
 
 
-        public void addVertex2DTextureWithAtlas(int colorValue, float x, float y, float z, int corner, Texture textureID, float blockID){
+        public void addVertex2DTextureWithAtlas(int colorValue, float x, float y, float z, int corner, Texture textureID, float blockID, int alphaValue){
             if(colorValue > 16777215){
-                colorValue = 1677215;
+                colorValue = 16777215;
             }
             if(colorValue < 0){
                 colorValue = 0;
@@ -442,7 +442,7 @@ public final class RenderEngine {
             final float red = ((colorValue >> 16) & 255) / 255f;
             final float green = ((colorValue >> 8) & 255) / 255f;
             final float blue = (colorValue & 255) / 255f;
-            final float alpha = 1f;
+            final float alpha = alphaValue / 255f;
 
             this.vertexBuffer.put(x);
             this.vertexBuffer.put(y);
@@ -458,7 +458,7 @@ public final class RenderEngine {
 
         public void addVertex2DTexture(int colorValue, float x, float y, float z, int corner){
             if(colorValue > 16777215){
-                colorValue = 1677215;
+                colorValue = 16777215;
             }
             if(colorValue < 0){
                 colorValue = 0;
@@ -501,7 +501,7 @@ public final class RenderEngine {
         //Bottom left, Top right, top left, bottom right for n, s, e, w faces
         public void addVertex2DTextureWithSampling(int colorValue, float x, float y, float z, int corner, float xSample, float ySample){
             if(colorValue > 16777215){
-                colorValue = 1677215;
+                colorValue = 16777215;
             }
             if(colorValue < 0){
                 colorValue = 0;
@@ -542,7 +542,7 @@ public final class RenderEngine {
 
         public void addVertexCubeMap(int colorValue, float x, float y, float z){
             if(colorValue > 16777215){
-                colorValue = 1677215;
+                colorValue = 16777215;
             }
             if(colorValue < 0){
                 colorValue = 0;
@@ -564,7 +564,7 @@ public final class RenderEngine {
 
         public void addVertexTextureArray(int colorValue, float x, float y, float z, int corner, float blockID, int faceType){
             if(colorValue > 16777215){
-                colorValue = 1677215;
+                colorValue = 16777215;
             }
             if(colorValue < 0){
                 colorValue = 0;
@@ -590,7 +590,7 @@ public final class RenderEngine {
 
         public void addVertexTextureArrayWithSampling(int colorValue, float x, float y, float z, int corner, float blockID, float xSample, float ySample){
             if(colorValue > 16777215){
-                colorValue = 1677215;
+                colorValue = 16777215;
             }
             if(colorValue < 0){
                 colorValue = 0;
@@ -847,12 +847,12 @@ public final class RenderEngine {
         private WorldTessellator(int quadLimit){
             this.vertexBuffer = BufferUtils.createFloatBuffer(quadLimit * 40);
             this.elementBuffer = BufferUtils.createIntBuffer(quadLimit * 6);
-            this.vboID = SpaceGame.instance.renderEngine.createBuffers();
-            this.eboID = SpaceGame.instance.renderEngine.createBuffers();
+            this.vboID = CosmicEvolution.instance.renderEngine.createBuffers();
+            this.eboID = CosmicEvolution.instance.renderEngine.createBuffers();
 
-            this.texture2DVAO = SpaceGame.instance.renderEngine.createVAO();
-            this.texture2DAtlasVAO = SpaceGame.instance.renderEngine.createVAO();
-            this.textureCubeMapVAO = SpaceGame.instance.renderEngine.createVAO();
+            this.texture2DVAO = CosmicEvolution.instance.renderEngine.createVAO();
+            this.texture2DAtlasVAO = CosmicEvolution.instance.renderEngine.createVAO();
+            this.textureCubeMapVAO = CosmicEvolution.instance.renderEngine.createVAO();
 
             int positionsSize = 3;
             int colorSize = 4;
@@ -863,33 +863,33 @@ public final class RenderEngine {
             int vertexSizeBytes = (positionsSize + colorSize + texCoordsSize + texIndexSize + skyLightValueSize + normalSize) * Float.BYTES;
 
 
-            SpaceGame.instance.renderEngine.setVertexAttribute(this.texture2DAtlasVAO, 0, positionsSize, vertexSizeBytes, 0, this.vboID);
-            SpaceGame.instance.renderEngine.setVertexAttribute(this.texture2DAtlasVAO, 1, colorSize, vertexSizeBytes, positionsSize * Float.BYTES, this.vboID);
-            SpaceGame.instance.renderEngine.setVertexAttribute(this.texture2DAtlasVAO, 2, texCoordsSize, vertexSizeBytes, (positionsSize + colorSize) * Float.BYTES, this.vboID);
-            SpaceGame.instance.renderEngine.setVertexAttribute(this.texture2DAtlasVAO, 3, texIndexSize, vertexSizeBytes, (positionsSize + colorSize + texCoordsSize) * Float.BYTES, this.vboID);
-            SpaceGame.instance.renderEngine.setVertexAttribute(this.texture2DAtlasVAO, 4, normalSize, vertexSizeBytes, (positionsSize + colorSize + texCoordsSize + texIndexSize) * Float.BYTES, this.vboID);
-            SpaceGame.instance.renderEngine.setVertexAttribute(this.texture2DAtlasVAO, 5, skyLightValueSize, vertexSizeBytes, (positionsSize + colorSize + texCoordsSize + texIndexSize + normalSize) * Float.BYTES, this.vboID);
+            CosmicEvolution.instance.renderEngine.setVertexAttribute(this.texture2DAtlasVAO, 0, positionsSize, vertexSizeBytes, 0, this.vboID);
+            CosmicEvolution.instance.renderEngine.setVertexAttribute(this.texture2DAtlasVAO, 1, colorSize, vertexSizeBytes, positionsSize * Float.BYTES, this.vboID);
+            CosmicEvolution.instance.renderEngine.setVertexAttribute(this.texture2DAtlasVAO, 2, texCoordsSize, vertexSizeBytes, (positionsSize + colorSize) * Float.BYTES, this.vboID);
+            CosmicEvolution.instance.renderEngine.setVertexAttribute(this.texture2DAtlasVAO, 3, texIndexSize, vertexSizeBytes, (positionsSize + colorSize + texCoordsSize) * Float.BYTES, this.vboID);
+            CosmicEvolution.instance.renderEngine.setVertexAttribute(this.texture2DAtlasVAO, 4, normalSize, vertexSizeBytes, (positionsSize + colorSize + texCoordsSize + texIndexSize) * Float.BYTES, this.vboID);
+            CosmicEvolution.instance.renderEngine.setVertexAttribute(this.texture2DAtlasVAO, 5, skyLightValueSize, vertexSizeBytes, (positionsSize + colorSize + texCoordsSize + texIndexSize + normalSize) * Float.BYTES, this.vboID);
 
             vertexSizeBytes = (positionsSize + colorSize + texCoordsSize + normalSize + skyLightValueSize) * Float.BYTES;
 
-            SpaceGame.instance.renderEngine.setVertexAttribute(this.texture2DVAO, 0, positionsSize, vertexSizeBytes, 0, this.vboID);
-            SpaceGame.instance.renderEngine.setVertexAttribute(this.texture2DVAO, 1, colorSize, vertexSizeBytes, positionsSize * Float.BYTES, this.vboID);
-            SpaceGame.instance.renderEngine.setVertexAttribute(this.texture2DVAO, 2, texCoordsSize, vertexSizeBytes, (positionsSize + colorSize) * Float.BYTES, this.vboID);
-            SpaceGame.instance.renderEngine.setVertexAttribute(this.texture2DVAO, 3, normalSize, vertexSizeBytes, (positionsSize + colorSize + texCoordsSize) * Float.BYTES, this.vboID);
-            SpaceGame.instance.renderEngine.setVertexAttribute(this.texture2DVAO, 4, skyLightValueSize, vertexSizeBytes, (positionsSize + colorSize + texCoordsSize + normalSize) * Float.BYTES, this.vboID);
+            CosmicEvolution.instance.renderEngine.setVertexAttribute(this.texture2DVAO, 0, positionsSize, vertexSizeBytes, 0, this.vboID);
+            CosmicEvolution.instance.renderEngine.setVertexAttribute(this.texture2DVAO, 1, colorSize, vertexSizeBytes, positionsSize * Float.BYTES, this.vboID);
+            CosmicEvolution.instance.renderEngine.setVertexAttribute(this.texture2DVAO, 2, texCoordsSize, vertexSizeBytes, (positionsSize + colorSize) * Float.BYTES, this.vboID);
+            CosmicEvolution.instance.renderEngine.setVertexAttribute(this.texture2DVAO, 3, normalSize, vertexSizeBytes, (positionsSize + colorSize + texCoordsSize) * Float.BYTES, this.vboID);
+            CosmicEvolution.instance.renderEngine.setVertexAttribute(this.texture2DVAO, 4, skyLightValueSize, vertexSizeBytes, (positionsSize + colorSize + texCoordsSize + normalSize) * Float.BYTES, this.vboID);
 
 
 
             vertexSizeBytes = (positionsSize + colorSize + normalSize + skyLightValueSize) * Float.BYTES;
-            SpaceGame.instance.renderEngine.setVertexAttribute(this.textureCubeMapVAO, 0, positionsSize, vertexSizeBytes, 0, this.vboID);
-            SpaceGame.instance.renderEngine.setVertexAttribute(this.textureCubeMapVAO, 1, colorSize, vertexSizeBytes, positionsSize * Float.BYTES, this.vboID);
-            SpaceGame.instance.renderEngine.setVertexAttribute(this.textureCubeMapVAO, 2, normalSize, vertexSizeBytes, (positionsSize + colorSize) * Float.BYTES, this.vboID);
-            SpaceGame.instance.renderEngine.setVertexAttribute(this.textureCubeMapVAO, 3, skyLightValueSize, vertexSizeBytes, (positionsSize + colorSize + normalSize) * Float.BYTES, this.vboID);
+            CosmicEvolution.instance.renderEngine.setVertexAttribute(this.textureCubeMapVAO, 0, positionsSize, vertexSizeBytes, 0, this.vboID);
+            CosmicEvolution.instance.renderEngine.setVertexAttribute(this.textureCubeMapVAO, 1, colorSize, vertexSizeBytes, positionsSize * Float.BYTES, this.vboID);
+            CosmicEvolution.instance.renderEngine.setVertexAttribute(this.textureCubeMapVAO, 2, normalSize, vertexSizeBytes, (positionsSize + colorSize) * Float.BYTES, this.vboID);
+            CosmicEvolution.instance.renderEngine.setVertexAttribute(this.textureCubeMapVAO, 3, skyLightValueSize, vertexSizeBytes, (positionsSize + colorSize + normalSize) * Float.BYTES, this.vboID);
         }
 
         public void addVertex2DTextureWithAtlas(int colorValue, float x, float y, float z, int corner, Texture textureID, float blockID, float normalX, float normalY, float normalZ, float skyLightValue){
             if(colorValue > 16777215){
-                colorValue = 1677215;
+                colorValue = 16777215;
             }
             if(colorValue < 0){
                 colorValue = 0;
@@ -919,7 +919,7 @@ public final class RenderEngine {
 
         public void addVertex2DTexture(int colorValue, float x, float y, float z, int corner, float normalX, float normalY, float normalZ, float skyLightValue){
             if(colorValue > 16777215){
-                colorValue = 1677215;
+                colorValue = 16777215;
             }
             if(colorValue < 0){
                 colorValue = 0;
@@ -965,7 +965,7 @@ public final class RenderEngine {
 
         public void addVertex2DTextureWithSampling(int colorValue, float x, float y, float z, int corner, float xSample, float ySample, float normalX, float normalY, float normalZ, float skyLightValue){
             if(colorValue > 16777215){
-                colorValue = 1677215;
+                colorValue = 16777215;
             }
             if(colorValue < 0){
                 colorValue = 0;
@@ -1011,7 +1011,7 @@ public final class RenderEngine {
 
         public void addVertexCubeMap(int colorValue, float x, float y, float z, float normalX, float normalY, float normalZ, float skyLightValue){
             if(colorValue > 16777215){
-                colorValue = 1677215;
+                colorValue = 16777215;
             }
             if(colorValue < 0){
                 colorValue = 0;
@@ -1038,7 +1038,7 @@ public final class RenderEngine {
 
         public void addVertexTextureArray(int colorValue, float x, float y, float z, int corner, float blockID, int faceType, float normalX, float normalY, float normalZ, float skyLightValue){
             if(colorValue > 16777215){
-                colorValue = 1677215;
+                colorValue = 16777215;
             }
             if(colorValue < 0){
                 colorValue = 0;
@@ -1069,7 +1069,7 @@ public final class RenderEngine {
 
         public void addVertexTextureArrayWithSampling(int colorValue, float x, float y, float z, int corner, float blockID, float xSample, float ySample, float normalX, float normalY, float normalZ, float skyLightValue){
             if(colorValue > 16777215){
-                colorValue = 1677215;
+                colorValue = 16777215;
             }
             if(colorValue < 0){
                 colorValue = 0;
@@ -1182,9 +1182,9 @@ public final class RenderEngine {
 
             GL46.glBindTexture(GL46.GL_TEXTURE_2D, this.boundTexture);
 
-            if(SpaceGame.instance.save.activeWorld.chunkController.renderWorldScene.nearbyStars.size() > 0) {
+            if(CosmicEvolution.instance.save.activeWorld.chunkController.renderWorldScene.nearbyStars.size() > 0) {
                 GL46.glActiveTexture(GL46.GL_TEXTURE1);
-                GL46.glBindTexture(GL46.GL_TEXTURE_2D, SpaceGame.instance.save.activeWorld.chunkController.renderWorldScene.nearbyStars.get(0).shadowMap.depthMap);
+                GL46.glBindTexture(GL46.GL_TEXTURE_2D, CosmicEvolution.instance.save.activeWorld.chunkController.renderWorldScene.nearbyStars.get(0).shadowMap.depthMap);
             }
 
             //bind shader program
@@ -1234,9 +1234,9 @@ public final class RenderEngine {
             GL46.glActiveTexture(GL46.GL_TEXTURE0);
             GL46.glBindTexture(GL46.GL_TEXTURE_2D_ARRAY, this.boundTexture);
 
-            if(SpaceGame.instance.save.activeWorld.chunkController.renderWorldScene.nearbyStars.size() > 0) {
+            if(CosmicEvolution.instance.save.activeWorld.chunkController.renderWorldScene.nearbyStars.size() > 0) {
                 GL46.glActiveTexture(GL46.GL_TEXTURE1);
-                GL46.glBindTexture(GL46.GL_TEXTURE_2D, SpaceGame.instance.save.activeWorld.chunkController.renderWorldScene.nearbyStars.get(0).shadowMap.depthMap);
+                GL46.glBindTexture(GL46.GL_TEXTURE_2D, CosmicEvolution.instance.save.activeWorld.chunkController.renderWorldScene.nearbyStars.get(0).shadowMap.depthMap);
             }
 
             //bind shader program

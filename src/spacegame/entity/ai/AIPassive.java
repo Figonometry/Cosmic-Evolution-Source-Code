@@ -1,8 +1,8 @@
 package spacegame.entity.ai;
 
 import org.joml.Vector2f;
+import spacegame.core.CosmicEvolution;
 import spacegame.core.MathUtil;
-import spacegame.core.SpaceGame;
 import spacegame.entity.EntityLiving;
 
 public abstract class AIPassive { ;
@@ -13,8 +13,8 @@ public abstract class AIPassive { ;
         int z = MathUtil.floorDouble(entity.z);
 
 
-        int targetX = x + SpaceGame.globalRand.nextInt(-10, 11);
-        int targetZ = z + SpaceGame.globalRand.nextInt(-10, 11);
+        int targetX = x + CosmicEvolution.globalRand.nextInt(-10, 11);
+        int targetZ = z + CosmicEvolution.globalRand.nextInt(-10, 11);
 
         Vector2f startPos = new Vector2f(x,z);
         Vector2f targetPos = new Vector2f(targetX, targetZ);

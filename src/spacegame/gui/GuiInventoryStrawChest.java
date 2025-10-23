@@ -2,7 +2,7 @@ package spacegame.gui;
 
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
-import spacegame.core.SpaceGame;
+import spacegame.core.CosmicEvolution;
 import spacegame.item.Inventory;
 import spacegame.item.ItemStack;
 import spacegame.render.RenderEngine;
@@ -15,8 +15,8 @@ public final class GuiInventoryStrawChest extends GuiInventory {
     public int strawChestInventoryUI;
     public static int fillableColorWithShadedBottom;
 
-    public GuiInventoryStrawChest(SpaceGame spaceGame, Inventory playerInventory, Inventory chestInventory) {
-        super(spaceGame);
+    public GuiInventoryStrawChest(CosmicEvolution cosmicEvolution, Inventory playerInventory, Inventory chestInventory) {
+        super(cosmicEvolution);
         this.playerInventory = playerInventory;
         this.chestInventory = chestInventory;
 
@@ -30,10 +30,10 @@ public final class GuiInventoryStrawChest extends GuiInventory {
 
     @Override
     public void loadTextures() {
-        this.playerInventoryUI = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInventory/playerInventory.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        transparentBackground = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        fillableColorWithShadedBottom = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColorWithShadedBottom.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        this.strawChestInventoryUI = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInventory/strawChestInventory.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.playerInventoryUI = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInventory/playerInventory.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        transparentBackground = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        fillableColorWithShadedBottom = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColorWithShadedBottom.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.strawChestInventoryUI = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInventory/strawChestInventory.png", RenderEngine.TEXTURE_TYPE_2D, 0);
         this.loadTexture();
     }
 
@@ -41,9 +41,9 @@ public final class GuiInventoryStrawChest extends GuiInventory {
     public void deleteTextures() {
         this.playerInventory.resetAllItemStacks();
         this.chestInventory.resetAllItemStacks();
-        SpaceGame.instance.renderEngine.deleteTexture(this.playerInventoryUI);
-        SpaceGame.instance.renderEngine.deleteTexture(transparentBackground);
-        SpaceGame.instance.renderEngine.deleteTexture(fillableColorWithShadedBottom);
+        CosmicEvolution.instance.renderEngine.deleteTexture(this.playerInventoryUI);
+        CosmicEvolution.instance.renderEngine.deleteTexture(transparentBackground);
+        CosmicEvolution.instance.renderEngine.deleteTexture(fillableColorWithShadedBottom);
         this.unloadTexture();
     }
 
@@ -52,7 +52,7 @@ public final class GuiInventoryStrawChest extends GuiInventory {
         GuiInGame.renderGuiFromOtherGuis();
         RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         tessellator.toggleOrtho();
-        GLFW.glfwSetInputMode(this.sg.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
+        GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
         int backgroundWidth = 1920;
         int backgroundHeight = 1017;
         int backgroundX = 0;
@@ -65,7 +65,7 @@ public final class GuiInventoryStrawChest extends GuiInventory {
         tessellator.addElements();
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-        tessellator.drawTexture2D(transparentBackground, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(transparentBackground, Shader.screen2DTexture, CosmicEvolution.camera);
         GL46.glDisable(GL46.GL_BLEND);
 
         int inventoryUIWidth = 1200;
@@ -78,7 +78,7 @@ public final class GuiInventoryStrawChest extends GuiInventory {
         tessellator.addVertex2DTexture(16777215, inventoryUIX - inventoryUIWidth/2, inventoryUIY + inventoryUIHeight/2, inventoryUIZ, 2);
         tessellator.addVertex2DTexture(16777215, inventoryUIX + inventoryUIWidth/2, inventoryUIY - inventoryUIHeight/2, inventoryUIZ, 0);
         tessellator.addElements();
-        tessellator.drawTexture2D(this.playerInventoryUI, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.playerInventoryUI, Shader.screen2DTexture, CosmicEvolution.camera);
 
         inventoryUIWidth = 196;
         inventoryUIHeight = 608;
@@ -90,7 +90,7 @@ public final class GuiInventoryStrawChest extends GuiInventory {
         tessellator.addVertex2DTexture(16777215, inventoryUIX - inventoryUIWidth/2, inventoryUIY + inventoryUIHeight/2, inventoryUIZ, 2);
         tessellator.addVertex2DTexture(16777215, inventoryUIX + inventoryUIWidth/2, inventoryUIY - inventoryUIHeight/2, inventoryUIZ, 0);
         tessellator.addElements();
-        tessellator.drawTexture2D(this.strawChestInventoryUI, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.strawChestInventoryUI, Shader.screen2DTexture, CosmicEvolution.camera);
 
         tessellator.toggleOrtho();
 

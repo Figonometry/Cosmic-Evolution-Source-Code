@@ -4,9 +4,9 @@ import org.joml.*;
 import org.lwjgl.opengl.GL46;
 import spacegame.celestial.CelestialObject;
 import spacegame.celestial.Sun;
+import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
 import spacegame.core.MathUtil;
-import spacegame.core.SpaceGame;
 import spacegame.core.Timer;
 import spacegame.gui.GuiInGame;
 import spacegame.gui.GuiUniverseMap;
@@ -59,7 +59,7 @@ public final class RenderWorldScene {
 
         this.renderNearbyCelestialObjects();
 
-        if (SpaceGame.instance.currentGui instanceof GuiInGame) {
+        if (CosmicEvolution.instance.currentGui instanceof GuiInGame) {
             GuiInGame.renderBlockOutline();
             GuiInGame.renderBlockBreakingOutline();
         }
@@ -78,12 +78,12 @@ public final class RenderWorldScene {
             GL46.glBindTexture(GL46.GL_TEXTURE_2D, this.nearbyStars.get(0).shadowMap.depthMap);
         }
 
-        Shader.terrainShader.uploadVec3f("playerPositionInChunk", new Vector3f((float) (SpaceGame.instance.save.thePlayer.x % 32), (float) (SpaceGame.instance.save.thePlayer.y % 32), (float) (SpaceGame.instance.save.thePlayer.z % 32)));
-        Shader.worldShaderTextureArray.uploadVec3f("playerPositionInChunk", new Vector3f((float) (SpaceGame.instance.save.thePlayer.x % 32), (float) (SpaceGame.instance.save.thePlayer.y % 32), (float) (SpaceGame.instance.save.thePlayer.z % 32)));
-        Shader.worldShader2DTexture.uploadVec3f("playerPositionInChunk", new Vector3f((float) (SpaceGame.instance.save.thePlayer.x % 32), (float) (SpaceGame.instance.save.thePlayer.y % 32), (float) (SpaceGame.instance.save.thePlayer.z % 32)));
+        Shader.terrainShader.uploadVec3f("playerPositionInChunk", new Vector3f((float) (CosmicEvolution.instance.save.thePlayer.x % 32), (float) (CosmicEvolution.instance.save.thePlayer.y % 32), (float) (CosmicEvolution.instance.save.thePlayer.z % 32)));
+        Shader.worldShaderTextureArray.uploadVec3f("playerPositionInChunk", new Vector3f((float) (CosmicEvolution.instance.save.thePlayer.x % 32), (float) (CosmicEvolution.instance.save.thePlayer.y % 32), (float) (CosmicEvolution.instance.save.thePlayer.z % 32)));
+        Shader.worldShader2DTexture.uploadVec3f("playerPositionInChunk", new Vector3f((float) (CosmicEvolution.instance.save.thePlayer.x % 32), (float) (CosmicEvolution.instance.save.thePlayer.y % 32), (float) (CosmicEvolution.instance.save.thePlayer.z % 32)));
         Shader.terrainShader.uploadInt("shadowMap", 1);
-        Shader.terrainShader.uploadMat4d("uProjection", SpaceGame.camera.projectionMatrix);
-        Shader.terrainShader.uploadMat4d("uView", SpaceGame.camera.viewMatrix);
+        Shader.terrainShader.uploadMat4d("uProjection", CosmicEvolution.camera.projectionMatrix);
+        Shader.terrainShader.uploadMat4d("uView", CosmicEvolution.camera.viewMatrix);
         Shader.terrainShader.uploadInt("textureArray", 0);
         Shader.terrainShader.uploadBoolean("useFog", true);
         Shader.terrainShader.uploadFloat("fogDistance", GameSettings.renderDistance * 20f);
@@ -101,9 +101,9 @@ public final class RenderWorldScene {
         int xOffset;
         int yOffset;
         int zOffset;
-        int playerChunkX = MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.x) >> 5;
-        int playerChunkY = MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.y) >> 5;
-        int playerChunkZ = MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.z) >> 5;
+        int playerChunkX = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x) >> 5;
+        int playerChunkY = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.y) >> 5;
+        int playerChunkZ = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z) >> 5;
 
         GL46.glEnable(GL46.GL_ALPHA_TEST);
         GL46.glAlphaFunc(GL46.GL_GREATER, 0.1F);
@@ -179,7 +179,7 @@ public final class RenderWorldScene {
 
 
         this.chunksToRender.clear();
-        this.renderSkybox(SpaceGame.instance.everything.getObjectAssociatedWithWorld(this.controller.parentWorld), playerLon, playerLat);
+        this.renderSkybox(CosmicEvolution.instance.everything.getObjectAssociatedWithWorld(this.controller.parentWorld), playerLon, playerLat);
         for(int i = 0; i < this.nearbyStarPos.size(); i++) {
             this.renderSunrise(new Vector3f(this.nearbyStarPos.get(i)).normalize().y, this.nearbyStarPos.get(i));
         }
@@ -267,8 +267,8 @@ public final class RenderWorldScene {
     public void renderWorldWithoutChunks(){
         Shader.worldShader2DTexture.uploadBoolean("useFog", true);
         Shader.worldShader2DTexture.uploadFloat("fogDistance", GameSettings.renderDistance * 20f);
-        Shader.worldShader2DTexture.uploadVec3f("playerPositionInChunk", new Vector3f((float) (SpaceGame.instance.save.thePlayer.x % 32), (float) (SpaceGame.instance.save.thePlayer.y % 32), (float) (SpaceGame.instance.save.thePlayer.z % 32)));
-        Shader.terrainShader.uploadMat4d("uView", SpaceGame.camera.viewMatrix);
+        Shader.worldShader2DTexture.uploadVec3f("playerPositionInChunk", new Vector3f((float) (CosmicEvolution.instance.save.thePlayer.x % 32), (float) (CosmicEvolution.instance.save.thePlayer.y % 32), (float) (CosmicEvolution.instance.save.thePlayer.z % 32)));
+        Shader.terrainShader.uploadMat4d("uView", CosmicEvolution.camera.viewMatrix);
         for(int i = 0; i < this.nearbyStars.size(); i++){
             this.setShadowMap(this.nearbyStars.get(i),this.nearbyStarPos.get(i));
         }
@@ -279,7 +279,7 @@ public final class RenderWorldScene {
 
         this.renderNearbyCelestialObjects();
 
-        if (SpaceGame.instance.currentGui instanceof GuiInGame) {
+        if (CosmicEvolution.instance.currentGui instanceof GuiInGame) {
             GuiInGame.renderBlockOutline();
             GuiInGame.renderBlockBreakingOutline();
         }
@@ -366,7 +366,7 @@ public final class RenderWorldScene {
         GL46.glDisable(GL46.GL_CULL_FACE);
 
 
-        this.renderSkybox(SpaceGame.instance.everything.getObjectAssociatedWithWorld(this.controller.parentWorld), playerLon, playerLat);
+        this.renderSkybox(CosmicEvolution.instance.everything.getObjectAssociatedWithWorld(this.controller.parentWorld), playerLon, playerLat);
         for(int i = 0; i < this.nearbyStarPos.size(); i++) {
             this.renderSunrise(new Vector3f(this.nearbyStarPos.get(i)).normalize().y, this.nearbyStarPos.get(i));
         }
@@ -394,7 +394,7 @@ public final class RenderWorldScene {
 
                 sunViewMatrix.identity();
                 sunViewMatrix = sunViewMatrix.lookAt(new Vector3f((float) sunPosition.x, (float) sunPosition.y, (float) sunPosition.z), new Vector3f(), new Vector3f(0.0f, 1.0f, 0.0f));
-                sunPosition.add(new Vector3d(SpaceGame.instance.save.thePlayer.x, SpaceGame.instance.save.thePlayer.y, SpaceGame.instance.save.thePlayer.z));
+                sunPosition.add(new Vector3d(CosmicEvolution.instance.save.thePlayer.x, CosmicEvolution.instance.save.thePlayer.y, CosmicEvolution.instance.save.thePlayer.z));
 
                 int sunX = MathUtil.floorDouble(sunPosition.x) >> 5;
                 int sunY = MathUtil.floorDouble(sunPosition.y) >> 5;
@@ -453,7 +453,7 @@ public final class RenderWorldScene {
                 GL46.glDisable(GL46.GL_ALPHA_TEST);
 
                 GL46.glBindFramebuffer(GL46.GL_FRAMEBUFFER, 0);
-                GL46.glViewport(0, 0, SpaceGame.width, SpaceGame.height);
+                GL46.glViewport(0, 0, CosmicEvolution.width, CosmicEvolution.height);
                 this.hasTickPassed = false;
             }
         }
@@ -465,24 +465,24 @@ public final class RenderWorldScene {
     }
 
     public void renderNearbyCelestialObjects(){
-        Matrix4d preservedViewMatrix = SpaceGame.camera.viewMatrix.get(new Matrix4d());
-        Quaterniond viewMatrixRotation = SpaceGame.camera.viewMatrix.getUnnormalizedRotation(new Quaterniond());
-        SpaceGame.camera.viewMatrix = new Matrix4d();
-        SpaceGame.camera.viewMatrix.rotate(viewMatrixRotation);
-        int worldSizeRadius = SpaceGame.instance.save.activeWorld.size / 2;
+        Matrix4d preservedViewMatrix = CosmicEvolution.camera.viewMatrix.get(new Matrix4d());
+        Quaterniond viewMatrixRotation = CosmicEvolution.camera.viewMatrix.getUnnormalizedRotation(new Quaterniond());
+        CosmicEvolution.camera.viewMatrix = new Matrix4d();
+        CosmicEvolution.camera.viewMatrix.rotate(viewMatrixRotation);
+        int worldSizeRadius = CosmicEvolution.instance.save.activeWorld.size / 2;
         double playerLat = 0;
         double playerLon = 0;
         double zThreshold = (double) (worldSizeRadius * 2) / 360;
 
-        playerLat = -(SpaceGame.instance.save.thePlayer.x / (double)worldSizeRadius) * 90;
-        playerLon = ((worldSizeRadius + SpaceGame.instance.save.thePlayer.z) / zThreshold);
+        playerLat = -(CosmicEvolution.instance.save.thePlayer.x / (double)worldSizeRadius) * 90;
+        playerLon = ((worldSizeRadius + CosmicEvolution.instance.save.thePlayer.z) / zThreshold);
 
         ArrayList<Vector3f> starPositions = new ArrayList<>();
-        CelestialObject currentCelestialObject = SpaceGame.instance.everything.getObjectAssociatedWithWorld(this.controller.parentWorld);
+        CelestialObject currentCelestialObject = CosmicEvolution.instance.everything.getObjectAssociatedWithWorld(this.controller.parentWorld);
         this.playerLat = playerLat;
         this.playerLon = playerLon;
-        for(int i = 0; i < SpaceGame.instance.everything.objects.length; i++) {
-            CelestialObject renderingObject = SpaceGame.instance.everything.objects[i];
+        for(int i = 0; i < CosmicEvolution.instance.everything.objects.length; i++) {
+            CelestialObject renderingObject = CosmicEvolution.instance.everything.objects[i];
             if (!(currentCelestialObject.equals(renderingObject))) {
                 Vector3d positionDifference = new Vector3d();
                 int layerDif = currentCelestialObject.layer - renderingObject.layer;
@@ -511,21 +511,21 @@ public final class RenderWorldScene {
 
 
                 Vector3f celestialObjectPosition = new Vector3f((float) positionDifference.y, (float) positionDifference.z, (float) positionDifference.x);
-                celestialObjectPosition.rotateX((float) (Math.toRadians(playerLon) + Math.toRadians((360 * ((double) SpaceGame.instance.save.time / currentCelestialObject.rotationPeriod)) % 360)));
+                celestialObjectPosition.rotateX((float) (Math.toRadians(playerLon) + Math.toRadians((360 * ((double) CosmicEvolution.instance.save.time / currentCelestialObject.rotationPeriod)) % 360)));
 
                 float zRotation = (float) ((float)  Math.toRadians(playerLat) + Math.toRadians((currentCelestialObject.axialTiltX)));
-                float orbitRatio = (float) MathUtil.sin(((double) (SpaceGame.instance.save.time % currentCelestialObject.orbitalPeriod) / currentCelestialObject.orbitalPeriod) * 2 * Math.PI);
+                float orbitRatio = (float) MathUtil.sin(((double) (CosmicEvolution.instance.save.time % currentCelestialObject.orbitalPeriod) / currentCelestialObject.orbitalPeriod) * 2 * Math.PI);
 
                 zRotation *= orbitRatio;
                 // MathUtils.sin(((double) (SpaceGame.instance.save.time % currentCelestialObject.orbitalPeriod) / currentCelestialObject.orbitalPeriod) * 2 * Math.PI)))
-                SpaceGame.instance.save.activeWorld.sunAngle = zRotation;
+                CosmicEvolution.instance.save.activeWorld.sunAngle = zRotation;
                 celestialObjectPosition.rotateZ(zRotation);
 
                 float absoluteDistance = celestialObjectPosition.distance(new Vector3f());
                 float latRatio = (float) (playerLat / 90f);
 
                 celestialObjectPosition.y += ((absoluteDistance * latRatio) * orbitRatio);
-                orbitRatio = (float) MathUtil.sin(((double) ((SpaceGame.instance.save.time % currentCelestialObject.orbitalPeriod) / currentCelestialObject.orbitalPeriod) * 2 * Math.PI) + (0.5f * Math.PI));
+                orbitRatio = (float) MathUtil.sin(((double) ((CosmicEvolution.instance.save.time % currentCelestialObject.orbitalPeriod) / currentCelestialObject.orbitalPeriod) * 2 * Math.PI) + (0.5f * Math.PI));
 
                 if(playerLat > 0.0){
                     celestialObjectPosition.x += (celestialObjectPosition.x * ((latRatio) * orbitRatio));
@@ -546,11 +546,11 @@ public final class RenderWorldScene {
                 Vector3f vertex2;
                 Vector3f vertex3;
                 Vector3f vertex4;
-                float rotationAmountY = (float) Math.toRadians( 360 * (double) (SpaceGame.instance.save.time % renderingObject.rotationPeriod) /renderingObject.rotationPeriod);
+                float rotationAmountY = (float) Math.toRadians( 360 * (double) (CosmicEvolution.instance.save.time % renderingObject.rotationPeriod) /renderingObject.rotationPeriod);
                 float rotationAmountX = (float) Math.toRadians(renderingObject.axialTiltX);
                 float rotationAmountZ = (float) Math.toRadians(renderingObject.axialTiltZ);
 
-                if(SpaceGame.camera.doesSphereIntersectFrustum(celestialObjectPosition.x, celestialObjectPosition.y, celestialObjectPosition.z, (currentCelestialObject.radius * 0.000000)  * 2)) {
+                if(CosmicEvolution.camera.doesSphereIntersectFrustum(celestialObjectPosition.x, celestialObjectPosition.y, celestialObjectPosition.z, (currentCelestialObject.radius * 0.000000)  * 2)) {
                     RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
                     for (int latitude = -90; latitude < 90; latitude += 10) {
                         for (int longitude = 0; longitude < 360; longitude += 10) {
@@ -587,7 +587,7 @@ public final class RenderWorldScene {
                     }
                     GL46.glEnable(GL46.GL_CULL_FACE);
                     GL46.glCullFace(GL46.GL_FRONT);
-                    tessellator.drawCubeMapTexture(renderingObject.mappedTexture, Shader.worldShaderCubeMapTexture, SpaceGame.camera);
+                    tessellator.drawCubeMapTexture(renderingObject.mappedTexture, Shader.worldShaderCubeMapTexture, CosmicEvolution.camera);
                     GL46.glDisable(GL46.GL_CULL_FACE);
                     if(this.blendCelestialObjects) {
                         GL46.glDisable(GL46.GL_BLEND);
@@ -611,13 +611,13 @@ public final class RenderWorldScene {
                     GL46.glEnable(GL46.GL_BLEND);
                     GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_COLOR);
                     Shader.worldShader2DTexture.uploadBoolean("useFog", false);
-                    tessellator.drawTexture2D(Sun.sunFlare, Shader.worldShader2DTexture, SpaceGame.camera);
+                    tessellator.drawTexture2D(Sun.sunFlare, Shader.worldShader2DTexture, CosmicEvolution.camera);
                     GL46.glDisable(GL46.GL_BLEND);
                 }
             }
         }
         this.setSkyLightLevel(starPositions);
-        SpaceGame.camera.viewMatrix = preservedViewMatrix;
+        CosmicEvolution.camera.viewMatrix = preservedViewMatrix;
     }
 
     private int getSunColor(){
@@ -640,7 +640,7 @@ public final class RenderWorldScene {
             Vector3f vertex3;
             Vector3f vertex4;
             Matrix4f modelMatrix = new Matrix4f();
-            modelMatrix.rotateX((float) -(Math.toRadians(playerLon) + Math.toRadians((360 * ((double) SpaceGame.instance.save.time / currentCelestialObject.rotationPeriod)) % 360)));
+            modelMatrix.rotateX((float) -(Math.toRadians(playerLon) + Math.toRadians((360 * ((double) CosmicEvolution.instance.save.time / currentCelestialObject.rotationPeriod)) % 360)));
             modelMatrix.rotateZ(-(float) ((float)  Math.toRadians(playerLat) + Math.toRadians(currentCelestialObject.axialTiltX)));
             for (int latitude = -90; latitude < 90; latitude += 45) {
                 for (int longitude = 0; longitude < 360; longitude += 45) {
@@ -659,7 +659,7 @@ public final class RenderWorldScene {
             Shader.worldShaderCubeMapTexture.uploadVec3f("position", new Vector3f());
             Shader.worldShaderCubeMapTexture.uploadBoolean("skybox", true);
             Shader.worldShaderCubeMapTexture.uploadMat4f("uModel", modelMatrix);
-            tessellator.drawCubeMapTexture(GuiUniverseMap.skybox, Shader.worldShaderCubeMapTexture, SpaceGame.camera);
+            tessellator.drawCubeMapTexture(GuiUniverseMap.skybox, Shader.worldShaderCubeMapTexture, CosmicEvolution.camera);
             Shader.worldShaderCubeMapTexture.uploadBoolean("skybox", false);
 
             GL46.glDisable(GL46.GL_BLEND);
@@ -915,7 +915,7 @@ public final class RenderWorldScene {
         this.controller.parentWorld.skyColor[0] = interpolatedR;
         this.controller.parentWorld.skyColor[1] = interpolatedG;
         this.controller.parentWorld.skyColor[2] = interpolatedB;
-        SpaceGame.setGLClearColor( this.controller.parentWorld.skyColor[0],  this.controller.parentWorld.skyColor[1],  this.controller.parentWorld.skyColor[2], 0.0f);
+        CosmicEvolution.setGLClearColor( this.controller.parentWorld.skyColor[0],  this.controller.parentWorld.skyColor[1],  this.controller.parentWorld.skyColor[2], 0.0f);
     }
 
     private void renderSunrise(float yVecComponent, Vector3f starPosition){
@@ -933,7 +933,7 @@ public final class RenderWorldScene {
             GL46.glEnable(GL46.GL_BLEND);
             GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE);
             Shader.worldShader2DTexture.uploadBoolean("useFog", false);
-            tessellator.drawTexture2D(Sun.sunFlare, Shader.worldShader2DTexture, SpaceGame.camera);
+            tessellator.drawTexture2D(Sun.sunFlare, Shader.worldShader2DTexture, CosmicEvolution.camera);
             GL46.glDisable(GL46.GL_BLEND);
         }
     }

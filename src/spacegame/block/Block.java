@@ -38,6 +38,7 @@ public class Block {
     public static final ModelLoader clayCookingPotModel = new ModelLoader("src/spacegame/assets/models/blockModels/clayCookingPot.obj");
     public static final ModelLoader largeFireWood = new ModelLoader("src/spacegame/assets/models/blockModels/largeFireWood.obj");
     public static final ModelLoader brick = new ModelLoader("src/spacegame/assets/models/blockModels/brick.obj");
+    public static final ModelLoader quarterBlockModel = new ModelLoader("src/spacegame/assets/models/blockModels/quarterBlock.obj");
     public static final ModelLoader size15NormalModel = standardBlockModel.alterStandardBlockModel(1,0,1);
     public static final ModelLoader size14NormalModel = standardBlockModel.alterStandardBlockModel(2,0,2);
     public static final ModelLoader size13NormalModel = standardBlockModel.alterStandardBlockModel(3,0,3);
@@ -162,7 +163,7 @@ public class Block {
     public static final Block grassWithClay = new BlockGrassWithClay((short)69, 2, "src/spacegame/assets/blockFiles/grassWithClay.txt"); //Nice
     public static final Block grassBlockWithClayLower = new Block((short)70, 14, "src/spacegame/assets/blockFiles/grassBlockWithClayLower.txt");
     public static final Block clay = new BlockClay((short)71, 13, "src/spacegame/assets/blockFiles/clay.txt");
-    public static final Block itemClay = new Block((short)72, 13, "src/spacegame/assets/blockFiles/itemClay.txt");
+    public static final Block itemClay = new BlockItemClay((short)72, 13, "src/spacegame/assets/blockFiles/itemClay.txt");
     public static final Block rawRedClayCookingPot = new Block((short)73, 13, "src/spacegame/assets/blockFiles/rawClayCookingPot.txt");
     public static final Block pitKilnUnlit1 = new BlockPitKilnUnlit((short)74, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1,1);
     public static final Block pitKilnUnlit2 = new BlockPitKilnUnlit((short)75, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1,1);
@@ -175,24 +176,24 @@ public class Block {
     public static final Block redClayCookingPot = new Block((short)82, 17, "src/spacegame/assets/blockFiles/redClayCookingPot.txt");
     public static final Block grassBlockLower = new Block((short)83, 20, "src/spacegame/assets/blockFiles/grassBlockLower.txt");
     public static final Block cactus = new BlockCactus((short)84, 21, "src/spacegame/assets/blockFiles/cactus.txt");
-    public static final Block itemStone = new Block((short)85, stone.textureID, "src/spacegame/assets/blockFiles/itemStone.txt");
+    public static final Block itemStone = new BlockItemStone((short)85, stone.textureID, "src/spacegame/assets/blockFiles/itemStone.txt");
     public static final Block berryBushFlower = new BlockBerryBush((short)86, 27, "src/spacegame/assets/blockFiles/berryBush.txt");
-    public static final Block itemStick = new Block((short)87, 29, "src/spacegame/assets/blockFiles/itemStick.txt");
+    public static final Block itemStick = new BlockItemStick((short)87, 29, "src/spacegame/assets/blockFiles/itemStick.txt");
     public static final Block tallGrass = new Block((short)88, 30, "src/spacegame/assets/blockFiles/tallGrass.txt");
     public static final Block campFire4FireWood = new BlockCampFireUnlit((short) 89, 16, "src/spacegame/assets/blockFiles/campFireUnlit.txt");
     public static final Block fireWoodBlock = new Block((short)90, 31, "src/spacegame/assets/blockFiles/fireWood.txt");
     public static final Block strawChest = new BlockStrawChest((short)91, 32, "src/spacegame/assets/blockFiles/strawChest.txt",2, 9);
-    public static final Block strawChestTier0 = new Block((short)92, 32, "src/spacegame/assets/blockFiles/strawChestBuilding0.txt");
-    public static final Block strawBasketTier0 = new Block((short)93, 32, "src/spacegame/assets/blockFiles/strawBasketBuilding.txt");
-    public static final Block strawChestTier1 = new Block((short)94, 32, "src/spacegame/assets/blockFiles/strawChestBuilding1.txt");
+    public static final Block strawChestTier0 = new BlockStrawCrafting((short)92, 32, "src/spacegame/assets/blockFiles/strawChestBuilding0.txt");
+    public static final Block strawBasketTier0 = new BlockStrawCrafting((short)93, 32, "src/spacegame/assets/blockFiles/strawBasketBuilding.txt");
+    public static final Block strawChestTier1 = new BlockStrawCrafting((short)94, 32, "src/spacegame/assets/blockFiles/strawChestBuilding1.txt");
     public static final Block pitKilnUnlitLog1 = new BlockPitKilnUnlit((short)95, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1,1);
     public static final Block pitKilnUnlitLog2 = new BlockPitKilnUnlit((short)96, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1,1);
     public static final Block pitKilnUnlitLog3 = new BlockPitKilnUnlit((short)97, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1,1);
     public static final Block pitKilnUnlit = new BlockPitKilnUnlit((short)98, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1,1);
     public static final Block pitKilnLit = new BlockPitKilnLit((short)99, 15, "src/spacegame/assets/blockFiles/pitKilnLit.txt", 1,1);
     public static final Block largeFireWoodBlock = new Block((short)100, 31, "src/spacegame/assets/blockFiles/firewood.txt");
-    public static final Block logPile = new BlockPile((short)101, 31, "src/spacegame/assets/blockFiles/logPile.txt", Item.fireWood.ID, 1, 1);
-    public static final Block brickPile = new BlockPile((short)102, 13, "src/spacegame/assets/blockFiles/brickPile.txt", Item.rawClayAdobeBrick.ID, 1, 1);
+    public static final Block logPile = new BlockLogPile((short)101, 31, "src/spacegame/assets/blockFiles/logPile.txt", Item.fireWood.ID, 1, 1);
+    public static final Block brickPile = new BlockBrickPile((short)102, 13, "src/spacegame/assets/blockFiles/brickPile.txt", Item.rawClayAdobeBrick.ID, 1, 1);
     public final short ID;
     public final int textureID;
     public static int facingDirection;
@@ -421,6 +422,23 @@ public class Block {
         return this.textureID;
     }
 
+    public void handleSpecialRightClickFunctions(int x, int y, int z, World world, EntityPlayer player){
+        if(!MouseListener.rightClickReleased)return;
+        short playerHeldItem = player.getHeldItem();
+
+        //This is too generic to put in its own class
+        if(world.isBlockAbleToBecomePitKiln(this, x, y, z) && playerHeldItem == Item.straw.ID && MouseListener.rightClickReleased && world.isBlockSuitableForPitKiln(x,y,z)){
+            Inventory kilnInventory = new Inventory(1,1);
+            kilnInventory.addItemToInventory(world.pitKilnItemType(this.ID, x,y,z), world.getBlockID(x,y,z), world.pitKilnItemCount(this.ID, x,y,z), Item.NULL_ITEM_DURABILITY);
+            if(this.ID == Block.brickPile.ID){
+                world.clearChestLocation(x,y,z);
+            }
+            world.addChestLocation(x,y,z, kilnInventory);
+            world.setBlockWithNotify(x,y,z, Block.pitKilnUnlit1.ID);
+            player.removeItemFromInventory();
+            MouseListener.rightClickReleased = false;
+        }
+    }
 
     protected void handleSpecialLeftClickFunctions(int x, int y, int z, World world, EntityPlayer player){
         short playerHeldItem = player.getHeldItem();
@@ -430,7 +448,7 @@ public class Block {
             }
         }
         if(this.ID == grassWithClay.ID || this.ID == clay.ID){
-            int extraClay = SpaceGame.globalRand.nextInt(2,4);
+            int extraClay = CosmicEvolution.globalRand.nextInt(2,4);
             for(int i = 0; i < extraClay; i++){
                 world.addEntity(new EntityItem(x + 0.5, y + 0.5, z + 0.5, Item.clay.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY));
             }
@@ -499,12 +517,12 @@ public class Block {
             if (blockID == torchNorth.ID || blockID == torchSouth.ID || blockID == torchEast.ID || blockID == torchWest.ID || list[blockID].requireSolidBlockBelow) {
                 if (list[blockID].droppedItemID != Item.NULL_ITEM_REFERENCE) {
                     if (list[blockID].droppedItemID != Item.block.ID) {
-                        if (list[blockID].itemDropChance > SpaceGame.globalRand.nextFloat()) {
-                            world.findChunkFromChunkCoordinates(blockX >> 5, blockY >> 5, blockZ >> 5).addEntityToList(new EntityItem(blockX + 0.5 + SpaceGame.globalRand.nextDouble(-0.3, 0.3), blockY + 0.5 + SpaceGame.globalRand.nextDouble(-0.3, 0.3), blockZ + 0.5 + SpaceGame.globalRand.nextDouble(-0.3, 0.3), list[blockID].droppedItemID, Item.NULL_ITEM_METADATA, (byte) 1, Item.list[list[blockID].droppedItemID].durability));
+                        if (list[blockID].itemDropChance > CosmicEvolution.globalRand.nextFloat()) {
+                            world.findChunkFromChunkCoordinates(blockX >> 5, blockY >> 5, blockZ >> 5).addEntityToList(new EntityItem(blockX + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), blockY + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), blockZ + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), list[blockID].droppedItemID, Item.NULL_ITEM_METADATA, (byte) 1, Item.list[list[blockID].droppedItemID].durability));
                         }
                     } else {
-                        if (list[blockID].itemDropChance > SpaceGame.globalRand.nextFloat()) {
-                            world.findChunkFromChunkCoordinates(blockX >> 5, blockY >> 5, blockZ >> 5).addEntityToList(new EntityBlock(blockX + 0.5 + SpaceGame.globalRand.nextDouble(-0.3, 0.3), blockY + 0.5 + SpaceGame.globalRand.nextDouble(-0.3, 0.3), blockZ + 0.5 + SpaceGame.globalRand.nextDouble(-0.3, 0.3), list[blockID].itemMetadata, (byte) 1));
+                        if (list[blockID].itemDropChance > CosmicEvolution.globalRand.nextFloat()) {
+                            world.findChunkFromChunkCoordinates(blockX >> 5, blockY >> 5, blockZ >> 5).addEntityToList(new EntityBlock(blockX + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), blockY + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), blockZ + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), list[blockID].itemMetadata, (byte) 1));
                         }
                     }
                 }
@@ -519,7 +537,7 @@ public class Block {
             world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).removeTickableBlockFromArray((short) Chunk.getBlockIndexFromCoordinates(x,y,z));
         }
 
-        SpaceGame.instance.soundPlayer.playSound(x, y, z, new Sound(this.getStepSound(x,y,z), false), new Random().nextFloat(0.6F, 1));
+        CosmicEvolution.instance.soundPlayer.playSound(x, y, z, new Sound(this.getStepSound(x,y,z), false), new Random().nextFloat(0.6F, 1));
         player.reduceHeldItemDurability();
     }
 
@@ -571,7 +589,7 @@ public class Block {
         };
 
         if(Block.list[heldBlock] instanceof ITimeUpdate){
-            chunk.addTimeUpdateEvent(x,y,z, SpaceGame.instance.save.time + ((ITimeUpdate) Block.list[heldBlock]).getUpdateTime());
+            chunk.addTimeUpdateEvent(x,y,z, CosmicEvolution.instance.save.time + ((ITimeUpdate) Block.list[heldBlock]).getUpdateTime());
         }
 
 
@@ -590,7 +608,7 @@ public class Block {
             }
         }
 
-        SpaceGame.instance.soundPlayer.playSound(x, y, z, new Sound(list[player.getHeldBlock()].stepSound, false), new Random().nextFloat(0.6F, 1));
+        CosmicEvolution.instance.soundPlayer.playSound(x, y, z, new Sound(list[player.getHeldBlock()].stepSound, false), new Random().nextFloat(0.6F, 1));
         player.removeItemFromInventory();
         world.setBlockWithNotify(x, y, z, heldBlock);
         player.isSwinging = true;
@@ -606,7 +624,7 @@ public class Block {
     }
 
     public int getDynamicBreakTimer(){
-        short playerHeldItem = SpaceGame.instance.save.thePlayer.getHeldItem();
+        short playerHeldItem = CosmicEvolution.instance.save.thePlayer.getHeldItem();
         if(playerHeldItem == -1){playerHeldItem = 0;}
         if(!this.requiresTool || !Item.list[playerHeldItem].toolType.equals(this.toolType)){
             return this.breakTimer;

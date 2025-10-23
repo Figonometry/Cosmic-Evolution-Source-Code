@@ -1,7 +1,7 @@
 package spacegame.entity;
 
+import spacegame.core.CosmicEvolution;
 import spacegame.core.Sound;
-import spacegame.core.SpaceGame;
 import spacegame.entity.ai.AIPassive;
 import spacegame.item.Item;
 import spacegame.render.Model;
@@ -41,7 +41,7 @@ public final class EntityDeer extends EntityLiving {
 
 
     public static void loadTexture(){
-        texture = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/entity/deer.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        texture = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/entity/deer.png", RenderEngine.TEXTURE_TYPE_2D, 0);
     }
 
     @Override
@@ -181,7 +181,7 @@ public final class EntityDeer extends EntityLiving {
     @Override
     public void handleDeath() {
         this.despawn = true;
-        SpaceGame.instance.save.activeWorld.addEntity(new EntityItem(this.x, this.y, this.z, Item.rawVenison.ID, Item.NULL_ITEM_METADATA, (byte) 1, Item.NULL_ITEM_DURABILITY));
+        CosmicEvolution.instance.save.activeWorld.addEntity(new EntityItem(this.x, this.y, this.z, Item.rawVenison.ID, Item.NULL_ITEM_METADATA, (byte) 1, Item.NULL_ITEM_DURABILITY));
         if(this.lastEntityToHit instanceof EntityPlayer){
             Tech.techUpdateEvent(Tech.UPDATE_EVENT_HUNT_ANIMAL);
         }

@@ -4,9 +4,9 @@ import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
+import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
 import spacegame.core.MathUtil;
-import spacegame.core.SpaceGame;
 import spacegame.gui.GuiInGame;
 import spacegame.item.Item;
 import spacegame.world.WorldEarth;
@@ -69,13 +69,13 @@ public final class RenderEntityItem {
         this.chunkY = MathUtil.floorDouble(this.y) >> 5;
         this.chunkZ = MathUtil.floorDouble(this.z) >> 5;
         Shader.worldShaderTextureArray.uploadBoolean("useFog", true);
-        Shader.worldShaderTextureArray.uploadFloat("fogRed", SpaceGame.instance.save.activeWorld.skyColor[0]);
-        Shader.worldShaderTextureArray.uploadFloat("fogGreen", SpaceGame.instance.save.activeWorld.skyColor[1]);
-        Shader.worldShaderTextureArray.uploadFloat("fogBlue", SpaceGame.instance.save.activeWorld.skyColor[2]);
+        Shader.worldShaderTextureArray.uploadFloat("fogRed", CosmicEvolution.instance.save.activeWorld.skyColor[0]);
+        Shader.worldShaderTextureArray.uploadFloat("fogGreen", CosmicEvolution.instance.save.activeWorld.skyColor[1]);
+        Shader.worldShaderTextureArray.uploadFloat("fogBlue", CosmicEvolution.instance.save.activeWorld.skyColor[2]);
         Shader.worldShaderTextureArray.uploadFloat("fogDistance", GameSettings.renderDistance << 5);
-        int playerChunkX = (MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.x) >> 5);
-        int playerChunkY = (MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.y) >> 5);
-        int playerChunkZ = (MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.z) >> 5);
+        int playerChunkX = (MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x) >> 5);
+        int playerChunkY = (MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.y) >> 5);
+        int playerChunkZ = (MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z) >> 5);
         int xOffset = (MathUtil.floorDouble(this.x) >> 5) - playerChunkX;
         int yOffset = (MathUtil.floorDouble(this.y) >> 5) - playerChunkY;
         int zOffset = (MathUtil.floorDouble(this.z) >> 5) - playerChunkZ;
@@ -84,8 +84,8 @@ public final class RenderEntityItem {
         zOffset *= 32;
         Vector3f chunkOffset = new Vector3f(xOffset, yOffset, zOffset);
         Shader.worldShaderTextureArray.uploadVec3f("chunkOffset", chunkOffset);
-        WorldEarth worldEarth = (WorldEarth) SpaceGame.instance.save.activeWorld;
-        this.currentTime = SpaceGame.instance.save.time;
+        WorldEarth worldEarth = (WorldEarth) CosmicEvolution.instance.save.activeWorld;
+        this.currentTime = CosmicEvolution.instance.save.time;
         float x = (float) (this.x % 32);
         float y = (float) ((float) (this.y % 32) + 0.05F + (0.05F * ((MathUtil.sin((((double) this.currentTime / 120) * Math.PI * 2) - (0.5 * Math.PI)) * 0.5) + 0.5f)));
         float z = (float) (this.z % 32);
@@ -105,11 +105,11 @@ public final class RenderEntityItem {
         float blockID = getItemTextureID(this.itemID, this.blockID, RenderBlocks.WEST_FACE);
 
         Vector3d blockPosition = new Vector3d(x, (float) (y + this.entityHeight/2) + 0.125, z);
-        Vector3d vertex1 = new Vector3d(0,  -0.125, -0.125).rotateY(-Math.toRadians(SpaceGame.instance.save.thePlayer.yaw)).add(blockPosition);
-        Vector3d vertex2 = new Vector3d(0, 0.125, 0.125).rotateY(-Math.toRadians(SpaceGame.instance.save.thePlayer.yaw)).add(blockPosition);
-        Vector3d vertex3 = new Vector3d(0, 0.125, -0.125).rotateY(-Math.toRadians(SpaceGame.instance.save.thePlayer.yaw)).add(blockPosition);
-        Vector3d vertex4 = new Vector3d(0, -0.125, 0.125).rotateY(-Math.toRadians(SpaceGame.instance.save.thePlayer.yaw)).add(blockPosition);
-        Vector3d normal = new Vector3d(0, 0, 1).rotateY(-Math.toRadians(SpaceGame.instance.save.thePlayer.yaw));
+        Vector3d vertex1 = new Vector3d(0,  -0.125, -0.125).rotateY(-Math.toRadians(CosmicEvolution.instance.save.thePlayer.yaw)).add(blockPosition);
+        Vector3d vertex2 = new Vector3d(0, 0.125, 0.125).rotateY(-Math.toRadians(CosmicEvolution.instance.save.thePlayer.yaw)).add(blockPosition);
+        Vector3d vertex3 = new Vector3d(0, 0.125, -0.125).rotateY(-Math.toRadians(CosmicEvolution.instance.save.thePlayer.yaw)).add(blockPosition);
+        Vector3d vertex4 = new Vector3d(0, -0.125, 0.125).rotateY(-Math.toRadians(CosmicEvolution.instance.save.thePlayer.yaw)).add(blockPosition);
+        Vector3d normal = new Vector3d(0, 0, 1).rotateY(-Math.toRadians(CosmicEvolution.instance.save.thePlayer.yaw));
         this.resetLight();
         this.setVertexLight1Arg(worldEarth.getBlockLightValue((int)(this.chunkX * 32 + x), (int)(this.chunkY * 32 + y), (int)(this.chunkZ * 32 + z)),  x, y, z, worldEarth.getBlockLightColor((int)(this.chunkX * 32 + x), (int)(this.chunkY * 32 + y), (int)(this.chunkZ * 32 + z)));
         float skyLightValue = GuiInGame.getLightValueFromMap(worldEarth.getBlockSkyLightValue((int)(this.chunkX * 32 + x), (int)(this.chunkY * 32 + y), (int)(this.chunkZ * 32 + z)));
@@ -122,7 +122,7 @@ public final class RenderEntityItem {
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
         GL46.glDisable(GL46.GL_CULL_FACE);
-        worldTessellator.drawTextureArray(Assets.itemTextureArray, Shader.worldShaderTextureArray, SpaceGame.camera);
+        worldTessellator.drawTextureArray(Assets.itemTextureArray, Shader.worldShaderTextureArray, CosmicEvolution.camera);
         GL46.glEnable(GL46.GL_CULL_FACE);
         GL46.glDisable(GL46.GL_BLEND);
     }
@@ -130,7 +130,7 @@ public final class RenderEntityItem {
     public void renderEntityAsBlock(){
         RenderEngine.WorldTessellator worldTessellator = RenderEngine.WorldTessellator.instance;
         ModelFace modelFace;
-        this.currentTime = SpaceGame.instance.save.time;
+        this.currentTime = CosmicEvolution.instance.save.time;
         this.chunkX = MathUtil.floorDouble(this.x) >> 5;
         this.chunkY = MathUtil.floorDouble(this.y) >> 5;
         this.chunkZ = MathUtil.floorDouble(this.z) >> 5;
@@ -142,20 +142,20 @@ public final class RenderEntityItem {
             for(int i = 0; i < faces.length; i++){
                 if(faces[i] == null)continue;
 
-                this.renderOpaqueFace(worldTessellator, (WorldEarth) SpaceGame.instance.save.activeWorld, this.blockID, faces[i].faceType, faces[i], 0,0,0,0,0,0,0,0,0,0,0,0);
+                this.renderOpaqueFace(worldTessellator, (WorldEarth) CosmicEvolution.instance.save.activeWorld, this.blockID, faces[i].faceType, faces[i], 0,0,0,0,0,0,0,0,0,0,0,0);
                 worldTessellator.addElements();
 
             }
         }
 
         Shader.worldShaderTextureArray.uploadBoolean("useFog", true);
-        Shader.worldShaderTextureArray.uploadFloat("fogRed", SpaceGame.instance.save.activeWorld.skyColor[0]);
-        Shader.worldShaderTextureArray.uploadFloat("fogGreen", SpaceGame.instance.save.activeWorld.skyColor[1]);
-        Shader.worldShaderTextureArray.uploadFloat("fogBlue", SpaceGame.instance.save.activeWorld.skyColor[2]);
+        Shader.worldShaderTextureArray.uploadFloat("fogRed", CosmicEvolution.instance.save.activeWorld.skyColor[0]);
+        Shader.worldShaderTextureArray.uploadFloat("fogGreen", CosmicEvolution.instance.save.activeWorld.skyColor[1]);
+        Shader.worldShaderTextureArray.uploadFloat("fogBlue", CosmicEvolution.instance.save.activeWorld.skyColor[2]);
         Shader.worldShaderTextureArray.uploadFloat("fogDistance", GameSettings.renderDistance << 5);
-        int playerChunkX = (MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.x) >> 5);
-        int playerChunkY = (MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.y) >> 5);
-        int playerChunkZ = (MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.z) >> 5);
+        int playerChunkX = (MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x) >> 5);
+        int playerChunkY = (MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.y) >> 5);
+        int playerChunkZ = (MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z) >> 5);
         int xOffset = (MathUtil.floorDouble(this.x) >> 5) - playerChunkX;
         int yOffset = (MathUtil.floorDouble(this.y) >> 5) - playerChunkY;
         int zOffset = (MathUtil.floorDouble(this.z) >> 5) - playerChunkZ;
@@ -164,7 +164,7 @@ public final class RenderEntityItem {
         zOffset <<= 5;
         Vector3f chunkOffset = new Vector3f(xOffset, yOffset, zOffset);
         Shader.worldShaderTextureArray.uploadVec3f("chunkOffset", chunkOffset);
-        worldTessellator.drawTextureArray(Assets.blockTextureArray, Shader.worldShaderTextureArray, SpaceGame.camera);
+        worldTessellator.drawTextureArray(Assets.blockTextureArray, Shader.worldShaderTextureArray, CosmicEvolution.camera);
     }
 
 

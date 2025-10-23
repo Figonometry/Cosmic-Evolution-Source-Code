@@ -3,8 +3,8 @@ package spacegame.gui;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
+import spacegame.core.CosmicEvolution;
 import spacegame.core.MouseListener;
-import spacegame.core.SpaceGame;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
 import spacegame.world.Chunk;
@@ -20,8 +20,8 @@ public final class GuiLightFire extends GuiAction {
     public int y;
     public int z;
 
-    public GuiLightFire(SpaceGame spaceGame, int x, int y, int z) {
-        super(spaceGame);
+    public GuiLightFire(CosmicEvolution cosmicEvolution, int x, int y, int z) {
+        super(cosmicEvolution);
         this.stone1 = new MoveableObject(-128, -200, 96, 96);
         this.stone2 = new MoveableObject(128, -200, 96, 96);
         this.x = x;
@@ -41,24 +41,24 @@ public final class GuiLightFire extends GuiAction {
 
     @Override
     public void loadTextures() {
-        this.campFire = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInGame/campFireLighting.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        this.stone1Texture = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInventory/stone1.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        this.stone2Texture = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInventory/stone2.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        this.transparentBackground = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.campFire = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInGame/campFireLighting.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.stone1Texture = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInventory/stone1.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.stone2Texture = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInventory/stone2.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.transparentBackground = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
     }
 
     @Override
     public void deleteTextures() {
-        SpaceGame.instance.renderEngine.deleteTexture(this.campFire);
-        SpaceGame.instance.renderEngine.deleteTexture(this.stone1Texture);
-        SpaceGame.instance.renderEngine.deleteTexture(this.stone2Texture);
-        SpaceGame.instance.renderEngine.deleteTexture(this.transparentBackground);
+        CosmicEvolution.instance.renderEngine.deleteTexture(this.campFire);
+        CosmicEvolution.instance.renderEngine.deleteTexture(this.stone1Texture);
+        CosmicEvolution.instance.renderEngine.deleteTexture(this.stone2Texture);
+        CosmicEvolution.instance.renderEngine.deleteTexture(this.transparentBackground);
     }
 
     @Override
     public void drawGui() {
         GuiInGame.renderGuiFromOtherGuis();
-        GLFW.glfwSetInputMode(this.sg.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
+        GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
         RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         tessellator.toggleOrtho();
         float x = 0;
@@ -73,7 +73,7 @@ public final class GuiLightFire extends GuiAction {
         tessellator.addElements();
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-        tessellator.drawTexture2D(this.transparentBackground, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.transparentBackground, Shader.screen2DTexture, CosmicEvolution.camera);
 
         backgroundWidth = 512;
         backgroundHeight = 512;
@@ -83,7 +83,7 @@ public final class GuiLightFire extends GuiAction {
         tessellator.addVertex2DTexture(16777215, x - backgroundWidth/2, y + backgroundHeight/2, z, 2);
         tessellator.addVertex2DTexture(16777215, x + backgroundWidth/2, y - backgroundHeight/2, z, 0);
         tessellator.addElements();
-        tessellator.drawTexture2D(this.campFire, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.campFire, Shader.screen2DTexture, CosmicEvolution.camera);
         GL46.glDisable(GL46.GL_BLEND);
         tessellator.toggleOrtho();
 
@@ -93,22 +93,22 @@ public final class GuiLightFire extends GuiAction {
     }
 
     private void checkFireLighting() {
-        float x = (float) (MouseListener.instance.xPos - SpaceGame.width / 2D);
-        float y = (float) ((MouseListener.instance.yPos - SpaceGame.height / 2D) * -1);
-        if (this.sg.currentlySelectedMoveableObject != null) {
-            if (this.sg.currentlySelectedMoveableObject.equals(this.stone1)) {
-                if (this.stone2.isMouseHoveredOver() && this.sg.currentlySelectedMoveableObject.pickedUp && Math.abs(x) <= 256 && Math.abs(y) <= 256) {
-                   this.sg.save.activeWorld.setBlockWithNotify(this.x, this.y, this.z, Block.campfireLit.ID);
-                   this.sg.save.activeWorld.findChunkFromChunkCoordinates(this.x >> 5, this.y >> 5, this.z >> 5).addTickableBlockToArray((short) Chunk.getBlockIndexFromCoordinates(this.x,this.y,this.z));
-                   GLFW.glfwSetInputMode(this.sg.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
-                   this.sg.setNewGui(new GuiInGame(this.sg));
+        float x = (float) (MouseListener.instance.xPos - CosmicEvolution.width / 2D);
+        float y = (float) ((MouseListener.instance.yPos - CosmicEvolution.height / 2D) * -1);
+        if (this.ce.currentlySelectedMoveableObject != null) {
+            if (this.ce.currentlySelectedMoveableObject.equals(this.stone1)) {
+                if (this.stone2.isMouseHoveredOver() && this.ce.currentlySelectedMoveableObject.pickedUp && Math.abs(x) <= 256 && Math.abs(y) <= 256) {
+                   this.ce.save.activeWorld.setBlockWithNotify(this.x, this.y, this.z, Block.campfireLit.ID);
+                   this.ce.save.activeWorld.findChunkFromChunkCoordinates(this.x >> 5, this.y >> 5, this.z >> 5).addTickableBlockToArray((short) Chunk.getBlockIndexFromCoordinates(this.x,this.y,this.z));
+                   GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
+                   this.ce.setNewGui(new GuiInGame(this.ce));
                 }
-            } else if (this.sg.currentlySelectedMoveableObject.equals(this.stone2)) {
-                if (this.stone1.isMouseHoveredOver() && this.sg.currentlySelectedMoveableObject.pickedUp && Math.abs(x) <= 256 && Math.abs(y) <= 256) {
-                    this.sg.save.activeWorld.setBlockWithNotify(this.x, this.y, this.z, Block.campfireLit.ID);
-                    this.sg.save.activeWorld.findChunkFromChunkCoordinates(this.x >> 5, this.y >> 5, this.z >> 5).addTickableBlockToArray((short) Chunk.getBlockIndexFromCoordinates(this.x,this.y,this.z));
-                    GLFW.glfwSetInputMode(this.sg.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
-                    this.sg.setNewGui(new GuiInGame(this.sg));
+            } else if (this.ce.currentlySelectedMoveableObject.equals(this.stone2)) {
+                if (this.stone1.isMouseHoveredOver() && this.ce.currentlySelectedMoveableObject.pickedUp && Math.abs(x) <= 256 && Math.abs(y) <= 256) {
+                    this.ce.save.activeWorld.setBlockWithNotify(this.x, this.y, this.z, Block.campfireLit.ID);
+                    this.ce.save.activeWorld.findChunkFromChunkCoordinates(this.x >> 5, this.y >> 5, this.z >> 5).addTickableBlockToArray((short) Chunk.getBlockIndexFromCoordinates(this.x,this.y,this.z));
+                    GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
+                    this.ce.setNewGui(new GuiInGame(this.ce));
                 }
             }
         }

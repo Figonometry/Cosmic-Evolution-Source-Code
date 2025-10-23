@@ -2,10 +2,9 @@ package spacegame.render;
 
 import org.lwjgl.BufferUtils;
 import spacegame.block.Block;
-import spacegame.block.ITickable;
+import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
 import spacegame.core.Logger;
-import spacegame.core.SpaceGame;
 import spacegame.world.Chunk;
 import spacegame.world.World;
 
@@ -195,7 +194,7 @@ public final class ThreadRebuildChunk implements Runnable {
         this.workingChunk.needsToUpdate = false;
 
         if(needsToSetUpdateTime) {
-            this.workingChunk.updateTime = SpaceGame.globalRand.nextLong(SpaceGame.instance.save.time + SpaceGame.instance.everything.getObjectAssociatedWithWorld(SpaceGame.instance.save.activeWorld).rotationPeriod / 2, SpaceGame.instance.save.time + SpaceGame.instance.everything.getObjectAssociatedWithWorld(SpaceGame.instance.save.activeWorld).rotationPeriod);
+            this.workingChunk.updateTime = CosmicEvolution.globalRand.nextLong(CosmicEvolution.instance.save.time + CosmicEvolution.instance.everything.getObjectAssociatedWithWorld(CosmicEvolution.instance.save.activeWorld).rotationPeriod / 2, CosmicEvolution.instance.save.time + CosmicEvolution.instance.everything.getObjectAssociatedWithWorld(CosmicEvolution.instance.save.activeWorld).rotationPeriod);
         }
         synchronized (this.parentWorld.chunkController.bindingChunks) {
            this.parentWorld.chunkController.bindingChunks.add(this.workingChunk);

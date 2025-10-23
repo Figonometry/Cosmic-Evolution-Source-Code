@@ -1,8 +1,7 @@
 package spacegame.block;
 
+import spacegame.core.CosmicEvolution;
 import spacegame.core.Sound;
-import spacegame.core.SoundPlayer;
-import spacegame.core.SpaceGame;
 import spacegame.entity.EntityParticle;
 import spacegame.item.Inventory;
 import spacegame.item.Item;
@@ -23,9 +22,9 @@ public final class BlockPitKilnLit extends BlockPitKilnUnlit implements ITimeUpd
         double zPos = z + 0.5;
         int particleCount = 5;
         EntityParticle particle;
-        Chunk chunk = SpaceGame.instance.save.activeWorld.chunkController.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
+        Chunk chunk = CosmicEvolution.instance.save.activeWorld.chunkController.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
         for(int i = 0; i < particleCount; i++){
-            particle = new EntityParticle(xPos + SpaceGame.globalRand.nextDouble(-0.5, 0.5), yPos + SpaceGame.globalRand.nextDouble(0.125), zPos + SpaceGame.globalRand.nextDouble(-0.5, 0.5), false, SpaceGame.globalRand.nextInt(30, 180), Block.campfireLit.ID, false);
+            particle = new EntityParticle(xPos + CosmicEvolution.globalRand.nextDouble(-0.5, 0.5), yPos + CosmicEvolution.globalRand.nextDouble(0.125), zPos + CosmicEvolution.globalRand.nextDouble(-0.5, 0.5), false, CosmicEvolution.globalRand.nextInt(30, 180), Block.campfireLit.ID, false);
             chunk.addEntityToList(particle);
         }
     }
@@ -69,8 +68,13 @@ public final class BlockPitKilnLit extends BlockPitKilnUnlit implements ITimeUpd
     }
 
     @Override
+    public String getDisplayStringText() {
+        return "Time left: ";
+    }
+
+    @Override
     public void tick(int x, int y, int z, World world) {
         this.generateParticles(x, y, z);
-        SpaceGame.instance.soundPlayer.playSound(x, y, z, new Sound(Sound.fireCrackling, false), SpaceGame.globalRand.nextFloat(0.75f, 1));
+        CosmicEvolution.instance.soundPlayer.playSound(x, y, z, new Sound(Sound.fireCrackling, false), CosmicEvolution.globalRand.nextFloat(0.75f, 1));
     }
 }

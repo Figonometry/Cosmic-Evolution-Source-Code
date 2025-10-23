@@ -1,8 +1,8 @@
 package spacegame.render;
 
 import org.joml.Vector3f;
+import spacegame.core.CosmicEvolution;
 import spacegame.core.MathUtil;
-import spacegame.core.SpaceGame;
 import spacegame.entity.Entity;
 import spacegame.entity.EntityDeer;
 import spacegame.gui.GuiInGame;
@@ -195,9 +195,9 @@ public final class ModelDeer extends Model {
 
         }
 
-        int playerChunkX = (int) (SpaceGame.instance.save.thePlayer.x) >> 5;
-        int playerChunkY = (int) (SpaceGame.instance.save.thePlayer.y) >> 5;
-        int playerChunkZ = (int) (SpaceGame.instance.save.thePlayer.z) >> 5;
+        int playerChunkX = (int) (CosmicEvolution.instance.save.thePlayer.x) >> 5;
+        int playerChunkY = (int) (CosmicEvolution.instance.save.thePlayer.y) >> 5;
+        int playerChunkZ = (int) (CosmicEvolution.instance.save.thePlayer.z) >> 5;
 
         int chunkX = (int) (associatedEntity.x) >> 5;
         int chunkY = (int) (associatedEntity.y) >> 5;
@@ -212,7 +212,7 @@ public final class ModelDeer extends Model {
         offsetZ *= 32;
 
         Shader.worldShader2DTexture.uploadVec3f("chunkOffset", new Vector3f(offsetX, offsetY, offsetZ));
-        worldTessellator.drawTexture2D(EntityDeer.texture, Shader.worldShader2DTexture, SpaceGame.camera);
+        worldTessellator.drawTexture2D(EntityDeer.texture, Shader.worldShader2DTexture, CosmicEvolution.camera);
     }
 
     public void rotateModelSegment(int segmentInArray, float x, float y, float z, float angleDeg){
@@ -260,9 +260,9 @@ public final class ModelDeer extends Model {
         int xInt = MathUtil.floorDouble(x);
         int yInt = MathUtil.floorDouble(y);
         int zInt = MathUtil.floorDouble(z);
-        float[] lightColor =  !associatedEntity.canDamage ? new float[]{1,0.65f,0.65f}  : SpaceGame.instance.save.activeWorld.getBlockLightColor(xInt, yInt, zInt);
-        this.setVertexLight1Arg(SpaceGame.instance.save.activeWorld.getBlockLightValue(xInt, yInt, zInt), x, y, z, lightColor);
-        this.skyLightValue = GuiInGame.getLightValueFromMap(SpaceGame.instance.save.activeWorld.getBlockSkyLightValue(xInt, yInt, zInt));
+        float[] lightColor =  !associatedEntity.canDamage ? new float[]{1,0.65f,0.65f}  : CosmicEvolution.instance.save.activeWorld.getBlockLightColor(xInt, yInt, zInt);
+        this.setVertexLight1Arg(CosmicEvolution.instance.save.activeWorld.getBlockLightValue(xInt, yInt, zInt), x, y, z, lightColor);
+        this.skyLightValue = GuiInGame.getLightValueFromMap(CosmicEvolution.instance.save.activeWorld.getBlockSkyLightValue(xInt, yInt, zInt));
         Color color = new Color(this.red, this.green, this.blue, 0);
         return color.getRGB();
     }

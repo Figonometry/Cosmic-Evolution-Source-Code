@@ -5,12 +5,12 @@ import org.lwjgl.openal.AL11;
 import java.util.ArrayList;
 
 public final class SoundPlayer {
-    public SpaceGame sg;
+    public CosmicEvolution ce;
     public static final double MAX_SOUND_DISTANCE = 32D;
     private static ArrayList<Sound> sounds = new ArrayList<Sound>();
 
-    public SoundPlayer(SpaceGame spaceGame){
-        this.sg = spaceGame;
+    public SoundPlayer(CosmicEvolution cosmicEvolution){
+        this.ce = cosmicEvolution;
     }
 
 
@@ -44,10 +44,10 @@ public final class SoundPlayer {
         float xDif;
         float yDif;
         float zDif;
-        if(this.sg.save != null) {
-             xDif = (float) (this.sg.save.thePlayer.x - x);
-             yDif = (float) (this.sg.save.thePlayer.y - y);
-             zDif = (float) (this.sg.save.thePlayer.z - z);
+        if(this.ce.save != null) {
+             xDif = (float) (this.ce.save.thePlayer.x - x);
+             yDif = (float) (this.ce.save.thePlayer.y - y);
+             zDif = (float) (this.ce.save.thePlayer.z - z);
         } else {
             xDif = 0;
             yDif = 0;

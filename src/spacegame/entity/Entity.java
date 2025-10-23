@@ -3,9 +3,9 @@ package spacegame.entity;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
+import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
 import spacegame.core.MathUtil;
-import spacegame.core.SpaceGame;
 import spacegame.render.ModelLoader;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
@@ -66,7 +66,7 @@ public abstract class Entity {
     }
 
     protected void checkToDespawn(){
-        if(SpaceGame.instance.save.time >= this.despawnTime){
+        if(CosmicEvolution.instance.save.time >= this.despawnTime){
             this.despawn = true;
         }
     }
@@ -105,16 +105,16 @@ public abstract class Entity {
         int y = MathUtil.floorDouble(this.y - (this.height/2) - 0.1);
         int z = MathUtil.floorDouble(this.z);
 
-        if(Block.list[SpaceGame.instance.save.activeWorld.getBlockID(x,y,z)].isSolid) {
+        if(Block.list[CosmicEvolution.instance.save.activeWorld.getBlockID(x,y,z)].isSolid) {
             Shader.worldShader2DTexture.uploadBoolean("useFog", true);
-            Shader.worldShader2DTexture.uploadFloat("fogRed", SpaceGame.instance.save.activeWorld.skyColor[0]);
-            Shader.worldShader2DTexture.uploadFloat("fogGreen", SpaceGame.instance.save.activeWorld.skyColor[1]);
-            Shader.worldShader2DTexture.uploadFloat("fogBlue", SpaceGame.instance.save.activeWorld.skyColor[2]);
+            Shader.worldShader2DTexture.uploadFloat("fogRed", CosmicEvolution.instance.save.activeWorld.skyColor[0]);
+            Shader.worldShader2DTexture.uploadFloat("fogGreen", CosmicEvolution.instance.save.activeWorld.skyColor[1]);
+            Shader.worldShader2DTexture.uploadFloat("fogBlue", CosmicEvolution.instance.save.activeWorld.skyColor[2]);
             Shader.worldShader2DTexture.uploadFloat("fogDistance", GameSettings.renderDistance  * 20f);
             y = MathUtil.floorDouble(this.y);
-            int playerChunkX = MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.x) >> 5;
-            int playerChunkY = MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.y) >> 5;
-            int playerChunkZ = MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.z) >> 5;
+            int playerChunkX = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x) >> 5;
+            int playerChunkY = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.y) >> 5;
+            int playerChunkZ = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z) >> 5;
             int xOffset = (x >> 5) - playerChunkX;
             int yOffset = (y >> 5) - playerChunkY;
             int zOffset = (z >> 5) - playerChunkZ;
@@ -131,7 +131,7 @@ public abstract class Entity {
             tessellator.addElements();
             GL46.glEnable(GL46.GL_BLEND);
             GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-            tessellator.drawTexture2D(shadow, Shader.worldShader2DTexture, SpaceGame.camera);
+            tessellator.drawTexture2D(shadow, Shader.worldShader2DTexture, CosmicEvolution.camera);
             GL46.glDisable(GL46.GL_BLEND);
         }
     }
@@ -186,7 +186,7 @@ public abstract class Entity {
     protected void moveAndHandleCollision(){
         this.updateAxisAlignedBB();
         surroundingBlocks.clear();
-        surroundingBlocks = SpaceGame.instance.save.activeWorld.getBlockBoundingBoxes(this.boundingBox.expand(this.deltaX, this.deltaY, this.deltaZ), surroundingBlocks);
+        surroundingBlocks = CosmicEvolution.instance.save.activeWorld.getBlockBoundingBoxes(this.boundingBox.expand(this.deltaX, this.deltaY, this.deltaZ), surroundingBlocks);
 
         AxisAlignedBB block;
         for(int i = 0; i < surroundingBlocks.size(); i++) {
@@ -239,7 +239,7 @@ public abstract class Entity {
     }
 
     public static void initShadow(){
-        shadow = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/item/shadow.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        shadow = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/item/shadow.png", RenderEngine.TEXTURE_TYPE_2D, 0);
     }
 
 }

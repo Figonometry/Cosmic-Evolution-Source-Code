@@ -2,12 +2,12 @@ package spacegame.gui;
 
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
-import spacegame.core.SpaceGame;
+import spacegame.core.CosmicEvolution;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
 
 public final class GuiControlsInGame extends Gui {
-    private SpaceGame sg;
+    private CosmicEvolution ce;
     private Button forwardKey;
     private Button backwardKey;
     private Button leftKey;
@@ -19,29 +19,29 @@ public final class GuiControlsInGame extends Gui {
     public int title;
     public int background;
 
-    public GuiControlsInGame(SpaceGame spaceGame) {
-        super(spaceGame);
-        this.sg = spaceGame;
-        this.forwardKey = new Button(EnumButtonEffects.KEY_FORWARD.name(), 250, 50, -150, 200, this, this.sg);
-        this.backwardKey = new Button(EnumButtonEffects.KEY_BACKWARD.name(), 250, 50, 150, 200, this, this.sg);
-        this.leftKey = new Button(EnumButtonEffects.KEY_LEFT.name(), 250, 50, -150, 100, this, this.sg);
-        this.rightKey = new Button(EnumButtonEffects.KEY_RIGHT.name(), 250, 50, 150, 100, this, this.sg);
-        this.jumpKey = new Button(EnumButtonEffects.KEY_JUMP.name(), 250, 50, -150, 0, this, this.sg);
-        this.inventoryKey = new Button(EnumButtonEffects.KEY_INVENTORY.name(), 250, 50, 150, 0, this, this.sg);
-        this.dropKey = new Button(EnumButtonEffects.KEY_DROP.name(), 550, 50, 0, -100, this, this.sg);
-        this.back = new Button(EnumButtonEffects.BACK.name(), 550, 50, 0, -200, this, this.sg);
+    public GuiControlsInGame(CosmicEvolution cosmicEvolution) {
+        super(cosmicEvolution);
+        this.ce = cosmicEvolution;
+        this.forwardKey = new Button(EnumButtonEffects.KEY_FORWARD.name(), 250, 50, -150, 200, this, this.ce);
+        this.backwardKey = new Button(EnumButtonEffects.KEY_BACKWARD.name(), 250, 50, 150, 200, this, this.ce);
+        this.leftKey = new Button(EnumButtonEffects.KEY_LEFT.name(), 250, 50, -150, 100, this, this.ce);
+        this.rightKey = new Button(EnumButtonEffects.KEY_RIGHT.name(), 250, 50, 150, 100, this, this.ce);
+        this.jumpKey = new Button(EnumButtonEffects.KEY_JUMP.name(), 250, 50, -150, 0, this, this.ce);
+        this.inventoryKey = new Button(EnumButtonEffects.KEY_INVENTORY.name(), 250, 50, 150, 0, this, this.ce);
+        this.dropKey = new Button(EnumButtonEffects.KEY_DROP.name(), 550, 50, 0, -100, this, this.ce);
+        this.back = new Button(EnumButtonEffects.BACK.name(), 550, 50, 0, -200, this, this.ce);
     }
 
     @Override
     public void loadTextures() {
-        this.title = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInGame/controls.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        this.background = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.title = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInGame/controls.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.background = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
     }
 
     @Override
     public void deleteTextures() {
-        SpaceGame.instance.renderEngine.deleteTexture(this.title);
-        SpaceGame.instance.renderEngine.deleteTexture(this.background);
+        CosmicEvolution.instance.renderEngine.deleteTexture(this.title);
+        CosmicEvolution.instance.renderEngine.deleteTexture(this.background);
     }
 
 
@@ -50,7 +50,7 @@ public final class GuiControlsInGame extends Gui {
         GuiInGame.renderGuiFromOtherGuis();
         RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         tessellator.toggleOrtho();
-        GLFW.glfwSetInputMode(this.sg.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
+        GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
 
         int titleWidth = 832;
         int titleHeight = 144;
@@ -62,7 +62,7 @@ public final class GuiControlsInGame extends Gui {
         tessellator.addVertex2DTexture(16777215, titleX - titleWidth/2, titleY + titleHeight/2, titleZ, 2);
         tessellator.addVertex2DTexture(16777215, titleX + titleWidth/2, titleY - titleHeight/2, titleZ, 0);
         tessellator.addElements();
-        tessellator.drawTexture2D(this.title, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.title, Shader.screen2DTexture, CosmicEvolution.camera);
 
         int backgroundWidth = 1920;
         int backgroundHeight = 1017;
@@ -76,7 +76,7 @@ public final class GuiControlsInGame extends Gui {
         tessellator.addElements();
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-        tessellator.drawTexture2D(this.background, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.background, Shader.screen2DTexture, CosmicEvolution.camera);
         GL46.glDisable(GL46.GL_BLEND);
 
         tessellator.toggleOrtho();

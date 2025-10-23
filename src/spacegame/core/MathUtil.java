@@ -53,11 +53,11 @@ public abstract class MathUtil {
     }
 
     public static float getOpenGLMouseX(){
-        return (float) (MouseListener.instance.xPos - SpaceGame.width/2D);
+        return (float) (MouseListener.instance.xPos - CosmicEvolution.width/2D);
     }
 
     public static float getOpenGLMouseY(){
-       return (float) ((MouseListener.instance.yPos - SpaceGame.height/2D) * -1);
+       return (float) ((MouseListener.instance.yPos - CosmicEvolution.height/2D) * -1);
     }
 
     public static short floatToHalf(float value) {
@@ -94,19 +94,19 @@ public abstract class MathUtil {
     //These methods recalculate width and height of screen UI elements based on the screen size, this is programmed on a windowed monitor with a 1920x1017 resolution.
     // This allows me to write the code easier and just have it adjusted based on the screen size dynamically
     public static float adjustWidthBasedOnScreenWidth(float width){
-        return width * (SpaceGame.width / 1920f);
+        return width * (CosmicEvolution.width / 1920f);
     }
 
     public static float adjustHeightBasedOnScreenHeight(float height){
-        return height * (SpaceGame.height / 1017f);
+        return height * (CosmicEvolution.height / 1017f);
     }
 
     public static float adjustXPosBasedOnScreenWidth(float x){
-        return x * (SpaceGame.width / 1920f);
+        return x * (CosmicEvolution.width / 1920f);
     }
 
     public static float adjustYPosBasedOnScreenHeight(float y){
-        return y * (SpaceGame.height/ 1017f);
+        return y * (CosmicEvolution.height/ 1017f);
     }
 
     public static double sin(double a) {

@@ -2,8 +2,8 @@ package spacegame.celestial;
 
 import org.joml.Matrix3d;
 import org.joml.Vector3d;
+import spacegame.core.CosmicEvolution;
 import spacegame.core.MathUtil;
-import spacegame.core.SpaceGame;
 import spacegame.render.RenderCelestialBody;
 
 public abstract class CelestialObject {
@@ -96,7 +96,7 @@ public abstract class CelestialObject {
     }
 
     public void update(){
-        long currentTimeInOrbit = SpaceGame.instance.save.time % this.orbitalPeriod;
+        long currentTimeInOrbit = CosmicEvolution.instance.save.time % this.orbitalPeriod;
         double percentageOfOrbit = (double) currentTimeInOrbit / (double)this.orbitalPeriod;
         double degrees = percentageOfOrbit * 360;
         double currentDegreeInRads = Math.toRadians(degrees);
@@ -139,7 +139,7 @@ public abstract class CelestialObject {
     }
 
     public void updateOld(){
-        long currentTimeInOrbit = SpaceGame.instance.save.time % this.orbitalPeriod;
+        long currentTimeInOrbit = CosmicEvolution.instance.save.time % this.orbitalPeriod;
         double percentageOfOrbit = (double) currentTimeInOrbit / (double)this.orbitalPeriod;
         double degrees = percentageOfOrbit * 360;
 
@@ -159,7 +159,7 @@ public abstract class CelestialObject {
     }
 
     public Vector3d calculatePreviousFramePosition(){
-        long currentTimeInOrbit = (SpaceGame.instance.save.time - 1) % this.orbitalPeriod;
+        long currentTimeInOrbit = (CosmicEvolution.instance.save.time - 1) % this.orbitalPeriod;
         double percentageOfOrbit = (double) currentTimeInOrbit / (double)this.orbitalPeriod;
         double degrees = percentageOfOrbit * 360;
 

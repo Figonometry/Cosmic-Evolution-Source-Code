@@ -7,13 +7,16 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
+import spacegame.block.ITimeUpdate;
+import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
 import spacegame.core.MathUtil;
-import spacegame.core.SpaceGame;
+import spacegame.core.Timer;
 import spacegame.entity.EntityPlayer;
 import spacegame.item.Item;
 import spacegame.render.*;
 import spacegame.world.Chunk;
+import spacegame.world.TimeUpdateEvent;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -21,6 +24,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Random;
+import java.util.Spliterator;
 
 public final class GuiInGame extends Gui {
     public static int vignette;
@@ -32,24 +36,28 @@ public final class GuiInGame extends Gui {
     public static int transparentBackground;
     public static int fillableColorWithShadedBottom;
     public static int fillableColor;
+    public static String messageText = "dummy";
+    public static int messageTextAlpha;
+    public static int messageTextColor;
+    public static long timeMessageStarted;
 
-    public GuiInGame(SpaceGame sg) {
-        super(sg);
-        this.sg = sg;
+    public GuiInGame(CosmicEvolution ce) {
+        super(ce);
+        this.ce = ce;
     }
 
     @Override
     public void loadTextures() {
         if (vignette == 0) {
-            vignette = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/vignette.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-            water = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/waterOverlay.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-            outline = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInGame/outline.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-            blockBreaking = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInGame/blockBreaking.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-            blockBreakingAtlas = SpaceGame.instance.renderEngine.createTextureAtlas(96, 96, 32, 32, 7, 0);
-            hotbar = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInGame/hotbarSlot.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-            transparentBackground = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-            fillableColorWithShadedBottom = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColorWithShadedBottom.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-            fillableColor = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColor.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+            vignette = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/vignette.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+            water = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/waterOverlay.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+            outline = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInGame/outline.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+            blockBreaking = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInGame/blockBreaking.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+            blockBreakingAtlas = CosmicEvolution.instance.renderEngine.createTextureAtlas(96, 96, 32, 32, 7, 0);
+            hotbar = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInGame/hotbarSlot.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+            transparentBackground = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+            fillableColorWithShadedBottom = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColorWithShadedBottom.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+            fillableColor = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColor.png", RenderEngine.TEXTURE_TYPE_2D, 0);
         }
     }
 
@@ -62,34 +70,34 @@ public final class GuiInGame extends Gui {
         int leftSide = -970;
         FontRenderer fontRenderer = FontRenderer.instance;
         if(GameSettings.showFPS) {
-            fontRenderer.drawString(SpaceGame.instance.title + " (" + SpaceGame.instance.fps * -1 + " FPS)", leftSide, 460,-15, 16777215, 50);
+            fontRenderer.drawString(CosmicEvolution.instance.title + " (" + CosmicEvolution.instance.fps * -1 + " FPS)", leftSide, 460,-15, 16777215, 50, 255);
         } else {
-            fontRenderer.drawString(SpaceGame.instance.title, leftSide, 460,-15, 16777215, 50);
+            fontRenderer.drawString(CosmicEvolution.instance.title, leftSide, 460,-15, 16777215, 50, 255);
         }
-        int playerX = MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.x);
-        int playerY = MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.y);
-        int playerZ = MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.z);
+        int playerX = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x);
+        int playerY = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.y);
+        int playerZ = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z);
 
-        if (SpaceGame.DEBUG_MODE) {
-            fontRenderer.drawString("X: " + SpaceGame.instance.save.thePlayer.x, leftSide, 430,-15, 16777215, 50);
-            fontRenderer.drawString("Y: " + (SpaceGame.instance.save.thePlayer.y), leftSide, 400,-15, 16777215, 50);
-            fontRenderer.drawString("Z: " + SpaceGame.instance.save.thePlayer.z, leftSide, 370,-15, 16777215, 50);
-            fontRenderer.drawString("Pitch: " + SpaceGame.instance.save.thePlayer.pitch, leftSide, 340,-15, 16777215, 50);
-            fontRenderer.drawString("Yaw: " + SpaceGame.instance.save.thePlayer.yaw, leftSide, 310,-15, 16777215, 50);
-            fontRenderer.drawString("Chunks Loaded " + SpaceGame.instance.save.activeWorld.chunkController.numberOfLoadedChunks(), leftSide, 280,-15, 16777215, 50);
-            fontRenderer.drawString("Block Light Level: " + SpaceGame.instance.save.activeWorld.getBlockLightValue(playerX, playerY, playerZ), leftSide, 250,-15, 16777215, 50);
-            fontRenderer.drawString("Regions Loaded: " + SpaceGame.instance.save.activeWorld.chunkController.numberOfLoadedRegions(), leftSide, 220,-15, 16777215, 50);
-            fontRenderer.drawString("Draw Calls: " +  SpaceGame.instance.save.activeWorld.chunkController.drawCalls, leftSide, 190,-15, 16777215, 50);
-            fontRenderer.drawString("Thread Count: " + Thread.activeCount(), leftSide, 160,-15, 16777215, 50);
-            fontRenderer.drawString("Thread Queue Size: " + SpaceGame.instance.save.activeWorld.chunkController.threadQueue.size(), leftSide, 130,-15, 16777215, 50);
-            fontRenderer.drawString("Sky Light Level: " + SpaceGame.instance.save.activeWorld.getBlockSkyLightValue(playerX, playerY, playerZ), leftSide, 100,-15, 16777215, 50);
-            fontRenderer.drawString("Temperature: " + SpaceGame.instance.save.activeWorld.getDisplayTemperature(playerX, playerY, playerZ) + "F", leftSide, 70,-15, 16777215, 50);
-            fontRenderer.drawString("Rainfall: " + SpaceGame.instance.save.activeWorld.getRainfall(playerX, playerZ), leftSide, 40,-15, 16777215, 50);
-            fontRenderer.drawString("Time: " + SpaceGame.instance.save.time, leftSide, 10, -15, 16777215, 50);
-            fontRenderer.drawString("Entities: " + SpaceGame.instance.save.activeWorld.chunkController.numLoadedEntities + " / " + SpaceGame.instance.save.activeWorld.chunkController.entityCap, leftSide,-20, -15, 16777215, 50);
+        if (CosmicEvolution.DEBUG_MODE) {
+            fontRenderer.drawString("X: " + CosmicEvolution.instance.save.thePlayer.x, leftSide, 430,-15, 16777215, 50, 255);
+            fontRenderer.drawString("Y: " + (CosmicEvolution.instance.save.thePlayer.y), leftSide, 400,-15, 16777215, 50, 255);
+            fontRenderer.drawString("Z: " + CosmicEvolution.instance.save.thePlayer.z, leftSide, 370,-15, 16777215, 50, 255);
+            fontRenderer.drawString("Pitch: " + CosmicEvolution.instance.save.thePlayer.pitch, leftSide, 340,-15, 16777215, 50, 255);
+            fontRenderer.drawString("Yaw: " + CosmicEvolution.instance.save.thePlayer.yaw, leftSide, 310,-15, 16777215, 50, 255);
+            fontRenderer.drawString("Chunks Loaded " + CosmicEvolution.instance.save.activeWorld.chunkController.numberOfLoadedChunks(), leftSide, 280,-15, 16777215, 50, 255);
+            fontRenderer.drawString("Block Light Level: " + CosmicEvolution.instance.save.activeWorld.getBlockLightValue(playerX, playerY, playerZ), leftSide, 250,-15, 16777215, 50, 255);
+            fontRenderer.drawString("Regions Loaded: " + CosmicEvolution.instance.save.activeWorld.chunkController.numberOfLoadedRegions(), leftSide, 220,-15, 16777215, 50, 255);
+            fontRenderer.drawString("Draw Calls: " +  CosmicEvolution.instance.save.activeWorld.chunkController.drawCalls, leftSide, 190,-15, 16777215, 50, 255);
+            fontRenderer.drawString("Thread Count: " + Thread.activeCount(), leftSide, 160,-15, 16777215, 50, 255);
+            fontRenderer.drawString("Thread Queue Size: " + CosmicEvolution.instance.save.activeWorld.chunkController.threadQueue.size(), leftSide, 130,-15, 16777215, 50, 255);
+            fontRenderer.drawString("Sky Light Level: " + CosmicEvolution.instance.save.activeWorld.getBlockSkyLightValue(playerX, playerY, playerZ), leftSide, 100,-15, 16777215, 50, 255);
+            fontRenderer.drawString("Temperature: " + CosmicEvolution.instance.save.activeWorld.getDisplayTemperature(playerX, playerY, playerZ) + "F", leftSide, 70,-15, 16777215, 50, 255);
+            fontRenderer.drawString("Rainfall: " + CosmicEvolution.instance.save.activeWorld.getRainfall(playerX, playerZ), leftSide, 40,-15, 16777215, 50, 255);
+            fontRenderer.drawString("Time: " + CosmicEvolution.instance.save.time, leftSide, 10, -15, 16777215, 50, 255);
+            fontRenderer.drawString("Entities: " + CosmicEvolution.instance.save.activeWorld.chunkController.numLoadedEntities + " / " + CosmicEvolution.instance.save.activeWorld.chunkController.entityCap, leftSide,-20, -15, 16777215, 50, 255);
         } else {
-            fontRenderer.drawString("Temperature: " + SpaceGame.instance.save.activeWorld.getDisplayTemperature(playerX, playerY, playerZ) + "F", leftSide, 400,-15, 16777215, 50);
-            fontRenderer.drawString("Rainfall: " + SpaceGame.instance.save.activeWorld.getRainfall(playerX, playerZ), leftSide, 370,-15, 16777215, 50);
+            fontRenderer.drawString("Temperature: " + CosmicEvolution.instance.save.activeWorld.getDisplayTemperature(playerX, playerY, playerZ) + "F", leftSide, 400,-15, 16777215, 50, 255);
+            fontRenderer.drawString("Rainfall: " + CosmicEvolution.instance.save.activeWorld.getRainfall(playerX, playerZ), leftSide, 370,-15, 16777215, 50, 255);
         }
     }
 
@@ -99,6 +107,8 @@ public final class GuiInGame extends Gui {
         renderText();
         this.renderCursor();
         renderVignette();
+        renderBlockLookingAtName();
+        renderMessageText();
         renderHeldItem();
         renderHotbar();
         renderHealthbar();
@@ -107,6 +117,8 @@ public final class GuiInGame extends Gui {
     public static void renderGuiFromOtherGuis(){
         renderText();
         renderVignette();
+        renderBlockLookingAtName();
+        renderMessageText();
         renderHeldItem();
         renderHotbar();
         renderHealthbar();
@@ -115,29 +127,29 @@ public final class GuiInGame extends Gui {
     public static void renderVignette(){
         RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
 
-        short blockPlayerHeadIsIn = SpaceGame.instance.save.activeWorld.getBlockID(MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.x), MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.y+  SpaceGame.instance.save.thePlayer.height/2), MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.z));
+        short blockPlayerHeadIsIn = CosmicEvolution.instance.save.activeWorld.getBlockID(MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x), MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.y+  CosmicEvolution.instance.save.thePlayer.height/2), MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z));
         if(blockPlayerHeadIsIn == Block.water.ID){
             GL46.glEnable(GL46.GL_BLEND);
             GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
             tessellator.toggleOrtho();
-            tessellator.addVertex2DTexture(8355711, (float) -SpaceGame.width /2, (float) -SpaceGame.height /2, -900, 3);
-            tessellator.addVertex2DTexture(8355711, (float) SpaceGame.width /2, (float) SpaceGame.height /2, -900, 1);
-            tessellator.addVertex2DTexture(8355711, (float) -SpaceGame.width /2, (float) SpaceGame.height /2, -900, 2);
-            tessellator.addVertex2DTexture(8355711, (float) SpaceGame.width /2, (float) -SpaceGame.height /2, -900, 0);
+            tessellator.addVertex2DTexture(8355711, (float) -CosmicEvolution.width /2, (float) -CosmicEvolution.height /2, -900, 3);
+            tessellator.addVertex2DTexture(8355711, (float) CosmicEvolution.width /2, (float) CosmicEvolution.height /2, -900, 1);
+            tessellator.addVertex2DTexture(8355711, (float) -CosmicEvolution.width /2, (float) CosmicEvolution.height /2, -900, 2);
+            tessellator.addVertex2DTexture(8355711, (float) CosmicEvolution.width /2, (float) -CosmicEvolution.height /2, -900, 0);
             tessellator.addElements();
-            tessellator.drawTexture2D(water, Shader.screen2DTexture, SpaceGame.camera);
+            tessellator.drawTexture2D(water, Shader.screen2DTexture, CosmicEvolution.camera);
             tessellator.toggleOrtho();
             GL46.glDisable(GL46.GL_BLEND);
             renderAirBar();
         } else if (blockPlayerHeadIsIn != Block.air.ID && Block.list[blockPlayerHeadIsIn].isSolid && blockPlayerHeadIsIn != Block.leaf.ID) {
             int textureID = Block.list[blockPlayerHeadIsIn].textureID;
             tessellator.toggleOrtho();
-            tessellator.addVertexTextureArray(4144959, (float) -SpaceGame.width /2, (float) -SpaceGame.height /2, -900, 3, textureID, 2);
-            tessellator.addVertexTextureArray(4144959, (float) SpaceGame.width /2, (float) SpaceGame.height /2, -900, 1, textureID, 2);
-            tessellator.addVertexTextureArray(4144959, (float) -SpaceGame.width /2, (float) SpaceGame.height /2, -900, 2,textureID, 2);
-            tessellator.addVertexTextureArray(4144959, (float) SpaceGame.width /2, (float) -SpaceGame.height /2, -900, 0,textureID, 2);
+            tessellator.addVertexTextureArray(4144959, (float) -CosmicEvolution.width /2, (float) -CosmicEvolution.height /2, -900, 3, textureID, 2);
+            tessellator.addVertexTextureArray(4144959, (float) CosmicEvolution.width /2, (float) CosmicEvolution.height /2, -900, 1, textureID, 2);
+            tessellator.addVertexTextureArray(4144959, (float) -CosmicEvolution.width /2, (float) CosmicEvolution.height /2, -900, 2,textureID, 2);
+            tessellator.addVertexTextureArray(4144959, (float) CosmicEvolution.width /2, (float) -CosmicEvolution.height /2, -900, 0,textureID, 2);
             tessellator.addElements();
-            tessellator.drawVertexArray(Assets.blockTextureArray, Shader.screenTextureArray, SpaceGame.camera);
+            tessellator.drawVertexArray(Assets.blockTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
             tessellator.toggleOrtho();
         }
 
@@ -150,10 +162,104 @@ public final class GuiInGame extends Gui {
         tessellator.addVertex2DTexture(16777215, (float) 970, (float) -970, -100, 0);
         tessellator.addElements();
         GL46.glDepthMask(false);
-        tessellator.drawTexture2D(vignette, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(vignette, Shader.screen2DTexture, CosmicEvolution.camera);
         GL46.glDepthMask(true);
         tessellator.toggleOrtho();
         GL46.glDisable(GL46.GL_BLEND);
+    }
+
+    public static void renderBlockLookingAtName(){
+        short blockID = CosmicEvolution.instance.save.thePlayer.getPlayerLookingAtBlockID();
+        if(blockID == Block.air.ID || blockID == Block.water.ID)return;
+        RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
+        FontRenderer fontRenderer = FontRenderer.instance;
+
+        GL46.glEnable(GL46.GL_BLEND);
+        GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
+        if(Block.list[blockID] instanceof ITimeUpdate) {
+            StringBuilder stringBuilder = new StringBuilder();
+            int[] blockCoordinates = CosmicEvolution.instance.save.thePlayer.getPlayerLookingAtBlockCoords();
+            TimeUpdateEvent updateEvent = CosmicEvolution.instance.save.activeWorld.getTimeEvent(blockCoordinates[0], blockCoordinates[1], blockCoordinates[2]);
+            if(updateEvent != null) {
+                long timeUntil = updateEvent.updateTime - CosmicEvolution.instance.save.time;
+                long daysUntil = timeUntil / Timer.DAY;
+                long hoursUntil = (timeUntil % Timer.DAY) / Timer.HOUR;
+                long minutesUntil = (timeUntil % Timer.HOUR) / Timer.MINUTE;
+
+                stringBuilder.append(((ITimeUpdate) Block.list[blockID]).getDisplayStringText());
+                if (daysUntil != 0) {
+                    stringBuilder.append(daysUntil).append(daysUntil != 1 ? " Days " : " Day ");
+                }
+                if (hoursUntil != 0 || (minutesUntil != 0 && daysUntil != 0)) {
+                    stringBuilder.append(hoursUntil).append(hoursUntil != 1 ? " Hours " : " Hour ");
+                }
+                if (minutesUntil != 0) {
+                    stringBuilder.append(minutesUntil).append(minutesUntil != 1 ? " Minutes" : " Minute");
+                }
+            }
+
+            tessellator.toggleOrtho();
+            int x = 0;
+            int y = 450;
+            float width = Math.max(Block.list[blockID].displayName.length() * 25, stringBuilder.toString().length() * 25);
+            float height = 100;
+
+            tessellator.addVertex2DTexture(0, x - width / 2f, y - height / 2f, -90, 3);
+            tessellator.addVertex2DTexture(0, x + width / 2f, y + height / 2f, -90, 1);
+            tessellator.addVertex2DTexture(0, x - width / 2f, y + height / 2f, -90, 2);
+            tessellator.addVertex2DTexture(0, x + width / 2f, y - height / 2f, -90, 0);
+            tessellator.addElements();
+            tessellator.drawTexture2D(transparentBackground, Shader.screen2DTexture, CosmicEvolution.camera);
+            tessellator.toggleOrtho();
+            fontRenderer.drawCenteredString(Block.list[blockID].displayName, 0, 450, -14, 16777215, 50, 255);
+
+            if(updateEvent != null) {
+                fontRenderer.drawCenteredString(stringBuilder.toString(), 0, 400, -14, 16777215, 50, 255);
+            }
+        } else {
+            tessellator.toggleOrtho();
+            int x = 0;
+            int y = 450;
+            float width = Block.list[blockID].displayName.length() * 25;
+            float height = 50;
+            tessellator.addVertex2DTexture(0, x - width / 2f, y - height / 2f, -90, 3);
+            tessellator.addVertex2DTexture(0, x + width / 2f, y + height / 2f, -90, 1);
+            tessellator.addVertex2DTexture(0, x - width / 2f, y + height / 2f, -90, 2);
+            tessellator.addVertex2DTexture(0, x + width / 2f, y - height / 2f, -90, 0);
+            tessellator.addElements();
+            tessellator.drawTexture2D(transparentBackground, Shader.screen2DTexture, CosmicEvolution.camera);
+            tessellator.toggleOrtho();
+            fontRenderer.drawCenteredString(Block.list[blockID].displayName, 0, 425, -14, 16777215, 50, 255);
+        }
+        GL46.glDisable(GL46.GL_BLEND);
+    }
+
+    public static void renderMessageText() {
+        if (messageText.equals("dummy")) return;
+
+        FontRenderer fontRenderer = FontRenderer.instance;
+        GL46.glEnable(GL46.GL_BLEND);
+        GL46.glBlendFunc(GL46.GL_SRC_ALPHA, GL46.GL_ONE_MINUS_SRC_ALPHA);
+        fontRenderer.drawCenteredString(messageText, 0, -250, -15, messageTextColor, 50, messageTextAlpha);
+        GL46.glDisable(GL46.GL_BLEND);
+    }
+
+    public static void fadeMessageText(){
+        if(messageText.equals("dummy"))return;
+
+        if (CosmicEvolution.instance.save.time >= timeMessageStarted + 120 && ((CosmicEvolution.instance.save.time & 1) == 0)) { //after 2 seconds fade the string
+            messageTextAlpha -= 2;
+            if (messageTextAlpha <= 0) {
+                messageText = "dummy";
+            }
+        }
+    }
+
+    public static void setMessageText(String messageText1, int color){
+        messageText = messageText1;
+        messageTextAlpha = 255;
+        messageTextColor = color;
+        timeMessageStarted = CosmicEvolution.instance.save.time;
     }
 
     public static void renderHotbar(){
@@ -168,7 +274,7 @@ public final class GuiInGame extends Gui {
         tessellator.addElements();
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-        tessellator.drawTexture2D(transparentBackground, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(transparentBackground, Shader.screen2DTexture, CosmicEvolution.camera);
         GL46.glDisable(GL46.GL_BLEND);
 
         int size = 96;
@@ -262,7 +368,7 @@ public final class GuiInGame extends Gui {
         tessellator.addElements();
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-        tessellator.drawTexture2D(hotbar, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(hotbar, Shader.screen2DTexture, CosmicEvolution.camera);
         GL46.glDisable(GL46.GL_BLEND);
         tessellator.toggleOrtho();
 
@@ -270,20 +376,20 @@ public final class GuiInGame extends Gui {
         size = 96;
         for(int i = 0; i < 9; i++) {
             if (i == EntityPlayer.selectedInventorySlot) {
-                SpaceGame.instance.save.thePlayer.inventory.itemStacks[i].adjustStackPosition(x + 46, y + 46);
-                SpaceGame.instance.save.thePlayer.inventory.itemStacks[i].renderItemStackOnHotbar();
-                SpaceGame.instance.save.thePlayer.inventory.itemStacks[i].resetStackPosition();
+                CosmicEvolution.instance.save.thePlayer.inventory.itemStacks[i].adjustStackPosition(x + 46, y + 46);
+                CosmicEvolution.instance.save.thePlayer.inventory.itemStacks[i].renderItemStackOnHotbar();
+                CosmicEvolution.instance.save.thePlayer.inventory.itemStacks[i].resetStackPosition();
             } else {
-                SpaceGame.instance.save.thePlayer.inventory.itemStacks[i].adjustStackPosition(x + 43, y + 43);
-                SpaceGame.instance.save.thePlayer.inventory.itemStacks[i].renderItemStackOnHotbar();
-                SpaceGame.instance.save.thePlayer.inventory.itemStacks[i].resetStackPosition();
+                CosmicEvolution.instance.save.thePlayer.inventory.itemStacks[i].adjustStackPosition(x + 43, y + 43);
+                CosmicEvolution.instance.save.thePlayer.inventory.itemStacks[i].renderItemStackOnHotbar();
+                CosmicEvolution.instance.save.thePlayer.inventory.itemStacks[i].resetStackPosition();
             }
 
             x += size;
         }
 
-        if(SpaceGame.instance.currentGui instanceof GuiInventoryStrawChest){
-            SpaceGame.instance.save.thePlayer.inventory.shiftPlayerHotbar(((GuiInventoryStrawChest) SpaceGame.instance.currentGui).getPlayerInventoryShiftX(), 0);
+        if(CosmicEvolution.instance.currentGui instanceof GuiInventoryStrawChest){
+            CosmicEvolution.instance.save.thePlayer.inventory.shiftPlayerHotbar(((GuiInventoryStrawChest) CosmicEvolution.instance.currentGui).getPlayerInventoryShiftX(), 0);
         }
     }
 
@@ -298,13 +404,13 @@ public final class GuiInGame extends Gui {
         tessellator.addVertex2DTexture(4128768, x + 864, y, -90, 0);
         tessellator.addElements();
 
-        float progress = (int) (864 * (SpaceGame.instance.save.thePlayer.health / SpaceGame.instance.save.thePlayer.maxHealth));
+        float progress = (int) (864 * (CosmicEvolution.instance.save.thePlayer.health / CosmicEvolution.instance.save.thePlayer.maxHealth));
         tessellator.addVertex2DTexture(16711680, x, y, -89, 3);
         tessellator.addVertex2DTexture(16711680, x + progress, y + 16, -89, 1);
         tessellator.addVertex2DTexture(16711680, x, y + 16, -89, 2);
         tessellator.addVertex2DTexture(16711680, x + progress, y, -89, 0);
         tessellator.addElements();
-        tessellator.drawTexture2D(fillableColorWithShadedBottom, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(fillableColorWithShadedBottom, Shader.screen2DTexture, CosmicEvolution.camera);
         tessellator.toggleOrtho();
     }
 
@@ -319,43 +425,43 @@ public final class GuiInGame extends Gui {
         tessellator.addVertex2DTexture(9535, x + 864, y, -90, 0);
         tessellator.addElements();
 
-        float progress = (int) (864 * ((300 - SpaceGame.instance.save.thePlayer.drowningTimer) / 300f));
+        float progress = (int) (864 * ((300 - CosmicEvolution.instance.save.thePlayer.drowningTimer) / 300f));
         tessellator.addVertex2DTexture(38143, x, y, -89, 3);
         tessellator.addVertex2DTexture(38143, x + progress, y + 16, -89, 1);
         tessellator.addVertex2DTexture(38143, x, y + 16, -89, 2);
         tessellator.addVertex2DTexture(38143, x + progress, y, -89, 0);
         tessellator.addElements();
-        tessellator.drawTexture2D(fillableColorWithShadedBottom, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(fillableColorWithShadedBottom, Shader.screen2DTexture, CosmicEvolution.camera);
         tessellator.toggleOrtho();
     }
 
 
     public static void renderHeldItem() {
-        final short heldBlock = SpaceGame.instance.save.thePlayer.getHeldBlock();
-        if(SpaceGame.instance.save.thePlayer.isHoldingBlock()) {
+        final short heldBlock = CosmicEvolution.instance.save.thePlayer.getHeldBlock();
+        if(CosmicEvolution.instance.save.thePlayer.isHoldingBlock()) {
             if (heldBlock != Block.air.ID) {
                 float blockID;
                 float x = 2f;
                 float y = -2.5f;
                 float z = -3f;
                 if(GameSettings.viewBob) {
-                    x -= 0.5f * ((MathUtil.sin((float) (((SpaceGame.instance.save.thePlayer.viewBobTimer / 60f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
-                    y -= 0.25f * ((MathUtil.sin((float) (((SpaceGame.instance.save.thePlayer.viewBobTimer / 60f) - 0.125f) * (Math.PI * 4f))) * 0.5) + 0.5f);
+                    x -= 0.5f * ((MathUtil.sin((float) (((CosmicEvolution.instance.save.thePlayer.viewBobTimer / 60f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
+                    y -= 0.25f * ((MathUtil.sin((float) (((CosmicEvolution.instance.save.thePlayer.viewBobTimer / 60f) - 0.125f) * (Math.PI * 4f))) * 0.5) + 0.5f);
                 }
-                z -= 1f * ((MathUtil.sin((float) (((SpaceGame.instance.save.thePlayer.swingTimer / 15f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
+                z -= 1f * ((MathUtil.sin((float) (((CosmicEvolution.instance.save.thePlayer.swingTimer / 15f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
                 Vector3f position = new Vector3f(x,y,z);
                 Matrix3f rotationMatrix = new Matrix3f();
                 rotationMatrix.rotateY((float) (0.25 * Math.PI));
-                double sine = (MathUtil.sin((float) ((((double) SpaceGame.instance.save.thePlayer.swingTimer / 15) * Math.PI * 2) - (0.5 * Math.PI))) * 0.5) + 0.5f;
+                double sine = (MathUtil.sin((float) ((((double) CosmicEvolution.instance.save.thePlayer.swingTimer / 15) * Math.PI * 2) - (0.5 * Math.PI))) * 0.5) + 0.5f;
                 rotationMatrix.rotateLocalX((float) ((float) -(0.25 * Math.PI) * sine));
                 Quaternionf rotation = rotationMatrix.getUnnormalizedRotation(new Quaternionf());
-                int playerX = MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.x);
-                int playerY = MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.y);
-                int playerZ = MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.z);
-                float blockLight = getLightValueFromMap(SpaceGame.instance.save.activeWorld.getBlockLightValue(playerX, playerY, playerZ));
-                float lightLevelFloat = SpaceGame.instance.save.activeWorld.chunkController.renderWorldScene.baseLight > blockLight ? SpaceGame.instance.save.activeWorld.chunkController.renderWorldScene.baseLight : blockLight;
-                lightLevelFloat -=  0.1 * (MathUtil.sin(SpaceGame.instance.save.thePlayer.yaw / 45) + 1);
-                lightLevelFloat -=  0.1 * (MathUtil.sin(SpaceGame.instance.save.thePlayer.pitch / 45) + 1);
+                int playerX = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x);
+                int playerY = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.y);
+                int playerZ = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z);
+                float blockLight = getLightValueFromMap(CosmicEvolution.instance.save.activeWorld.getBlockLightValue(playerX, playerY, playerZ));
+                float lightLevelFloat = CosmicEvolution.instance.save.activeWorld.chunkController.renderWorldScene.baseLight > blockLight ? CosmicEvolution.instance.save.activeWorld.chunkController.renderWorldScene.baseLight : blockLight;
+                lightLevelFloat -=  0.1 * (MathUtil.sin(CosmicEvolution.instance.save.thePlayer.yaw / 45) + 1);
+                lightLevelFloat -=  0.1 * (MathUtil.sin(CosmicEvolution.instance.save.thePlayer.pitch / 45) + 1);
                 if(lightLevelFloat < 0.1){
                     lightLevelFloat = 0.1f;
                 }
@@ -395,16 +501,16 @@ public final class GuiInGame extends Gui {
                     }
                 }
 
-                Matrix4d preservedViewMatrix = SpaceGame.camera.viewMatrix.get(new Matrix4d());
-                SpaceGame.camera.viewMatrix = new Matrix4d();
+                Matrix4d preservedViewMatrix = CosmicEvolution.camera.viewMatrix.get(new Matrix4d());
+                CosmicEvolution.camera.viewMatrix = new Matrix4d();
                 GL46.glEnable(GL46.GL_CULL_FACE);
                 GL46.glCullFace(GL46.GL_FRONT);
-                tessellator.drawVertexArray(Assets.blockTextureArray, Shader.screenTextureArray, SpaceGame.camera);
+                tessellator.drawVertexArray(Assets.blockTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
                 GL46.glDisable(GL46.GL_CULL_FACE);
-                SpaceGame.camera.viewMatrix = preservedViewMatrix;
+                CosmicEvolution.camera.viewMatrix = preservedViewMatrix;
             }
         } else {
-            short itemID = SpaceGame.instance.save.thePlayer.getHeldItem();
+            short itemID = CosmicEvolution.instance.save.thePlayer.getHeldItem();
             if(itemID == -1){return;}
             if(itemID != Item.block.ID){
                 RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
@@ -412,23 +518,23 @@ public final class GuiInGame extends Gui {
                 float y = -1f;
                 float z = -3f;
                 if(GameSettings.viewBob) {
-                    x -= 0.125f * ((MathUtil.sin((float) (((SpaceGame.instance.save.thePlayer.viewBobTimer / 60f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
-                    y -= 0.0625f * ((MathUtil.sin((float) (((SpaceGame.instance.save.thePlayer.viewBobTimer / 60f) - 0.125f) * (Math.PI * 4f))) * 0.5) + 0.5f);
+                    x -= 0.125f * ((MathUtil.sin((float) (((CosmicEvolution.instance.save.thePlayer.viewBobTimer / 60f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
+                    y -= 0.0625f * ((MathUtil.sin((float) (((CosmicEvolution.instance.save.thePlayer.viewBobTimer / 60f) - 0.125f) * (Math.PI * 4f))) * 0.5) + 0.5f);
                 }
-                z -= 1f * ((MathUtil.sin((float) (((SpaceGame.instance.save.thePlayer.swingTimer / 15f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
+                z -= 1f * ((MathUtil.sin((float) (((CosmicEvolution.instance.save.thePlayer.swingTimer / 15f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
                 Vector3f position = new Vector3f(x,y,z);
                 Matrix3f rotationMatrix = new Matrix3f();
                 rotationMatrix.rotateY((float) -(0.35 * Math.PI));
-                double sine = (MathUtil.sin((float) ((((double) SpaceGame.instance.save.thePlayer.swingTimer / 15) * Math.PI * 2) - (0.5 * Math.PI))) * 0.5) + 0.5f;
+                double sine = (MathUtil.sin((float) ((((double) CosmicEvolution.instance.save.thePlayer.swingTimer / 15) * Math.PI * 2) - (0.5 * Math.PI))) * 0.5) + 0.5f;
                 rotationMatrix.rotateLocalX((float) ((float) -(0.25 * Math.PI) * sine));
                 Quaternionf rotation = rotationMatrix.getUnnormalizedRotation(new Quaternionf());
-                int playerX = MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.x);
-                int playerY = MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.y);
-                int playerZ = MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.z);
-                float blockLight = getLightValueFromMap(SpaceGame.instance.save.activeWorld.getBlockLightValue(playerX, playerY, playerZ));
-                float lightLevelFloat = SpaceGame.instance.save.activeWorld.chunkController.renderWorldScene.baseLight > blockLight ? SpaceGame.instance.save.activeWorld.chunkController.renderWorldScene.baseLight : blockLight;
-                lightLevelFloat -=  0.1 * (MathUtil.sin(SpaceGame.instance.save.thePlayer.yaw / 45) + 1);
-                lightLevelFloat -=  0.1 * (MathUtil.sin(SpaceGame.instance.save.thePlayer.pitch / 45) + 1);
+                int playerX = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x);
+                int playerY = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.y);
+                int playerZ = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z);
+                float blockLight = getLightValueFromMap(CosmicEvolution.instance.save.activeWorld.getBlockLightValue(playerX, playerY, playerZ));
+                float lightLevelFloat = CosmicEvolution.instance.save.activeWorld.chunkController.renderWorldScene.baseLight > blockLight ? CosmicEvolution.instance.save.activeWorld.chunkController.renderWorldScene.baseLight : blockLight;
+                lightLevelFloat -=  0.1 * (MathUtil.sin(CosmicEvolution.instance.save.thePlayer.yaw / 45) + 1);
+                lightLevelFloat -=  0.1 * (MathUtil.sin(CosmicEvolution.instance.save.thePlayer.pitch / 45) + 1);
                 if(lightLevelFloat < 0.1f){
                     lightLevelFloat = 0.1f;
                 }
@@ -634,13 +740,13 @@ public final class GuiInGame extends Gui {
                 }
 
 
-                Matrix4d preservedViewMatrix = SpaceGame.camera.viewMatrix.get(new Matrix4d());
-                SpaceGame.camera.viewMatrix = new Matrix4d();
+                Matrix4d preservedViewMatrix = CosmicEvolution.camera.viewMatrix.get(new Matrix4d());
+                CosmicEvolution.camera.viewMatrix = new Matrix4d();
                 GL46.glEnable(GL46.GL_CULL_FACE);
                 GL46.glCullFace(GL46.GL_FRONT);
-                tessellator.drawTexture2D(fillableColor, Shader.screen2DTexture, SpaceGame.camera);
+                tessellator.drawTexture2D(fillableColor, Shader.screen2DTexture, CosmicEvolution.camera);
                 GL46.glDisable(GL46.GL_CULL_FACE);
-                SpaceGame.camera.viewMatrix = preservedViewMatrix;
+                CosmicEvolution.camera.viewMatrix = preservedViewMatrix;
             }
         }
     }
@@ -667,53 +773,53 @@ public final class GuiInGame extends Gui {
     }
 
     public static void renderBlockBreakingOutline() {
-        if (SpaceGame.instance.save.thePlayer.breakTimer != 0) {
+        if (CosmicEvolution.instance.save.thePlayer.breakTimer != 0) {
             RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
             int locationX = Integer.MIN_VALUE;
             int locationY = Integer.MIN_VALUE;
             int locationZ = Integer.MIN_VALUE;
             short block = Short.MIN_VALUE;
             ModelLoader modelLoader;
-            if (!SpaceGame.instance.save.activeWorld.paused) {
-                double[] rayCast = SpaceGame.camera.rayCast(3);
+            if (!CosmicEvolution.instance.save.activeWorld.paused) {
+                double[] rayCast = CosmicEvolution.camera.rayCast(3);
                 final double multiplier = 0.05D;
-                final double xDif = (rayCast[0] - SpaceGame.instance.save.thePlayer.x);
-                final double yDif = (rayCast[1] - (SpaceGame.instance.save.thePlayer.y + SpaceGame.instance.save.thePlayer.height/2));
-                final double zDif = (rayCast[2] - SpaceGame.instance.save.thePlayer.z);
+                final double xDif = (rayCast[0] - CosmicEvolution.instance.save.thePlayer.x);
+                final double yDif = (rayCast[1] - (CosmicEvolution.instance.save.thePlayer.y + CosmicEvolution.instance.save.thePlayer.height/2));
+                final double zDif = (rayCast[2] - CosmicEvolution.instance.save.thePlayer.z);
 
                 int blockX = 0;
                 int blockY = 0;
                 int blockZ = 0;
                 for (int loopPass = 0; loopPass < 30; loopPass++) {
-                    blockX = MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.x + xDif * multiplier * loopPass);
-                    blockY = MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.y  + SpaceGame.instance.save.thePlayer.height/2 + yDif * multiplier * loopPass);
-                    blockZ = MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.z + zDif * multiplier * loopPass);
+                    blockX = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x + xDif * multiplier * loopPass);
+                    blockY = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.y  + CosmicEvolution.instance.save.thePlayer.height/2 + yDif * multiplier * loopPass);
+                    blockZ = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z + zDif * multiplier * loopPass);
 
-                    Block checkedBlock = Block.list[SpaceGame.instance.save.activeWorld.getBlockID(blockX, blockY, blockZ)];
+                    Block checkedBlock = Block.list[CosmicEvolution.instance.save.activeWorld.getBlockID(blockX, blockY, blockZ)];
                     if (isBlockVisible(blockX, blockY, blockZ)) {
                         if (checkedBlock.ID != Block.air.ID && checkedBlock.ID != Block.water.ID) {
                             locationX = blockX;
                             locationY = blockY;
                             locationZ = blockZ;
-                            block = SpaceGame.instance.save.activeWorld.getBlockID(blockX, blockY, blockZ);
+                            block = CosmicEvolution.instance.save.activeWorld.getBlockID(blockX, blockY, blockZ);
                             break;
                         }
                     }
                 }
 
                 if (locationX != Integer.MIN_VALUE && locationY != Integer.MIN_VALUE && locationZ != Integer.MIN_VALUE && block != Short.MIN_VALUE) {
-                    Chunk chunk = SpaceGame.instance.save.activeWorld.chunkController.findChunkFromChunkCoordinates(locationX >> 5, locationY >> 5, locationZ >> 5);
+                    Chunk chunk = CosmicEvolution.instance.save.activeWorld.chunkController.findChunkFromChunkCoordinates(locationX >> 5, locationY >> 5, locationZ >> 5);
                     if (chunk != null) {
-                        int playerChunkX = MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.x) >> 5;
-                        int playerChunkY = MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.y) >> 5;
-                        int playerChunkZ = MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.z) >> 5;
+                        int playerChunkX = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x) >> 5;
+                        int playerChunkY = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.y) >> 5;
+                        int playerChunkZ = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z) >> 5;
                         int xOffset = (chunk.x - playerChunkX) << 5;
                         int yOffset = (chunk.y - playerChunkY) << 5;
                         int zOffset = (chunk.z - playerChunkZ) << 5;
                         Vector3f chunkOffset = new Vector3f(xOffset, yOffset, zOffset);
                         Shader.worldShader2DTextureWithAtlas.uploadVec3f("chunkOffset", chunkOffset);
                         Shader.worldShader2DTextureWithAtlas.uploadBoolean("useFog", true);
-                        int textureID = (int) (((double)SpaceGame.instance.save.thePlayer.breakTimer/(double)Block.list[block].getDynamicBreakTimer()) * 7);
+                        int textureID = (int) (((double) CosmicEvolution.instance.save.thePlayer.breakTimer/(double)Block.list[block].getDynamicBreakTimer()) * 7);
                         if(textureID > 8){
                             textureID = 8;
                         }
@@ -762,7 +868,7 @@ public final class GuiInGame extends Gui {
                         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
                         GL46.glEnable(GL46.GL_ALPHA_TEST);
                         GL46.glAlphaFunc(GL46.GL_GREATER, 0.1F);
-                        tessellator.drawTexture2DWithAtlas(blockBreaking, Shader.worldShader2DTextureWithAtlas, SpaceGame.camera);
+                        tessellator.drawTexture2DWithAtlas(blockBreaking, Shader.worldShader2DTextureWithAtlas, CosmicEvolution.camera);
                         GL46.glDisable(GL46.GL_BLEND);
                         GL46.glDisable(GL46.GL_ALPHA_TEST);
                         GL46.glDisable(GL46.GL_CULL_FACE);
@@ -779,39 +885,39 @@ public final class GuiInGame extends Gui {
         int locationZ = Integer.MIN_VALUE;
         short block = Short.MIN_VALUE;
         ModelLoader modelLoader;
-        if (!SpaceGame.instance.save.activeWorld.paused) {
-            double[] rayCast = SpaceGame.camera.rayCast(3);
+        if (!CosmicEvolution.instance.save.activeWorld.paused) {
+            double[] rayCast = CosmicEvolution.camera.rayCast(3);
             final double multiplier = 0.05F;
-            final double xDif = (rayCast[0] - SpaceGame.instance.save.thePlayer.x);
-            final double yDif = (rayCast[1] - (SpaceGame.instance.save.thePlayer.y + SpaceGame.instance.save.thePlayer.height/2));
-            final double zDif = (rayCast[2] - SpaceGame.instance.save.thePlayer.z);
+            final double xDif = (rayCast[0] - CosmicEvolution.instance.save.thePlayer.x);
+            final double yDif = (rayCast[1] - (CosmicEvolution.instance.save.thePlayer.y + CosmicEvolution.instance.save.thePlayer.height/2));
+            final double zDif = (rayCast[2] - CosmicEvolution.instance.save.thePlayer.z);
 
             int blockX = 0;
             int blockY = 0;
             int blockZ = 0;
             for (int loopPass = 0; loopPass < 30; loopPass++) {
-                blockX = MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.x + xDif * multiplier * loopPass);
-                blockY = MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.y  + SpaceGame.instance.save.thePlayer.height/2 + yDif * multiplier * loopPass);
-                blockZ = MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.z + zDif * multiplier * loopPass);
+                blockX = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x + xDif * multiplier * loopPass);
+                blockY = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.y  + CosmicEvolution.instance.save.thePlayer.height/2 + yDif * multiplier * loopPass);
+                blockZ = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z + zDif * multiplier * loopPass);
 
-                Block checkedBlock = Block.list[SpaceGame.instance.save.activeWorld.getBlockID(blockX, blockY, blockZ)];
+                Block checkedBlock = Block.list[CosmicEvolution.instance.save.activeWorld.getBlockID(blockX, blockY, blockZ)];
                 if (isBlockVisible(blockX, blockY, blockZ)) {
                     if(checkedBlock.ID != Block.air.ID && checkedBlock.ID != Block.water.ID){
                             locationX = blockX;
                             locationY = blockY;
                             locationZ = blockZ;
-                            block = SpaceGame.instance.save.activeWorld.getBlockID(blockX, blockY, blockZ);
+                            block = CosmicEvolution.instance.save.activeWorld.getBlockID(blockX, blockY, blockZ);
                             break;
                     }
                 }
             }
 
             if(locationX != Integer.MIN_VALUE && locationY != Integer.MIN_VALUE && locationZ != Integer.MIN_VALUE && block != Short.MIN_VALUE){
-                Chunk chunk = SpaceGame.instance.save.activeWorld.chunkController.findChunkFromChunkCoordinates(locationX >> 5, locationY >> 5, locationZ >> 5);
+                Chunk chunk = CosmicEvolution.instance.save.activeWorld.chunkController.findChunkFromChunkCoordinates(locationX >> 5, locationY >> 5, locationZ >> 5);
                 if(chunk != null) {
-                    int playerChunkX = MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.x) >> 5;
-                    int playerChunkY = MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.y) >> 5;
-                    int playerChunkZ = MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.z) >> 5;
+                    int playerChunkX = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x) >> 5;
+                    int playerChunkY = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.y) >> 5;
+                    int playerChunkZ = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z) >> 5;
                     int xOffset = (chunk.x - playerChunkX) << 5;
                     int yOffset = (chunk.y - playerChunkY) << 5;
                     int zOffset = (chunk.z - playerChunkZ) << 5;
@@ -861,7 +967,7 @@ public final class GuiInGame extends Gui {
                     GL46.glEnable(GL46.GL_CULL_FACE);
                     GL46.glCullFace(GL46.GL_FRONT);
                     GL46.glPolygonMode(GL46.GL_FRONT_AND_BACK, GL46.GL_LINE);
-                    tessellator.drawTexture2D(outline, Shader.worldShader2DTexture, SpaceGame.camera);
+                    tessellator.drawTexture2D(outline, Shader.worldShader2DTexture, CosmicEvolution.camera);
                     GL46.glPolygonMode(GL46.GL_FRONT_AND_BACK, GL46.GL_FILL);
                     GL46.glDisable(GL46.GL_CULL_FACE);
 
@@ -876,12 +982,12 @@ public final class GuiInGame extends Gui {
     public static boolean isBlockVisible(int blockX, int blockY, int blockZ) {
         boolean exposed = false;
 //This does not work if any of the exposed faces are air, this should be AND
-        exposed |= !Block.list[SpaceGame.instance.save.activeWorld.getBlockID(blockX + 1, blockY, blockZ)].isSolid;
-        exposed |= !Block.list[SpaceGame.instance.save.activeWorld.getBlockID(blockX - 1, blockY, blockZ)].isSolid;
-        exposed |= !Block.list[SpaceGame.instance.save.activeWorld.getBlockID(blockX, blockY + 1, blockZ)].isSolid;
-        exposed |= !Block.list[SpaceGame.instance.save.activeWorld.getBlockID(blockX, blockY - 1, blockZ)].isSolid;
-        exposed |= !Block.list[SpaceGame.instance.save.activeWorld.getBlockID(blockX, blockY, blockZ + 1)].isSolid;
-        exposed |= !Block.list[SpaceGame.instance.save.activeWorld.getBlockID(blockX, blockY, blockZ - 1)].isSolid;
+        exposed |= !Block.list[CosmicEvolution.instance.save.activeWorld.getBlockID(blockX + 1, blockY, blockZ)].isSolid;
+        exposed |= !Block.list[CosmicEvolution.instance.save.activeWorld.getBlockID(blockX - 1, blockY, blockZ)].isSolid;
+        exposed |= !Block.list[CosmicEvolution.instance.save.activeWorld.getBlockID(blockX, blockY + 1, blockZ)].isSolid;
+        exposed |= !Block.list[CosmicEvolution.instance.save.activeWorld.getBlockID(blockX, blockY - 1, blockZ)].isSolid;
+        exposed |= !Block.list[CosmicEvolution.instance.save.activeWorld.getBlockID(blockX, blockY, blockZ + 1)].isSolid;
+        exposed |= !Block.list[CosmicEvolution.instance.save.activeWorld.getBlockID(blockX, blockY, blockZ - 1)].isSolid;
 
         return exposed;
     }

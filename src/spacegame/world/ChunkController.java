@@ -3,9 +3,9 @@ package spacegame.world;
 import spacegame.block.Block;
 import spacegame.block.BlockContainer;
 import spacegame.block.ITickable;
+import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
 import spacegame.core.MathUtil;
-import spacegame.core.SpaceGame;
 import spacegame.entity.Entity;
 import spacegame.entity.EntityBlock;
 import spacegame.entity.EntityDeer;
@@ -71,18 +71,19 @@ public final class ChunkController {
 
 
     public void update() {
-        this.playerChunkX = MathUtil.floorDouble(this.parentWorld.sg.save.thePlayer.x) >> 5;
-        this.playerChunkY = MathUtil.floorDouble(this.parentWorld.sg.save.thePlayer.y) >> 5;
-        this.playerChunkZ = MathUtil.floorDouble(this.parentWorld.sg.save.thePlayer.z) >> 5;
+        this.playerChunkX = MathUtil.floorDouble(this.parentWorld.ce.save.thePlayer.x) >> 5;
+        this.playerChunkY = MathUtil.floorDouble(this.parentWorld.ce.save.thePlayer.y) >> 5;
+        this.playerChunkZ = MathUtil.floorDouble(this.parentWorld.ce.save.thePlayer.z) >> 5;
         if (!this.loadedInitialColumn) {
             this.loadChunkColumn(this.playerChunkX, this.playerChunkZ);
-            if(!this.parentWorld.sg.save.thePlayer.loadedFromFile) {
-                while (Block.list[this.parentWorld.getBlockID(MathUtil.floorDouble(this.parentWorld.sg.save.thePlayer.x), MathUtil.floorDouble(parentWorld.sg.save.thePlayer.y), MathUtil.floorDouble(this.parentWorld.sg.save.thePlayer.z))].isSolid) {
-                    this.parentWorld.sg.save.thePlayer.y++;
+            if(!this.parentWorld.ce.save.thePlayer.loadedFromFile) {
+                while (Block.list[this.parentWorld.getBlockID(MathUtil.floorDouble(this.parentWorld.ce.save.thePlayer.x), MathUtil.floorDouble(parentWorld.ce.save.thePlayer.y), MathUtil.floorDouble(this.parentWorld.ce.save.thePlayer.z))].isSolid) {
+                    this.parentWorld.ce.save.thePlayer.y++;
                 }
-                this.parentWorld.sg.save.thePlayer.y += 3;
-                if(SpaceGame.instance.save.spawnY == Double.NEGATIVE_INFINITY){
-                    SpaceGame.instance.save.spawnY = SpaceGame.instance.save.thePlayer.y;
+                this.parentWorld.ce.save.thePlayer.y += 3;
+                if(CosmicEvolution.instance.save.spawnY == Double.NEGATIVE_INFINITY){
+                    CosmicEvolution.instance.save.spawnY = CosmicEvolution.instance.save.thePlayer.y;
+                    CosmicEvolution.instance.save.saveDataToFileWithoutChunkUnload();
                 }
             }
             this.loadedInitialColumn = true;
@@ -131,7 +132,7 @@ public final class ChunkController {
                                 xOffset = (chunk.x - this.playerChunkX) << 5;
                                 yOffset = (chunk.y - this.playerChunkY) << 5;
                                 zOffset = (chunk.z - this.playerChunkZ) << 5;
-                                if(SpaceGame.camera.doesBoundingBoxIntersectFrustum(xOffset, yOffset, zOffset, ((xOffset + 31)), ((yOffset + 31)), ((zOffset + 31))) && chunk.doesChunkContainEntities()){
+                                if(CosmicEvolution.camera.doesBoundingBoxIntersectFrustum(xOffset, yOffset, zOffset, ((xOffset + 31)), ((yOffset + 31)), ((zOffset + 31))) && chunk.doesChunkContainEntities()){
                                     this.renderWorldScene.chunksThatContainEntities.add(chunk);
                                 }
                             }
@@ -143,17 +144,17 @@ public final class ChunkController {
             }
             //Set target to spawn entities
             if (this.numLoadedEntities < this.entityCap) {
-                if(SpaceGame.instance.save.time % 2400 == 0) { //Roughly every 40 seconds
-                    int x = MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.x + (SpaceGame.globalRand.nextBoolean() ? SpaceGame.globalRand.nextInt(32, 64) : SpaceGame.globalRand.nextInt(-64, -32)));
-                    int z = MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.z + (SpaceGame.globalRand.nextBoolean() ? SpaceGame.globalRand.nextInt(32, 64) : SpaceGame.globalRand.nextInt(-64, -32)));
+                if(CosmicEvolution.instance.save.time % 2400 == 0) { //Roughly every 40 seconds
+                    int x = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x + (CosmicEvolution.globalRand.nextBoolean() ? CosmicEvolution.globalRand.nextInt(32, 64) : CosmicEvolution.globalRand.nextInt(-64, -32)));
+                    int z = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z + (CosmicEvolution.globalRand.nextBoolean() ? CosmicEvolution.globalRand.nextInt(32, 64) : CosmicEvolution.globalRand.nextInt(-64, -32)));
 
                     int spawnX;
                     int spawnY;
                     int spawnZ;
-                    int numberDeer = SpaceGame.globalRand.nextInt(2, 5);
+                    int numberDeer = CosmicEvolution.globalRand.nextInt(2, 5);
                     for (int i = 0; i <= numberDeer; i++) {
-                        spawnX = x + (SpaceGame.globalRand.nextBoolean() ? SpaceGame.globalRand.nextInt(5, 10) : SpaceGame.globalRand.nextInt(-10, -5));
-                        spawnZ = z + (SpaceGame.globalRand.nextBoolean() ? SpaceGame.globalRand.nextInt(5, 10) : SpaceGame.globalRand.nextInt(-10, -5));
+                        spawnX = x + (CosmicEvolution.globalRand.nextBoolean() ? CosmicEvolution.globalRand.nextInt(5, 10) : CosmicEvolution.globalRand.nextInt(-10, -5));
+                        spawnZ = z + (CosmicEvolution.globalRand.nextBoolean() ? CosmicEvolution.globalRand.nextInt(5, 10) : CosmicEvolution.globalRand.nextInt(-10, -5));
                         spawnY = this.findChunkSkyLightMap(spawnX >> 5, spawnZ >> 5).getHeightValue(spawnX, spawnZ);
                         if (this.parentWorld.getBlockID(spawnX, spawnY, spawnZ) == Block.grass.ID && this.parentWorld.getBlockID(spawnX, spawnY + 1, spawnZ) == Block.air.ID) {
                             Chunk chunk1 = this.findChunkFromChunkCoordinates(spawnX >> 5, spawnY >> 5, spawnZ >> 5);
@@ -192,9 +193,9 @@ public final class ChunkController {
 
             ChunkRegion region;
             Chunk chunk;
-            int playerChunkX = MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.x) >> 5;
-            int playerChunkY = MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.y) >> 5;
-            int playerChunkZ = MathUtil.floorDouble(SpaceGame.instance.save.thePlayer.z) >> 5;
+            int playerChunkX = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x) >> 5;
+            int playerChunkY = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.y) >> 5;
+            int playerChunkZ = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z) >> 5;
             int xOffset;
             int yOffset;
             int zOffset;
@@ -209,7 +210,7 @@ public final class ChunkController {
                                 xOffset = (chunk.x - playerChunkX) << 5;
                                 yOffset = (chunk.y - playerChunkY) << 5;
                                 zOffset = (chunk.z - playerChunkZ) << 5;
-                                if (SpaceGame.camera.doesBoundingBoxIntersectFrustum(xOffset, yOffset, zOffset, ((xOffset + 31)), ((yOffset + 31)), ((zOffset + 31))) && !chunk.empty && chunk.shouldRender) {
+                                if (CosmicEvolution.camera.doesBoundingBoxIntersectFrustum(xOffset, yOffset, zOffset, ((xOffset + 31)), ((yOffset + 31)), ((zOffset + 31))) && !chunk.empty && chunk.shouldRender) {
                                     xOffset >>= 5;
                                     yOffset >>= 5;
                                     zOffset >>= 5;
@@ -281,7 +282,7 @@ public final class ChunkController {
                                 chunk.notifyAllBlocks();
                             }
                         }
-                        if(chunk.updateTime <= SpaceGame.instance.save.time && chunk.updateTime != 0){
+                        if(chunk.updateTime <= CosmicEvolution.instance.save.time && chunk.updateTime != 0){
                             chunk.markDirty();
                             chunk.updateTime = 0;
                         }
@@ -319,7 +320,7 @@ public final class ChunkController {
                     chunk.updating = true;
                     Thread thread = new Thread(new ThreadRebuildChunk(chunk, this.parentWorld));
                     thread.setName("Chunk Rebuild Thread for X: " + chunk.x + " Y: " + chunk.y + " Z: " + chunk.z);
-                    thread.setPriority(1);
+                    thread.setPriority(World.worldLoadPhase == 3 ? 1 : 10);
                     this.threadQueue.add(thread);
                 } else if (!surrounded) {
                     chunk.needsToUpdate = true;
@@ -631,8 +632,8 @@ public final class ChunkController {
                         NBTTagCompound chunkData = chunkTag.getCompoundTag("Chunk");
                         NBTTagCompound entity = chunkData.getCompoundTag("Entity");
                         NBTTagCompound chest = chunkData.getCompoundTag("Chest");
-                        NBTTagCompound timeEvents = chunkTag.getCompoundTag("TimeEvents");
-                        chunk = new Chunk(x, y, z, SpaceGame.instance.save.activeWorld);
+                        NBTTagCompound timeEvents = chunkData.getCompoundTag("TimeEvents");
+                        chunk = new Chunk(x, y, z, CosmicEvolution.instance.save.activeWorld);
 
                         chunk.containsWater = chunkData.getBoolean("containsWater");
                         chunk.containsAir = chunkData.getBoolean("containsAir");
@@ -648,59 +649,63 @@ public final class ChunkController {
                             chunk.westFaceBitMask = chunkData.getIntArray("westFaceBitMask");
                         }
 
-                        int entityCount = entity.getInteger("entityCount");
-                        NBTTagCompound entityLoadedTag;
-                        Entity entityLoaded;
-                        for(int i = 0; i < entityCount; i++){
-                            entityLoadedTag = entity.getCompoundTag("entity" + i);
-                            switch (entityLoadedTag.getString("entityType")) {
-                                case "EntityBlock" -> {
-                                    entityLoaded = new EntityBlock(entityLoadedTag.getDouble("x"), entityLoadedTag.getDouble("y"), entityLoadedTag.getDouble("z"), entityLoadedTag.getShort("blockType"), entityLoadedTag.getByte("count"));
-                                    chunk.addEntityToList(entityLoaded);
+                        if(entity != null) {
+                            int entityCount = entity.getInteger("entityCount");
+                            NBTTagCompound entityLoadedTag;
+                            Entity entityLoaded;
+                            for (int i = 0; i < entityCount; i++) {
+                                entityLoadedTag = entity.getCompoundTag("entity" + i);
+                                switch (entityLoadedTag.getString("entityType")) {
+                                    case "EntityBlock" -> {
+                                        entityLoaded = new EntityBlock(entityLoadedTag.getDouble("x"), entityLoadedTag.getDouble("y"), entityLoadedTag.getDouble("z"), entityLoadedTag.getShort("blockType"), entityLoadedTag.getByte("count"));
+                                        chunk.addEntityToList(entityLoaded);
+                                    }
+                                    case "EntityItem" -> {
+                                        entityLoaded = new EntityItem(entityLoadedTag.getDouble("x"), entityLoadedTag.getDouble("y"), entityLoadedTag.getDouble("z"), entityLoadedTag.getShort("itemType"), (byte) 1, entityLoadedTag.getByte("count"), entityLoadedTag.getShort("durability"));
+                                        chunk.addEntityToList(entityLoaded);
+                                    }
+                                    case "EntityDeer" -> {
+                                        entityLoaded = new EntityDeer(entityLoadedTag.getDouble("x"), entityLoadedTag.getDouble("y"), entityLoadedTag.getDouble("z"), false, false);
+                                        entityLoaded.despawnTime = entityLoadedTag.getLong("despawnTime");
+                                        chunk.addEntityToList(entityLoaded);
+                                    }
                                 }
-                                case "EntityItem" -> {
-                                    entityLoaded = new EntityItem(entityLoadedTag.getDouble("x"), entityLoadedTag.getDouble("y"), entityLoadedTag.getDouble("z"), entityLoadedTag.getShort("itemType"), (byte) 1, entityLoadedTag.getByte("count"), entityLoadedTag.getShort("durability"));
-                                    chunk.addEntityToList(entityLoaded);
+                            }
+                        }
+
+                        if(chest != null) {
+                            int chestCount = chest.getInteger("chestCount");
+                            NBTTagCompound chestLoadedTag;
+                            for (int i = 0; i < chestCount; i++) {
+                                chestLoadedTag = chest.getCompoundTag("chest" + i);
+                                NBTTagCompound inventory = chestLoadedTag.getCompoundTag("Inventory");
+                                short index = chestLoadedTag.getShort("index");
+                                NBTTagCompound item;
+                                Inventory chestInventory = new Inventory(((BlockContainer) (Block.list[chunk.blocks[index]])).inventoryWidth, ((BlockContainer) (Block.list[chunk.blocks[index]])).inventoryHeight);
+                                for (int j = 0; j < chestInventory.itemStacks.length; j++) {
+                                    item = inventory.getCompoundTag("slot " + j);
+                                    if (item != null) {
+                                        short id = item.getShort("id");
+                                        byte count = item.getByte("count");
+                                        short durability = item.getShort("durability");
+                                        short metadata = item.getShort("metadata");
+                                        chestInventory.loadItemToInventory(id, metadata, count, durability, j);
+                                    }
                                 }
-                                case "EntityDeer" -> {
-                                    entityLoaded = new EntityDeer(entityLoadedTag.getDouble("x"), entityLoadedTag.getDouble("y"), entityLoadedTag.getDouble("z"), false, false);
-                                    entityLoaded.despawnTime = entityLoadedTag.getLong("despawnTime");
-                                    chunk.addEntityToList(entityLoaded);
-                                }
+                                chunk.addChestLocation(index, chestInventory);
                             }
                         }
 
-                        int chestCount  = chest.getInteger("chestCount");
-                        NBTTagCompound chestLoadedTag;
-                        for(int i = 0; i < chestCount; i++){
-                            chestLoadedTag = chest.getCompoundTag("chest" + i);
-                            NBTTagCompound inventory = chestLoadedTag.getCompoundTag("Inventory");
-                            short index = chestLoadedTag.getShort("index");
-                            NBTTagCompound item;
-                            Inventory chestInventory = new Inventory(((BlockContainer)(Block.list[chunk.blocks[index]])).inventoryWidth, ((BlockContainer)(Block.list[chunk.blocks[index]])).inventoryHeight);
-                            for(int j = 0; j < chestInventory.itemStacks.length; j++) {
-                                item = inventory.getCompoundTag("slot " + j);
-                                if (item != null) {
-                                    short id = item.getShort("id");
-                                    byte count = item.getByte("count");
-                                    short durability = item.getShort("durability");
-                                    short metadata = item.getShort("metadata");
-                                    chestInventory.loadItemToInventory(id, metadata, count, durability, j);
-                                }
+                        if(timeEvents != null) {
+                            int eventCount = timeEvents.getInteger("eventCount");
+                            NBTTagCompound eventLoadedTag;
+                            for (int i = 0; i < eventCount; i++) {
+                                eventLoadedTag = timeEvents.getCompoundTag("event" + i);
+                                short index = eventLoadedTag.getShort("index");
+                                long updateTime = eventLoadedTag.getLong("updateTime");
+                                chunk.addTimeUpdateEvent(index, updateTime);
                             }
-                            chunk.addChestLocation(index, chestInventory);
                         }
-
-                        int eventCount  = chest.getInteger("eventCount");
-                        NBTTagCompound eventLoadedTag;
-                        for(int i = 0; i < eventCount; i++){
-                            eventLoadedTag = timeEvents.getCompoundTag("event" + i);
-                            short index = eventLoadedTag.getShort("index");
-                            long updateTime = eventLoadedTag.getLong("updateTime");
-                            chunk.addTimeUpdateEvent(index, updateTime);
-                        }
-
-
 
                         inputStream.close();
                     }
@@ -740,7 +745,7 @@ public final class ChunkController {
     private void loadChunks() {
         if (this.generateChunksDistance > GameSettings.renderDistance) {
             this.loadChunks = false;
-            if(SpaceGame.instance.currentGui instanceof GuiWorldLoadingScreen){
+            if(CosmicEvolution.instance.currentGui instanceof GuiWorldLoadingScreen){
                 World.worldLoadPhase = 2;
             }
         } else {

@@ -1,8 +1,8 @@
 package spacegame.gui;
 
+import spacegame.core.CosmicEvolution;
 import spacegame.core.MathUtil;
 import spacegame.core.MouseListener;
-import spacegame.core.SpaceGame;
 import spacegame.entity.EntityPlayer;
 
 public final class RecipeSelector {
@@ -43,8 +43,8 @@ public final class RecipeSelector {
     }
 
     public boolean isMouseHoveredOver(){
-        double x = MouseListener.instance.xPos - SpaceGame.width/2D;
-        double y = (MouseListener.instance.yPos - SpaceGame.height/2D) * -1;
+        double x = MouseListener.instance.xPos - CosmicEvolution.width/2D;
+        double y = (MouseListener.instance.yPos - CosmicEvolution.height/2D) * -1;
         float adjustedButtonX = MathUtil.adjustXPosBasedOnScreenWidth(this.x);
         float adjustedButtonY = MathUtil.adjustYPosBasedOnScreenHeight(this.y);
         float adjustedButtonWidth = MathUtil.adjustWidthBasedOnScreenWidth(this.width);

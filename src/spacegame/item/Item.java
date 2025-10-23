@@ -1,7 +1,7 @@
 package spacegame.item;
 
 import spacegame.block.Block;
-import spacegame.core.SpaceGame;
+import spacegame.core.CosmicEvolution;
 import spacegame.entity.EntityPlayer;
 import spacegame.world.World;
 
@@ -155,10 +155,10 @@ public class Item {
 
 
     public void onDestroy(ItemStack itemStack, int accessor){
-        SpaceGame.instance.save.thePlayer.inventory.itemStacks[accessor].item = null;
-        SpaceGame.instance.save.thePlayer.inventory.itemStacks[accessor].count = 0;
-        SpaceGame.instance.save.thePlayer.inventory.itemStacks[accessor].metadata = 0;
-        SpaceGame.instance.save.thePlayer.inventory.itemStacks[accessor].durability = 0;
+        CosmicEvolution.instance.save.thePlayer.inventory.itemStacks[accessor].item = null;
+        CosmicEvolution.instance.save.thePlayer.inventory.itemStacks[accessor].count = 0;
+        CosmicEvolution.instance.save.thePlayer.inventory.itemStacks[accessor].metadata = 0;
+        CosmicEvolution.instance.save.thePlayer.inventory.itemStacks[accessor].durability = 0;
     }
 
 }

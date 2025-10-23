@@ -2,10 +2,10 @@ package spacegame.gui;
 
 import org.lwjgl.glfw.GLFW;
 import spacegame.block.Block;
+import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
 import spacegame.core.MathUtil;
 import spacegame.core.MouseListener;
-import spacegame.core.SpaceGame;
 import spacegame.entity.EntityBlock;
 import spacegame.entity.EntityItem;
 import spacegame.item.Item;
@@ -30,13 +30,13 @@ public class Button {
     public int y;
     public String name;
     private Gui Gui;
-    private SpaceGame sg;
-    public static int buttonTextureLoader = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/button.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-    public static TextureAtlas buttonTextureAtlas = SpaceGame.instance.renderEngine.createTextureAtlas(256,256, 256, 64, 3, 0);
+    private CosmicEvolution ce;
+    public static int buttonTextureLoader = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/button.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+    public static TextureAtlas buttonTextureAtlas = CosmicEvolution.instance.renderEngine.createTextureAtlas(256,256, 256, 64, 3, 0);
 
 
-    public Button(String name, int width, int height, int x, int y, Gui Gui, SpaceGame spaceGame){
-        this.sg = spaceGame;
+    public Button(String name, int width, int height, int x, int y, Gui Gui, CosmicEvolution cosmicEvolution){
+        this.ce = cosmicEvolution;
         this.name = name;
         this.width = width;
         this.height = height;
@@ -48,20 +48,20 @@ public class Button {
     public void onLeftClick(){
         switch (EnumButtonEffects.valueOf(this.name)){
             case SINGLE_PLAYER -> {
-               this.sg.setNewGui(new GuiWorldSelect(this.sg));
+               this.ce.setNewGui(new GuiWorldSelect(this.ce));
             }
             case MULTI_PLAYER -> {
                 //Put effect here later
             }
             case SETTINGS -> {
-                if(this.sg.currentGui instanceof GuiMainMenu) {
-                    this.sg.setNewGui(new GuiSettingsMainMenu(this.sg));
-                } else if(this.sg.currentGui instanceof GuiPauseInGame){
-                    this.sg.setNewGui(new GuiSettingsInGame(this.sg));
+                if(this.ce.currentGui instanceof GuiMainMenu) {
+                    this.ce.setNewGui(new GuiSettingsMainMenu(this.ce));
+                } else if(this.ce.currentGui instanceof GuiPauseInGame){
+                    this.ce.setNewGui(new GuiSettingsInGame(this.ce));
                 }
             }
             case QUIT_GAME -> {
-                this.sg.running = false;
+                this.ce.running = false;
             }
             case BUG_REPORT -> {
                 if(this.Gui.subMenu)return;
@@ -74,35 +74,35 @@ public class Button {
                 this.clicked = !this.clicked;
             }
             case VIDEO_SETTINGS -> {
-                if(this.sg.currentGui instanceof GuiSettingsMainMenu) {
-                    this.sg.setNewGui(new GuiVideoSettingsMainMenu(this.sg));
-                } else if(this.sg.currentGui instanceof GuiSettingsInGame){
-                    this.sg.setNewGui(new GuiVideoSettingsInGame(this.sg));
+                if(this.ce.currentGui instanceof GuiSettingsMainMenu) {
+                    this.ce.setNewGui(new GuiVideoSettingsMainMenu(this.ce));
+                } else if(this.ce.currentGui instanceof GuiSettingsInGame){
+                    this.ce.setNewGui(new GuiVideoSettingsInGame(this.ce));
                 }
             }
             case KEYBINDS -> {
                 if(this.Gui instanceof GuiSettingsMainMenu) {
-                    this.sg.setNewGui(new GuiControlsMainMenu(this.sg));
+                    this.ce.setNewGui(new GuiControlsMainMenu(this.ce));
                 } else if(this.Gui instanceof GuiSettingsInGame){
-                    this.sg.setNewGui(new GuiControlsInGame(this.sg));
+                    this.ce.setNewGui(new GuiControlsInGame(this.ce));
                 }
             }
             case BACK_TO_MAIN_MENU -> {
-                this.sg.setNewGui(new GuiMainMenu(this.sg));
+                this.ce.setNewGui(new GuiMainMenu(this.ce));
                 Assets.disableBlockTextureArray();
                 Assets.disableItemTextureArray();
             }
             case BACK -> {
                 if(this.Gui instanceof GuiVideoSettingsMainMenu || this.Gui instanceof GuiControlsMainMenu){
-                    this.sg.setNewGui(new GuiSettingsMainMenu(this.sg));
+                    this.ce.setNewGui(new GuiSettingsMainMenu(this.ce));
                 } else if(this.Gui instanceof GuiSettingsInGame){
-                    this.sg.setNewGui(new GuiPauseInGame(this.sg));
+                    this.ce.setNewGui(new GuiPauseInGame(this.ce));
                 } else if(this.Gui instanceof GuiVideoSettingsInGame || this.Gui instanceof GuiControlsInGame){
-                    this.sg.setNewGui(new GuiSettingsInGame(this.sg));
+                    this.ce.setNewGui(new GuiSettingsInGame(this.ce));
                 } else if(this.Gui instanceof GuiWorldSelect){
-                    this.sg.setNewGui(new GuiMainMenu(this.sg));
+                    this.ce.setNewGui(new GuiMainMenu(this.ce));
                 } else if(this.Gui instanceof GuiCreateNewWorld || this.Gui instanceof GuiRenameWorld){
-                    this.sg.setNewGui(new GuiWorldSelect(this.sg));
+                    this.ce.setNewGui(new GuiWorldSelect(this.ce));
                 }
             }
             case FOV -> {
@@ -111,7 +111,7 @@ public class Button {
                 } else if(this.sideOfButtonBeingClicked() == 1){
                     GameSettings.increaseFOV();
                 }
-                SpaceGame.camera.adjustProjection(GameSettings.fov, 0.1D);
+                CosmicEvolution.camera.adjustProjection(GameSettings.fov, 0.1D);
             }
             case VSYNC -> {
                 GameSettings.vsync = !GameSettings.vsync;
@@ -122,7 +122,7 @@ public class Button {
             }
             case FULLSCREEN -> {
                 GameSettings.fullscreen = !GameSettings.fullscreen;
-                this.sg.toggleFullscreen();
+                this.ce.toggleFullscreen();
             }
             case MOUSE_SENSITIVITY -> {
                 if(this.sideOfButtonBeingClicked() == 0){
@@ -154,8 +154,8 @@ public class Button {
                 } else if(this.sideOfButtonBeingClicked() == 1){
                     GameSettings.changeHorizontalViewDistance(true);
                 }
-                if(this.sg.save != null) {
-                    this.sg.save.activeWorld.chunkController.resetChunkLoading();
+                if(this.ce.save != null) {
+                    this.ce.save.activeWorld.chunkController.resetChunkLoading();
                 }
                 Shader.terrainShader.uploadFloat("fogDistance", GameSettings.renderDistance * 20f);
                 Shader.worldShader2DTexture.uploadFloat("fogDistance", GameSettings.renderDistance * 20f);
@@ -166,8 +166,8 @@ public class Button {
                 } else if(this.sideOfButtonBeingClicked() == 1){
                     GameSettings.changeVerticalViewDistance(true);
                 }
-                if(this.sg.save != null) {
-                    this.sg.save.activeWorld.chunkController.resetChunkLoading();
+                if(this.ce.save != null) {
+                    this.ce.save.activeWorld.chunkController.resetChunkLoading();
                 }
             }
             case SHADOW_MAP -> {
@@ -201,32 +201,32 @@ public class Button {
                 GameSettings.setKeyBeingModified(GameSettings.dropKey);
             }
             case BACK_TO_GAME -> {
-                GLFW.glfwSetInputMode(this.sg.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
-                this.sg.save.activeWorld.paused = false;
-                this.sg.setNewGui(new GuiInGame(this.sg));
+                GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
+                this.ce.save.activeWorld.paused = false;
+                this.ce.setNewGui(new GuiInGame(this.ce));
             }
             case QUIT_TO_MAIN_MENU -> {
-                this.sg.save.saveDataToFile();
+                this.ce.save.saveDataToFile();
                 while (Thread.activeCount() > 3){
                 }
-                this.sg.save = null;
-                this.sg.setNewGui(new GuiMainMenu(this.sg));
-                SpaceGame.setGLClearColor(0,0,0,0);
+                this.ce.save = null;
+                this.ce.setNewGui(new GuiMainMenu(this.ce));
+                CosmicEvolution.setGLClearColor(0,0,0,0);
             }
             case SAVE_1 -> {
                 if(this.clicked) {
                     if (this.Gui instanceof GuiWorldSelect) {
-                        File save = new File(this.sg.launcherDirectory + "/saves/save1");
+                        File save = new File(this.ce.launcherDirectory + "/saves/save1");
                         if (((GuiWorldSelect) this.Gui).deletingFile) {
                             if (save.exists()) {
                                 this.deleteDirectory(save);
                             }
                         } else {
-                            GLFW.glfwSetInputMode(this.sg.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
+                            GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
                             if (save.exists()) {
-                                this.sg.startSave(save);
+                                this.ce.startSave(save);
                             } else {
-                                this.sg.setNewGui(new GuiCreateNewWorld(this.sg, 1));
+                                this.ce.setNewGui(new GuiCreateNewWorld(this.ce, 1));
                             }
                         }
                     }
@@ -242,17 +242,17 @@ public class Button {
             case SAVE_2 -> {
                 if(this.clicked) {
                     if (this.Gui instanceof GuiWorldSelect) {
-                        File save = new File(this.sg.launcherDirectory + "/saves/save2");
+                        File save = new File(this.ce.launcherDirectory + "/saves/save2");
                         if (((GuiWorldSelect) this.Gui).deletingFile) {
                             if (save.exists()) {
                                 this.deleteDirectory(save);
                             }
                         } else {
-                            GLFW.glfwSetInputMode(this.sg.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
+                            GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
                             if (save.exists()) {
-                                this.sg.startSave(save);
+                                this.ce.startSave(save);
                             } else {
-                                this.sg.setNewGui(new GuiCreateNewWorld(this.sg, 2));
+                                this.ce.setNewGui(new GuiCreateNewWorld(this.ce, 2));
                             }
                         }
                     }
@@ -268,17 +268,17 @@ public class Button {
             case SAVE_3 -> {
                 if(this.clicked) {
                     if (this.Gui instanceof GuiWorldSelect) {
-                        File save = new File(this.sg.launcherDirectory + "/saves/save3");
+                        File save = new File(this.ce.launcherDirectory + "/saves/save3");
                         if (((GuiWorldSelect) this.Gui).deletingFile) {
                             if (save.exists()) {
                                 this.deleteDirectory(save);
                             }
                         } else {
-                            GLFW.glfwSetInputMode(this.sg.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
+                            GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
                             if (save.exists()) {
-                                this.sg.startSave(save);
+                                this.ce.startSave(save);
                             } else {
-                                this.sg.setNewGui(new GuiCreateNewWorld(this.sg, 3));
+                                this.ce.setNewGui(new GuiCreateNewWorld(this.ce, 3));
                             }
                         }
                     }
@@ -294,17 +294,17 @@ public class Button {
             case SAVE_4 -> {
                 if(this.clicked) {
                     if (this.Gui instanceof GuiWorldSelect) {
-                        File save = new File(this.sg.launcherDirectory + "/saves/save4");
+                        File save = new File(this.ce.launcherDirectory + "/saves/save4");
                         if (((GuiWorldSelect) this.Gui).deletingFile) {
                             if (save.exists()) {
                                 this.deleteDirectory(save);
                             }
                         } else {
-                            GLFW.glfwSetInputMode(this.sg.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
+                            GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
                             if (save.exists()) {
-                                this.sg.startSave(save);
+                                this.ce.startSave(save);
                             } else {
-                                this.sg.setNewGui(new GuiCreateNewWorld(this.sg, 4));
+                                this.ce.setNewGui(new GuiCreateNewWorld(this.ce, 4));
                             }
                         }
                     }
@@ -320,17 +320,17 @@ public class Button {
             case SAVE_5 -> {
                 if(this.clicked) {
                     if (this.Gui instanceof GuiWorldSelect) {
-                        File save = new File(this.sg.launcherDirectory + "/saves/save5");
+                        File save = new File(this.ce.launcherDirectory + "/saves/save5");
                         if (((GuiWorldSelect) this.Gui).deletingFile) {
                             if (save.exists()) {
                                 this.deleteDirectory(save);
                             }
                         } else {
-                            GLFW.glfwSetInputMode(this.sg.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
+                            GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
                             if (save.exists()) {
-                                this.sg.startSave(save);
+                                this.ce.startSave(save);
                             } else {
-                                this.sg.setNewGui(new GuiCreateNewWorld(this.sg, 5));
+                                this.ce.setNewGui(new GuiCreateNewWorld(this.ce, 5));
                             }
                         }
                     }
@@ -357,10 +357,10 @@ public class Button {
             case CREATE_NEW_WORLD -> {
                 ((GuiCreateNewWorld)this.Gui).nameWorld.typing = false;
                 ((GuiCreateNewWorld)this.Gui).setSeed.typing = false;
-                this.sg.startSave(((GuiCreateNewWorld)this.Gui).saveSlot, ((GuiCreateNewWorld)this.Gui).nameWorld.text, ((GuiCreateNewWorld)this.Gui).getSeed());
+                this.ce.startSave(((GuiCreateNewWorld)this.Gui).saveSlot, ((GuiCreateNewWorld)this.Gui).nameWorld.text, ((GuiCreateNewWorld)this.Gui).getSeed());
             }
             case RENAME_WORLD -> {
-                File file = new File(this.sg.launcherDirectory + "/saves/save" + ((GuiRenameWorld)this.Gui).saveSlot + "/save.dat");
+                File file = new File(this.ce.launcherDirectory + "/saves/save" + ((GuiRenameWorld)this.Gui).saveSlot + "/save.dat");
                 try {
                     FileInputStream inputStream = new FileInputStream(file);
                     NBTTagCompound compoundTag = NBTIO.readCompressed(inputStream);
@@ -383,37 +383,37 @@ public class Button {
                     throw new RuntimeException(e);
                 }
                 ((GuiRenameWorld)this.Gui).nameWorld.typing = false;
-                this.sg.setNewGui(new GuiWorldSelect(this.sg));
+                this.ce.setNewGui(new GuiWorldSelect(this.ce));
             }
             case WORLD_INFO -> {
-                this.sg.setNewGui(new GuiRenameWorld(this.sg, ((GuiWorldSelect)this.Gui).saveSelected()));
+                this.ce.setNewGui(new GuiRenameWorld(this.ce, ((GuiWorldSelect)this.Gui).saveSelected()));
             }
             case RESPAWN -> {
-                this.sg.save.thePlayer.x = this.sg.save.spawnX;
-                this.sg.save.thePlayer.y = this.sg.save.spawnY;
-                this.sg.save.thePlayer.z = this.sg.save.spawnZ;
-                this.sg.save.thePlayer.health = this.sg.save.thePlayer.maxHealth;
-                GLFW.glfwSetInputMode(this.sg.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
-                this.sg.save.activeWorld.paused = false;
-                this.sg.setNewGui(new GuiInGame(this.sg));
+                this.ce.save.thePlayer.x = this.ce.save.thePlayer.spawnX + 1.5;
+                this.ce.save.thePlayer.y = this.ce.save.thePlayer.spawnY + 1.5;
+                this.ce.save.thePlayer.z = this.ce.save.thePlayer.spawnZ;
+                this.ce.save.thePlayer.health = this.ce.save.thePlayer.maxHealth;
+                GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
+                this.ce.save.activeWorld.paused = false;
+                this.ce.setNewGui(new GuiInGame(this.ce));
             }
             case CRAFT -> {
-                GLFW.glfwSetInputMode(this.sg.window,GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
+                GLFW.glfwSetInputMode(this.ce.window,GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
                 if(this.Gui instanceof GuiCraftingStoneTools) {
                     int x = ((GuiCraftingStoneTools) this.Gui).x;
                     int y = ((GuiCraftingStoneTools) this.Gui).y;
                     int z = ((GuiCraftingStoneTools) this.Gui).z;
                     short outputItem = ((GuiCraftingStoneTools) this.Gui).outputItemID;
-                    this.sg.save.activeWorld.setBlockWithNotify(x,y,z, Block.air.ID);
-                    this.sg.save.activeWorld.addEntity(new EntityItem(x + 0.5, y + 0.5, z + 0.5, outputItem, Item.NULL_ITEM_METADATA, (byte) 1, Item.list[outputItem].durability));
+                    this.ce.save.activeWorld.setBlockWithNotify(x,y,z, Block.air.ID);
+                    this.ce.save.activeWorld.addEntity(new EntityItem(x + 0.5, y + 0.5, z + 0.5, outputItem, Item.NULL_ITEM_METADATA, (byte) 1, Item.list[outputItem].durability));
 
                     for(int i = 0; i < ((GuiCraftingStoneTools) this.Gui).activeRecipe.requiredItemCount.length; i++){
                         for(int j = 0; j <  ((GuiCraftingStoneTools) this.Gui).activeRecipe.requiredItemCount[i]; j++){
-                            this.sg.save.thePlayer.removeSpecificItemFromInventory(((GuiCraftingStoneTools) this.Gui).activeRecipe.requiredItems[i]);
+                            this.ce.save.thePlayer.removeSpecificItemFromInventory(((GuiCraftingStoneTools) this.Gui).activeRecipe.requiredItems[i]);
                         }
                     }
 
-                    this.sg.save.activeWorld.delayWhenExitingUI = 60;
+                    this.ce.save.activeWorld.delayWhenExitingUI = 60;
                     Tech.techUpdateEvent(Tech.UPDATE_EVENT_CRAFT_STONE_HAND_TOOL);
                 }
 
@@ -423,25 +423,25 @@ public class Button {
                     int z = ((GuiCraftingPottery) this.Gui).z;
                     short outputItem = ((GuiCraftingPottery) this.Gui).outputItemID;
                     short outputBlockID = ((GuiCraftingPottery)this.Gui).outputBlockID;
-                    this.sg.save.activeWorld.setBlockWithNotify(x,y,z, Block.air.ID);
+                    this.ce.save.activeWorld.setBlockWithNotify(x,y,z, Block.air.ID);
                     if(outputItem == Item.block.ID){
-                        this.sg.save.activeWorld.addEntity(new EntityBlock(x + 0.5, y + 0.5, z + 0.5, outputBlockID, (byte)1));
+                        this.ce.save.activeWorld.addEntity(new EntityBlock(x + 0.5, y + 0.5, z + 0.5, outputBlockID, (byte)1));
                     } else {
-                        this.sg.save.activeWorld.addEntity(new EntityItem(x + 0.5, y + 0.5, z + 0.5, outputItem, Item.NULL_ITEM_METADATA, (byte) 1, Item.list[outputItem].durability));
+                        this.ce.save.activeWorld.addEntity(new EntityItem(x + 0.5, y + 0.5, z + 0.5, outputItem, Item.NULL_ITEM_METADATA, (byte) 1, Item.list[outputItem].durability));
                     }
                     for(int i = 0; i < ((GuiCraftingPottery) this.Gui).activeRecipe.requiredItemCount.length; i++){
                         for(int j = 0; j <  ((GuiCraftingPottery) this.Gui).activeRecipe.requiredItemCount[i]; j++){
-                            this.sg.save.thePlayer.removeSpecificItemFromInventory(((GuiCraftingPottery) this.Gui).activeRecipe.requiredItems[i]);
+                            this.ce.save.thePlayer.removeSpecificItemFromInventory(((GuiCraftingPottery) this.Gui).activeRecipe.requiredItems[i]);
                         }
                     }
-                    this.sg.save.activeWorld.delayWhenExitingUI = 60;
+                    this.ce.save.activeWorld.delayWhenExitingUI = 60;
                 }
 
-                this.sg.setNewGui(new GuiInGame(this.sg));
+                this.ce.setNewGui(new GuiInGame(this.ce));
             }
             case CLOSE -> {
-                GLFW.glfwSetInputMode(this.sg.window,GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
-                this.sg.setNewGui(new GuiInGame(this.sg));
+                GLFW.glfwSetInputMode(this.ce.window,GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
+                this.ce.setNewGui(new GuiInGame(this.ce));
             }
             case PAGE_LEFT -> {
                 if(this.Gui instanceof GuiVideoSettingsMainMenu){
@@ -472,7 +472,7 @@ public class Button {
             }
             case TRANSPARENT_LEAVES -> {
                 GameSettings.transparentLeaves = !GameSettings.transparentLeaves;
-                this.sg.save.activeWorld.chunkController.updateChunksWithLeaves();
+                this.ce.save.activeWorld.chunkController.updateChunksWithLeaves();
             }
         }
         GameSettings.saveOptions();
@@ -511,58 +511,58 @@ public class Button {
             textureID = 2/16F;
         }
 
-        tessellator.addVertex2DTextureWithAtlas(16777215,this.x - this.width/2, this.y - this.height/2, -20,3, buttonTexture, textureID);
-        tessellator.addVertex2DTextureWithAtlas(16777215,this.x + this.width/2, this.y + this.height/2, -20,1, buttonTexture, textureID);
-        tessellator.addVertex2DTextureWithAtlas(16777215,this.x - this.width/2, this.y + this.height/2, -20,2, buttonTexture, textureID);
-        tessellator.addVertex2DTextureWithAtlas(16777215,this.x + this.width/2, this.y - this.height/2, -20,0, buttonTexture, textureID);
+        tessellator.addVertex2DTextureWithAtlas(16777215,this.x - this.width/2, this.y - this.height/2, -20,3, buttonTexture, textureID, 255);
+        tessellator.addVertex2DTextureWithAtlas(16777215,this.x + this.width/2, this.y + this.height/2, -20,1, buttonTexture, textureID, 255);
+        tessellator.addVertex2DTextureWithAtlas(16777215,this.x - this.width/2, this.y + this.height/2, -20,2, buttonTexture, textureID, 255);
+        tessellator.addVertex2DTextureWithAtlas(16777215,this.x + this.width/2, this.y - this.height/2, -20,0, buttonTexture, textureID, 255);
         tessellator.addElements();
-        tessellator.drawTexture2DWithAtlas(buttonTextureLoader, Shader.screen2DTextureAtlas, SpaceGame.camera);
+        tessellator.drawTexture2DWithAtlas(buttonTextureLoader, Shader.screen2DTextureAtlas, CosmicEvolution.camera);
         tessellator.toggleOrtho();
         this.drawCenteredString();
 
         if((this.name.equals(EnumButtonEffects.SINGLE_PLAYER.name()) || this.name.equals(EnumButtonEffects.QUIT_GAME.name())) && this.active && this.isMouseHoveredOver() || this.name.equals(EnumButtonEffects.SETTINGS.name()) && this.active && this.isMouseHoveredOver() && this.Gui instanceof GuiMainMenu){
-            int texture = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/star.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+            int texture = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/star.png", RenderEngine.TEXTURE_TYPE_2D, 0);
             tessellator.toggleOrtho();
             tessellator.addVertex2DTexture(16711680,this.x - 350, this.y - 50, -10,3);
             tessellator.addVertex2DTexture(16711680,this.x - 250, this.y + 50, -10,1);
             tessellator.addVertex2DTexture(16711680,this.x - 350, this.y + 50, -10,2);
             tessellator.addVertex2DTexture(16711680,this.x - 250, this.y -50, -10,0);
             tessellator.addElements();
-            tessellator.drawTexture2D(texture, Shader.screen2DTexture, SpaceGame.camera);
+            tessellator.drawTexture2D(texture, Shader.screen2DTexture, CosmicEvolution.camera);
             tessellator.toggleOrtho();
-            SpaceGame.instance.renderEngine.deleteTexture(texture);
+            CosmicEvolution.instance.renderEngine.deleteTexture(texture);
         }
 
         if(this.name.equals(EnumButtonEffects.BUG_REPORT.name())){
-            int wrench = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/wrench.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+            int wrench = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/wrench.png", RenderEngine.TEXTURE_TYPE_2D, 0);
             tessellator.toggleOrtho();
             tessellator.addVertex2DTexture(16777215,this.x - 30, this.y - 30, -9,3);
             tessellator.addVertex2DTexture(16777215,this.x + 30, this.y + 30, -9,1);
             tessellator.addVertex2DTexture(16777215,this.x - 30, this.y + 30, -9,2);
             tessellator.addVertex2DTexture(16777215,this.x + 30, this.y - 30, -9,0);
             tessellator.addElements();
-            tessellator.drawTexture2D(wrench, Shader.screen2DTexture, SpaceGame.camera);
+            tessellator.drawTexture2D(wrench, Shader.screen2DTexture, CosmicEvolution.camera);
             tessellator.toggleOrtho();
-            SpaceGame.instance.renderEngine.deleteTexture(wrench);
+            CosmicEvolution.instance.renderEngine.deleteTexture(wrench);
         }
 
         if(this.name.equals(EnumButtonEffects.INFORMATION.name())){
-            int info = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/info.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+            int info = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/info.png", RenderEngine.TEXTURE_TYPE_2D, 0);
             tessellator.toggleOrtho();
             tessellator.addVertex2DTexture(16711680,this.x - 30, this.y - 30, -9,3);
             tessellator.addVertex2DTexture(16711680,this.x + 30, this.y + 30, -9,1);
             tessellator.addVertex2DTexture(16711680,this.x - 30, this.y + 30, -9,2);
             tessellator.addVertex2DTexture(16711680,this.x + 30, this.y - 30, -9,0);
             tessellator.addElements();
-            tessellator.drawTexture2D(info, Shader.screen2DTexture, SpaceGame.camera);
+            tessellator.drawTexture2D(info, Shader.screen2DTexture, CosmicEvolution.camera);
             tessellator.toggleOrtho();
-            SpaceGame.instance.renderEngine.deleteTexture(info);
+            CosmicEvolution.instance.renderEngine.deleteTexture(info);
         }
     }
 
     public boolean isMouseHoveredOver(){
-        double x = MouseListener.instance.xPos - SpaceGame.width/2D;
-        double y = (MouseListener.instance.yPos - SpaceGame.height/2D) * -1;
+        double x = MouseListener.instance.xPos - CosmicEvolution.width/2D;
+        double y = (MouseListener.instance.yPos - CosmicEvolution.height/2D) * -1;
         float adjustedButtonX = MathUtil.adjustXPosBasedOnScreenWidth(this.x);
         float adjustedButtonY = MathUtil.adjustYPosBasedOnScreenHeight(this.y);
         float adjustedButtonWidth = MathUtil.adjustWidthBasedOnScreenWidth(this.width);
@@ -571,7 +571,7 @@ public class Button {
     }
 
     public int sideOfButtonBeingClicked(){
-        double x = MouseListener.instance.xPos - SpaceGame.width/2D;
+        double x = MouseListener.instance.xPos - CosmicEvolution.width/2D;
         if(x < this.x){
             return 0;
         } else {
@@ -675,7 +675,7 @@ public class Button {
                     case 0 -> string = string + " - Empty";
                     case 1 -> string = string + " - MISSING FILES";
                     case 2 -> {
-                        File file = new File(this.sg.launcherDirectory + "/saves/save" + 1 + "/save.dat");
+                        File file = new File(this.ce.launcherDirectory + "/saves/save" + 1 + "/save.dat");
                         try {
                             FileInputStream inputStream = new FileInputStream(file);
                             NBTTagCompound compoundTag = NBTIO.readCompressed(inputStream);
@@ -692,7 +692,7 @@ public class Button {
                     case 0 -> string = string + " - Empty";
                     case 1 -> string = string + " - MISSING FILES";
                     case 2 -> {
-                        File file = new File(this.sg.launcherDirectory + "/saves/save" + 2 + "/save.dat");
+                        File file = new File(this.ce.launcherDirectory + "/saves/save" + 2 + "/save.dat");
                         try {
                             FileInputStream inputStream = new FileInputStream(file);
                             NBTTagCompound compoundTag = NBTIO.readCompressed(inputStream);
@@ -709,7 +709,7 @@ public class Button {
                     case 0 -> string = string + " - Empty";
                     case 1 -> string = string + " - MISSING FILES";
                     case 2 -> {
-                        File file = new File(this.sg.launcherDirectory + "/saves/save" + 3 + "/save.dat");
+                        File file = new File(this.ce.launcherDirectory + "/saves/save" + 3 + "/save.dat");
                         try {
                             FileInputStream inputStream = new FileInputStream(file);
                             NBTTagCompound compoundTag = NBTIO.readCompressed(inputStream);
@@ -726,7 +726,7 @@ public class Button {
                     case 0 -> string = string + " - Empty";
                     case 1 -> string = string + " - MISSING FILES";
                     case 2 -> {
-                        File file = new File(this.sg.launcherDirectory + "/saves/save" + 4 + "/save.dat");
+                        File file = new File(this.ce.launcherDirectory + "/saves/save" + 4 + "/save.dat");
                         try {
                             FileInputStream inputStream = new FileInputStream(file);
                             NBTTagCompound compoundTag = NBTIO.readCompressed(inputStream);
@@ -743,7 +743,7 @@ public class Button {
                     case 0 -> string = string + " - Empty";
                     case 1 -> string = string + " - MISSING FILES";
                     case 2 -> {
-                        File file = new File(this.sg.launcherDirectory + "/saves/save" + 5 + "/save.dat");
+                        File file = new File(this.ce.launcherDirectory + "/saves/save" + 5 + "/save.dat");
                         try {
                             FileInputStream inputStream = new FileInputStream(file);
                             NBTTagCompound compoundTag = NBTIO.readCompressed(inputStream);
@@ -758,7 +758,7 @@ public class Button {
                 string = "Delete Save Slot";
             }
             case WORLD_INFO -> {
-                string = " i";
+                string = "i";
             }
             case CREATE_NEW_WORLD -> {
                 string = "Create Save";
@@ -770,10 +770,10 @@ public class Button {
                 string = "Respawn";
             }
             case CRAFT -> {
-                string = " Craft";
+                string = "Craft";
             }
             case CLOSE -> {
-                string = " X";
+                string = "X";
             }
             case PAGE_LEFT -> {
                 string = "<---";
@@ -795,7 +795,7 @@ public class Button {
         }
 
         FontRenderer fontRenderer = FontRenderer.instance;
-        fontRenderer.drawCenteredString(string, this.x - 25, this.y - 25, -15,16777215, 50);
+        fontRenderer.drawCenteredString(string, this.x, this.y - (this.height/2.5f), -15,16777215, 50, 255);
     }
 
 }

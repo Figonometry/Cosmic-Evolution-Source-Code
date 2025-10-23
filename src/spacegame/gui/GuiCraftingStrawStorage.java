@@ -4,8 +4,8 @@ import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
+import spacegame.core.CosmicEvolution;
 import spacegame.core.MathUtil;
-import spacegame.core.SpaceGame;
 import spacegame.item.Item;
 import spacegame.render.*;
 
@@ -20,9 +20,9 @@ public final class GuiCraftingStrawStorage extends GuiCrafting {
     public int y;
     public int z;
 
-    public GuiCraftingStrawStorage(SpaceGame spaceGame, int x, int y, int z) {
-        super(spaceGame);
-        this.close = new Button(EnumButtonEffects.CLOSE.name(), 50, 50, 349, 190, this, this.sg);
+    public GuiCraftingStrawStorage(CosmicEvolution cosmicEvolution, int x, int y, int z) {
+        super(cosmicEvolution);
+        this.close = new Button(EnumButtonEffects.CLOSE.name(), 50, 50, 349, 190, this, this.ce);
         this.selectableRecipes = new RecipeSelector[2];
         this.setSelectableItemIDs();
         this.x = x;
@@ -47,24 +47,24 @@ public final class GuiCraftingStrawStorage extends GuiCrafting {
 
     @Override
     public void loadTextures() {
-        this.inventoryUI = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiTechTree/clayTexture.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        this.transparentBackground = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        this.fillableColor = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColor.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        this.outline = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/outline.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.inventoryUI = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiTechTree/clayTexture.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.transparentBackground = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.fillableColor = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColor.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.outline = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/outline.png", RenderEngine.TEXTURE_TYPE_2D, 0);
     }
 
     @Override
     public void deleteTextures() {
-        SpaceGame.instance.renderEngine.deleteTexture(this.inventoryUI);
-        SpaceGame.instance.renderEngine.deleteTexture(this.transparentBackground);
-        SpaceGame.instance.renderEngine.deleteTexture(this.fillableColor);
-        SpaceGame.instance.renderEngine.deleteTexture(this.outline);
+        CosmicEvolution.instance.renderEngine.deleteTexture(this.inventoryUI);
+        CosmicEvolution.instance.renderEngine.deleteTexture(this.transparentBackground);
+        CosmicEvolution.instance.renderEngine.deleteTexture(this.fillableColor);
+        CosmicEvolution.instance.renderEngine.deleteTexture(this.outline);
     }
 
     @Override
     public void drawGui() {
         GuiInGame.renderGuiFromOtherGuis();
-        GLFW.glfwSetInputMode(this.sg.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
+        GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
 
         this.close.renderButton();
 
@@ -82,7 +82,7 @@ public final class GuiCraftingStrawStorage extends GuiCrafting {
         tessellator.addElements();
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-        tessellator.drawTexture2D(this.transparentBackground, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.transparentBackground, Shader.screen2DTexture, CosmicEvolution.camera);
         GL46.glDisable(GL46.GL_BLEND);
 
         backgroundWidth = 798;
@@ -95,7 +95,7 @@ public final class GuiCraftingStrawStorage extends GuiCrafting {
         tessellator.addVertex2DTexture(16777215, backgroundX - (float) backgroundWidth / 2, backgroundY + (float) backgroundHeight / 2, backgroundZ, 2);
         tessellator.addVertex2DTexture(16777215, backgroundX + (float) backgroundWidth / 2, backgroundY - (float) backgroundHeight / 2, backgroundZ, 0);
         tessellator.addElements();
-        tessellator.drawTexture2D(this.inventoryUI, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.inventoryUI, Shader.screen2DTexture, CosmicEvolution.camera);
 
 
         float selectableZ = -90;
@@ -109,7 +109,7 @@ public final class GuiCraftingStrawStorage extends GuiCrafting {
             tessellator.addElements();
         }
 
-        tessellator.drawTexture2D(this.transparentBackground, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.transparentBackground, Shader.screen2DTexture, CosmicEvolution.camera);
 
         selectableZ = -88;
         for (int i = 0; i < this.selectableRecipes.length; i++) {
@@ -121,7 +121,7 @@ public final class GuiCraftingStrawStorage extends GuiCrafting {
             tessellator.addElements();
         }
 
-        tessellator.drawVertexArray(Assets.itemTextureArray, Shader.screenTextureArray, SpaceGame.camera);
+        tessellator.drawVertexArray(Assets.itemTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
 
         for (int i = 0; i < this.selectableRecipes.length; i++) {
             if (!this.selectableRecipes[i].isBlock) continue;
@@ -159,7 +159,7 @@ public final class GuiCraftingStrawStorage extends GuiCrafting {
                     blue -= 10;
                 }
             }
-            tessellator.drawVertexArray(Assets.blockTextureArray, Shader.screenTextureArray, SpaceGame.camera);
+            tessellator.drawVertexArray(Assets.blockTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
         }
 
         selectableZ = -87;
@@ -172,23 +172,23 @@ public final class GuiCraftingStrawStorage extends GuiCrafting {
         }
 
 
-        tessellator.drawTexture2D(this.outline, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.outline, Shader.screen2DTexture, CosmicEvolution.camera);
         GL46.glDisable(GL46.GL_BLEND);
 
         tessellator.toggleOrtho();
 
 
         FontRenderer fontRenderer = FontRenderer.instance;
-        fontRenderer.drawCenteredString("Select Recipe", 0, 128, -15, 16777215, 50);
+        fontRenderer.drawCenteredString("Select Recipe", 0, 128, -15, 16777215, 50, 255);
 
         RecipeSelector hoveredRecipe = this.getSelectedRecipeSelector();
-        if (hoveredRecipe != null) {
+        if(hoveredRecipe != null){
             tessellator.toggleOrtho();
             String displayedName = hoveredRecipe.displayName;
             float x = MathUtil.getOpenGLMouseX();
             float y = MathUtil.getOpenGLMouseY();
             int font = 50;
-            float height = font;
+            float height = font + 64 + (hoveredRecipe.requiredItemCount.length * 64);
             float width = font * ((displayedName.length() + 2) * 0.34f);
 
             tessellator.addVertex2DTexture(0, x, y, -10, 3);
@@ -198,29 +198,50 @@ public final class GuiCraftingStrawStorage extends GuiCrafting {
             tessellator.addElements();
             GL46.glEnable(GL46.GL_BLEND);
             GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-            tessellator.drawTexture2D(this.transparentBackground, Shader.screen2DTexture, SpaceGame.camera);
+            tessellator.drawTexture2D(this.transparentBackground, Shader.screen2DTexture, CosmicEvolution.camera);
             GL46.glDisable(GL46.GL_BLEND);
-
             tessellator.toggleOrtho();
 
-
-            fontRenderer.drawString(displayedName, x, y, -9, 16777215, font);
+            y += height - 50;
+            fontRenderer.drawString(displayedName, x, y , -9, 16777215, font, 255);
+            y -= 60;
+            fontRenderer.drawString("Requires", x, y, -9, 16777215, font, 255);
+            y -= 64;
+            for(int i = 0; i < hoveredRecipe.requiredItems.length; i++){
+                fontRenderer.drawString(hoveredRecipe.requiredItemCount[i] + "x: ", x, y, -9, 16777215, 50, 255);
+                x += 64 + (hoveredRecipe.requiredItemCount[i] >= 100 ? 2 * 17 : hoveredRecipe.requiredItemCount[i] >= 10 ? 17 : 0);
+                y -= 8;
+                tessellator.toggleOrtho();
+                tessellator.addVertexTextureArray(16777215, x, y, -9, 3, hoveredRecipe.requiredItems[i], RenderBlocks.WEST_FACE);
+                tessellator.addVertexTextureArray(16777215, x + 64, y + 64, -9, 1, hoveredRecipe.requiredItems[i], RenderBlocks.WEST_FACE);
+                tessellator.addVertexTextureArray(16777215, x, y + 64, -9, 2, hoveredRecipe.requiredItems[i], RenderBlocks.WEST_FACE);
+                tessellator.addVertexTextureArray(16777215, x + 64, y, -9, 0, hoveredRecipe.requiredItems[i], RenderBlocks.WEST_FACE);
+                tessellator.addElements();
+                GL46.glEnable(GL46.GL_BLEND);
+                GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
+                tessellator.drawVertexArray(Assets.itemTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
+                GL46.glDisable(GL46.GL_BLEND);
+                tessellator.toggleOrtho();
+                y += 8;
+                x -= 64 - (hoveredRecipe.requiredItemCount[i] >= 100 ? 2 * 17 : hoveredRecipe.requiredItemCount[i] >= 10 ? 17 : 0);;
+                y -= 64;
+            }
         }
     }
 
     public void setRecipeSelected(RecipeSelector selectedRecipe){
         if(selectedRecipe.isBlock){
-            this.sg.save.activeWorld.setBlockWithNotify(x,y,z, Block.strawChestTier0.ID);
+            this.ce.save.activeWorld.setBlockWithNotify(x,y,z, Block.strawChestTier0.ID);
         } else {
-            this.sg.save.activeWorld.setBlockWithNotify(x,y,z, Block.strawBasketTier0.ID);
+            this.ce.save.activeWorld.setBlockWithNotify(x,y,z, Block.strawBasketTier0.ID);
         }
         for(int i = 0; i < selectedRecipe.requiredItemCount.length; i++){
             for(int j = 0; j < selectedRecipe.requiredItemCount[i]; j++){
-                this.sg.save.thePlayer.removeSpecificItemFromInventory(selectedRecipe.requiredItems[i]);
+                this.ce.save.thePlayer.removeSpecificItemFromInventory(selectedRecipe.requiredItems[i]);
             }
         }
-        GLFW.glfwSetInputMode(this.sg.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
-        this.sg.setNewGui(new GuiInGame(this.sg));
+        GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
+        this.ce.setNewGui(new GuiInGame(this.ce));
     }
 
     @Override

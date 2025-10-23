@@ -2,8 +2,8 @@ package spacegame.gui;
 
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
+import spacegame.core.CosmicEvolution;
 import spacegame.core.MathUtil;
-import spacegame.core.SpaceGame;
 import spacegame.core.Timer;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
@@ -45,8 +45,8 @@ public final class GuiMainMenu extends Gui {
             starSize[i] = rand.nextInt(2,25);
         }
         for(int i = 0; i < starCoordinates.length; i++){
-            starCoordinates[i][0] = rand.nextInt(-SpaceGame.width/2, SpaceGame.width/2);
-            starCoordinates[i][1] = rand.nextInt(-SpaceGame.height/2, SpaceGame.height/2);
+            starCoordinates[i][0] = rand.nextInt(-CosmicEvolution.width/2, CosmicEvolution.width/2);
+            starCoordinates[i][1] = rand.nextInt(-CosmicEvolution.height/2, CosmicEvolution.height/2);
             starCoordinates[i][2] = rand.nextInt(-10000, -1000);
         }
         for(int i = 0; i < starColorTimer.length; i++){
@@ -54,32 +54,32 @@ public final class GuiMainMenu extends Gui {
         }
     }
 
-    public GuiMainMenu(SpaceGame spaceGame) {
-        super(spaceGame);
-        this.sg = spaceGame;
-        this.singlePlayer = new Button(EnumButtonEffects.SINGLE_PLAYER.name(), 512, 64,0,0,this, this.sg);
-        this.multiPlayer = new Button(EnumButtonEffects.MULTI_PLAYER.name(), 512, 64, 0, -100, this, this.sg);
+    public GuiMainMenu(CosmicEvolution cosmicEvolution) {
+        super(cosmicEvolution);
+        this.ce = cosmicEvolution;
+        this.singlePlayer = new Button(EnumButtonEffects.SINGLE_PLAYER.name(), 512, 64,0,0,this, this.ce);
+        this.multiPlayer = new Button(EnumButtonEffects.MULTI_PLAYER.name(), 512, 64, 0, -100, this, this.ce);
         this.multiPlayer.active = false;
-        this.settings = new Button(EnumButtonEffects.SETTINGS.name(), 512, 64, 0, -200, this, this.sg);
-        this.quitGame = new Button(EnumButtonEffects.QUIT_GAME.name(), 512, 64, 0, - 300, this, this.sg);
-        this.bugReport = new Button(EnumButtonEffects.BUG_REPORT.name(), 64,64, 910, -458, this, this.sg);
-        this.information = new Button(EnumButtonEffects.INFORMATION.name(), 64,64, -910, -458, this, this.sg);
+        this.settings = new Button(EnumButtonEffects.SETTINGS.name(), 512, 64, 0, -200, this, this.ce);
+        this.quitGame = new Button(EnumButtonEffects.QUIT_GAME.name(), 512, 64, 0, - 300, this, this.ce);
+        this.bugReport = new Button(EnumButtonEffects.BUG_REPORT.name(), 64,64, 910, -458, this, this.ce);
+        this.information = new Button(EnumButtonEffects.INFORMATION.name(), 64,64, -910, -458, this, this.ce);
     }
 
     @Override
     public void loadTextures() {
-        this.star = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/star.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        this.earth = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/earth.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        this.title = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/logo.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        this.background = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.star = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/star.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.earth = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/earth.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.title = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/logo.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.background = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
     }
 
     @Override
     public void deleteTextures() {
-        SpaceGame.instance.renderEngine.deleteTexture(this.star);
-        SpaceGame.instance.renderEngine.deleteTexture(this.earth);
-        SpaceGame.instance.renderEngine.deleteTexture(this.title);
-        SpaceGame.instance.renderEngine.deleteTexture(this.background);
+        CosmicEvolution.instance.renderEngine.deleteTexture(this.star);
+        CosmicEvolution.instance.renderEngine.deleteTexture(this.earth);
+        CosmicEvolution.instance.renderEngine.deleteTexture(this.title);
+        CosmicEvolution.instance.renderEngine.deleteTexture(this.background);
     }
 
     @Override
@@ -87,12 +87,12 @@ public final class GuiMainMenu extends Gui {
         FontRenderer fontRenderer = FontRenderer.instance;
         RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         tessellator.toggleOrtho();
-        GLFW.glfwSetInputMode(this.sg.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
+        GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
         for(int i = 0; i < starCount; i++){
            renderStar(i, tessellator);
         }
 
-        tessellator.drawTexture2D(this.star, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.star, Shader.screen2DTexture, CosmicEvolution.camera);
 
 
         int earthSize = 256;
@@ -104,7 +104,7 @@ public final class GuiMainMenu extends Gui {
         tessellator.addVertex2DTexture(16777215, earthX - earthSize, earthY + earthSize, earthZ, 2);
         tessellator.addVertex2DTexture(16777215, earthX + earthSize, earthY - earthSize, earthZ, 0);
         tessellator.addElements();
-        tessellator.drawTexture2D(this.earth, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.earth, Shader.screen2DTexture, CosmicEvolution.camera);
 
         int titleWidth = 1476;
         int titleHeight = 144;
@@ -116,7 +116,7 @@ public final class GuiMainMenu extends Gui {
         tessellator.addVertex2DTexture(16777215, titleX - titleWidth/2, titleY + titleHeight/2, titleZ, 2);
         tessellator.addVertex2DTexture(16777215, titleX + titleWidth/2, titleY - titleHeight/2, titleZ, 0);
         tessellator.addElements();
-        tessellator.drawTexture2D(this.title, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.title, Shader.screen2DTexture, CosmicEvolution.camera);
 
         tessellator.toggleOrtho();
 
@@ -133,66 +133,42 @@ public final class GuiMainMenu extends Gui {
             int green = Color.magenta.getRGB() * -1;
             int red = 16711680;
             int yellow = Color.blue.getRGB() * -1;
-            fontRenderer.drawString("This game is in early Alpha, expect there to be bugs, crashes and general instability", x, y, depth, red, 50);
+            fontRenderer.drawString("This game is in early Alpha, expect there to be bugs, crashes and general instability", x, y, depth, red, 50, 255);
             y -= 60;
-            fontRenderer.drawString(this.sg.title, x, y, depth, 16711875, 50);
+            fontRenderer.drawString(this.ce.title, x, y, depth, 16711875, 50, 255);
             y -= 60;
             fontRenderer.toggleItalics();
-            fontRenderer.drawString("Raw clay items no longer duplicate on pit kiln finishing", x, y, depth, yellow, 50);
+            fontRenderer.drawString("Time events now load properly", x, y, depth, yellow, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Pottery tech event now properly logs on pit kiln finishing", x, y, depth, yellow, 50);
+            fontRenderer.drawString("Centered strings now draw in the correct position", x, y, depth, yellow, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Certain blocks will now drop/be destroyed when no longer under a solid block", x, y, depth, yellow, 50);
+            fontRenderer.drawString("Added an overlay that shows the name of the block the player is looking at", x, y, depth, green, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Leaf blocks no longer cause screen overlay", x, y, depth, yellow, 50);
+            fontRenderer.drawString("Increased the likelihood of clay spawning", x, y ,depth, yellow, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Placing logs on fires/pit kilns now plays a sound", x, y, depth, yellow, 50);
+            fontRenderer.drawString("Save now autosaves on initial load in case of a crash", x, y, depth, yellow, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Placing straw in a pit kiln now plays a sound", x, y, depth, yellow, 50);
+            fontRenderer.drawString("World loading screen now displays properly", x, y, depth, yellow, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Campfires now play sounds and spawn particles when lit", x, y, depth, yellow, 50);
+            fontRenderer.drawString("Recipe selectors in crafting UIs now show number of required materials", x, y, depth, yellow, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Blocks in inventory and crafting UIs now have correct texture mapping", x, y, depth, yellow, 50);
+            fontRenderer.drawString("You can now set your spawnpoint on campfires by shift right clicking", x, y, depth, yellow, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Campfires and pit kilns now burn the player when standing on them", x, y, depth, yellow, 50);
-            y -= 30;
-            fontRenderer.drawString("Straw chest now shows up as a block model in the crafting UI", x, y, depth, yellow, 50);
-            y -= 30;
-            fontRenderer.drawString("Items now swap from mouse to inventory slot when left clicking with a different item", x, y, depth, yellow, 50);
-            y -= 30;
-            fontRenderer.drawString("Added firewood piles, made by shifting and right clicking a block with firewood in hand,", x, y, depth, green, 50);
-            y -= 30;
-            fontRenderer.drawString("regular right click to remove", x, y, depth, green, 50);
-            y -= 30;
-            fontRenderer.drawString("Torches are no longer placed when lighting a pit kiln", x, y, depth, yellow, 50);
-            y -= 30;
-            fontRenderer.drawString("Block time update events now save properly", x, y, depth, yellow, 50);
-            y -= 30;
-            fontRenderer.drawString("Berry bush berries/flowers are now offset properly from the berry bush", x, y, depth, yellow, 50);
-            y -= 30;
-            fontRenderer.drawString("Added brick piles", x, y, depth, green, 50);
-            y -= 30;
-            fontRenderer.drawString("Raw piles of bricks can be fired in a pit kiln in groups of up to 12", x, y, depth, yellow, 50);
-            y -= 30;
-            fontRenderer.drawString("Changed the size of the raw adobe brick item", x, y, depth, yellow, 50);
-            y -= 30;
-            fontRenderer.drawString("Added fired adobe bricks", x, y, depth, green, 50);
-            y -= 30;
-            fontRenderer.drawString("Adobe bricks now require 1 straw to craft", x, y, depth, green, 50);
+            fontRenderer.drawString("Added message text on the in game UI and text fading", x, y, depth, green, 50, 255);
             fontRenderer.toggleItalics();
 
 
 
 
             tessellator.toggleOrtho();
-            tessellator.addVertex2DTexture(0, backgroundX - backgroundWidth/2, backgroundY - backgroundHeight/2, backgroundZ, 3);
-            tessellator.addVertex2DTexture(0, backgroundX + backgroundWidth/2, backgroundY + backgroundHeight/2, backgroundZ, 1);
-            tessellator.addVertex2DTexture(0, backgroundX - backgroundWidth/2, backgroundY + backgroundHeight/2, backgroundZ, 2);
-            tessellator.addVertex2DTexture(0, backgroundX + backgroundWidth/2, backgroundY - backgroundHeight/2, backgroundZ, 0);
+            tessellator.addVertex2DTexture(0, backgroundX - backgroundWidth/2f, backgroundY - backgroundHeight/2f, backgroundZ, 3);
+            tessellator.addVertex2DTexture(0, backgroundX + backgroundWidth/2f, backgroundY + backgroundHeight/2f, backgroundZ, 1);
+            tessellator.addVertex2DTexture(0, backgroundX - backgroundWidth/2f, backgroundY + backgroundHeight/2f, backgroundZ, 2);
+            tessellator.addVertex2DTexture(0, backgroundX + backgroundWidth/2f, backgroundY - backgroundHeight/2f, backgroundZ, 0);
             tessellator.addElements();
             GL46.glEnable(GL46.GL_BLEND);
             GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-            tessellator.drawTexture2D(this.background, Shader.screen2DTexture, SpaceGame.camera);
+            tessellator.drawTexture2D(this.background, Shader.screen2DTexture, CosmicEvolution.camera);
             tessellator.toggleOrtho();
             GL46.glDisable(GL46.GL_BLEND);
         }
@@ -220,14 +196,10 @@ public final class GuiMainMenu extends Gui {
             int green = Color.magenta.getRGB() * -1;
             int red = 16711680;
             int yellow = Color.blue.getRGB() * -1;
-            fontRenderer.drawString("Report all bugs to the following email address: cosmicevolution.bugreport@gmail.com", x, y, depth, red, 50);
+            fontRenderer.drawString("Report all bugs to the following email address: cosmicevolution.bugreport@gmail.com", x, y, depth, red, 50, 255);
             y -= 60;
-            fontRenderer.drawString("Please include screenshots and crash logs as applicable as well as a description", x, y, depth, green, 50);
+            fontRenderer.drawString("Please include screenshots and crash logs as applicable as well as a description", x, y, depth, green, 50, 255);
             y -= 60;
-
-
-
-
 
             tessellator.toggleOrtho();
             tessellator.addVertex2DTexture(0, backgroundX - backgroundWidth/2, backgroundY - backgroundHeight/2, backgroundZ, 3);
@@ -237,12 +209,12 @@ public final class GuiMainMenu extends Gui {
             tessellator.addElements();
             GL46.glEnable(GL46.GL_BLEND);
             GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-            tessellator.drawTexture2D(this.background, Shader.screen2DTexture, SpaceGame.camera);
+            tessellator.drawTexture2D(this.background, Shader.screen2DTexture, CosmicEvolution.camera);
             tessellator.toggleOrtho();
             GL46.glDisable(GL46.GL_BLEND);
         }
 
-        fontRenderer.drawString(this.sg.title, -970, 460, -15, Color.magenta.getRGB() * -1, 50);
+        fontRenderer.drawString(this.ce.title, -970, 460, -15, Color.magenta.getRGB() * -1, 50, 255);
 
     }
 

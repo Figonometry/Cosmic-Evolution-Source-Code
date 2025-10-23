@@ -2,8 +2,8 @@ package spacegame.gui;
 
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
+import spacegame.core.CosmicEvolution;
 import spacegame.core.MathUtil;
-import spacegame.core.SpaceGame;
 import spacegame.item.Item;
 import spacegame.item.ItemCraftingTemplates;
 import spacegame.render.Assets;
@@ -11,7 +11,6 @@ import spacegame.render.RenderBlocks;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
 
-import java.awt.*;
 import java.util.Random;
 
 public final class GuiCraftingStoneTools extends GuiCrafting {
@@ -30,13 +29,13 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
     public int x;
     public int y;
     public int z;
-    public GuiCraftingStoneTools(SpaceGame spaceGame, int x, int y, int z) {
-        super(spaceGame);
+    public GuiCraftingStoneTools(CosmicEvolution cosmicEvolution, int x, int y, int z) {
+        super(cosmicEvolution);
         this.x = x;
         this.y = y;
         this.z = z;
-        this.close = new Button(EnumButtonEffects.CLOSE.name(), 50, 50, 349, 190, this, this.sg);
-        this.craft = new Button(EnumButtonEffects.CRAFT.name(), 128,50, 0,-175, this, this.sg);
+        this.close = new Button(EnumButtonEffects.CLOSE.name(), 50, 50, 349, 190, this, this.ce);
+        this.craft = new Button(EnumButtonEffects.CRAFT.name(), 128,50, 0,-175, this, this.ce);
         this.craft.active = false;
         this.selectableRecipes = new RecipeSelector[4];
         this.setSelectableItemIDs();
@@ -83,27 +82,27 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
 
     @Override
     public void loadTextures() {
-        this.backgroundTexture = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiTechTree/clayTexture.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        this.transparentBackground = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        this.fillableColor = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColor.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        this.outline = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/outline.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.backgroundTexture = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiTechTree/clayTexture.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.transparentBackground = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.fillableColor = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColor.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.outline = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/outline.png", RenderEngine.TEXTURE_TYPE_2D, 0);
     }
 
     @Override
     public void deleteTextures() {
-        SpaceGame.instance.renderEngine.deleteTexture(this.backgroundTexture);
-        SpaceGame.instance.renderEngine.deleteTexture(this.transparentBackground);
-        SpaceGame.instance.renderEngine.deleteTexture(this.fillableColor);
-        SpaceGame.instance.renderEngine.deleteTexture(this.outline);
+        CosmicEvolution.instance.renderEngine.deleteTexture(this.backgroundTexture);
+        CosmicEvolution.instance.renderEngine.deleteTexture(this.transparentBackground);
+        CosmicEvolution.instance.renderEngine.deleteTexture(this.fillableColor);
+        CosmicEvolution.instance.renderEngine.deleteTexture(this.outline);
         if(this.recipeOverlay != 0){
-            SpaceGame.instance.renderEngine.deleteTexture(this.recipeOverlay);
+            CosmicEvolution.instance.renderEngine.deleteTexture(this.recipeOverlay);
         }
     }
 
     @Override
     public void drawGui() {
         GuiInGame.renderGuiFromOtherGuis();
-        GLFW.glfwSetInputMode(this.sg.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
+        GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
 
         this.close.renderButton();
         if(this.selectedItemID != -1) {
@@ -126,7 +125,7 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
         tessellator.addElements();
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-        tessellator.drawTexture2D(this.transparentBackground, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.transparentBackground, Shader.screen2DTexture, CosmicEvolution.camera);
         GL46.glDisable(GL46.GL_BLEND);
 
         backgroundWidth = 798;
@@ -139,7 +138,7 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
         tessellator.addVertex2DTexture(16777215, backgroundX - (float) backgroundWidth /2, backgroundY + (float) backgroundHeight /2, backgroundZ, 2);
         tessellator.addVertex2DTexture(16777215, backgroundX + (float) backgroundWidth /2, backgroundY - (float) backgroundHeight /2, backgroundZ, 0);
         tessellator.addElements();
-        tessellator.drawTexture2D(this.backgroundTexture, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.backgroundTexture, Shader.screen2DTexture, CosmicEvolution.camera);
 
         if(this.selectedItemID != -1) {
             backgroundZ += 10;
@@ -156,7 +155,7 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
             tessellator.addVertex2DTexture(0, outputSlotX - (float) outputWidth / 2, outputSlotY + (float) outputHeight / 2, backgroundZ, 2);
             tessellator.addVertex2DTexture(0, outputSlotX + (float) outputWidth / 2, outputSlotY - (float) outputHeight / 2, backgroundZ, 0);
             tessellator.addElements();
-            tessellator.drawTexture2D(this.transparentBackground, Shader.screen2DTexture, SpaceGame.camera);
+            tessellator.drawTexture2D(this.transparentBackground, Shader.screen2DTexture, CosmicEvolution.camera);
 
             backgroundZ += 10;
             tessellator.addVertex2DTexture(16777215, outputSlotX - (float) outputWidth / 2, outputSlotY - (float) outputHeight / 2, backgroundZ, 3);
@@ -166,7 +165,7 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
             tessellator.addElements();
 
             GL46.glBlendFunc(GL46.GL_SRC_ALPHA, GL46.GL_ONE_MINUS_SRC_ALPHA);
-            tessellator.drawTexture2D(this.recipeOverlay, Shader.screen2DTexture, SpaceGame.camera);
+            tessellator.drawTexture2D(this.recipeOverlay, Shader.screen2DTexture, CosmicEvolution.camera);
 
             GL46.glDisable(GL46.GL_BLEND);
         }
@@ -183,7 +182,7 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
                 tessellator.addElements();
             }
 
-            tessellator.drawTexture2D(this.transparentBackground, Shader.screen2DTexture, SpaceGame.camera);
+            tessellator.drawTexture2D(this.transparentBackground, Shader.screen2DTexture, CosmicEvolution.camera);
 
             selectableZ = -88;
             for(int i = 0; i < this.selectableRecipes.length; i++){
@@ -195,7 +194,7 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
             }
 
 
-            tessellator.drawVertexArray(Assets.itemTextureArray, Shader.screenTextureArray, SpaceGame.camera);
+            tessellator.drawVertexArray(Assets.itemTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
 
             selectableZ = -87;
             for(int i = 0; i < this.selectableRecipes.length; i++){
@@ -207,7 +206,7 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
             }
 
 
-            tessellator.drawTexture2D(this.outline, Shader.screen2DTexture, SpaceGame.camera);
+            tessellator.drawTexture2D(this.outline, Shader.screen2DTexture, CosmicEvolution.camera);
             GL46.glDisable(GL46.GL_BLEND);
         }
 
@@ -216,7 +215,7 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
 
         if(this.selectedItemID == -1){
             FontRenderer fontRenderer = FontRenderer.instance;
-            fontRenderer.drawCenteredString("Select Recipe", 0, 128, -15, 16777215, 50);
+            fontRenderer.drawCenteredString("Select Recipe", 0, 128, -15, 16777215, 50, 255);
         }
 
         RecipeSelector hoveredRecipe = this.getSelectedRecipeSelector();
@@ -227,7 +226,7 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
             float x = MathUtil.getOpenGLMouseX();
             float y = MathUtil.getOpenGLMouseY();
             int font = 50;
-            float height = font;
+            float height = font + 64 + (hoveredRecipe.requiredItemCount.length * 64);
             float width = font * ((displayedName.length() + 2) * 0.34f);
 
             tessellator.addVertex2DTexture(0, x, y, -10, 3);
@@ -237,26 +236,47 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
             tessellator.addElements();
             GL46.glEnable(GL46.GL_BLEND);
             GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-            tessellator.drawTexture2D(this.transparentBackground, Shader.screen2DTexture, SpaceGame.camera);
+            tessellator.drawTexture2D(this.transparentBackground, Shader.screen2DTexture, CosmicEvolution.camera);
             GL46.glDisable(GL46.GL_BLEND);
-
             tessellator.toggleOrtho();
 
-
-            fontRenderer.drawString(displayedName, x, y, -9, 16777215, font);
+            y += height - 50;
+            fontRenderer.drawString(displayedName, x, y , -9, 16777215, font, 255);
+            y -= 60;
+            fontRenderer.drawString("Requires", x, y, -9, 16777215, font, 255);
+            y -= 64;
+            for(int i = 0; i < hoveredRecipe.requiredItems.length; i++){
+                fontRenderer.drawString(hoveredRecipe.requiredItemCount[i] + "x: ", x, y, -9, 16777215, 50, 255);
+                x += 64 + (hoveredRecipe.requiredItemCount[i] >= 100 ? 2 * 17 : hoveredRecipe.requiredItemCount[i] >= 10 ? 17 : 0);
+                y -= 8;
+                tessellator.toggleOrtho();
+                tessellator.addVertexTextureArray(16777215, x, y, -9, 3, hoveredRecipe.requiredItems[i], RenderBlocks.WEST_FACE);
+                tessellator.addVertexTextureArray(16777215, x + 64, y + 64, -9, 1, hoveredRecipe.requiredItems[i], RenderBlocks.WEST_FACE);
+                tessellator.addVertexTextureArray(16777215, x, y + 64, -9, 2, hoveredRecipe.requiredItems[i], RenderBlocks.WEST_FACE);
+                tessellator.addVertexTextureArray(16777215, x + 64, y, -9, 0, hoveredRecipe.requiredItems[i], RenderBlocks.WEST_FACE);
+                tessellator.addElements();
+                GL46.glEnable(GL46.GL_BLEND);
+                GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
+                tessellator.drawVertexArray(Assets.itemTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
+                GL46.glDisable(GL46.GL_BLEND);
+                tessellator.toggleOrtho();
+                y += 8;
+                x -= 64 - (hoveredRecipe.requiredItemCount[i] >= 100 ? 2 * 17 : hoveredRecipe.requiredItemCount[i] >= 10 ? 17 : 0);;
+                y -= 64;
+            }
         }
     }
 
     public void activateRecipeOverlay(){
         switch (this.selectedItemID) {
             case 3 ->
-                    this.recipeOverlay = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/item/recipeTemplates/rockFragmentTemplate.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+                    this.recipeOverlay = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/item/recipeTemplates/rockFragmentTemplate.png", RenderEngine.TEXTURE_TYPE_2D, 0);
             case 4 ->
-                    this.recipeOverlay = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/item/recipeTemplates/handAxeTemplate.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+                    this.recipeOverlay = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/item/recipeTemplates/handAxeTemplate.png", RenderEngine.TEXTURE_TYPE_2D, 0);
             case 9 ->
-                    this.recipeOverlay = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/item/recipeTemplates/knifeTemplate.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+                    this.recipeOverlay = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/item/recipeTemplates/knifeTemplate.png", RenderEngine.TEXTURE_TYPE_2D, 0);
             case 10 ->
-                    this.recipeOverlay = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/item/recipeTemplates/shovelHeadTemplate.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+                    this.recipeOverlay = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/item/recipeTemplates/shovelHeadTemplate.png", RenderEngine.TEXTURE_TYPE_2D, 0);
         }
     }
 
@@ -283,7 +303,7 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
                 tessellator.addElements();
             }
         }
-        tessellator.drawTexture2D(this.fillableColor, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.fillableColor, Shader.screen2DTexture, CosmicEvolution.camera);
         tessellator.toggleOrtho();
     }
 

@@ -2,7 +2,7 @@ package spacegame.world;
 
 import spacegame.block.Block;
 import spacegame.block.ITickable;
-import spacegame.core.SpaceGame;
+import spacegame.core.CosmicEvolution;
 
 import java.awt.*;
 import java.util.Random;
@@ -160,7 +160,7 @@ public final class ChunkTerrainHandler {
 
     public void populateChunk(Chunk chunk) {
         //retrieve a list of all grass blocks, and maybe other blocks to not have to loop all 32k blocks at once
-        Random rand = new Random(SpaceGame.instance.save.seed & (chunk.x + chunk.y * chunk.z));
+        Random rand = new Random(CosmicEvolution.instance.save.seed & (chunk.x + chunk.y * chunk.z));
         WorldGenTree worldGenTree;
         int treeCount = 0;
         int rockCount = 0;
@@ -171,7 +171,7 @@ public final class ChunkTerrainHandler {
         int berryClusterCount = rand.nextInt(40) == 0 ? 1 : 0;
         int cactusCount = rand.nextInt(10) == 0 ? 4 : 1;
         int tallGrassCount = rand.nextInt(20, 30);
-        boolean generateClayBlob = rand.nextInt(6) == 0;
+        boolean generateClayBlob = rand.nextInt(5) == 0;
         short[] grassIndicesRaw = new short[32768];
         short[] surfaceSandIndices = new short[32768];
         int grassIndex = 0;

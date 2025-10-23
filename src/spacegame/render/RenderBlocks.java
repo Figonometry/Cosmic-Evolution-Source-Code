@@ -1,7 +1,10 @@
 package spacegame.render;
 
 import org.joml.Vector3f;
-import spacegame.block.*;
+import spacegame.block.Block;
+import spacegame.block.BlockCampFire;
+import spacegame.block.BlockLog;
+import spacegame.block.BlockPitKilnUnlit;
 import spacegame.core.MathUtil;
 import spacegame.item.Item;
 import spacegame.world.ChestLocation;

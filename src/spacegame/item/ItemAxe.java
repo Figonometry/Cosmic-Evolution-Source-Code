@@ -2,7 +2,7 @@ package spacegame.item;
 
 import spacegame.block.Block;
 import spacegame.block.BlockLog;
-import spacegame.core.SpaceGame;
+import spacegame.core.CosmicEvolution;
 import spacegame.entity.EntityItem;
 import spacegame.entity.EntityPlayer;
 import spacegame.world.World;
@@ -21,7 +21,7 @@ public final class ItemAxe extends Item {
         world.setBlockWithNotify(x,y,z, Block.air.ID);
 
         for(int i = 0; i < 4; i++){
-            world.addEntity(new EntityItem(x + SpaceGame.globalRand.nextDouble(), y + 0.5, z + SpaceGame.globalRand.nextDouble(), Item.fireWood.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY));
+            world.addEntity(new EntityItem(x + CosmicEvolution.globalRand.nextDouble(), y + 0.5, z + CosmicEvolution.globalRand.nextDouble(), Item.fireWood.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY));
         }
 
         player.reduceHeldItemDurability();

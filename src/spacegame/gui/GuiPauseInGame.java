@@ -2,36 +2,36 @@ package spacegame.gui;
 
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
-import spacegame.core.SpaceGame;
+import spacegame.core.CosmicEvolution;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
 
 public final class GuiPauseInGame extends Gui {
-    public SpaceGame sg;
+    public CosmicEvolution ce;
     public Button back;
     public Button settings;
     public Button quit;
     public int title;
     public int background;
 
-    public GuiPauseInGame(SpaceGame spaceGame) {
-        super(spaceGame);
-        this.sg = spaceGame;
-        this.back = new Button(EnumButtonEffects.BACK_TO_GAME.name(), 512, 64, 0, 150, this, this.sg);
-        this.settings = new Button(EnumButtonEffects.SETTINGS.name(), 512, 64, 0, 0, this, this.sg);
-        this.quit = new Button(EnumButtonEffects.QUIT_TO_MAIN_MENU.name(), 512, 64, 0, -150, this, this.sg);
+    public GuiPauseInGame(CosmicEvolution cosmicEvolution) {
+        super(cosmicEvolution);
+        this.ce = cosmicEvolution;
+        this.back = new Button(EnumButtonEffects.BACK_TO_GAME.name(), 512, 64, 0, 150, this, this.ce);
+        this.settings = new Button(EnumButtonEffects.SETTINGS.name(), 512, 64, 0, 0, this, this.ce);
+        this.quit = new Button(EnumButtonEffects.QUIT_TO_MAIN_MENU.name(), 512, 64, 0, -150, this, this.ce);
     }
 
     @Override
     public void loadTextures() {
-        this.title = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInGame/pause.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        this.background = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.title = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInGame/pause.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.background = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
     }
 
     @Override
     public void deleteTextures() {
-        SpaceGame.instance.renderEngine.deleteTexture(this.title);
-        SpaceGame.instance.renderEngine.deleteTexture(this.background);
+        CosmicEvolution.instance.renderEngine.deleteTexture(this.title);
+        CosmicEvolution.instance.renderEngine.deleteTexture(this.background);
     }
 
     @Override
@@ -39,7 +39,7 @@ public final class GuiPauseInGame extends Gui {
         GuiInGame.renderGuiFromOtherGuis();
         RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         tessellator.toggleOrtho();
-        GLFW.glfwSetInputMode(this.sg.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
+        GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
 
         int titleWidth = 546;
         int titleHeight = 144;
@@ -51,7 +51,7 @@ public final class GuiPauseInGame extends Gui {
         tessellator.addVertex2DTexture(16777215, titleX - titleWidth/2, titleY + titleHeight/2, titleZ, 2);
         tessellator.addVertex2DTexture(16777215, titleX + titleWidth/2, titleY - titleHeight/2, titleZ, 0);
         tessellator.addElements();
-        tessellator.drawTexture2D(this.title, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.title, Shader.screen2DTexture, CosmicEvolution.camera);
 
         int backgroundWidth = 1920;
         int backgroundHeight = 1017;
@@ -65,7 +65,7 @@ public final class GuiPauseInGame extends Gui {
         tessellator.addElements();
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-        tessellator.drawTexture2D(this.background, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.background, Shader.screen2DTexture, CosmicEvolution.camera);
         GL46.glDisable(GL46.GL_BLEND);
         tessellator.toggleOrtho();
 

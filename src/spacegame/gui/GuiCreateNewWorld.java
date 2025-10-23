@@ -2,14 +2,14 @@ package spacegame.gui;
 
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
-import spacegame.core.SpaceGame;
+import spacegame.core.CosmicEvolution;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
 
 import java.util.Random;
 
 public final class GuiCreateNewWorld extends Gui {
-    private SpaceGame sg;
+    private CosmicEvolution ce;
     public int background;
     public int title;
     public int star;
@@ -20,12 +20,12 @@ public final class GuiCreateNewWorld extends Gui {
     public Button back;
     public int saveSlot;
 
-    public GuiCreateNewWorld(SpaceGame spaceGame, int saveSlot) {
-        super(spaceGame);
-        this.sg = spaceGame;
+    public GuiCreateNewWorld(CosmicEvolution cosmicEvolution, int saveSlot) {
+        super(cosmicEvolution);
+        this.ce = cosmicEvolution;
         this.saveSlot = saveSlot;
-        this.createWorld = new Button(EnumButtonEffects.CREATE_NEW_WORLD.name(), 512, 64, -320, -200, this, this.sg);
-        this.back = new Button(EnumButtonEffects.BACK.name(), 512, 64, 320, -200, this, this.sg);
+        this.createWorld = new Button(EnumButtonEffects.CREATE_NEW_WORLD.name(), 512, 64, -320, -200, this, this.ce);
+        this.back = new Button(EnumButtonEffects.BACK.name(), 512, 64, 320, -200, this, this.ce);
         this.nameWorld = new TextField(512, 64, 0, 100);
         this.setSeed = new TextField(512, 64, 0, 0);
     }
@@ -33,29 +33,29 @@ public final class GuiCreateNewWorld extends Gui {
 
     @Override
     public void loadTextures() {
-        this.star = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/star.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        this.earth = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/earth.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        this.title = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/createNewWorld.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        this.background = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.star = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/star.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.earth = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/earth.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.title = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/createNewWorld.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.background = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
     }
 
     @Override
     public void deleteTextures() {
-        SpaceGame.instance.renderEngine.deleteTexture(this.star);
-        SpaceGame.instance.renderEngine.deleteTexture(this.earth);
-        SpaceGame.instance.renderEngine.deleteTexture(this.title);
-        SpaceGame.instance.renderEngine.deleteTexture(this.background);
+        CosmicEvolution.instance.renderEngine.deleteTexture(this.star);
+        CosmicEvolution.instance.renderEngine.deleteTexture(this.earth);
+        CosmicEvolution.instance.renderEngine.deleteTexture(this.title);
+        CosmicEvolution.instance.renderEngine.deleteTexture(this.background);
     }
 
     @Override
     public void drawGui() {
         RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         tessellator.toggleOrtho();
-        GLFW.glfwSetInputMode(this.sg.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
+        GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
         for(int i = 0; i < GuiMainMenu.starCount; i++){
             GuiMainMenu.renderStar(i, tessellator);
         }
-        tessellator.drawTexture2D(this.star, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.star, Shader.screen2DTexture, CosmicEvolution.camera);
 
         int titleWidth = 1204;
         int titleHeight = 144;
@@ -67,7 +67,7 @@ public final class GuiCreateNewWorld extends Gui {
         tessellator.addVertex2DTexture(16777215, titleX - titleWidth/2, titleY + titleHeight/2, titleZ, 2);
         tessellator.addVertex2DTexture(16777215, titleX + titleWidth/2, titleY - titleHeight/2, titleZ, 0);
         tessellator.addElements();
-        tessellator.drawTexture2D(this.title, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.title, Shader.screen2DTexture, CosmicEvolution.camera);
 
         int earthSize = 256;
         int earthX = 0;
@@ -78,10 +78,10 @@ public final class GuiCreateNewWorld extends Gui {
         tessellator.addVertex2DTexture(16777215, earthX - earthSize, earthY + earthSize, earthZ, 2);
         tessellator.addVertex2DTexture(16777215, earthX + earthSize, earthY - earthSize, earthZ, 0);
         tessellator.addElements();
-        tessellator.drawTexture2D(this.earth, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.earth, Shader.screen2DTexture, CosmicEvolution.camera);
 
-        int backgroundWidth = SpaceGame.width;
-        int backgroundHeight = SpaceGame.height;
+        int backgroundWidth = CosmicEvolution.width;
+        int backgroundHeight = CosmicEvolution.height;
         int backgroundX = 0;
         int backgroundY = 0;
         int backgroundZ = -100;
@@ -92,7 +92,7 @@ public final class GuiCreateNewWorld extends Gui {
         tessellator.addElements();
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-        tessellator.drawTexture2D(this.background, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(this.background, Shader.screen2DTexture, CosmicEvolution.camera);
         GL46.glDisable(GL46.GL_BLEND);
 
         tessellator.toggleOrtho();
@@ -108,8 +108,8 @@ public final class GuiCreateNewWorld extends Gui {
         this.nameWorld.renderTextFieldAndText();
         this.setSeed.renderTextFieldAndText();
         FontRenderer fontRenderer = FontRenderer.instance;
-        fontRenderer.drawCenteredString("Name World", -384, 75,-15, 16777215, 50);
-        fontRenderer.drawCenteredString("Set Seed", -384, -25,-15, 16777215, 50);
+        fontRenderer.drawCenteredString("Name World", -384, 75,-15, 16777215, 50, 255);
+        fontRenderer.drawCenteredString("Set Seed", -384, -25,-15, 16777215, 50, 255);
     }
 
     @Override

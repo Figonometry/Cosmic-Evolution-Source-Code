@@ -4,8 +4,8 @@ import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
+import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
-import spacegame.core.SpaceGame;
 import spacegame.render.Assets;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
@@ -59,13 +59,13 @@ public final class EntityParticle extends EntityNonLiving {
         this.chunkY = (int)this.y >> 5;
         this.chunkZ = (int)this.z >> 5;
         Shader.worldShaderTextureArray.uploadBoolean("useFog", true);
-        Shader.worldShaderTextureArray.uploadFloat("fogRed", SpaceGame.instance.save.activeWorld.skyColor[0]);
-        Shader.worldShaderTextureArray.uploadFloat("fogGreen", SpaceGame.instance.save.activeWorld.skyColor[1]);
-        Shader.worldShaderTextureArray.uploadFloat("fogBlue", SpaceGame.instance.save.activeWorld.skyColor[2]);
+        Shader.worldShaderTextureArray.uploadFloat("fogRed", CosmicEvolution.instance.save.activeWorld.skyColor[0]);
+        Shader.worldShaderTextureArray.uploadFloat("fogGreen", CosmicEvolution.instance.save.activeWorld.skyColor[1]);
+        Shader.worldShaderTextureArray.uploadFloat("fogBlue", CosmicEvolution.instance.save.activeWorld.skyColor[2]);
         Shader.worldShaderTextureArray.uploadFloat("fogDistance", GameSettings.renderDistance << 5);
-        int playerChunkX = ((int)SpaceGame.instance.save.thePlayer.x >> 5);
-        int playerChunkY = ((int)SpaceGame.instance.save.thePlayer.y >> 5);
-        int playerChunkZ = ((int)SpaceGame.instance.save.thePlayer.z >> 5);
+        int playerChunkX = ((int) CosmicEvolution.instance.save.thePlayer.x >> 5);
+        int playerChunkY = ((int) CosmicEvolution.instance.save.thePlayer.y >> 5);
+        int playerChunkZ = ((int) CosmicEvolution.instance.save.thePlayer.z >> 5);
         int xOffset = ((int)this.x >> 5) - playerChunkX;
         int yOffset = ((int)this.y >> 5) - playerChunkY;
         int zOffset = ((int)this.z >> 5) - playerChunkZ;
@@ -74,7 +74,7 @@ public final class EntityParticle extends EntityNonLiving {
         zOffset *= 32;
         Vector3f chunkOffset = new Vector3f(xOffset, yOffset, zOffset);
         Shader.worldShaderTextureArray.uploadVec3f("chunkOffset", chunkOffset);
-        World world = SpaceGame.instance.save.activeWorld;
+        World world = CosmicEvolution.instance.save.activeWorld;
         float x = (float) (this.x % 32);
         float y = (float) (this.y % 32);
         float z = (float) (this.z % 32);
@@ -95,10 +95,10 @@ public final class EntityParticle extends EntityNonLiving {
 
         float size = 0.015625f;
         Vector3d blockPosition = new Vector3d(x, (float) (y + this.height/2) + 0.125, z);
-        Vector3d vertex1 = new Vector3d(0,  -size, -size).rotateY(-Math.toRadians(SpaceGame.instance.save.thePlayer.yaw)).add(blockPosition);
-        Vector3d vertex2 = new Vector3d(0, size, size).rotateY(-Math.toRadians(SpaceGame.instance.save.thePlayer.yaw)).add(blockPosition);
-        Vector3d vertex3 = new Vector3d(0, size, -size).rotateY(-Math.toRadians(SpaceGame.instance.save.thePlayer.yaw)).add(blockPosition);
-        Vector3d vertex4 = new Vector3d(0, -size, size).rotateY(-Math.toRadians(SpaceGame.instance.save.thePlayer.yaw)).add(blockPosition);
+        Vector3d vertex1 = new Vector3d(0,  -size, -size).rotateY(-Math.toRadians(CosmicEvolution.instance.save.thePlayer.yaw)).add(blockPosition);
+        Vector3d vertex2 = new Vector3d(0, size, size).rotateY(-Math.toRadians(CosmicEvolution.instance.save.thePlayer.yaw)).add(blockPosition);
+        Vector3d vertex3 = new Vector3d(0, size, -size).rotateY(-Math.toRadians(CosmicEvolution.instance.save.thePlayer.yaw)).add(blockPosition);
+        Vector3d vertex4 = new Vector3d(0, -size, size).rotateY(-Math.toRadians(CosmicEvolution.instance.save.thePlayer.yaw)).add(blockPosition);
         this.resetLight();
         if(this.useLight) {
             this.setVertexLight1Arg(world.getBlockLightValue((int) (this.chunkX * 32 + x), (int) (this.chunkY * 32 + y), (int) (this.chunkZ * 32 + z)), x, y, z, world.getBlockLightColor((int) (this.chunkX * 32 + x), (int) (this.chunkY * 32 + y), (int) (this.chunkZ * 32 + z)));
@@ -110,7 +110,7 @@ public final class EntityParticle extends EntityNonLiving {
         tessellator.addVertexTextureArrayWithSampling(colorValue, (float) vertex4.x, (float) vertex4.y, (float) vertex4.z, 0, blockID, -0.46875f, -0.46875f);
         tessellator.addElements();
         GL46.glDisable(GL46.GL_CULL_FACE);
-        tessellator.drawVertexArray(Assets.blockTextureArray, Shader.worldShaderTextureArray, SpaceGame.camera);
+        tessellator.drawVertexArray(Assets.blockTextureArray, Shader.worldShaderTextureArray, CosmicEvolution.camera);
         GL46.glEnable(GL46.GL_CULL_FACE);
         GL46.glCullFace(GL46.GL_FRONT);
     }

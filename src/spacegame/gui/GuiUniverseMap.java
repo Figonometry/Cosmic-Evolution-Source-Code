@@ -7,10 +7,10 @@ import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
 import spacegame.celestial.CelestialObject;
+import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
 import spacegame.core.MathUtil;
 import spacegame.core.MouseListener;
-import spacegame.core.SpaceGame;
 import spacegame.render.Camera;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
@@ -30,23 +30,23 @@ public final class GuiUniverseMap extends Gui {
     public static ArrayList<Vector3f> starPositions = new ArrayList<>();
 
 
-    public GuiUniverseMap(SpaceGame spaceGame) {
-        super(spaceGame);
-        this.selectedObject = SpaceGame.instance.everything.earth;
+    public GuiUniverseMap(CosmicEvolution cosmicEvolution) {
+        super(cosmicEvolution);
+        this.selectedObject = CosmicEvolution.instance.everything.earth;
     }
 
     @Override
     public void loadTextures() {
-        orbitLine = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiUniverse/orbitLine.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        orbitLine = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiUniverse/orbitLine.png", RenderEngine.TEXTURE_TYPE_2D, 0);
     }
 
     public static void initSkyboxTexture(){
-        skybox = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiUniverse/skybox", RenderEngine.TEXTURE_TYPE_CUBEMAP, 0);
+        skybox = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiUniverse/skybox", RenderEngine.TEXTURE_TYPE_CUBEMAP, 0);
     }
 
     @Override
     public void deleteTextures() {
-        SpaceGame.instance.renderEngine.deleteTexture(orbitLine);
+        CosmicEvolution.instance.renderEngine.deleteTexture(orbitLine);
     }
 
     @Override
@@ -60,18 +60,18 @@ public final class GuiUniverseMap extends Gui {
         GL46.glEnable(GL46.GL_DEPTH_TEST);
         FontRenderer fontRenderer = FontRenderer.instance;
         int leftSide = -970;
-        fontRenderer.drawString(SpaceGame.instance.title + " (" + SpaceGame.instance.fps * -1 + " FPS)", leftSide, 460,-15, 16777215, 50);
-        fontRenderer.drawString("Current Selected Object: " + this.selectedObject, leftSide, 430,-15, 16777215, 50);
+        fontRenderer.drawString(CosmicEvolution.instance.title + " (" + CosmicEvolution.instance.fps * -1 + " FPS)", leftSide, 460,-15, 16777215, 50, 255);
+        fontRenderer.drawString("Current Selected Object: " + this.selectedObject, leftSide, 430,-15, 16777215, 50, 255);
 
 
-        this.sg.everything.sun.render(this.sg.everything.sun.mappedTexture);
-        this.sg.everything.earth.render(this.sg.everything.earth.mappedTexture);
-        this.sg.everything.moon.render(this.sg.everything.moon.mappedTexture);
+        this.ce.everything.sun.render(this.ce.everything.sun.mappedTexture);
+        this.ce.everything.earth.render(this.ce.everything.earth.mappedTexture);
+        this.ce.everything.moon.render(this.ce.everything.moon.mappedTexture);
         starPositions.clear();
 
-        fontRenderer.drawString("Yaw: " + yaw, leftSide, 400,-15, 16777215, 50);
-        fontRenderer.drawString("Pitch: " + pitch, leftSide, 370,-15, 16777215, 50);
-        fontRenderer.drawString("Orbital Velocity: " + this.selectedObject.orbitalVelocity, leftSide, 340,-15, 16777215, 50);
+        fontRenderer.drawString("Yaw: " + yaw, leftSide, 400,-15, 16777215, 50, 255);
+        fontRenderer.drawString("Pitch: " + pitch, leftSide, 370,-15, 16777215, 50, 255);
+        fontRenderer.drawString("Orbital Velocity: " + this.selectedObject.orbitalVelocity, leftSide, 340,-15, 16777215, 50, 255);
 
     }
 
@@ -175,12 +175,12 @@ public final class GuiUniverseMap extends Gui {
     }
 
     public void switchObject(){
-        if(this.selectedObject.equals(SpaceGame.instance.everything.earth)){
-            this.selectedObject = SpaceGame.instance.everything.moon;
-        } else if(this.selectedObject.equals(SpaceGame.instance.everything.moon)){
-            this.selectedObject = SpaceGame.instance.everything.sun;
-        } else if(this.selectedObject.equals(SpaceGame.instance.everything.sun)){
-            this.selectedObject = SpaceGame.instance.everything.earth;
+        if(this.selectedObject.equals(CosmicEvolution.instance.everything.earth)){
+            this.selectedObject = CosmicEvolution.instance.everything.moon;
+        } else if(this.selectedObject.equals(CosmicEvolution.instance.everything.moon)){
+            this.selectedObject = CosmicEvolution.instance.everything.sun;
+        } else if(this.selectedObject.equals(CosmicEvolution.instance.everything.sun)){
+            this.selectedObject = CosmicEvolution.instance.everything.earth;
         }
 
     }

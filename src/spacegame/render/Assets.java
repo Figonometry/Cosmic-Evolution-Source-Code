@@ -1,6 +1,6 @@
 package spacegame.render;
 
-import spacegame.core.SpaceGame;
+import spacegame.core.CosmicEvolution;
 
 public abstract class Assets {
     public static int fontTextureLoader;
@@ -9,23 +9,23 @@ public abstract class Assets {
     public static int itemTextureArray;
 
     public static void enableBlockTextureArray(){
-        blockTextureArray = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/blocks/", RenderEngine.TEXTURE_TYPE_2D_ARRAY, 33); //One higher than the expected amount
+        blockTextureArray = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/blocks/", RenderEngine.TEXTURE_TYPE_2D_ARRAY, 33); //One higher than the expected amount
     }
 
     public static void enableItemTextureArray(){
-        itemTextureArray = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/item/", RenderEngine.TEXTURE_TYPE_2D_ARRAY, 17); //This is one higher than the actual number of item textures
+        itemTextureArray = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/item/", RenderEngine.TEXTURE_TYPE_2D_ARRAY, 17); //This is one higher than the actual number of item textures
     }
 
     public static void disableBlockTextureArray(){
-        SpaceGame.instance.renderEngine.deleteTexture(blockTextureArray);
+        CosmicEvolution.instance.renderEngine.deleteTexture(blockTextureArray);
     }
 
     public static void disableItemTextureArray(){
-        SpaceGame.instance.renderEngine.deleteTexture(itemTextureArray);
+        CosmicEvolution.instance.renderEngine.deleteTexture(itemTextureArray);
     }
 
     public static void enableFontTextureAtlas (){
-        fontTextureLoader = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/atlas/font.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        fontTextureAtlas = SpaceGame.instance.renderEngine.createTextureAtlas(512, 512, 32, 32, 256, 0);
+        fontTextureLoader = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/atlas/font.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        fontTextureAtlas = CosmicEvolution.instance.renderEngine.createTextureAtlas(512, 512, 32, 32, 256, 0);
     }
 }

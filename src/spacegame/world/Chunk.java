@@ -5,8 +5,8 @@ import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
 import spacegame.block.ITickable;
 import spacegame.block.ITimeUpdate;
+import spacegame.core.CosmicEvolution;
 import spacegame.core.MathUtil;
-import spacegame.core.SpaceGame;
 import spacegame.entity.Entity;
 import spacegame.entity.EntityBlock;
 import spacegame.entity.EntityItem;
@@ -1068,11 +1068,11 @@ public final class Chunk implements Comparable<Chunk> {
         for(int i = 0; i < this.entities.size(); i++){
             entity = this.entities.get(i);
             if(entity instanceof EntityParticle){
-                if(MathUtil.distance3D(entity.x, entity.y, entity.z, SpaceGame.instance.save.thePlayer.x, SpaceGame.instance.save.thePlayer.y, SpaceGame.instance.save.thePlayer.z) <= 32){
+                if(MathUtil.distance3D(entity.x, entity.y, entity.z, CosmicEvolution.instance.save.thePlayer.x, CosmicEvolution.instance.save.thePlayer.y, CosmicEvolution.instance.save.thePlayer.z) <= 32){
                     entity.render();
                 }
             } else {
-                if(MathUtil.distance3D(entity.x, entity.y, entity.z, SpaceGame.instance.save.thePlayer.x, SpaceGame.instance.save.thePlayer.y, SpaceGame.instance.save.thePlayer.z) <= 128){
+                if(MathUtil.distance3D(entity.x, entity.y, entity.z, CosmicEvolution.instance.save.thePlayer.x, CosmicEvolution.instance.save.thePlayer.y, CosmicEvolution.instance.save.thePlayer.z) <= 128){
                     entity.render();
                 }
             }
@@ -1097,7 +1097,7 @@ public final class Chunk implements Comparable<Chunk> {
     }
 
     public void tick() {
-        if (SpaceGame.instance.save.time % 60 == 0) {
+        if (CosmicEvolution.instance.save.time % 60 == 0) {
             if (this.blocks != null && this.tickableBlockIndex != null) {
                     for (int i = 0; i < this.tickableBlockIndex.length; i++) {
                         if (Block.list[this.blocks[this.tickableBlockIndex[i]]] instanceof ITickable) {
@@ -1109,7 +1109,7 @@ public final class Chunk implements Comparable<Chunk> {
             TimeUpdateEvent event;
             for(int i = 0; i < this.updateEvents.size(); i++){
                 event = this.updateEvents.get(i);
-                if(SpaceGame.instance.save.time >= event.updateTime) {
+                if(CosmicEvolution.instance.save.time >= event.updateTime) {
                     int x = this.getBlockXFromIndex(event.index);
                     int y = this.getBlockYFromIndex(event.index);
                     int z = this.getBlockZFromIndex(event.index);
@@ -1197,6 +1197,16 @@ public final class Chunk implements Comparable<Chunk> {
 
     public void addTimeUpdateEvent(int x, int y, int z, long updateTime){
         this.updateEvents.add(new TimeUpdateEvent((short) getBlockIndexFromCoordinates(x,y,z), updateTime));
+    }
+
+    public TimeUpdateEvent getTimeUpdateEvent(int x, int y, int z){
+        int index = getBlockIndexFromCoordinates(x,y,z);
+        for(int i = 0; i < this.updateEvents.size(); i++){
+            if(this.updateEvents.get(i).index == index){
+                return this.updateEvents.get(i);
+            }
+        }
+        return null;
     }
 
     public void addTimeUpdateEvent(short index, long updateTime){

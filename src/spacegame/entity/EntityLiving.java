@@ -1,10 +1,9 @@
 package spacegame.entity;
 
 import spacegame.block.Block;
+import spacegame.core.CosmicEvolution;
 import spacegame.core.MathUtil;
 import spacegame.core.Sound;
-import spacegame.core.SoundPlayer;
-import spacegame.core.SpaceGame;
 import spacegame.entity.ai.AIPassive;
 import spacegame.gui.GuiWorldLoadingScreen;
 import spacegame.world.AxisAlignedBB;
@@ -33,7 +32,7 @@ public abstract class EntityLiving extends Entity {
 
     public EntityLiving(int maxTimeAlive){
         if(!(this instanceof EntityPlayer)) {
-            this.despawnTime = SpaceGame.instance.save.time + SpaceGame.globalRand.nextLong(maxTimeAlive);
+            this.despawnTime = CosmicEvolution.instance.save.time + CosmicEvolution.globalRand.nextLong(maxTimeAlive);
         }
     }
 
@@ -52,25 +51,25 @@ public abstract class EntityLiving extends Entity {
         this.alerted = true;
         this.alertTimer = new Random().nextInt(300, 600);
         AIPassive.chooseNewTargetAndSetAngle(this);
-        SpaceGame.instance.soundPlayer.playSound(this.x, this.y, this.z, new Sound(this.getHurtSound(), false), new Random().nextFloat(0.9F, 1));
+        CosmicEvolution.instance.soundPlayer.playSound(this.x, this.y, this.z, new Sound(this.getHurtSound(), false), new Random().nextFloat(0.9F, 1));
     }
 
     public void playAmbientSound(){
-        if(SpaceGame.globalRand.nextInt(1200) == 0){
-            SpaceGame.instance.soundPlayer.playSound(this.x, this.y, this.z, new Sound(this.getAmbientSound(), false), new Random().nextFloat(0.9F, 1));
+        if(CosmicEvolution.globalRand.nextInt(1200) == 0){
+            CosmicEvolution.instance.soundPlayer.playSound(this.x, this.y, this.z, new Sound(this.getAmbientSound(), false), new Random().nextFloat(0.9F, 1));
         }
     }
 
 
     protected void performStepSound(){
-        if((SpaceGame.instance.currentGui instanceof GuiWorldLoadingScreen))return;
+        if((CosmicEvolution.instance.currentGui instanceof GuiWorldLoadingScreen))return;
             int x = MathUtil.floorDouble(this.x);
             int z = MathUtil.floorDouble(this.z);
             int prevX = MathUtil.floorDouble(this.prevX);
             int prevZ = MathUtil.floorDouble(this.prevZ);
             if ((x != prevX || z != prevZ) && this.stepTimer <= 0) {
                 int lowerY = MathUtil.floorDouble(this.y - (this.height/2) - 0.1);
-                SpaceGame.instance.soundPlayer.playSound(this.x, lowerY, this.z, new Sound(Block.list[SpaceGame.instance.save.activeWorld.getBlockID(x, lowerY, z)].getStepSound(x, lowerY, z), false), new Random().nextFloat(0.6F, 1));
+                CosmicEvolution.instance.soundPlayer.playSound(this.x, lowerY, this.z, new Sound(Block.list[CosmicEvolution.instance.save.activeWorld.getBlockID(x, lowerY, z)].getStepSound(x, lowerY, z), false), new Random().nextFloat(0.6F, 1));
                 this.stepTimer = 30;
             } else {
                 this.stepTimer--;
@@ -78,11 +77,11 @@ public abstract class EntityLiving extends Entity {
     }
 
     protected void handleFallDamage() {
-        this.blockUnderEntity = SpaceGame.instance.save.activeWorld.getBlockID(MathUtil.floorDouble(this.x), MathUtil.floorDouble(this.y - (this.height / 2) - 0.1), MathUtil.floorDouble(this.z));
+        this.blockUnderEntity = CosmicEvolution.instance.save.activeWorld.getBlockID(MathUtil.floorDouble(this.x), MathUtil.floorDouble(this.y - (this.height / 2) - 0.1), MathUtil.floorDouble(this.z));
         if (Block.list[this.blockUnderEntity].isSolid && !this.inWater) {
             if (this.lastYOnGround - this.y > 3) {
                 this.health -= this.lastYOnGround - this.y;
-                SpaceGame.instance.soundPlayer.playSound(this.x, this.y, this.z, new Sound(Sound.fallDamage, false), new Random().nextFloat(0.4F, 0.7F));
+                CosmicEvolution.instance.soundPlayer.playSound(this.x, this.y, this.z, new Sound(Sound.fallDamage, false), new Random().nextFloat(0.4F, 0.7F));
             }
             this.lastYOnGround = this.y;
         }

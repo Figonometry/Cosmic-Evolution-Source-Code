@@ -38,8 +38,8 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.Random;
 
-public final class SpaceGame implements Runnable {
-    public static SpaceGame instance;
+public final class CosmicEvolution implements Runnable {
+    public static CosmicEvolution instance;
     public final File launcherDirectory;
     public static final boolean DEBUG_MODE = false;
     public static final Random globalRand = new Random();
@@ -63,7 +63,7 @@ public final class SpaceGame implements Runnable {
 
     public static void main(String[] args) {
         if(args.length != 0) {
-            startMainThread(new Thread(new SpaceGame(args[0])));
+            startMainThread(new Thread(new CosmicEvolution(args[0])));
         } else {
             System.out.println("Incorrect number of arguments");
         }
@@ -75,7 +75,7 @@ public final class SpaceGame implements Runnable {
         mainThread.start();
     }
 
-    private SpaceGame(String launcherDirectory) {
+    private CosmicEvolution(String launcherDirectory) {
         if(instance != null){
             throw new RuntimeException("Main Class already initialized");
         }
@@ -100,7 +100,7 @@ public final class SpaceGame implements Runnable {
     }
 
     private void startGame() {
-        this.title = "Cosmic Evolution Alpha v0.30";
+        this.title = "Cosmic Evolution Alpha v0.31";
         GameSettings.loadOptionsFromFile(this.launcherDirectory);
         this.clearLogFiles(new File(this.launcherDirectory + "/crashReports"));
         this.initLWJGL();
@@ -277,6 +277,7 @@ public final class SpaceGame implements Runnable {
     private void tick() {
         if(this.save != null) {
             this.save.tick();
+            GuiInGame.fadeMessageText();
             if(this.save.time % 18000 == 0 && this.currentGui instanceof GuiInGame){
                 this.save.saveDataToFileWithoutChunkUnload();
                 this.save.thePlayer.savePlayerToFile();
@@ -296,8 +297,8 @@ public final class SpaceGame implements Runnable {
                             this.currentlySelectedMoveableObject.timePickedUp = this.save.time;
                             this.currentlySelectedMoveableObject.pickedUp = true;
                         }
-                        float x = (float) (MouseListener.instance.xPos - SpaceGame.width / 2D);
-                        float y = (float) ((MouseListener.instance.yPos - SpaceGame.height / 2D) * -1);
+                        float x = (float) (MouseListener.instance.xPos - CosmicEvolution.width / 2D);
+                        float y = (float) ((MouseListener.instance.yPos - CosmicEvolution.height / 2D) * -1);
                         this.currentlySelectedMoveableObject.x = x;
                         this.currentlySelectedMoveableObject.y = y;
                     } else {
@@ -343,22 +344,22 @@ public final class SpaceGame implements Runnable {
       //        KeyListener.setKeyReleased(GLFW.GLFW_KEY_G);
       //    }
 //
-   //      if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_MINUS)){
-   //          this.save.time -= 216000;
-   //          KeyListener.setKeyReleased(GLFW.GLFW_KEY_MINUS);
-   //      }
-   //      if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_EQUAL)){
-   //          this.save.time += 216000;
-   //          KeyListener.setKeyReleased(GLFW.GLFW_KEY_EQUAL);
-   //      }
-   //      if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_COMMA)){
-   //          this.save.time -= 1000;
-   //          KeyListener.setKeyReleased(GLFW.GLFW_KEY_COMMA);
-   //      }
-   //      if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_PERIOD)){
-   //          this.save.time += 1000;
-   //          KeyListener.setKeyReleased(GLFW.GLFW_KEY_PERIOD);
-   //      }
+    //   if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_MINUS)){
+    //       this.save.time -= 216000;
+    //       KeyListener.setKeyReleased(GLFW.GLFW_KEY_MINUS);
+    //   }
+    //   if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_EQUAL)){
+    //       this.save.time += 216000;
+    //       KeyListener.setKeyReleased(GLFW.GLFW_KEY_EQUAL);
+    //   }
+    //   if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_COMMA)){
+    //       this.save.time -= 1000;
+    //       KeyListener.setKeyReleased(GLFW.GLFW_KEY_COMMA);
+    //   }
+    //   if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_PERIOD)){
+    //       this.save.time += 1000;
+    //       KeyListener.setKeyReleased(GLFW.GLFW_KEY_PERIOD);
+    //   }
 
 
         if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_1) && this.currentGui instanceof GuiInGame){
@@ -480,7 +481,7 @@ public final class SpaceGame implements Runnable {
             if(ItemStack.itemStackOnMouse.item.ID == Item.block.ID) {
                 if (ItemStack.itemStackOnMouse.metadata != Block.air.ID) {
                     EntityBlock droppedBlock = new EntityBlock(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, ItemStack.itemStackOnMouse.metadata, ItemStack.itemStackOnMouse.count);
-                    double[] vector = SpaceGame.camera.rayCast(1);
+                    double[] vector = CosmicEvolution.camera.rayCast(1);
                     Vector3d difVector = new Vector3d(vector[0] - this.save.thePlayer.x, (vector[1] - this.save.thePlayer.y) + this.save.thePlayer.height/2, vector[2] - this.save.thePlayer.z);
                     difVector.normalize();
                     droppedBlock.setMovementVector(new Vector3f((float) difVector.x, (float) difVector.y, (float) difVector.z));
@@ -488,7 +489,7 @@ public final class SpaceGame implements Runnable {
                 }
             } else if(ItemStack.itemStackOnMouse.item.ID != Item.NULL_ITEM_REFERENCE) {
                 EntityItem droppedItem = new EntityItem(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, ItemStack.itemStackOnMouse.item.ID, Item.NULL_ITEM_METADATA, ItemStack.itemStackOnMouse.count, ItemStack.itemStackOnMouse.durability);
-                double[] vector = SpaceGame.camera.rayCast(1);
+                double[] vector = CosmicEvolution.camera.rayCast(1);
                 Vector3d difVector = new Vector3d(vector[0] - this.save.thePlayer.x, (vector[1] - this.save.thePlayer.y) + this.save.thePlayer.height/2, vector[2] - this.save.thePlayer.z);
                 difVector.normalize();
                 droppedItem.setMovementVector(new Vector3f((float) difVector.x, (float) difVector.y, (float) difVector.z));
@@ -619,9 +620,9 @@ public final class SpaceGame implements Runnable {
         if(button != null){
             if(MouseListener.leftClickReleased) {
                 if(this.save != null) {
-                    SpaceGame.instance.soundPlayer.playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound("src/spacegame/assets/sound/buttonPress.ogg", false), 1);
+                    CosmicEvolution.instance.soundPlayer.playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound("src/spacegame/assets/sound/buttonPress.ogg", false), 1);
                 } else {
-                    SpaceGame.instance.soundPlayer.playSound(SpaceGame.camera.position.x, SpaceGame.camera.position.y, SpaceGame.camera.position.z, new Sound("src/spacegame/assets/sound/buttonPress.ogg", false), 1);
+                    CosmicEvolution.instance.soundPlayer.playSound(CosmicEvolution.camera.position.x, CosmicEvolution.camera.position.y, CosmicEvolution.camera.position.z, new Sound("src/spacegame/assets/sound/buttonPress.ogg", false), 1);
                 }
                     button.onLeftClick();
             }
@@ -647,10 +648,10 @@ public final class SpaceGame implements Runnable {
                     material.deactivate();
                     switch (material.type){
                         case "stone":
-                            SpaceGame.instance.soundPlayer.playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound(Sound.leftClickStoneCraftingMaterial, false), globalRand.nextFloat(0.5f, 1));
+                            CosmicEvolution.instance.soundPlayer.playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound(Sound.leftClickStoneCraftingMaterial, false), globalRand.nextFloat(0.5f, 1));
                             break;
                         case "clay":
-                            SpaceGame.instance.soundPlayer.playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound(Sound.clay, false), globalRand.nextFloat(0.5f, 1));
+                            CosmicEvolution.instance.soundPlayer.playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound(Sound.clay, false), globalRand.nextFloat(0.5f, 1));
                             break;
                     }
                 }
@@ -659,7 +660,7 @@ public final class SpaceGame implements Runnable {
 
         if(this.currentGui instanceof GuiCraftingStoneTools){
             RecipeSelector recipeSelector = ((GuiCraftingStoneTools)this.currentGui).getSelectedRecipeSelector();
-            if(recipeSelector != null && recipeSelector.meetsCriteriaToMakeRecipe(SpaceGame.instance.save.thePlayer)){
+            if(recipeSelector != null && recipeSelector.meetsCriteriaToMakeRecipe(CosmicEvolution.instance.save.thePlayer)){
                 ((GuiCraftingStoneTools)this.currentGui).selectedItemID = recipeSelector.itemID;
                 ((GuiCraftingStoneTools)this.currentGui).selectableRecipes = null;
                 ((GuiCraftingStoneTools)this.currentGui).activeRecipe = recipeSelector;
@@ -669,7 +670,7 @@ public final class SpaceGame implements Runnable {
 
         if(this.currentGui instanceof GuiCraftingPottery){
             RecipeSelector recipeSelector = ((GuiCraftingPottery)this.currentGui).getSelectedRecipeSelector();
-            if(recipeSelector != null && recipeSelector.meetsCriteriaToMakeRecipe(SpaceGame.instance.save.thePlayer)){
+            if(recipeSelector != null && recipeSelector.meetsCriteriaToMakeRecipe(CosmicEvolution.instance.save.thePlayer)){
                 ((GuiCraftingPottery)this.currentGui).selectedItemID = recipeSelector.itemID;
                 ((GuiCraftingPottery)this.currentGui).selectableRecipes = null;
                 ((GuiCraftingPottery)this.currentGui).activeRecipe = recipeSelector;
@@ -747,10 +748,10 @@ public final class SpaceGame implements Runnable {
                     material.active = true;
                     switch (material.type){
                         case "stone":
-                            SpaceGame.instance.soundPlayer.playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound(Sound.rightClickStoneCraftingMaterial, false), globalRand.nextFloat(0.5f, 1));
+                            CosmicEvolution.instance.soundPlayer.playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound(Sound.rightClickStoneCraftingMaterial, false), globalRand.nextFloat(0.5f, 1));
                             break;
                         case "clay":
-                            SpaceGame.instance.soundPlayer.playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound(Sound.clay, false), globalRand.nextFloat(0.5f, 1));
+                            CosmicEvolution.instance.soundPlayer.playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound(Sound.clay, false), globalRand.nextFloat(0.5f, 1));
                             break;
                     }
                 }
@@ -774,12 +775,13 @@ public final class SpaceGame implements Runnable {
                 this.save.activeWorld.chunkController.update();
             }
             if(this.currentGui instanceof GuiWorldLoadingScreen){
-                if(Thread.activeCount() < 5){
+                if(Thread.activeCount() < 5 && World.worldLoadPhase == 2 && this.save.activeWorld.chunkController.threadQueue.size() == 0){
                     GLFW.glfwSetInputMode(this.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
                     if(Assets.blockTextureArray == 0 || Assets.itemTextureArray == 0) {
                         Assets.enableBlockTextureArray();
                         Assets.enableItemTextureArray();
                     }
+                    World.worldLoadPhase = 3;
                     this.save.activeWorld.chunkController.addChunkToRebuildQueue(this.save.activeWorld.chunkController.findChunkFromChunkCoordinates(this.save.activeWorld.chunkController.playerChunkX, this.save.activeWorld.chunkController.playerChunkY, this.save.activeWorld.chunkController.playerChunkZ));
                     this.save.activeWorld.paused = false;
                     this.setNewGui(new GuiInGame(this));
@@ -839,8 +841,8 @@ public final class SpaceGame implements Runnable {
         this.currentGui.drawGui();
         if(this.currentGui instanceof GuiInventory) {
             if (ItemStack.itemStackOnMouse != null) {
-                ItemStack.itemStackOnMouse.x = (float) (MouseListener.instance.xPos - SpaceGame.width/2D);
-                ItemStack.itemStackOnMouse.y = (float) ((MouseListener.instance.yPos - SpaceGame.height/2D) * -1);
+                ItemStack.itemStackOnMouse.x = (float) (MouseListener.instance.xPos - CosmicEvolution.width/2D);
+                ItemStack.itemStackOnMouse.y = (float) ((MouseListener.instance.yPos - CosmicEvolution.height/2D) * -1);
                 ItemStack.itemStackOnMouse.renderItemStack(false);
                 ((GuiInventory) this.currentGui).renderHoveredItemStackName(ItemStack.itemStackOnMouse);
             }

@@ -1,9 +1,8 @@
 package spacegame.world;
 
 import spacegame.block.Block;
-import spacegame.core.SpaceGame;
+import spacegame.core.CosmicEvolution;
 import spacegame.entity.Entity;
-import spacegame.entity.EntityItem;
 import spacegame.entity.EntityLiving;
 
 public final class AxisAlignedBB {
@@ -40,7 +39,7 @@ public final class AxisAlignedBB {
             this.air = true;
         } else {
             if(blockID == Block.logPile.ID){
-                int logCount = SpaceGame.instance.save.activeWorld.getChestLocation(x,y,z).inventory.itemStacks[0].count / 2;
+                int logCount = CosmicEvolution.instance.save.activeWorld.getChestLocation(x,y,z).inventory.itemStacks[0].count / 2;
                 if(logCount <= 4){
                     this.minX = x + Block.quarterBlock.minX;
                     this.maxX = x + Block.quarterBlock.maxX;
@@ -71,7 +70,7 @@ public final class AxisAlignedBB {
                     this.maxZ = z + Block.standardBlock.maxZ;
                 }
             } else if(blockID == Block.brickPile.ID){
-                int brickCount = SpaceGame.instance.save.activeWorld.getChestLocation(x,y,z).inventory.itemStacks[0].count;
+                int brickCount = CosmicEvolution.instance.save.activeWorld.getChestLocation(x,y,z).inventory.itemStacks[0].count;
                 if(brickCount <= 12){
                     this.minX = x + Block.quarterBlock.minX;
                     this.maxX = x + Block.quarterBlock.maxX;

@@ -1,10 +1,10 @@
 package spacegame.gui;
 
-import spacegame.core.SpaceGame;
+import spacegame.core.CosmicEvolution;
 
 public abstract class GuiCrafting extends Gui {
-    public GuiCrafting(SpaceGame spaceGame) {
-        super(spaceGame);
+    public GuiCrafting(CosmicEvolution cosmicEvolution) {
+        super(cosmicEvolution);
     }
 
     public abstract CraftingMaterial getHoveredCraftingMaterial();

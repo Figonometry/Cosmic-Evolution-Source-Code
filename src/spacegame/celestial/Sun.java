@@ -1,6 +1,6 @@
 package spacegame.celestial;
 
-import spacegame.core.SpaceGame;
+import spacegame.core.CosmicEvolution;
 import spacegame.render.RenderEngine;
 import spacegame.render.ShadowMap;
 
@@ -14,7 +14,7 @@ public final class Sun extends CelestialObject{
     }
 
     public static void initSunFlare(){
-        sunFlare = SpaceGame.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiUniverse/sun/sunHalo.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        sunFlare = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiUniverse/sun/sunHalo.png", RenderEngine.TEXTURE_TYPE_2D, 0);
     }
 
     public void createShadowMap(){

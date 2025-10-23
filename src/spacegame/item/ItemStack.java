@@ -4,8 +4,8 @@ package spacegame.item;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
+import spacegame.core.CosmicEvolution;
 import spacegame.core.MouseListener;
-import spacegame.core.SpaceGame;
 import spacegame.gui.FontRenderer;
 import spacegame.gui.GuiInGame;
 import spacegame.gui.GuiInventory;
@@ -74,7 +74,7 @@ public final class ItemStack {
                 tessellator.addVertex2DTexture(7500402, this.x - (float) this.width / 2, this.y + (float) this.height / 2, z - 5, 2);
                 tessellator.addVertex2DTexture(7500402, this.x + (float) this.width / 2, this.y - (float) this.height / 2, z - 5, 0);
                 tessellator.addElements();
-                tessellator.drawTexture2D(GuiInventoryPlayer.fillableColor, Shader.screen2DTexture, SpaceGame.camera);
+                tessellator.drawTexture2D(GuiInventoryPlayer.fillableColor, Shader.screen2DTexture, CosmicEvolution.camera);
             }
             GL46.glEnable(GL46.GL_BLEND);
             GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
@@ -83,7 +83,7 @@ public final class ItemStack {
             tessellator.addVertex2DTexture(0, this.x - (float) this.width / 2, this.y + (float) this.height / 2, z, 2);
             tessellator.addVertex2DTexture(0, this.x + (float) this.width / 2, this.y - (float) this.height / 2, z, 0);
             tessellator.addElements();
-            tessellator.drawTexture2D(GuiInventory.transparentBackground, Shader.screen2DTexture, SpaceGame.camera);
+            tessellator.drawTexture2D(GuiInventory.transparentBackground, Shader.screen2DTexture, CosmicEvolution.camera);
             GL46.glDisable(GL46.GL_BLEND);
             tessellator.toggleOrtho();
         }
@@ -125,7 +125,7 @@ public final class ItemStack {
                         blue -= 10;
                     }
                 }
-                tessellator.drawVertexArray(Assets.blockTextureArray, Shader.screenTextureArray, SpaceGame.camera);
+                tessellator.drawVertexArray(Assets.blockTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
             } else {
                 int z = -70;
                 GL46.glEnable(GL46.GL_BLEND);
@@ -136,13 +136,13 @@ public final class ItemStack {
                 tessellator.addVertexTextureArray(16777215, this.x + (float) this.width / 2, this.y - (float) this.height / 2, z, 0, this.item.getTextureID(this.item.ID, (byte)1, RenderBlocks.WEST_FACE), RenderBlocks.WEST_FACE);
                 tessellator.addElements();
                 Shader.screenTextureArray.uploadInt("textureArray", 0);
-                tessellator.drawVertexArray(Assets.itemTextureArray, Shader.screenTextureArray, SpaceGame.camera);
+                tessellator.drawVertexArray(Assets.itemTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
                 GL46.glDisable(GL46.GL_BLEND);
             }
             tessellator.toggleOrtho();
             if(this.count > 1) {
                 FontRenderer fontRenderer = FontRenderer.instance;
-                fontRenderer.drawString(Byte.toString(this.count), (int) this.x - 48, (int) (this.y - 48),-15, 16777215, 50);
+                fontRenderer.drawString(Byte.toString(this.count), (int) this.x - 48, (int) (this.y - 48),-15, 16777215, 50, 255);
             }
 
             this.renderDurabilityBar();
@@ -189,7 +189,7 @@ public final class ItemStack {
                         blue -= 10;
                     }
                 }
-                tessellator.drawVertexArray(Assets.blockTextureArray, Shader.screenTextureArray, SpaceGame.camera);
+                tessellator.drawVertexArray(Assets.blockTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
             } else {
                 int z = -70;
                 GL46.glEnable(GL46.GL_BLEND);
@@ -200,13 +200,13 @@ public final class ItemStack {
                 tessellator.addVertexTextureArray(16777215, this.x + (float) this.width / 2 + 5, this.y - (float) this.height / 2 - 2, z, 0, this.item.getTextureID(this.item.ID, (byte)1, RenderBlocks.WEST_FACE), RenderBlocks.WEST_FACE);
                 tessellator.addElements();
                 Shader.screenTextureArray.uploadInt("textureArray", 0);
-                tessellator.drawVertexArray(Assets.itemTextureArray, Shader.screenTextureArray, SpaceGame.camera);
+                tessellator.drawVertexArray(Assets.itemTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
                 GL46.glDisable(GL46.GL_BLEND);
             }
             tessellator.toggleOrtho();
             if(this.count > 1) {
                 FontRenderer fontRenderer = FontRenderer.instance;
-                fontRenderer.drawString(Byte.toString(this.count), (int) this.x - 48, (int) (this.y - 48),-15, 16777215, 50);
+                fontRenderer.drawString(Byte.toString(this.count), (int) this.x - 48, (int) (this.y - 48),-15, 16777215, 50, 255);
             }
             this.renderDurabilityBar();
         }
@@ -241,8 +241,8 @@ public final class ItemStack {
     }
 
     public boolean isMouseHoveredOver(){
-        double x = MouseListener.instance.xPos - SpaceGame.width/2D;
-        double y = (MouseListener.instance.yPos - SpaceGame.height/2D) * -1;
+        double x = MouseListener.instance.xPos - CosmicEvolution.width/2D;
+        double y = (MouseListener.instance.yPos - CosmicEvolution.height/2D) * -1;
         return x > this.x - (double) this.width /2 && x < this.x + (double) this.width /2 && y > this.y - (double) this.height /2 && y < this.y + (double) this.height /2;
     }
 
@@ -251,9 +251,9 @@ public final class ItemStack {
         if(ratio > 1 || ratio < 0){return;}
         if(ratio == 1 || this.durability <= 0){return;}
         int texID = 0;
-        if(SpaceGame.instance.currentGui instanceof GuiInGame){
+        if(CosmicEvolution.instance.currentGui instanceof GuiInGame){
             texID = GuiInGame.fillableColor;
-        } else if(SpaceGame.instance.currentGui instanceof GuiInventory){
+        } else if(CosmicEvolution.instance.currentGui instanceof GuiInventory){
             texID = GuiInventory.fillableColor;
         }
         float x = this.x - 32;
@@ -285,7 +285,7 @@ public final class ItemStack {
         tessellator.addVertex2DTexture(color, x, y + 5, z, 2);
         tessellator.addVertex2DTexture(color, x + (64 * ratio), y, z, 0);
         tessellator.addElements();
-        tessellator.drawTexture2D(texID, Shader.screen2DTexture, SpaceGame.camera);
+        tessellator.drawTexture2D(texID, Shader.screen2DTexture, CosmicEvolution.camera);
         tessellator.toggleOrtho();
     }
 

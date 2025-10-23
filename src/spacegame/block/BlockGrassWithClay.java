@@ -1,6 +1,6 @@
 package spacegame.block;
 
-import spacegame.core.SpaceGame;
+import spacegame.core.CosmicEvolution;
 import spacegame.world.World;
 
 public final class BlockGrassWithClay extends Block implements ITickable {
@@ -23,14 +23,14 @@ public final class BlockGrassWithClay extends Block implements ITickable {
 
     @Override
     public void tick(int x, int y, int z, World world) {
-        if (SpaceGame.globalRand.nextInt(166) == 0) {
+        if (CosmicEvolution.globalRand.nextInt(166) == 0) {
             if (world.getBlockLightValue(x, y + 1, z) <= 4 && this.canBlockDecayGrass(x, y + 1, z, world)) {
                 if(world.chunkFullySurrounded(x >> 5, y >> 5, z >> 5)) {
                     world.setBlockWithNotify(x, y, z, Block.clay.ID);
                 }
             }
         }
-        if(SpaceGame.globalRand.nextInt(100000) == 0){
+        if(CosmicEvolution.globalRand.nextInt(100000) == 0){
             if((world.getBlockLightValue(x, y + 1, z) >= 9 || world.getBlockSkyLightValue(x, y + 1, z) >= 9) && world.getBlockID(x,y + 1, z) == Block.air.ID) {
                 if (world.chunkFullySurrounded(x >> 5, (y + 1) >> 5, z >> 5)) {
                     world.setBlockWithNotify(x, y + 1, z, Block.tallGrass.ID);

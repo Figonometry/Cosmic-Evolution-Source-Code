@@ -1,8 +1,26 @@
 package spacegame.block;
 
+import spacegame.core.MouseListener;
+import spacegame.entity.EntityPlayer;
+import spacegame.item.Item;
+import spacegame.item.ItemAxe;
+import spacegame.world.World;
+
 public final class BlockLog extends Block {
     public BlockLog(short ID, int textureID, String filepath) {
         super(ID, textureID, filepath);
+    }
+
+    @Override
+    public void handleSpecialRightClickFunctions(int x, int y, int z, World world, EntityPlayer player){
+        if(!MouseListener.rightClickReleased)return;
+        short playerHeldItem = player.getHeldItem();
+        if(playerHeldItem != Item.NULL_ITEM_REFERENCE){
+            if(Item.list[playerHeldItem] instanceof ItemAxe){
+                Item.list[playerHeldItem].onRightClick(x, y, z, world, player);
+                MouseListener.rightClickReleased = false;
+            }
+        }
     }
 
     @Override
