@@ -11,11 +11,11 @@ public class Item {
     public static final Item[] list = new Item[Short.MAX_VALUE];
     public static final Item block = new ItemBlock((short)0, -1, "src/spacegame/assets/itemFiles/block.txt");
     public static final Item torch = new Item((short)1, 1, "src/spacegame/assets/itemFiles/torch.txt");
-    public static final Item stone = new Item((short)2, 2, "src/spacegame/assets/itemFiles/stone.txt");
+    public static final Item stone = new Item((short)2, 2, "src/spacegame/assets/itemFiles/stone.txt"); //Remove
     public static final Item stoneFragments = new ItemStoneFragments((short)3, 3, "src/spacegame/assets/itemFiles/stoneFragments.txt");
     public static final Item stoneHandAxe = new ItemAxe((short)4, 4, "src/spacegame/assets/itemFiles/stoneHandAxe.txt", Material.RAW_STONE);
     public static final Item berry = new ItemFood((short)5, 5, "src/spacegame/assets/itemFiles/berry.txt", 5f);
-    public static final Item rawStick = new Item((short)6, 6, "src/spacegame/assets/itemFiles/rawStick.txt");
+    public static final Item rawStick = new Item((short)6, 6, "src/spacegame/assets/itemFiles/rawStick.txt"); //Remove
     public static final Item unlitTorch = new Item((short)7, 7, "src/spacegame/assets/itemFiles/unlitTorch.txt");
     public static final Item fireWood = new Item((short)8, 8, "src/spacegame/assets/itemFiles/fireWood.txt");
     public static final Item stoneHandKnifeBlade = new ItemKnife((short)9, 9, "src/spacegame/assets/itemFiles/stoneHandKnifeBlade.txt", Material.RAW_STONE);
@@ -23,14 +23,17 @@ public class Item {
     public static final Item rawVenison = new ItemFood((short)11, 11, "src/spacegame/assets/itemFiles/rawVenison.txt", 5f);
     public static final Item straw = new Item((short)12, 12, "src/spacegame/assets/itemFiles/straw.txt");
     public static final Item strawBasket = new Item((short)13, 13, "src/spacegame/assets/itemFiles/strawBasket.txt");
-    public static final Item clay = new Item((short)14, 14, "src/spacegame/assets/itemFiles/clay.txt");
+    public static final Item clay = new Item((short)14, 14, "src/spacegame/assets/itemFiles/clay.txt"); //Remove
     public static final Item rawClayAdobeBrick = new Item((short)15, 15, "src/spacegame/assets/itemFiles/rawClayAdobeBrick.txt");
     public static final Item firedRedClayAdobeBrick = new Item((short)16, 16, "src/spacegame/assets/itemFiles/firedRedClayAdobeBrick.txt");
+    public static final Item mud = new Item((short)17, 17, "src/spacegame/assets/itemFiles/mud.txt");
+    public static final Item reeds = new Item((short)18, 18, "src/spacegame/assets/itemFiles/reeds.txt");
     public final short ID;
     public final int textureID;
     public float hardness = 0;
+    public boolean canPlaceAsItemBlock;
     public boolean renderItemWithBlockModel;
-    public byte stackLimit = 100;
+    public byte stackLimit = 64;
     public float attackDamage;
     public boolean canPlaceOnGround = false;
     public String itemName;
@@ -109,6 +112,10 @@ public class Item {
                 this.storageLevel = Integer.parseInt(properties[1]);
             }
 
+            if(properties[0].equals("canPlaceAsItemBlock")){
+                this.canPlaceAsItemBlock = Boolean.parseBoolean(properties[1]);
+            }
+
             if (properties[0].equals("displayName")) {
                 this.displayName = properties[1];
             }
@@ -149,7 +156,7 @@ public class Item {
     }
 
     public String getDisplayName(short blockID){
-        return this.ID == block.ID ? Block.list[blockID].displayName : this.displayName;
+        return this.ID == block.ID ? Block.list[blockID].getDisplayName(0,0,0) : this.displayName;
     }
 
 

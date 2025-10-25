@@ -57,7 +57,7 @@ public final class CosmicEvolution implements Runnable {
     public TextField currentlySelectedField;
     public MoveableObject currentlySelectedMoveableObject;
     public Universe everything;
-    public RenderEngine renderEngine;
+    public RenderEngine renderEngine = new RenderEngine();
     public SoundPlayer soundPlayer = new SoundPlayer(this);
 
 
@@ -100,11 +100,10 @@ public final class CosmicEvolution implements Runnable {
     }
 
     private void startGame() {
-        this.title = "Cosmic Evolution Alpha v0.31";
+        this.title = "Cosmic Evolution Alpha v0.32";
         GameSettings.loadOptionsFromFile(this.launcherDirectory);
         this.clearLogFiles(new File(this.launcherDirectory + "/crashReports"));
         this.initLWJGL();
-        this.renderEngine = new RenderEngine();
         this.initAllBufferObjects();
         this.initAllGlobalAssets();
         this.initAllGlobalObjects();
@@ -344,22 +343,25 @@ public final class CosmicEvolution implements Runnable {
       //        KeyListener.setKeyReleased(GLFW.GLFW_KEY_G);
       //    }
 //
-    //   if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_MINUS)){
-    //       this.save.time -= 216000;
-    //       KeyListener.setKeyReleased(GLFW.GLFW_KEY_MINUS);
-    //   }
-    //   if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_EQUAL)){
-    //       this.save.time += 216000;
-    //       KeyListener.setKeyReleased(GLFW.GLFW_KEY_EQUAL);
-    //   }
-    //   if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_COMMA)){
-    //       this.save.time -= 1000;
-    //       KeyListener.setKeyReleased(GLFW.GLFW_KEY_COMMA);
-    //   }
-    //   if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_PERIOD)){
-    //       this.save.time += 1000;
-    //       KeyListener.setKeyReleased(GLFW.GLFW_KEY_PERIOD);
-    //   }
+
+        if(DEBUG_MODE) {
+            if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_MINUS)) {
+                this.save.time -= 216000;
+                KeyListener.setKeyReleased(GLFW.GLFW_KEY_MINUS);
+            }
+            if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_EQUAL)) {
+                this.save.time += 216000;
+                KeyListener.setKeyReleased(GLFW.GLFW_KEY_EQUAL);
+            }
+            if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_COMMA)) {
+                this.save.time -= 1000;
+                KeyListener.setKeyReleased(GLFW.GLFW_KEY_COMMA);
+            }
+            if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_PERIOD)) {
+                this.save.time += 1000;
+                KeyListener.setKeyReleased(GLFW.GLFW_KEY_PERIOD);
+            }
+        }
 
 
         if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_1) && this.currentGui instanceof GuiInGame){

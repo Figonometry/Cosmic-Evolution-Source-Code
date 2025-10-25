@@ -210,11 +210,11 @@ public final class AxisAlignedBB {
     }
     
     public boolean clip(AxisAlignedBB boundingBox) {
-        return ((boundingBox.minX <= this.maxX && boundingBox.maxX >= this.minX) && (boundingBox.minY <= this.maxY && boundingBox.maxY >= this.minY) && (boundingBox.minZ <= this.maxZ && boundingBox.maxZ >= this.minZ));
+        return ((boundingBox.minX < this.maxX && boundingBox.maxX > this.minX) && (boundingBox.minY < this.maxY && boundingBox.maxY > this.minY) && (boundingBox.minZ < this.maxZ && boundingBox.maxZ > this.minZ));
     }
 
     public boolean pointInsideBoundingBox(double x, double y, double z) {
-        return x >= this.minX && x <= this.maxX && y >= this.minY && y <= this.maxY && z >= this.minZ && z <= this.maxZ;
+        return x > this.minX && x < this.maxX && y > this.minY && y < this.maxY && z > this.minZ && z < this.maxZ;
     }
 
     public boolean clipNegX(double maxX) {

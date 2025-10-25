@@ -1,0 +1,3 @@
+itemName:REEDS
+displayName:Reeds
+canPlaceAsItemBlock:true

@@ -179,6 +179,87 @@ public abstract class World {
         return blockBoundingBoxes;
     }
 
+    public ArrayList<AxisAlignedBB> getBlockBoundingBoxesWhenPlayerIsShifting(AxisAlignedBB boundingBox, ArrayList<AxisAlignedBB> blockBoundingBoxes){
+
+        int minX = MathUtil.floorDouble(boundingBox.minX) - 2;
+        int minY = MathUtil.floorDouble(boundingBox.minY) - 2;
+        int minZ = MathUtil.floorDouble(boundingBox.minZ) - 2;
+        int maxX = MathUtil.floorDouble(boundingBox.maxX) + 2;
+        int maxY = MathUtil.floorDouble(boundingBox.maxY) + 2;
+        int maxZ = MathUtil.floorDouble(boundingBox.maxZ) + 2;
+
+        int playerYFoot = MathUtil.floorDouble(this.ce.save.thePlayer.y - 0.1);
+
+        AxisAlignedBB block;
+        for(int x = minX; x <= maxX; x++){
+            for(int y = minY; y <= maxY; y++){
+                for(int z = minZ; z <= maxZ; z++){
+                    block = new AxisAlignedBB();
+                    block.adjustBlockBoundingBox(x,y,z, this.getBlockID(x,y,z), (boundingBox.maxX + boundingBox.minX) / 2, (boundingBox.maxZ + boundingBox.minZ) / 2);
+
+                        if(y == playerYFoot - 1) {
+                            if (Block.list[this.getBlockID(x, y, z)].isSolid) {
+                                block.minX-= 0.25;
+                                block.minZ-= 0.25;
+                                block.maxX+= 0.25;
+                                block.maxZ+= 0.25;
+                            }
+                        }
+
+                           if(y == playerYFoot && !Block.list[this.getBlockID(x, y, z)].isSolid && !Block.list[this.getBlockID(x, y - 1, z)].isSolid) {
+
+                               if (Block.list[this.getBlockID(x - 1, playerYFoot - 1, z)].isSolid) {
+                                   block.minX += 0.49;
+                                   if (!Block.list[this.getBlockID(x, playerYFoot - 1, z - 1)].isSolid) {
+                                       block.minZ -= 0.25;
+                                   }
+                                   if (!Block.list[this.getBlockID(x, playerYFoot - 1, z + 1)].isSolid) {
+                                       block.maxZ += 0.25;
+                                   }
+                                   block.air = false;
+                               }
+                               if (Block.list[this.getBlockID(x + 1, playerYFoot - 1, z)].isSolid) {
+                                   block.maxX -= 0.49;
+                                   if (!Block.list[this.getBlockID(x, playerYFoot - 1, z - 1)].isSolid) {
+                                       block.minZ -= 0.25;
+                                   }
+                                   if (!Block.list[this.getBlockID(x, playerYFoot - 1, z + 1)].isSolid) {
+                                       block.maxZ += 0.25;
+                                   }
+                                   block.air = false;
+                               }
+                               if (Block.list[this.getBlockID(x, playerYFoot - 1, z - 1)].isSolid) {
+                                   block.minZ += 0.49;
+                                   if (!Block.list[this.getBlockID(x - 1, playerYFoot - 1, z)].isSolid) {
+                                       block.minX -= 0.25;
+                                   }
+                                   if (!Block.list[this.getBlockID(x + 1, playerYFoot - 1, z)].isSolid) {
+                                       block.maxX += 0.25;
+                                   }
+                                   block.air = false;
+                               }
+                               if (Block.list[this.getBlockID(x, playerYFoot - 1, z + 1)].isSolid) {
+                                   block.maxZ -= 0.49;
+                                   if (!Block.list[this.getBlockID(x - 1, playerYFoot - 1, z)].isSolid) {
+                                       block.minX -= 0.25;
+                                   }
+                                   if (!Block.list[this.getBlockID(x + 1, playerYFoot - 1, z)].isSolid) {
+                                       block.maxX += 0.25;
+                                   }
+                                   block.air = false;
+                               }
+                           }
+
+                    if(!block.air) {
+                        blockBoundingBoxes.add(block);
+                    }
+                }
+            }
+        }
+
+        return blockBoundingBoxes;
+    }
+
     public synchronized void notifySurroundingBlocks(int x, int y, int z) {
         this.notifySurroundingBlock(x + 1, y, z);
         this.notifySurroundingBlock(x - 1, y, z);
@@ -1009,6 +1090,10 @@ public abstract class World {
         this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).removeTimeUpdateEvent(x,y,z);
     }
 
+    public void updateTimeEventTime(int x, int y, int z, long updateTime){
+        this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).updateTimeEvent(x,y,z, updateTime);
+    }
+
     public void addChestLocation(int x, int y, int z, Inventory inventory){
         this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).addChestLocation(x,y,z, inventory);
     }
@@ -1147,6 +1232,11 @@ public abstract class World {
         return block.standardCollisionBoundingBox.pointInsideBoundingBox(x + (int)-x,y + (int)-y, z + (int)-z); //Localizes the world coords back to model space
     }
 
+    public boolean wouldBlockIntersectPlayer(int x, int y, int z){
+        AxisAlignedBB blockBoundingBox = new AxisAlignedBB(x,y,z,x + 1, y + 1,z + 1);
+        return blockBoundingBox.clip(this.ce.save.thePlayer.boundingBox);
+    }
+
 
     public void handleLeftClick() {
         if (!this.paused && this.ce.currentGui instanceof GuiInGame && this.delayWhenExitingUI <= 0) {
@@ -1182,17 +1272,6 @@ public abstract class World {
                         }
                         if(this.ce.save.thePlayer.breakTimer >= checkedBlock.getDynamicBreakTimer() && checkedBlock.breakTimer >= 0){
                             checkedBlock.onLeftClick(blockX, blockY, blockZ, this, this.ce.save.thePlayer);
-                            if(checkedBlock.droppedItemID != Item.NULL_ITEM_REFERENCE) {
-                                if (checkedBlock.droppedItemID != Item.block.ID) {
-                                    if(checkedBlock.itemDropChance > CosmicEvolution.globalRand.nextFloat()) {
-                                        this.findChunkFromChunkCoordinates(blockX >> 5, blockY >> 5, blockZ >> 5).addEntityToList(new EntityItem(blockX + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), blockY + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), blockZ + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), checkedBlock.droppedItemID, Item.NULL_ITEM_METADATA, (byte) 1, Item.list[checkedBlock.droppedItemID].durability));
-                                    }
-                                } else {
-                                    if (checkedBlock.itemDropChance > CosmicEvolution.globalRand.nextFloat()) {
-                                        this.findChunkFromChunkCoordinates(blockX >> 5, blockY >> 5, blockZ >> 5).addEntityToList(new EntityBlock(blockX + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), blockY + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), blockZ + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), checkedBlock.itemMetadata, (byte) 1));
-                                    }
-                                }
-                            }
                             this.ce.save.thePlayer.breakTimer = 0;
                         } else if(this.ce.save.time % 20 == 0) {
                             CosmicEvolution.instance.soundPlayer.playSound(blockX, blockY, blockZ, new Sound(checkedBlock.stepSound, false),  new Random().nextFloat(0.4F, 0.7F));
@@ -1233,10 +1312,13 @@ public abstract class World {
                     if(checkedBlock.ID != Block.water.ID) {
                         loopPass--;
                         if(this.ce.save.thePlayer.getHeldItem() != Item.block.ID && this.ce.save.thePlayer.getHeldItem() != Item.torch.ID){
+                            blockX = MathUtil.floorDouble(this.ce.save.thePlayer.x + xDif * multiplier * loopPass);
+                            blockY = MathUtil.floorDouble(this.ce.save.thePlayer.y  + this.ce.save.thePlayer.height/2 + yDif * multiplier * loopPass);
+                            blockZ = MathUtil.floorDouble(this.ce.save.thePlayer.z + zDif * multiplier * loopPass);
                             checkedBlock.onRightClick(blockX, blockY, blockZ, this, this.ce.save.thePlayer);
                         }
                     }
-                    if (loopPass < 10 && Block.list[this.ce.save.thePlayer.getHeldBlock()].isSolid && this.ce.save.thePlayer.pitch > -81 || loopPass < 18 && Block.list[this.ce.save.thePlayer.getHeldBlock()].isSolid && this.ce.save.thePlayer.pitch < -81) {
+                    if (Block.list[this.ce.save.thePlayer.getHeldBlock()].isSolid && this.ce.save.thePlayer.pitch > -90 && this.wouldBlockIntersectPlayer(blockX, blockY, blockZ)) {
                         break;
                     } else {
                         if (this.ce.save.thePlayer.getHeldItem() == Item.torch.ID) {

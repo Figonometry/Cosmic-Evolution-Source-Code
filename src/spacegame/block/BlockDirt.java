@@ -1,6 +1,7 @@
 package spacegame.block;
 
 import spacegame.core.CosmicEvolution;
+import spacegame.entity.EntityPlayer;
 import spacegame.world.World;
 
 public final class BlockDirt extends Block implements ITickable {

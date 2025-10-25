@@ -1,6 +1,11 @@
 package spacegame.block;
 
+import org.lwjgl.glfw.GLFW;
+import spacegame.core.CosmicEvolution;
+import spacegame.core.KeyListener;
 import spacegame.core.MouseListener;
+import spacegame.entity.EntityBlock;
+import spacegame.entity.EntityItem;
 import spacegame.entity.EntityPlayer;
 import spacegame.item.Item;
 import spacegame.item.ItemAxe;
@@ -11,14 +16,28 @@ public final class BlockLog extends Block {
         super(ID, textureID, filepath);
     }
 
+
     @Override
-    public void handleSpecialRightClickFunctions(int x, int y, int z, World world, EntityPlayer player){
-        if(!MouseListener.rightClickReleased)return;
+    public void onLeftClick(int x, int y, int z, World world, EntityPlayer player){
+        this.handleSpecialLeftClickFunctions(x,y,z, world, player);
+        world.setBlockWithNotify(x,y,z, Block.air.ID);
+        player.reduceHeldItemDurability();
+    }
+
+    @Override
+    protected void handleSpecialLeftClickFunctions(int x, int y, int z, World world, EntityPlayer player){
         short playerHeldItem = player.getHeldItem();
-        if(playerHeldItem != Item.NULL_ITEM_REFERENCE){
+        if(playerHeldItem != Item.NULL_ITEM_REFERENCE && (KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT))){
             if(Item.list[playerHeldItem] instanceof ItemAxe){
-                Item.list[playerHeldItem].onRightClick(x, y, z, world, player);
-                MouseListener.rightClickReleased = false;
+                for(int i = 0; i < 4; i++){
+                    world.addEntity(new EntityItem(x + CosmicEvolution.globalRand.nextDouble(), y + 0.5, z + CosmicEvolution.globalRand.nextDouble(), Item.fireWood.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY));
+                }
+                KeyListener.setKeyReleased(GLFW.GLFW_KEY_RIGHT_SHIFT);
+                KeyListener.setKeyReleased(GLFW.GLFW_KEY_LEFT_SHIFT);
+            }
+        } else {
+            if (list[world.getBlockID(x,y,z)].itemDropChance > CosmicEvolution.globalRand.nextFloat()) {
+                world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).addEntityToList(new EntityBlock(x + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), y + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), z + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), list[world.getBlockID(x,y,z)].itemMetadata, (byte) 1));
             }
         }
     }

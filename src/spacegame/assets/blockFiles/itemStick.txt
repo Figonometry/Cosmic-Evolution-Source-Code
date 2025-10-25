@@ -3,9 +3,9 @@ blockModel:itemStickModel
 stepSound:wood
 canGreedyMesh:false
 breakTimer:60
+droppedItemID:6
 hardness:0.05
 isSolid:false
 boundingBox:itemStoneBoundingBox
 displayName:Stick
 requireSolidBlockBelow:true
-droppedItemID:6

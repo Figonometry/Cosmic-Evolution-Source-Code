@@ -1224,6 +1224,17 @@ public final class Chunk implements Comparable<Chunk> {
         this.updateEvents.trimToSize();
     }
 
+    public void updateTimeEvent(int x, int y, int z, long updateTime){
+        int index = getBlockIndexFromCoordinates(x,y,z);
+
+        for(int i = 0; i < this.updateEvents.size(); i++){
+            if(this.updateEvents.get(i).index == index){
+                this.updateEvents.get(i).updateTime = updateTime;
+                break;
+            }
+        }
+    }
+
     private void clearInventoryFromChest(Inventory inventory, int index){
         Random rand = new Random();
         for(int i = 0; i < inventory.itemStacks.length; i++) {

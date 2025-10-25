@@ -174,8 +174,10 @@ public final class ChunkTerrainHandler {
         boolean generateClayBlob = rand.nextInt(5) == 0;
         short[] grassIndicesRaw = new short[32768];
         short[] surfaceSandIndices = new short[32768];
+        short[] surfaceWaterIndices = new short[32768];
         int grassIndex = 0;
         int sandIndex = 0;
+        int waterIndex = 0;
         int x = 0;
         int y = 0;
         int z = 0;
@@ -189,6 +191,10 @@ public final class ChunkTerrainHandler {
                 surfaceSandIndices[sandIndex] = (short) i;
                 sandIndex++;
             }
+            if(chunk.blocks[i] == Block.water.ID && chunk.parentWorld.getBlockID(chunk.getBlockXFromIndex(i), chunk.getBlockYFromIndex(i) + 1, chunk.getBlockZFromIndex(i)) == Block.air.ID && Block.list[chunk.parentWorld.getBlockID(chunk.getBlockXFromIndex(i), chunk.getBlockYFromIndex(i) - 1, chunk.getBlockZFromIndex(i))].isSolid){
+                surfaceWaterIndices[waterIndex] = (short) i;
+                waterIndex++;
+            }
         }
 
         short[] grassIndices = new short[grassIndex + 1];
@@ -199,6 +205,11 @@ public final class ChunkTerrainHandler {
         short[] sandIndices = new short[sandIndex + 1];
         for(int i = 0; i < sandIndices.length; i++){
             sandIndices[i] = surfaceSandIndices[i];
+        }
+
+        short[] waterIndices = new short[waterIndex + 1];
+        for(int i = 0; i < waterIndices.length; i++){
+            waterIndices[i] = surfaceWaterIndices[i];
         }
 
         if(generateClayBlob && grassIndex > 0){
@@ -218,6 +229,10 @@ public final class ChunkTerrainHandler {
         while (berryClusterCount > 0 && grassIndex > 0){
             new WorldGenBerryBush(chunk, (WorldEarth)chunk.parentWorld, grassIndices[rand.nextInt(grassIndices.length)]);
             berryClusterCount--;
+        }
+
+        if(waterIndex > 0 && rand.nextBoolean()) {
+            new WorldGenReeds(chunk, (WorldEarth)chunk.parentWorld, waterIndices[rand.nextInt(waterIndices.length)]);
         }
 
         int stonePlacementIndex = 0;

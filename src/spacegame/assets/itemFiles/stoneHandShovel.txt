@@ -3,3 +3,4 @@ attackDamage:1
 toolType:shovel
 stackLimit:1
 displayName:Stone Hand Shovel
+canPlaceAsItemBlock:true

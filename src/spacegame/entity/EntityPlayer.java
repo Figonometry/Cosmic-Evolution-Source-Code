@@ -44,6 +44,7 @@ public final class EntityPlayer extends EntityLiving {
     public int drowningTimer;
     public int damageTiltTimer;
     public boolean runDamageTilt;
+    public boolean isShifting;
     public byte swingTimer;
     public boolean isSwinging;
     public boolean startViewBob;
@@ -242,6 +243,9 @@ public final class EntityPlayer extends EntityLiving {
 
             if(this.inventory.itemStacks[i].item.ID == item){
                 this.inventory.itemStacks[i].count--;
+                if(this.inventory.itemStacks[EntityPlayer.selectedInventorySlot].count <= 0){
+                    this.inventory.itemStacks[EntityPlayer.selectedInventorySlot].item.onDestroy(this.inventory.itemStacks[EntityPlayer.selectedInventorySlot], EntityPlayer.selectedInventorySlot);
+                }
                 break;
             }
         }
@@ -338,7 +342,7 @@ public final class EntityPlayer extends EntityLiving {
                 return this.inventory.itemStacks[selectedInventorySlot].metadata;
             }
         }
-        return 0;
+        return Item.NULL_ITEM_METADATA;
     }
 
     public boolean addItemToInventory(short itemID, short metadata, byte count, short durability){
@@ -380,7 +384,7 @@ public final class EntityPlayer extends EntityLiving {
             if(this.ce.currentGui instanceof GuiInGame) {
                 this.updateYawAndPitch();
             }
-            this.setMovementAmount();
+            this.setMovementAmountAndKeyControls();
             this.doGravity();
             if(!(this.ce.currentGui instanceof GuiInGame || this.ce.currentGui instanceof GuiInventory || this.ce.currentGui instanceof GuiAction || this.ce.currentGui instanceof GuiCrafting)){
                 this.deltaX = 0;
@@ -456,7 +460,7 @@ public final class EntityPlayer extends EntityLiving {
     }
 
 
-    private void setMovementAmount() {
+    private void setMovementAmountAndKeyControls() {
         float rawDeltaZ = 0.0F;
         float rawDeltaX = 0.0F;
         float rawDeltaY = 0.0F;
@@ -485,8 +489,11 @@ public final class EntityPlayer extends EntityLiving {
             KeyListener.setKeyReleased(GameSettings.dropKey.keyCode);
         }
 
-        //this.developerDebugMovement();
+        this.isShifting = KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT);
 
+        this.speed = this.isShifting || this.inWater ? 0.05 : 0.1;
+
+        //this.developerDebugMovement();
 
         if ((KeyListener.isKeyPressed(GameSettings.jumpKey.keyCode) && this.isOnGround && !this.inWater)) {
             this.moveEntityUp = true;
@@ -517,6 +524,9 @@ public final class EntityPlayer extends EntityLiving {
                CosmicEvolution.camera.viewMatrix.translate(0, -1 * this.speed, 0);
            }
     }
+
+
+
 
     private void setEntityState(){
         int playerX = MathUtil.floorDouble(this.x);
@@ -712,6 +722,9 @@ public final class EntityPlayer extends EntityLiving {
             double xShift = 0.25 * ((MathUtil.sin((float) (((this.ce.save.thePlayer.viewBobTimer / 60f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
             double yShift = 0.125 * ((MathUtil.sin((float) (((this.ce.save.thePlayer.viewBobTimer / 60f) - 0.125f) * (Math.PI * 4f))) * 0.5) + 0.5f);
             CosmicEvolution.camera.viewMatrix.translateLocal(-xShift, -yShift, 0);
+        }
+        if(this.isShifting){
+            CosmicEvolution.camera.viewMatrix.translateLocal(0, 0.125f,0);
         }
         this.setRotation();
     }

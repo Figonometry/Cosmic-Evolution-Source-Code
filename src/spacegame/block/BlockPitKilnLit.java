@@ -2,6 +2,7 @@ package spacegame.block;
 
 import spacegame.core.CosmicEvolution;
 import spacegame.core.Sound;
+import spacegame.core.Timer;
 import spacegame.entity.EntityParticle;
 import spacegame.item.Inventory;
 import spacegame.item.Item;
@@ -64,7 +65,7 @@ public final class BlockPitKilnLit extends BlockPitKilnUnlit implements ITimeUpd
 
     @Override
     public long getUpdateTime() {
-        return 90000; //10 in game hours
+        return 10 * Timer.HOUR; //10 in game hours
     }
 
     @Override

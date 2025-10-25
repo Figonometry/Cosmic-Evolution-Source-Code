@@ -1,2 +1,3 @@
 itemName:STONE_FRAGMENTS
 displayName:Rock Fragments
+canPlaceAsItemBlock:true

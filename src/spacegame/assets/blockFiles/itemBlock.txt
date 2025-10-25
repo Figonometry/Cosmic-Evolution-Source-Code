@@ -1,0 +1,8 @@
+blockName:ITEM_BLOCK
+blockModel:topFaceBlockModel
+isSolid:false
+stepSound:grass
+toolType:unbreakable
+breakTimer:120
+hardness:10
+displayName:???

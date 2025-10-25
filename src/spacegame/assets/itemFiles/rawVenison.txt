@@ -1,3 +1,4 @@
 itemName:VENISON
 stackLimit:20
 displayName:Raw Venison
+canPlaceAsItemBlock:true

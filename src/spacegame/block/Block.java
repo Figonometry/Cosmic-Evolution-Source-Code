@@ -39,6 +39,7 @@ public class Block {
     public static final ModelLoader largeFireWood = new ModelLoader("src/spacegame/assets/models/blockModels/largeFireWood.obj");
     public static final ModelLoader brick = new ModelLoader("src/spacegame/assets/models/blockModels/brick.obj");
     public static final ModelLoader quarterBlockModel = new ModelLoader("src/spacegame/assets/models/blockModels/quarterBlock.obj");
+    public static final ModelLoader itemVoxelModel = new ModelLoader("src/spacegame/assets/models/blockModels/itemVoxel.obj");
     public static final ModelLoader size15NormalModel = standardBlockModel.alterStandardBlockModel(1,0,1);
     public static final ModelLoader size14NormalModel = standardBlockModel.alterStandardBlockModel(2,0,2);
     public static final ModelLoader size13NormalModel = standardBlockModel.alterStandardBlockModel(3,0,3);
@@ -99,7 +100,7 @@ public class Block {
     public static final Block torchEast = new BlockTorch((short) 5, 3,"src/spacegame/assets/blockFiles/torchEast.txt");
     public static final Block torchWest = new BlockTorch((short) 6, 3,"src/spacegame/assets/blockFiles/torchWest.txt");
     public static final Block dirt = new BlockDirt((short) 7, 1,"src/spacegame/assets/blockFiles/dirt.txt");
-    public static final Block water = new Block((short) 8, 4, "src/spacegame/assets/blockFiles/water.txt");
+    public static final Block water = new BlockWater((short) 8, 4, "src/spacegame/assets/blockFiles/water.txt");
     public static final Block sand = new Block((short) 9, 5, "src/spacegame/assets/blockFiles/sand.txt"); //I don't like sand
     public static final Block snow = new Block((short) 10, 6, "src/spacegame/assets/blockFiles/snow.txt");
     public static final Block stone = new Block((short) 11, 7, "src/spacegame/assets/blockFiles/stone.txt");
@@ -194,6 +195,10 @@ public class Block {
     public static final Block largeFireWoodBlock = new Block((short)100, 31, "src/spacegame/assets/blockFiles/firewood.txt");
     public static final Block logPile = new BlockLogPile((short)101, 31, "src/spacegame/assets/blockFiles/logPile.txt", Item.fireWood.ID, 1, 1);
     public static final Block brickPile = new BlockBrickPile((short)102, 13, "src/spacegame/assets/blockFiles/brickPile.txt", Item.rawClayAdobeBrick.ID, 1, 1);
+    public static final Block itemBlock = new BlockItem((short)103, 19, "src/spacegame/assets/blockFiles/itemBlock.txt", 1, 1);
+    public static final Block adobeBrick = new Block((short)104, 17, "src/spacegame/assets/blockFiles/adobeBrick.txt");
+    public static final Block reedLower = new BlockReed((short)105, 33, "src/spacegame/assets/blockFiles/reeds.txt");
+    public static final Block reedUpper = new Block((short)106, 34, "src/spacegame/assets/blockFiles/reeds.txt");
     public final short ID;
     public final int textureID;
     public static int facingDirection;
@@ -440,6 +445,10 @@ public class Block {
         }
     }
 
+    public String getDisplayName(int x, int y, int z){
+        return this.displayName;
+    }
+
     protected void handleSpecialLeftClickFunctions(int x, int y, int z, World world, EntityPlayer player){
         short playerHeldItem = player.getHeldItem();
         if(playerHeldItem != Item.NULL_ITEM_REFERENCE) {
@@ -452,6 +461,10 @@ public class Block {
             for(int i = 0; i < extraClay; i++){
                 world.addEntity(new EntityItem(x + 0.5, y + 0.5, z + 0.5, Item.clay.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY));
             }
+        }
+
+        if(world.getBlockID(x,y,z) == Block.reedUpper.ID){
+            world.addTimeEvent(x,y - 1,z, CosmicEvolution.instance.save.time + ((ITimeUpdate)reedLower).getUpdateTime());
         }
     }
 
@@ -466,11 +479,25 @@ public class Block {
     public void onLeftClick(int x, int y, int z, World world, EntityPlayer player) {
         if (!this.canBeBroken) {return;}
         this.handleSpecialLeftClickFunctions(x,y,z,world,player);
+
+        short blockID = world.getBlockID(x,y,z);
+
+        if (list[blockID].droppedItemID != Item.NULL_ITEM_REFERENCE) {
+            if (list[blockID].droppedItemID != Item.block.ID) {
+                if (list[blockID].itemDropChance > CosmicEvolution.globalRand.nextFloat()) {
+                    world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).addEntityToList(new EntityItem(x + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), y + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), z + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), list[blockID].droppedItemID, Item.NULL_ITEM_METADATA, (byte) 1, Item.list[list[blockID].droppedItemID].durability));
+                }
+            } else {
+                if (list[blockID].itemDropChance > CosmicEvolution.globalRand.nextFloat()) {
+                    world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).addEntityToList(new EntityBlock(x + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), y + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), z + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), list[blockID].itemMetadata, (byte) 1));
+                }
+            }
+        }
+
         world.setBlockWithNotify(x, y, z, Block.air.ID);
 
 
         if(this.isSolid) {
-            short blockID = 0;
             int blockX = 0;
             int blockY = 0;
             int blockZ = 0;
@@ -546,9 +573,10 @@ public class Block {
         if (chunk.blocks == null) {chunk.initChunk();}
         if (chunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)] != air.ID && chunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)] != water.ID) {return;}
         if (!MouseListener.rightClickReleased)return;
+        if(world.wouldBlockIntersectPlayer(x,y,z))return;
 
         short heldItem = player.getHeldItem(); //Block all items that cannot be placed on the ground
-        if (heldItem == Item.NULL_ITEM_REFERENCE || !Item.list[heldItem].canPlaceOnGround)return;
+        if (heldItem == Item.NULL_ITEM_REFERENCE || (!Item.list[heldItem].canPlaceOnGround && !Item.list[heldItem].canPlaceAsItemBlock))return;
 
         short heldBlock = 0;
         if (player.isHoldingBlock()) {
@@ -562,6 +590,12 @@ public class Block {
                 case 4 -> Block.torchWest.ID;
                 default -> Block.torchStandard.ID;
             };
+        }
+
+        if(Item.list[heldItem].canPlaceAsItemBlock && (KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT))){
+            heldBlock = itemBlock.ID;
+        } else if(Item.list[heldItem].canPlaceAsItemBlock){
+            return;
         }
 
         switch (Item.list[heldItem].itemName) { //Convert held item into an equivalent block id to place, if one exists, otherwise default to the held block
@@ -605,6 +639,12 @@ public class Block {
             if(heldBlock == brickPile.ID ){
                 chunk.getChestLocation(x,y,z).inventory.itemStacks[0].count = 1;
                 chunk.getChestLocation(x,y,z).inventory.itemStacks[0].item = Item.list[heldItem];
+            }
+            if(heldBlock == itemBlock.ID){
+                chunk.getChestLocation(x,y,z).inventory.itemStacks[0].count = 1;
+                chunk.getChestLocation(x,y,z).inventory.itemStacks[0].item = Item.list[heldItem];
+                chunk.getChestLocation(x,y,z).inventory.itemStacks[0].metadata = player.getHeldBlock();
+                chunk.getChestLocation(x,y,z).inventory.itemStacks[0].durability = player.getHeldItemDurability();
             }
         }
 

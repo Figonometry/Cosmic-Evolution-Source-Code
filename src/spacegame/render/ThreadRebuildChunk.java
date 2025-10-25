@@ -43,11 +43,10 @@ public final class ThreadRebuildChunk implements Runnable {
             //  this.parentWorld.updateSkyLightMapChunks(this.x, this.y, this.z);
         }
         int faceNumber = this.workingChunk.calculateFaceNumber();
-        int size = (int) (faceNumber * 1.5F);
-        this.workingChunk.vertexBufferOpaque = BufferUtils.createFloatBuffer(size * 24);
-        this.workingChunk.elementBufferOpaque = BufferUtils.createIntBuffer(size * 6);
-        this.workingChunk.vertexBufferTransparent = BufferUtils.createFloatBuffer(size * 24);
-        this.workingChunk.elementBufferTransparent = BufferUtils.createIntBuffer(size * 6);
+        this.workingChunk.vertexBufferOpaque = BufferUtils.createFloatBuffer(faceNumber * 24);
+        this.workingChunk.elementBufferOpaque = BufferUtils.createIntBuffer(faceNumber * 6);
+        this.workingChunk.vertexBufferTransparent = BufferUtils.createFloatBuffer(faceNumber * 24);
+        this.workingChunk.elementBufferTransparent = BufferUtils.createIntBuffer(faceNumber * 6);
         this.workingChunk.excludeTopFace = new int[1024];
         this.workingChunk.excludeBottomFace = new int[1024];
         this.workingChunk.excludeNorthFace = new int[1024];
@@ -222,7 +221,9 @@ public final class ThreadRebuildChunk implements Runnable {
             case "ITEM_STONE" -> renderBlocks.renderItemStone(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);
             case "ITEM_STICK" -> renderBlocks.renderItemStick(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);
             case "LOG_PILE" -> renderBlocks.renderLogPile(this.workingChunk, this.parentWorld, block, index, face);
+            case "ITEM_BLOCK" -> renderBlocks.renderItemBlock(this.workingChunk, this.parentWorld, block, index, face);
             case "BRICK_PILE" -> renderBlocks.renderBrickPile(this.workingChunk, this.parentWorld, block, index, face);
+            case "REEDS" -> renderBlocks.renderReeds(this.workingChunk, this.parentWorld, block, index, face);
             case "LEAF" -> {
                 if(GameSettings.transparentLeaves){
                     renderBlocks.renderTransparentBlock(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);

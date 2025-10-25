@@ -176,9 +176,9 @@ public final class GuiInGame extends Gui {
 
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
+        int[] blockCoordinates = CosmicEvolution.instance.save.thePlayer.getPlayerLookingAtBlockCoords();
         if(Block.list[blockID] instanceof ITimeUpdate) {
             StringBuilder stringBuilder = new StringBuilder();
-            int[] blockCoordinates = CosmicEvolution.instance.save.thePlayer.getPlayerLookingAtBlockCoords();
             TimeUpdateEvent updateEvent = CosmicEvolution.instance.save.activeWorld.getTimeEvent(blockCoordinates[0], blockCoordinates[1], blockCoordinates[2]);
             if(updateEvent != null) {
                 long timeUntil = updateEvent.updateTime - CosmicEvolution.instance.save.time;
@@ -201,7 +201,7 @@ public final class GuiInGame extends Gui {
             tessellator.toggleOrtho();
             int x = 0;
             int y = 450;
-            float width = Math.max(Block.list[blockID].displayName.length() * 25, stringBuilder.toString().length() * 25);
+            float width = Math.max(Block.list[blockID].getDisplayName(blockCoordinates[0], blockCoordinates[1], blockCoordinates[2]).length() * 25, stringBuilder.toString().length() * 25);
             float height = 100;
 
             tessellator.addVertex2DTexture(0, x - width / 2f, y - height / 2f, -90, 3);
@@ -211,7 +211,7 @@ public final class GuiInGame extends Gui {
             tessellator.addElements();
             tessellator.drawTexture2D(transparentBackground, Shader.screen2DTexture, CosmicEvolution.camera);
             tessellator.toggleOrtho();
-            fontRenderer.drawCenteredString(Block.list[blockID].displayName, 0, 450, -14, 16777215, 50, 255);
+            fontRenderer.drawCenteredString(Block.list[blockID].getDisplayName(blockCoordinates[0], blockCoordinates[1], blockCoordinates[2]), 0, 450, -14, 16777215, 50, 255);
 
             if(updateEvent != null) {
                 fontRenderer.drawCenteredString(stringBuilder.toString(), 0, 400, -14, 16777215, 50, 255);
@@ -220,7 +220,7 @@ public final class GuiInGame extends Gui {
             tessellator.toggleOrtho();
             int x = 0;
             int y = 450;
-            float width = Block.list[blockID].displayName.length() * 25;
+            float width = Block.list[blockID].getDisplayName(blockCoordinates[0], blockCoordinates[1], blockCoordinates[2]).length() * 25;
             float height = 50;
             tessellator.addVertex2DTexture(0, x - width / 2f, y - height / 2f, -90, 3);
             tessellator.addVertex2DTexture(0, x + width / 2f, y + height / 2f, -90, 1);
@@ -229,7 +229,7 @@ public final class GuiInGame extends Gui {
             tessellator.addElements();
             tessellator.drawTexture2D(transparentBackground, Shader.screen2DTexture, CosmicEvolution.camera);
             tessellator.toggleOrtho();
-            fontRenderer.drawCenteredString(Block.list[blockID].displayName, 0, 425, -14, 16777215, 50, 255);
+            fontRenderer.drawCenteredString(Block.list[blockID].getDisplayName(blockCoordinates[0], blockCoordinates[1], blockCoordinates[2]), 0, 425, -14, 16777215, 50, 255);
         }
         GL46.glDisable(GL46.GL_BLEND);
     }

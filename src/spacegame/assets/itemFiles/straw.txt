@@ -1,3 +1,4 @@
 itemName:STRAW
 canPlaceOnGround:true
 displayName:Straw
+canPlaceAsItemBlock:true

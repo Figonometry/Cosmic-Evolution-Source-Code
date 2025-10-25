@@ -171,6 +171,8 @@ bool isTexIDColorCorrected(int texID){
         return true;
         case 12: //Berry Bush Base Top
         return true;
+        case 19: //Empty color for item blocks
+        return true;
         default:
         return false;
     }

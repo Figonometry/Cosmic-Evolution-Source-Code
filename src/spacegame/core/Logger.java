@@ -76,7 +76,7 @@ public final class Logger {
         this.window.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
         JPanel panel = new JPanel();
-        panel.setLayout(null); // Disable layout manager
+        panel.setLayout(null);
         panel.setBackground(Color.BLACK);
         this.mainPanel = panel;
 

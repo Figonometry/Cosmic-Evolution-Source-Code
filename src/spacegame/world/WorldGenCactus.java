@@ -25,7 +25,7 @@ public final class WorldGenCactus extends WorldGen{
         int z = this.chunk.getBlockZFromIndex(this.index);
         int height = this.rand.nextInt(1,6);
         for(int i = 0; i < height; i++){
-            this.blockPos.add(new int[]{x, y + i, z, Block.cactus.ID, (byte)0});
+            this.blockPos.add(new int[]{x, y + i, z, Block.cactus.ID});
         }
 
         this.generate();

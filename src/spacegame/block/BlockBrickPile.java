@@ -5,6 +5,7 @@ import spacegame.core.CosmicEvolution;
 import spacegame.core.KeyListener;
 import spacegame.core.MouseListener;
 import spacegame.core.Sound;
+import spacegame.entity.EntityBlock;
 import spacegame.entity.EntityPlayer;
 import spacegame.item.Item;
 import spacegame.world.ChestLocation;
@@ -50,6 +51,20 @@ public final class BlockBrickPile extends BlockPile {
             }
 
             world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).notifyBlock(x,y,z);
+            return;
+        }
+
+
+        if(playerHeldItem == Item.mud.ID && (KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT))){
+            ChestLocation chestLocation = world.getChestLocation(x,y,z);
+            if(chestLocation.inventory.itemStacks[0].item.ID == Item.firedRedClayAdobeBrick.ID && chestLocation.inventory.itemStacks[0].count == 8){
+                world.clearChestLocation(x,y,z);
+                world.removeChestLocation(x,y,z);
+                world.setBlockWithNotify(x,y,z, Block.air.ID);
+                world.addEntity(new EntityBlock(x + 0.5, y + 0.5, z + 0.5, Block.adobeBrick.ID, (byte)2));
+                player.removeItemFromInventory();
+                return;
+            }
         }
     }
 }

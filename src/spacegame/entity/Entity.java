@@ -186,7 +186,16 @@ public abstract class Entity {
     protected void moveAndHandleCollision(){
         this.updateAxisAlignedBB();
         surroundingBlocks.clear();
-        surroundingBlocks = CosmicEvolution.instance.save.activeWorld.getBlockBoundingBoxes(this.boundingBox.expand(this.deltaX, this.deltaY, this.deltaZ), surroundingBlocks);
+
+        if(this instanceof EntityPlayer){
+            if(((EntityPlayer) this).isShifting){
+                surroundingBlocks = CosmicEvolution.instance.save.activeWorld.getBlockBoundingBoxesWhenPlayerIsShifting(this.boundingBox.expand(this.deltaX, this.deltaY, this.deltaZ), surroundingBlocks);
+            } else {
+                surroundingBlocks = CosmicEvolution.instance.save.activeWorld.getBlockBoundingBoxes(this.boundingBox.expand(this.deltaX, this.deltaY, this.deltaZ), surroundingBlocks);
+            }
+        } else {
+            surroundingBlocks = CosmicEvolution.instance.save.activeWorld.getBlockBoundingBoxes(this.boundingBox.expand(this.deltaX, this.deltaY, this.deltaZ), surroundingBlocks);
+        }
 
         AxisAlignedBB block;
         for(int i = 0; i < surroundingBlocks.size(); i++) {
@@ -226,6 +235,7 @@ public abstract class Entity {
         this.x += this.deltaX;
         this.y += this.deltaY;
         this.z += this.deltaZ;
+
     }
 
 

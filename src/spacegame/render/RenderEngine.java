@@ -339,7 +339,7 @@ public final class RenderEngine {
                 case 16 -> "campFireBase";
                 case 17 -> "firedRedClay";
                 case 18 -> "fire";
-                case 19 -> "campFireBurnedOut"; //This is an open texture
+                case 19 -> "emptyColor";
                 case 20 -> "grassSideBottom";
                 case 21 -> "cactus";
                 case 22 -> "cactusTop";
@@ -353,6 +353,8 @@ public final class RenderEngine {
                 case 30 -> "tallGrass";
                 case 31 -> "fireWood";
                 case 32 -> "strawChest";
+                case 33 -> "reedLower";
+                case 34 -> "reedUpper";
                 default -> "missing";
             };
         } else if(textureFolderpath.contains("item")){
@@ -373,6 +375,8 @@ public final class RenderEngine {
                 case 14 -> "clay";
                 case 15 -> "rawClayAdobeBrick";
                 case 16 -> "clayAdobeBrick";
+                case 17 -> "mud";
+                case 18 -> "reeds";
                 default -> "missing";
             };
         }
