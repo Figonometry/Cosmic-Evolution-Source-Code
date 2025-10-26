@@ -1,0 +1,13 @@
+blockName:REED_SEED
+blockModel:size2VoxelModel
+stepSound:grass
+canGreedyMesh:false
+droppedItemID:20
+breakTimer:60
+hardness:0.05
+isSolid:false
+displayName:Reed Seed
+boundingBox:itemStoneBoundingBox
+requireSolidBlockBelow:true
+alwaysRenderFace:true
+waterlogged:true

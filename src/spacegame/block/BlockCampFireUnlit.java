@@ -4,7 +4,6 @@ import spacegame.core.CosmicEvolution;
 import spacegame.core.MouseListener;
 import spacegame.core.Sound;
 import spacegame.entity.EntityPlayer;
-import spacegame.gui.GuiCraftingStrawStorage;
 import spacegame.gui.GuiLightFire;
 import spacegame.item.Item;
 import spacegame.world.World;
@@ -43,15 +42,6 @@ public final class BlockCampFireUnlit extends BlockCampFire {
                 CosmicEvolution.instance.setNewGui(new GuiLightFire(CosmicEvolution.instance, x, y, z));
                 MouseListener.rightClickReleased = false;
                 return;
-            }
-        }
-
-        if(this.ID == Block.campFireNoFirewood.ID){
-            if(playerHeldItem != Item.NULL_ITEM_REFERENCE){
-                if(Item.list[playerHeldItem].toolType.equals(Item.ITEM_TOOL_TYPE_KNIFE)){
-                    CosmicEvolution.instance.setNewGui(new GuiCraftingStrawStorage(CosmicEvolution.instance, x, y, z));
-                    MouseListener.rightClickReleased = false;
-                }
             }
         }
     }

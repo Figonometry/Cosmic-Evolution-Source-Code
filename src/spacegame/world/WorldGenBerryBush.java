@@ -64,7 +64,6 @@ public final class WorldGenBerryBush extends WorldGen{
         for (int i = 0; i < this.blockPos.size(); i++) {
             blockData = this.blockPos.get(i);
             this.worldEarth.setBlock(blockData[0], blockData[1] + 1, blockData[2], (short) blockData[3]);
-            this.worldEarth.addTimeEvent(blockData[0], blockData[1] + 1, blockData[2], CosmicEvolution.instance.save.time + ((ITimeUpdate)(Block.list[blockData[3]])).getUpdateTime());
             chunk = this.worldEarth.findChunkFromChunkCoordinates(blockData[0] >> 5, blockData[1] + 1 >> 5, blockData[2] >> 5);
             this.addChunkToRebuildQueue(chunk);
         }

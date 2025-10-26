@@ -10,4 +10,3 @@ itemDropChance:0
 requireSolidBlockBelow:true
 displayName:Reeds
 alwaysRenderFace:true
-waterlogged:true

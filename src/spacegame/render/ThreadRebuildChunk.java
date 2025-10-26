@@ -223,7 +223,7 @@ public final class ThreadRebuildChunk implements Runnable {
             case "LOG_PILE" -> renderBlocks.renderLogPile(this.workingChunk, this.parentWorld, block, index, face);
             case "ITEM_BLOCK" -> renderBlocks.renderItemBlock(this.workingChunk, this.parentWorld, block, index, face);
             case "BRICK_PILE" -> renderBlocks.renderBrickPile(this.workingChunk, this.parentWorld, block, index, face);
-            case "REEDS" -> renderBlocks.renderReeds(this.workingChunk, this.parentWorld, block, index, face);
+            case "BERRY_BUSH_GROWING" -> renderBlocks.renderBerryBushGrowing(this.workingChunk, this.parentWorld, block, index, face);
             case "LEAF" -> {
                 if(GameSettings.transparentLeaves){
                     renderBlocks.renderTransparentBlock(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);

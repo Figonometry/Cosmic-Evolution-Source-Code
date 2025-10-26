@@ -9,3 +9,4 @@ isSolid:false
 displayName:Clay
 requireSolidBlockBelow:true
 boundingBox:itemStoneBoundingBox
+alwaysRenderFace:true

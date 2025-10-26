@@ -542,7 +542,7 @@ public final class EntityPlayer extends EntityLiving {
         }
 
 
-        this.inWater = Block.list[this.ce.save.activeWorld.getBlockID(playerX, playerYFoot, playerZ)].ID == Block.water.ID || Block.list[this.ce.save.activeWorld.getBlockID(playerX, playerYHead, playerZ)].ID == Block.water.ID;
+        this.inWater = Block.list[this.ce.save.activeWorld.getBlockID(playerX, playerYFoot, playerZ)].waterlogged || Block.list[this.ce.save.activeWorld.getBlockID(playerX, playerYHead, playerZ)].waterlogged;
         short headBlock = Block.list[this.ce.save.activeWorld.getBlockID(playerX, playerYHead, playerZ)].ID;
         short footBlock = Block.list[this.ce.save.activeWorld.getBlockID(playerX, playerYFoot, playerZ)].ID;
         if(headBlock == Block.water.ID){

@@ -85,6 +85,7 @@ public class Block {
     public static final ModelLoader size3EastWestModel = standardBlockModel.alterStandardBlockModel(13,13,0);
     public static final ModelLoader size2EastWestModel = standardBlockModel.alterStandardBlockModel(14,14,0);
     public static final ModelLoader size1EastWestModel = standardBlockModel.alterStandardBlockModel(15,15,0);
+    public static final ModelLoader size2VoxelModel = itemVoxelModel.copyModel().getScaledModel(2).translateModel(0.46875f, 0, 0.46875f);
     public static final AxisAlignedBB standardBlock = new AxisAlignedBB(0,0,0,1,1,1);
     public static final AxisAlignedBB fullBlock = new AxisAlignedBB(0, 0, 0, 1, 1, 1);
     public static final AxisAlignedBB itemStoneBoundingBox = new AxisAlignedBB(0,0,0,1,0.125,1);
@@ -183,10 +184,10 @@ public class Block {
     public static final Block tallGrass = new Block((short)88, 30, "src/spacegame/assets/blockFiles/tallGrass.txt");
     public static final Block campFire4FireWood = new BlockCampFireUnlit((short) 89, 16, "src/spacegame/assets/blockFiles/campFireUnlit.txt");
     public static final Block fireWoodBlock = new Block((short)90, 31, "src/spacegame/assets/blockFiles/fireWood.txt");
-    public static final Block strawChest = new BlockStrawChest((short)91, 32, "src/spacegame/assets/blockFiles/strawChest.txt",2, 9);
-    public static final Block strawChestTier0 = new BlockStrawCrafting((short)92, 32, "src/spacegame/assets/blockFiles/strawChestBuilding0.txt");
-    public static final Block strawBasketTier0 = new BlockStrawCrafting((short)93, 32, "src/spacegame/assets/blockFiles/strawBasketBuilding.txt");
-    public static final Block strawChestTier1 = new BlockStrawCrafting((short)94, 32, "src/spacegame/assets/blockFiles/strawChestBuilding1.txt");
+    public static final Block reedChest = new BlockReedChest((short)91, 32, "src/spacegame/assets/blockFiles/reedChest.txt",1, 9);
+    public static final Block reedChestTier0 = new BlockReedCrafting((short)92, 32, "src/spacegame/assets/blockFiles/reedChestBuilding0.txt");
+    public static final Block reedBasketTier0 = new BlockReedCrafting((short)93, 32, "src/spacegame/assets/blockFiles/reedBasketBuilding.txt");
+    public static final Block reedChestTier1 = new BlockReedCrafting((short)94, 32, "src/spacegame/assets/blockFiles/reedChestBuilding1.txt");
     public static final Block pitKilnUnlitLog1 = new BlockPitKilnUnlit((short)95, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1,1);
     public static final Block pitKilnUnlitLog2 = new BlockPitKilnUnlit((short)96, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1,1);
     public static final Block pitKilnUnlitLog3 = new BlockPitKilnUnlit((short)97, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1,1);
@@ -198,7 +199,14 @@ public class Block {
     public static final Block itemBlock = new BlockItem((short)103, 19, "src/spacegame/assets/blockFiles/itemBlock.txt", 1, 1);
     public static final Block adobeBrick = new Block((short)104, 17, "src/spacegame/assets/blockFiles/adobeBrick.txt");
     public static final Block reedLower = new BlockReed((short)105, 33, "src/spacegame/assets/blockFiles/reeds.txt");
-    public static final Block reedUpper = new Block((short)106, 34, "src/spacegame/assets/blockFiles/reeds.txt");
+    public static final Block reedUpper = new Block((short)106, 34, "src/spacegame/assets/blockFiles/reedsUpper.txt");
+    public static final Block berrySeed = new BlockBerryBushGrowing((short)107, 35, "src/spacegame/assets/blockFiles/berrySeed.txt");
+    public static final Block berryBushGrowth1 = new BlockBerryBushGrowing((short)108, 11, "src/spacegame/assets/blockFiles/berryBushGrowth.txt");
+    public static final Block berryBushGrowth2 = new BlockBerryBushGrowing((short)109, 11, "src/spacegame/assets/blockFiles/berryBushGrowth.txt");
+    public static final Block berryBushGrowth3 = new BlockBerryBushGrowing((short)110, 11, "src/spacegame/assets/blockFiles/berryBushGrowth.txt");
+    public static final Block berryBushGrowth4 = new BlockBerryBushGrowing((short)111, 11, "src/spacegame/assets/blockFiles/berryBushGrowth.txt");
+    public static final Block berryBushGrowth5 = new BlockBerryBushGrowing((short)112, 11, "src/spacegame/assets/blockFiles/berryBushGrowth.txt");
+    public static final Block reedSeed = new BlockReedGrowing((short)113, 35, "src/spacegame/assets/blockFiles/reedSeed.txt");
     public final short ID;
     public final int textureID;
     public static int facingDirection;
@@ -222,6 +230,9 @@ public class Block {
     public AxisAlignedBB standardCollisionBoundingBox = standardBlock;
     public String displayName = "Undefined Name";
     public boolean requireSolidBlockBelow;
+    public boolean alwaysRenderFace;
+    public boolean colorize;
+    public boolean waterlogged;
 
     public Block(short ID, int textureID, String filepath) {
         if (list[ID] != null) {
@@ -267,8 +278,16 @@ public class Block {
                 this.requireSolidBlockBelow = Boolean.parseBoolean(properties[1]);
             }
 
+            if(properties[0].equals("alwaysRenderFace")){
+                this.alwaysRenderFace = Boolean.parseBoolean(properties[1]);
+            }
+
             if (properties[0].equals("canBeBroken")) {
                 this.canBeBroken = Boolean.parseBoolean(properties[1]);
+            }
+
+            if(properties[0].equals("waterlogged")){
+                this.waterlogged = Boolean.parseBoolean(properties[1]);
             }
 
             if (properties[0].equals("isLightBlock")) {
@@ -281,6 +300,10 @@ public class Block {
 
             if (properties[0].equals("lightBlockValue")) {
                 this.lightBlockValue = Byte.parseByte(properties[1]);
+            }
+
+            if(properties[0].equals("colorize")){
+                this.colorize = Boolean.parseBoolean(properties[1]);
             }
 
             if (properties[0].equals("lightColor")) {
@@ -325,6 +348,7 @@ public class Block {
                     case "strawChestModel" -> this.blockModel = strawChestModel;
                     case "itemClayModel" -> this.blockModel = itemClayModel;
                     case "clayCookingPotModel" -> this.blockModel = clayCookingPotModel;
+                    case "size2VoxelModel" -> this.blockModel = size2VoxelModel;
                     case "size15NormalModel" -> this.blockModel = size15NormalModel;
                     case "size14NormalModel" -> this.blockModel = size14NormalModel;
                     case "size13NormalModel" -> this.blockModel = size13NormalModel;
@@ -494,7 +518,7 @@ public class Block {
             }
         }
 
-        world.setBlockWithNotify(x, y, z, Block.air.ID);
+        world.setBlockWithNotify(x, y, z, list[world.getBlockID(x,y,z)].waterlogged ? water.ID : air.ID);
 
 
         if(this.isSolid) {
@@ -616,6 +640,14 @@ public class Block {
                 if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) && KeyListener.keyReleased[GLFW.GLFW_KEY_LEFT_SHIFT] && world.getBlockID(player.blockLookingAt[0], player.blockLookingAt[1], player.blockLookingAt[2]) != logPile.ID) {;
                     heldBlock = brickPile.ID;
                     KeyListener.setKeyReleased(GLFW.GLFW_KEY_LEFT_SHIFT);
+                } else {
+                    return;
+                }
+            }
+            case "BERRY_SEED" -> heldBlock = berrySeed.ID;
+            case "REED_SEED" -> {
+                if(list[world.getBlockID(x, y - 1, z)].isSolid && world.getBlockID(x,y,z) == water.ID && world.getBlockID(x, y + 1, z) == air.ID){
+                    heldBlock = reedSeed.ID;
                 } else {
                     return;
                 }

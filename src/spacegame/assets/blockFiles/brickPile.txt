@@ -7,3 +7,4 @@ toolType:unbreakable
 breakTimer:120
 displayName:Brick Pile
 hardness:10
+alwaysRenderFace:true

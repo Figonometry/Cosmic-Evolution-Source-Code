@@ -10,3 +10,4 @@ displayName:Pit Kiln
 requiresTool:true
 toolType:unbreakable
 hardness:10
+alwaysRenderFace:true

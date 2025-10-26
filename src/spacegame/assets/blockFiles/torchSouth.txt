@@ -5,3 +5,4 @@ lightBlockValue:12
 lightColor:16760877
 blockName:TORCH
 blockModel:torchSouthBlockModel
+alwaysRenderFace:true

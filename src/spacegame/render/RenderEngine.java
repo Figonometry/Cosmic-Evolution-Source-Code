@@ -355,6 +355,7 @@ public final class RenderEngine {
                 case 32 -> "strawChest";
                 case 33 -> "reedLower";
                 case 34 -> "reedUpper";
+                case 35 -> "seed";
                 default -> "missing";
             };
         } else if(textureFolderpath.contains("item")){
@@ -377,6 +378,7 @@ public final class RenderEngine {
                 case 16 -> "clayAdobeBrick";
                 case 17 -> "mud";
                 case 18 -> "reeds";
+                case 19 -> "berrySeed";
                 default -> "missing";
             };
         }

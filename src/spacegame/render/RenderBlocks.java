@@ -2,10 +2,7 @@ package spacegame.render;
 
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
-import spacegame.block.Block;
-import spacegame.block.BlockCampFire;
-import spacegame.block.BlockLog;
-import spacegame.block.BlockPitKilnUnlit;
+import spacegame.block.*;
 import spacegame.core.MathUtil;
 import spacegame.item.Item;
 import spacegame.world.ChestLocation;
@@ -54,6 +51,17 @@ public class RenderBlocks {
         this.greenReset = 1f;
         this.blueReset = 1f;
         this.skyLightReset = 1f;
+
+        if(Block.list[block].waterlogged && block != Block.water.ID){
+            if((face == TOP_FACE && !Block.list[world.getBlockID(chunk.getBlockXFromIndex(index), chunk.getBlockYFromIndex(index) + 1, chunk.getBlockZFromIndex(index))].isSolid) ||
+                    (face == BOTTOM_FACE && !Block.list[world.getBlockID(chunk.getBlockXFromIndex(index), chunk.getBlockYFromIndex(index) - 1, chunk.getBlockZFromIndex(index))].isSolid) ||
+                    (face == NORTH_FACE && !Block.list[world.getBlockID(chunk.getBlockXFromIndex(index) - 1, chunk.getBlockYFromIndex(index), chunk.getBlockZFromIndex(index))].isSolid) ||
+                    (face == SOUTH_FACE && !Block.list[world.getBlockID(chunk.getBlockXFromIndex(index) + 1, chunk.getBlockYFromIndex(index), chunk.getBlockZFromIndex(index))].isSolid) ||
+                    (face == EAST_FACE && !Block.list[world.getBlockID(chunk.getBlockXFromIndex(index), chunk.getBlockYFromIndex(index), chunk.getBlockZFromIndex(index) - 1)].isSolid)  ||
+                    (face == WEST_FACE && !Block.list[world.getBlockID(chunk.getBlockXFromIndex(index), chunk.getBlockYFromIndex(index), chunk.getBlockZFromIndex(index) + 1)].isSolid)){
+                this.renderTransparentBlock(chunk, world, Block.water.ID, index, face, new int[2]);
+            }
+        }
 
         ModelFace[] modelFaces = Block.list[block].blockModel.getModelFaceOfType(face);
         float[] UVSamples;
@@ -856,7 +864,7 @@ public class RenderBlocks {
         if(face == BOTTOM_FACE)return;
         int[] pixels = new int[1024];
         String filepath = "src/spacegame/assets/textures/item/" +
-                RenderEngine.getBlockName(chunk.getChestLocation(index).inventory.itemStacks[0].item.ID, "src/spacegame/assets/textures/item/") + ".png";
+                RenderEngine.getBlockName(chunk.getChestLocation(index).inventory.itemStacks[0].item.textureID, "src/spacegame/assets/textures/item/") + ".png";
         BufferedImage image = null;
         ModelLoader baseModel = Block.itemVoxelModel;
 
@@ -908,12 +916,19 @@ public class RenderBlocks {
         }
     }
 
-    public void renderReeds(Chunk chunk, World world, short block, int index, int face){
-        if(face == TOP_FACE && block == Block.reedLower.ID){
-            this.renderTransparentBlock(chunk, world, Block.water.ID, index, face, new int[2]);
-        } else {
-            this.renderStandardBlock(chunk, world, block, index, face, new int[2]);
-        }
+
+    public void renderBerryBushGrowing(Chunk chunk, World world, short block, int index, int face){
+
+        ModelLoader baseModel = Block.list[block].blockModel.copyModel();
+
+        float scaleFactor = ((BlockBerryBushGrowing)Block.list[block]).getBerryBushScale();
+
+        float translateVal = ((BlockBerryBushGrowing)Block.list[block]).getBerryBushTranslation();
+
+        ModelFace modelFace = baseModel.getScaledModel(scaleFactor).translateModel(translateVal, 0, translateVal).getModelFace(face);
+
+
+        renderTransparentFace(chunk, world, block, index, face, modelFace, 0,0,0,0,0,0,0,0, 3,1,2, 0, new int[2]);
     }
 
 
@@ -1010,7 +1025,14 @@ public class RenderBlocks {
     }
 
     private void setPlantColorValues(int x, int y, int z, World world, short blockID){
-        if(blockID != Block.grass.ID && blockID != Block.leaf.ID && blockID != Block.tallGrass.ID && blockID != Block.berryBushNoBerries.ID && blockID != Block.grassWithClay.ID)return;
+        if(blockID == Block.itemBlock.ID){
+            float highestChannel = 0;
+            highestChannel = Math.max(this.red, this.green);
+            highestChannel = Math.max(highestChannel, this.blue);
+
+            this.highestChannel = highestChannel != 0.0 ? highestChannel : 0.01f;
+        }
+        if(!Block.list[blockID].colorize)return;
 
 
         int color = blockID == Block.grass.ID  || blockID == Block.tallGrass.ID || blockID == Block.grassWithClay.ID ? PlantColorizer.getGrassColor(world.getTemperature(x,y,z), world.getRainfall(x,z)) : PlantColorizer.getOakLeafColor(world.getTemperature(x,y,z), world.getRainfall(x,z));
@@ -1033,6 +1055,7 @@ public class RenderBlocks {
 
 
        highestChannel = highestChannel != 0.0 ? highestChannel : 0.01f;
+
        this.grayScaleImageMultiplier = MathUtil.floatToHalf(this.highestChannel / highestChannel); //This division gives the number to multiply the vertex color by in the terrain shader to restore to the normal fully lit grass color
     }
 
@@ -1042,6 +1065,13 @@ public class RenderBlocks {
         int zBlock = chunk.getBlockZFromIndex(index);
 
         this.setPlantColorValues(xBlock, yBlock, zBlock, world, blockID);
+
+        if(blockID == Block.itemBlock.ID){
+            this.setVertexLight1Arg(world.getBlockLightValue(xBlock, yBlock , zBlock), world.getBlockLightColor(xBlock, yBlock, zBlock));
+            this.setVertexSkylightValue1Args(world.getBlockSkyLightValue(xBlock, yBlock, zBlock));
+            this.setGrayScaleImageMultiplier();
+            return;
+        }
 
         if (x == xMin && y == yMin && z == zMin) {
             final Block[] blocks = Block.list;
@@ -2234,6 +2264,11 @@ public class RenderBlocks {
         this.skyLightValue = (light1Float + light2Float + light3Float) * 0.33f;
     }
 
+    private void setVertexSkylightValue1Args(byte light1){
+        float light1Float = this.getLightValueFromMap(light1);
+        this.skyLightValue = light1Float;
+    }
+
     private void setVertexSkylightValue4Args(byte light1, byte light2, byte light3, byte light4){
         float light1Float = this.getLightValueFromMap(light1);
         float light2Float = this.getLightValueFromMap(light2);
@@ -2344,6 +2379,9 @@ public class RenderBlocks {
             case TOP_FACE, TOP_FACE_UNSORTED -> {
                 resetLight();
                 setLight(vertex1.x, vertex1.y, vertex1.z, minVertex.x, minVertex.y, minVertex.z, maxVertex.x, maxVertex.y, maxVertex.z, index, face, chunk, world, greedyMeshSize, block);
+              //  if(block == Block.itemBlock.ID){
+              //      System.out.println(this.grayScaleImageMultiplier);
+              //  }
                 this.addVertexFloatOpaque(chunk, this.compressPosXY(vertex1.x + greedyMeshSize[0], vertex1.y));
                 this.addVertexFloatOpaque(chunk, this.compressColor(red, green, blue));
                 this.addVertexFloatOpaque(chunk, this.compressTextureCoordinates(1 + greedyMeshSize[0] + xSample1, 0 + ySample1));

@@ -3,3 +3,4 @@ blockModel:standardBlockModel
 canGreedyMesh:false
 isSolid:false
 canBeBroken:false
+waterlogged:true

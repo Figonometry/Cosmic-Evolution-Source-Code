@@ -21,7 +21,7 @@ public final class GuiInventoryStrawChest extends GuiInventory {
         this.chestInventory = chestInventory;
 
         this.playerInventory.shiftAllItemStacks(-262, 0);
-        this.chestInventory.shiftAllItemStacks(480, 0);
+        this.chestInventory.shiftAllItemStacks(512, 0);
     }
 
     public int getPlayerInventoryShiftX(){
@@ -80,7 +80,7 @@ public final class GuiInventoryStrawChest extends GuiInventory {
         tessellator.addElements();
         tessellator.drawTexture2D(this.playerInventoryUI, Shader.screen2DTexture, CosmicEvolution.camera);
 
-        inventoryUIWidth = 196;
+        inventoryUIWidth = 132;
         inventoryUIHeight = 608;
         inventoryUIX = 512;
         inventoryUIY = 0;

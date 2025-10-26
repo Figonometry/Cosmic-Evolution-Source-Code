@@ -1,0 +1,3 @@
+itemName:REED_SEED
+canPlaceOnGround:true
+displayName:Reed Seed

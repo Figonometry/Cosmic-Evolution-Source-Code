@@ -9,3 +9,4 @@ isSolid:false
 boundingBox:itemStoneBoundingBox
 displayName:Stick
 requireSolidBlockBelow:true
+alwaysRenderFace:true

@@ -138,31 +138,34 @@ public final class GuiMainMenu extends Gui {
             fontRenderer.drawString(this.ce.title, x, y, depth, 16711875, 50, 255);
             y -= 60;
             fontRenderer.toggleItalics();
-            fontRenderer.drawString("Added a visual indication for shifting", x, y, depth, green, 50, 255);
+            fontRenderer.drawString("Added berry seeds, craftable by right clicking a berry on the ground with stone fragments", x, y, depth, green, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Shifting will now slow the player's movement speed", x, y, depth, yellow, 50, 255);
+            fontRenderer.drawString("Added berry growth cycles", x, y, depth, green, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Shifting will now allow the player to peak over ledges", x, y, depth, yellow, 50, 255);
+            fontRenderer.drawString("Berry bushes no longer drop themselves when broken", x, y, depth, yellow, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Adjusted block placement logic", x, y, depth, yellow, 50, 255);
+            fontRenderer.drawString("Added berry seed block", x, y, depth, green, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Berry bushes are no longer random ticked, they will flower and ripen in 7 day cycles", x, y, depth, yellow, 50, 255);
+            fontRenderer.drawString("Reduced inventory slots on reed chest from 18 to 9", x, y, depth, yellow, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Added the ability to place some items on the ground by shift right clicking", x, y, depth, green, 50, 255);
+            fontRenderer.drawString("Berry bushes will now longer have time events on world generation", x, y, depth, yellow, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Lowered stack limit to 64", x, y, depth, yellow, 50, 255);
+            fontRenderer.drawString("Berries can now stack up to 64", x, y, depth, yellow, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Items will now get properly consumed when crafting items", x, y, depth, yellow, 50, 255);
+            fontRenderer.drawString("Renamed straw chest and basket to reeds", x, y, depth, yellow, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Added mud item, made by shift right clicking dirt blocks on water", x, y, depth, green, 50, 255);
+            fontRenderer.drawString("Changed the texture for reed basket and reed chest", x, y, depth, yellow, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Axe right click function now is executed via shifting while breaking a log", x, y, depth, yellow, 50, 255);
+            fontRenderer.drawString("Reed basket and reed chest crafting UI is now opened by shift right clicking,", x, y, depth, yellow, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Added Red Adobe blocks, shift right click a pile of 8 bricks with mud in hand to craft", x, y, depth, green, 50, 255);
+            fontRenderer.drawString("reeds on the ground with a knife in hand", x,y, depth, yellow, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Added reeds, when fully grown they can be harvested by using a knife", x, y, depth, green, 50, 255);
+            fontRenderer.drawString("Reeds in the water are now properly waterlogged", x, y, depth, yellow, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Added reeds to world generation", x, y, depth, green, 50 ,255);
+            fontRenderer.drawString("Item blocks lighting is now correctly calculated", x, y, depth, yellow, 50, 255);
+            y -= 30;
+            fontRenderer.drawString("Added reed seeds, made in the same way as berry seeds, can only be planted in 1 block deep water", x, y, depth, green, 50, 255);
+
             fontRenderer.toggleItalics();
 
 

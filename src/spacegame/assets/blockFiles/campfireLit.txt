@@ -8,3 +8,4 @@ lightBlockValue:14
 breakTimer:60
 lightColor:16760877
 displayName:Campfire
+alwaysRenderFace:true

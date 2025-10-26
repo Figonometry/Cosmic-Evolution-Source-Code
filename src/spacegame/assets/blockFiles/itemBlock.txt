@@ -6,3 +6,4 @@ toolType:unbreakable
 breakTimer:120
 hardness:10
 displayName:???
+alwaysRenderFace:true

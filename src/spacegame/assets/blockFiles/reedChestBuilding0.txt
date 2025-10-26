@@ -1,11 +1,12 @@
 blockName:STRAW_CHEST
 blockModel:strawChestBuild0
 boundingBox:itemStoneBoundingBox
-stepSound:grass
+isSolid:false
 canGreedyMesh:false
+stepSound:grass
 breakTimer:60
 hardness:0.05
 toolType:knife
-isSolid:false
 droppedItemID:12
-displayName:Straw Basket
+displayName:Reed Chest (Under Construction)
+alwaysRenderFace:true

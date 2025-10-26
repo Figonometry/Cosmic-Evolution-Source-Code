@@ -9,7 +9,7 @@ import spacegame.core.MathUtil;
 import spacegame.item.Item;
 import spacegame.render.*;
 
-public final class GuiCraftingStrawStorage extends GuiCrafting {
+public final class GuiCraftingReedStorage extends GuiCrafting {
     public RecipeSelector[] selectableRecipes;
     public Button close;
     public int inventoryUI;
@@ -20,7 +20,7 @@ public final class GuiCraftingStrawStorage extends GuiCrafting {
     public int y;
     public int z;
 
-    public GuiCraftingStrawStorage(CosmicEvolution cosmicEvolution, int x, int y, int z) {
+    public GuiCraftingReedStorage(CosmicEvolution cosmicEvolution, int x, int y, int z) {
         super(cosmicEvolution);
         this.close = new Button(EnumButtonEffects.CLOSE.name(), 50, 50, 349, 190, this, this.ce);
         this.selectableRecipes = new RecipeSelector[2];
@@ -38,8 +38,8 @@ public final class GuiCraftingStrawStorage extends GuiCrafting {
 
         for(int i = 0; i < this.selectableRecipes.length; i++){
             switch (i) {
-                case 0 -> this.selectableRecipes[i] = new RecipeSelector(Item.strawBasket.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.strawBasket.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.straw.ID}, new int[]{8});
-                case 1 -> this.selectableRecipes[i] = new RecipeSelector(Item.block.ID, Block.strawChest.ID,selectableX, selectableY, selectableWidth, selectableHeight, Item.block.getDisplayName(Block.strawChest.ID), new short[]{Item.straw.ID}, new int[]{8});
+                case 0 -> this.selectableRecipes[i] = new RecipeSelector(Item.reedBasket.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.reedBasket.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.reeds.ID}, new int[]{8});
+                case 1 -> this.selectableRecipes[i] = new RecipeSelector(Item.block.ID, Block.reedChest.ID,selectableX, selectableY, selectableWidth, selectableHeight, Item.block.getDisplayName(Block.reedChest.ID), new short[]{Item.reeds.ID}, new int[]{8});
             }
             selectableX += 64;
         }
@@ -231,9 +231,13 @@ public final class GuiCraftingStrawStorage extends GuiCrafting {
 
     public void setRecipeSelected(RecipeSelector selectedRecipe){
         if(selectedRecipe.isBlock){
-            this.ce.save.activeWorld.setBlockWithNotify(x,y,z, Block.strawChestTier0.ID);
+            this.ce.save.activeWorld.setBlockWithNotify(x,y,z, Block.reedChestTier0.ID);
+            this.ce.save.activeWorld.clearChestLocation(x,y,z);
+            this.ce.save.activeWorld.removeChestLocation(x,y,z);
         } else {
-            this.ce.save.activeWorld.setBlockWithNotify(x,y,z, Block.strawBasketTier0.ID);
+            this.ce.save.activeWorld.setBlockWithNotify(x,y,z, Block.reedBasketTier0.ID);
+            this.ce.save.activeWorld.clearChestLocation(x,y,z);
+            this.ce.save.activeWorld.removeChestLocation(x,y,z);
         }
         for(int i = 0; i < selectedRecipe.requiredItemCount.length; i++){
             for(int j = 0; j < selectedRecipe.requiredItemCount[i]; j++){

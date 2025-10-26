@@ -1,11 +1,12 @@
-blockName:TALL_GRASS
-blockModel:xCrossBlockModel
+blockName:BERRY_BUSH_GROWING
+blockModel:berryBushModel
 stepSound:grass
 breakTimer:60
 hardness:0.01
 droppedItemID:-1
+itemMetadata:62
 isSolid:false
 requireSolidBlockBelow:true
-displayName:Tall Grass
+displayName:Berry Bush (Growing)
 alwaysRenderFace:true
 colorize:true

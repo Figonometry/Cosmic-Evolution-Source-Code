@@ -100,7 +100,7 @@ public final class CosmicEvolution implements Runnable {
     }
 
     private void startGame() {
-        this.title = "Cosmic Evolution Alpha v0.32";
+        this.title = "Cosmic Evolution Alpha v0.33";
         GameSettings.loadOptionsFromFile(this.launcherDirectory);
         this.clearLogFiles(new File(this.launcherDirectory + "/crashReports"));
         this.initLWJGL();
@@ -680,10 +680,10 @@ public final class CosmicEvolution implements Runnable {
             }
         }
 
-        if(this.currentGui instanceof GuiCraftingStrawStorage){
-            RecipeSelector recipeSelector = ((GuiCraftingStrawStorage)this.currentGui).getSelectedRecipeSelector();
+        if(this.currentGui instanceof GuiCraftingReedStorage){
+            RecipeSelector recipeSelector = ((GuiCraftingReedStorage)this.currentGui).getSelectedRecipeSelector();
             if(recipeSelector != null){
-                ((GuiCraftingStrawStorage)this.currentGui).setRecipeSelected(recipeSelector);
+                ((GuiCraftingReedStorage)this.currentGui).setRecipeSelected(recipeSelector);
             }
         }
 

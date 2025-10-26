@@ -6,3 +6,4 @@ lightColor:16760877
 blockName:TORCH
 requireSolidBlockBelow:true
 blockModel:torchBlockModel
+alwaysRenderFace:true

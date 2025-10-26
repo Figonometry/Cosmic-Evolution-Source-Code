@@ -26,8 +26,10 @@ public final class BlockReed extends Block implements ITimeUpdate {
         } else {
             world.removeTimeEvent(x,y,z);
             world.setBlockWithNotify(x, y + 1, z, Block.air.ID);
-            world.setBlockWithNotify(x, y, z, Block.air.ID);
+            world.setBlockWithNotify(x, y, z, list[world.getBlockID(x,y,z)].waterlogged ? water.ID : air.ID);
         }
+
+        player.reduceHeldItemDurability();
 
     }
     @Override

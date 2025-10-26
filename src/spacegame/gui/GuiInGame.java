@@ -540,7 +540,7 @@ public final class GuiInGame extends Gui {
                 }
                 int[] pixels = new int[1024];
                 String filepath = "src/spacegame/assets/textures/item/" +
-                        RenderEngine.getBlockName(itemID, "src/spacegame/assets/textures/item/") + ".png";
+                        RenderEngine.getBlockName(Item.list[itemID].textureID, "src/spacegame/assets/textures/item/") + ".png";
                 BufferedImage image = null;
 
                 try {

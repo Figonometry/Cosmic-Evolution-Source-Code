@@ -1,0 +1,3 @@
+itemName:BERRY_SEED
+canPlaceOnGround:true
+displayName:Berry Seed

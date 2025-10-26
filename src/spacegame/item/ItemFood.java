@@ -4,7 +4,7 @@ import spacegame.core.MouseListener;
 import spacegame.entity.EntityPlayer;
 import spacegame.world.World;
 
-public final class ItemFood extends Item {
+public class ItemFood extends Item {
     public float healthIncrease;
 
     public ItemFood(short ID, int textureID, String filepath, float healthIncrease) { //nom nom

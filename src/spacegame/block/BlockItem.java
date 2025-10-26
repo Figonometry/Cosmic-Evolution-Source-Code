@@ -31,6 +31,11 @@ public final class BlockItem extends BlockContainer {
                 world.removeChestLocation(x,y,z);
                 world.setBlockWithNotify(x,y,z, Block.air.ID);
             }
+            return;
+        }
+
+        if(playerHeldItem != Item.NULL_ITEM_REFERENCE){
+            Item.list[world.getChestLocation(x,y,z).inventory.itemStacks[0].item.ID].onItemBlockRightClick(x,y,z, world, player);
         }
     }
 

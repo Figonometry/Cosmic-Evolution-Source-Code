@@ -7,3 +7,4 @@ toolType:shovel
 boundingBox:slab
 isSolid:false
 displayName:Red Clay Cooking Pot
+alwaysRenderFace:true
