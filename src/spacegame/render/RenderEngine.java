@@ -356,6 +356,8 @@ public final class RenderEngine {
                 case 33 -> "reedLower";
                 case 34 -> "reedUpper";
                 case 35 -> "seed";
+                case 36 -> "reedGrowing";
+                case 37 -> "sapling";
                 default -> "missing";
             };
         } else if(textureFolderpath.contains("item")){

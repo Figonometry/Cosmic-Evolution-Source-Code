@@ -193,7 +193,7 @@ public class Block {
     public static final Block pitKilnUnlitLog3 = new BlockPitKilnUnlit((short)97, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1,1);
     public static final Block pitKilnUnlit = new BlockPitKilnUnlit((short)98, 15, "src/spacegame/assets/blockFiles/pitKilnUnlit.txt", 1,1);
     public static final Block pitKilnLit = new BlockPitKilnLit((short)99, 15, "src/spacegame/assets/blockFiles/pitKilnLit.txt", 1,1);
-    public static final Block largeFireWoodBlock = new Block((short)100, 31, "src/spacegame/assets/blockFiles/firewood.txt");
+    public static final Block largeFireWoodBlock = new Block((short)100, 31, "src/spacegame/assets/blockFiles/fireWood.txt");
     public static final Block logPile = new BlockLogPile((short)101, 31, "src/spacegame/assets/blockFiles/logPile.txt", Item.fireWood.ID, 1, 1);
     public static final Block brickPile = new BlockBrickPile((short)102, 13, "src/spacegame/assets/blockFiles/brickPile.txt", Item.rawClayAdobeBrick.ID, 1, 1);
     public static final Block itemBlock = new BlockItem((short)103, 19, "src/spacegame/assets/blockFiles/itemBlock.txt", 1, 1);
@@ -207,6 +207,13 @@ public class Block {
     public static final Block berryBushGrowth4 = new BlockBerryBushGrowing((short)111, 11, "src/spacegame/assets/blockFiles/berryBushGrowth.txt");
     public static final Block berryBushGrowth5 = new BlockBerryBushGrowing((short)112, 11, "src/spacegame/assets/blockFiles/berryBushGrowth.txt");
     public static final Block reedSeed = new BlockReedGrowing((short)113, 35, "src/spacegame/assets/blockFiles/reedSeed.txt");
+    public static final Block reedGrowth1 = new BlockReedGrowing((short)114, 36, "src/spacegame/assets/blockFiles/reedGrowth.txt");
+    public static final Block reedGrowth2 = new BlockReedGrowing((short)115, 36, "src/spacegame/assets/blockFiles/reedGrowth.txt");
+    public static final Block reedGrowth3 = new BlockReedGrowing((short)116, 36, "src/spacegame/assets/blockFiles/reedGrowth.txt");
+    public static final Block reedGrowth4 = new BlockReedGrowing((short)117, 36, "src/spacegame/assets/blockFiles/reedGrowth.txt");
+    public static final Block reedGrowth5 = new BlockReedGrowing((short)118, 36, "src/spacegame/assets/blockFiles/reedGrowth.txt");
+    public static final Block treeSeed = new BlockSapling((short)119, 35, "src/spacegame/assets/blockFiles/treeSeed.txt");
+    public static final Block sapling = new BlockSapling((short)120, 37, "src/spacegame/assets/blockFiles/sapling.txt");
     public final short ID;
     public final int textureID;
     public static int facingDirection;
@@ -644,10 +651,23 @@ public class Block {
                     return;
                 }
             }
-            case "BERRY_SEED" -> heldBlock = berrySeed.ID;
+            case "BERRY_SEED" -> {
+                if(list[world.getBlockID(x, y - 1, z)].ID == grass.ID || list[world.getBlockID(x, y - 1, z)].ID == dirt.ID) {
+                    heldBlock = berrySeed.ID;
+                } else {
+                    return;
+                };
+            }
             case "REED_SEED" -> {
-                if(list[world.getBlockID(x, y - 1, z)].isSolid && world.getBlockID(x,y,z) == water.ID && world.getBlockID(x, y + 1, z) == air.ID){
+                if(list[world.getBlockID(x, y - 1, z)].isSolid && (world.getBlockID(x, y - 1, z) == sand.ID || world.getBlockID(x, y - 1, z) == dirt.ID) && world.getBlockID(x,y,z) == water.ID && world.getBlockID(x, y + 1, z) == air.ID){
                     heldBlock = reedSeed.ID;
+                } else {
+                    return;
+                }
+            }
+            case "TREE_SEED" -> {
+                if(world.getBlockID(x, y - 1, z) == grass.ID || world.getBlockID(x, y - 1, z) == dirt.ID) {
+                    heldBlock = treeSeed.ID;
                 } else {
                     return;
                 }

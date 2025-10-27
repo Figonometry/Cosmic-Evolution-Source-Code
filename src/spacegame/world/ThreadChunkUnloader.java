@@ -46,6 +46,7 @@ public final class ThreadChunkUnloader implements Runnable {
             chunkData.setBoolean("empty", chunk.empty);
             if(!chunk.empty) {
                 chunkData.setShortArray("blocks", chunk.blocks);
+                chunkData.setShortArray("decayableLeaves", chunk.decayableLeaves);
                 chunkData.setIntArray("topFaceBitMask", chunk.topFaceBitMask);
                 chunkData.setIntArray("bottomFaceBitMask", chunk.bottomFaceBitMask);
                 chunkData.setIntArray("northFaceBitMask", chunk.northFaceBitMask);

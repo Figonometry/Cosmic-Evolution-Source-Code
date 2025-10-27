@@ -131,7 +131,7 @@ public final class Tech {
             }
 
             if (properties[0].equals("unlockDescription")) {
-                this.unlockDescriptions.add(properties[1]);
+                this.addUnlockDescription("Unlocks: " + properties[1]);
             }
 
             if (properties[0].equals("infoText")) {
@@ -156,6 +156,27 @@ public final class Tech {
         info.add(new String(stringLength));
 
         return info;
+    }
+
+    private void addUnlockDescription(String text){
+        char[] characters = text.toCharArray();
+
+        ArrayList<String> desc = new ArrayList<>();
+
+        char[] stringLength = new char[45];
+        for(int i = 0; i < characters.length; i++){
+            stringLength[i % 45] = characters[i];
+            if(i % 45 == 44){
+                desc.add(new String(stringLength));
+                Arrays.fill(stringLength, ' ');
+            }
+        }
+
+        desc.add(new String(stringLength));
+
+        for(int i = 0; i < desc.size(); i++){
+            this.unlockDescriptions.add(desc.get(i));
+        }
     }
 
     public ArrayList<String> getRequiredTechs(){

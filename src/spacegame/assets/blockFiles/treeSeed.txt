@@ -1,0 +1,12 @@
+blockName:TREE_SEED
+blockModel:size2VoxelModel
+stepSound:grass
+canGreedyMesh:false
+droppedItemID:21
+breakTimer:60
+hardness:0.05
+isSolid:false
+displayName:Tree Seed
+boundingBox:itemStoneBoundingBox
+requireSolidBlockBelow:true
+alwaysRenderFace:true

@@ -57,7 +57,7 @@ in vec4 fColor;
 in vec2 fTexCoords;
 in float fTexId;
 
-uniform sampler2D uTextures[256];
+uniform sampler2D uTextures;
 uniform bool useFog;
 uniform float fogDistance;
 uniform bool invertColor;
@@ -105,7 +105,7 @@ vec4 setFogUnderwater(vec4 color){
 void main()
 {
     int id = int(fTexId);
-    color = fColor * texture(uTextures[id], fTexCoords);
+    color = fColor * texture(uTextures, fTexCoords);
     if (useFog){
         if (underwater){
             color = setFogUnderwater(color);

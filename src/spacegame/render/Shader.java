@@ -20,18 +20,32 @@ public final class Shader {
     public int fragmentID;
     public int shaderProgramID;
     public String filepath;
-    public static final Shader worldShaderTextureArray = new Shader("src/spacegame/assets/shader/worldTextureArray.glsl");
-    public static final Shader worldShader2DTexture = new Shader("src/spacegame/assets/shader/world2DTexture.glsl");
-    public static final Shader worldShader2DTextureWithAtlas = new Shader("src/spacegame/assets/shader/world2DTextureWithAtlas.glsl");
-    public static final Shader worldShaderCubeMapTexture = new Shader("src/spacegame/assets/shader/worldCubeMapTexture.glsl");
-    public static final Shader universeShaderCubeMapTexture = new Shader("src/spacegame/assets/shader/universeCubeMapTexture.glsl");
-    public static final Shader universeShader2DTexture = new Shader("src/spacegame/assets/shader/universe2DTexture.glsl");
-    public static final Shader screen2DTexture = new Shader("src/spacegame/assets/shader/screen2DTexture.glsl");
-    public static final Shader screen2DTextureAtlas = new Shader("src/spacegame/assets/shader/screen2DTextureAtlas.glsl");
-    public static final Shader screenTextureArray = new Shader("src/spacegame/assets/shader/screenTextureArray.glsl");
-    public static final Shader terrainShader = new Shader("src/spacegame/assets/shader/terrainShader.glsl"); //This is split from the other shaders to have a very specialized shader for the terrain itself since this is the most time consuming part of rendering a frame
-    public static final Shader shadowMapShader = new Shader("src/spacegame/assets/shader/shadowMap.glsl");
+    public static Shader worldShaderTextureArray;
+    public static Shader worldShader2DTexture;
+    public static Shader worldShader2DTextureWithAtlas;
+    public static Shader worldShaderCubeMapTexture;
+    public static Shader universeShaderCubeMapTexture;
+    public static Shader universeShader2DTexture;
+    public static Shader screen2DTextureAtlas;
+    public static Shader screen2DTexture;
+    public static Shader screenTextureArray;
+    public static Shader terrainShader;
+    public static Shader shadowMapShader;
 
+
+    public static void loadShaders(){
+       worldShaderTextureArray = new Shader("src/spacegame/assets/shader/worldTextureArray.glsl");
+       worldShader2DTexture = new Shader("src/spacegame/assets/shader/world2DTexture.glsl");
+       worldShader2DTextureWithAtlas = new Shader("src/spacegame/assets/shader/world2DTextureWithAtlas.glsl");
+       worldShaderCubeMapTexture = new Shader("src/spacegame/assets/shader/worldCubeMapTexture.glsl");
+       universeShaderCubeMapTexture = new Shader("src/spacegame/assets/shader/universeCubeMapTexture.glsl");
+       universeShader2DTexture = new Shader("src/spacegame/assets/shader/universe2DTexture.glsl");
+       screen2DTexture = new Shader("src/spacegame/assets/shader/screen2DTexture.glsl");
+       screen2DTextureAtlas = new Shader("src/spacegame/assets/shader/screen2DTextureAtlas.glsl");
+       screenTextureArray = new Shader("src/spacegame/assets/shader/screenTextureArray.glsl");
+       terrainShader = new Shader("src/spacegame/assets/shader/terrainShader.glsl"); //This is split from the other shaders to have a very specialized shader for the terrain itself since this is the most time consuming part of rendering a frame
+       shadowMapShader = new Shader("src/spacegame/assets/shader/shadowMap.glsl");
+    }
 
     public Shader(String filepath) {
         this.filepath = filepath;
@@ -133,8 +147,13 @@ public final class Shader {
         this.shaderProgramID = GL46.glCreateProgram();
         GL46.glAttachShader(this.shaderProgramID, this.vertexID);
         GL46.glAttachShader(this.shaderProgramID, this.fragmentID);
-        GL46.glLinkProgram(this.shaderProgramID);
+        GL46.glLinkProgram(this.shaderProgramID); //This line throws on linux with an error of Too many fragment samplers
 
+
+        GL46.glDetachShader(this.shaderProgramID, this.vertexID);
+        GL46.glDetachShader(this.shaderProgramID, this.fragmentID);
+        GL46.glDeleteShader(this.vertexID);
+        GL46.glDeleteShader(this.fragmentID);
 
         //check for link errors
         success = GL46.glGetProgrami(this.shaderProgramID, GL46.GL_LINK_STATUS);

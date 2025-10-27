@@ -152,13 +152,15 @@ public final class GuiCreateNewWorld extends Gui {
             return new Random().nextLong();
         } else {
             String string = "";
+            long val = 0;
             for (int i = 0; i < this.setSeed.text.length(); i++) {
                 if (this.setSeed.text.charAt(i) != '0' && this.setSeed.text.charAt(i) != '1' && this.setSeed.text.charAt(i) != '2' && this.setSeed.text.charAt(i) != '3' && this.setSeed.text.charAt(i) != '4' && this.setSeed.text.charAt(i) != '5' && this.setSeed.text.charAt(i) != '6' && this.setSeed.text.charAt(i) != '7' && this.setSeed.text.charAt(i) != '8' && this.setSeed.text.charAt(i) != '9'){
-                    string += this.convertLetterToNumber(this.setSeed.text.charAt(i));
+                    val += this.convertLetterToNumber(this.setSeed.text.charAt(i));
                 } else {
                     string += this.setSeed.text.charAt(i);
                 }
             }
+            string += Long.toString(val);
             return Long.parseLong(string);
         }
     }

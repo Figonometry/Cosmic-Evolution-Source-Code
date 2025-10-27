@@ -118,10 +118,10 @@ public final class TechBlock {
             }
             fontRenderer.toggleItalics();
 
-            if(this.tech.state != Tech.UNLOCKED) {
+            if(this.tech.state != Tech.UNKNOWN) {
                 int y = 60;
                 for (int i = 0; i < this.tech.unlockDescriptions.size(); i++) {
-                    fontRenderer.drawString("Unlocks: " + this.tech.unlockDescriptions.get(i), topLeftX, y, -49, 16777215, 30, 255);
+                    fontRenderer.drawString(this.tech.unlockDescriptions.get(i), topLeftX, y, -49, 255 << 8 , 25, 255);
                     y -= 30;
                 }
             }

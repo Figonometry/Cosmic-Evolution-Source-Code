@@ -11,7 +11,7 @@ public class WorldGenTree extends WorldGen {
     public boolean decayIntoDirt;
 
     public WorldGenTree(Chunk chunk, WorldEarth worldEarth, int index) {
-        if(chunk.blocks[index] != Block.grass.ID)return; //Guard clause to prevent trees from generating when they shouldnt
+        if(chunk.blocks[index] != Block.grass.ID && chunk.blocks[index] != Block.dirt.ID)return; //Guard clause to prevent trees from generating when they shouldnt
         this.worldEarth = worldEarth;
         this.index = index;
         this.chunk = chunk;

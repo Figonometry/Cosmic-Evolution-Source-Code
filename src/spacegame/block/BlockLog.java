@@ -9,6 +9,7 @@ import spacegame.entity.EntityItem;
 import spacegame.entity.EntityPlayer;
 import spacegame.item.Item;
 import spacegame.item.ItemAxe;
+import spacegame.world.Chunk;
 import spacegame.world.World;
 
 public final class BlockLog extends Block {
@@ -21,6 +22,7 @@ public final class BlockLog extends Block {
     public void onLeftClick(int x, int y, int z, World world, EntityPlayer player){
         this.handleSpecialLeftClickFunctions(x,y,z, world, player);
         world.setBlockWithNotify(x,y,z, Block.air.ID);
+        this.notifyNearbyLeafBlocks(x,y,z, world);
         player.reduceHeldItemDurability();
     }
 
@@ -38,6 +40,25 @@ public final class BlockLog extends Block {
         } else {
             if (list[world.getBlockID(x,y,z)].itemDropChance > CosmicEvolution.globalRand.nextFloat()) {
                 world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).addEntityToList(new EntityBlock(x + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), y + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), z + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), list[world.getBlockID(x,y,z)].itemMetadata, (byte) 1));
+            }
+        }
+    }
+
+    private void notifyNearbyLeafBlocks(int x, int y, int z, World world){
+        int minBoxX = x - 5;
+        int minBoxY = y - 5;
+        int minBoxZ = z - 5;
+        int maxBoxX = x + 5;
+        int maxBoxY = y + 5;
+        int maxBoxZ = z + 5;
+
+        for(x = minBoxX; x < maxBoxX; x++){
+            for(y = minBoxY; y < maxBoxY; y++){
+                for(z = minBoxZ; z < maxBoxZ; z++){
+                    if(Block.list[world.getBlockID(x,y,z)] instanceof BlockLeaf){
+                       world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).addDecayableLeafToArray((short) Chunk.getBlockIndexFromCoordinates(x,y,z));
+                    }
+                }
             }
         }
     }

@@ -138,34 +138,19 @@ public final class GuiMainMenu extends Gui {
             fontRenderer.drawString(this.ce.title, x, y, depth, 16711875, 50, 255);
             y -= 60;
             fontRenderer.toggleItalics();
-            fontRenderer.drawString("Added berry seeds, craftable by right clicking a berry on the ground with stone fragments", x, y, depth, green, 50, 255);
+            fontRenderer.drawString("Entering too many characters when setting a world seed no longer causes crashes", x, y, depth, yellow, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Added berry growth cycles", x, y, depth, green, 50, 255);
+            fontRenderer.drawString("Added growth stages to reeds", x, y, depth, green, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Berry bushes no longer drop themselves when broken", x, y, depth, yellow, 50, 255);
+            fontRenderer.drawString("Added unlock feature for Foraging II tech", x, y, depth, green, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Added berry seed block", x, y, depth, green, 50, 255);
+            fontRenderer.drawString("Reduced shader sampler usage", x, y, depth, yellow, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Reduced inventory slots on reed chest from 18 to 9", x, y, depth, yellow, 50, 255);
+            fontRenderer.drawString("Added saplings", x, y, depth, green, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Berry bushes will now longer have time events on world generation", x, y, depth, yellow, 50, 255);
+            fontRenderer.drawString("Added tree seeds", x, y, depth, green, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Berries can now stack up to 64", x, y, depth, yellow, 50, 255);
-            y -= 30;
-            fontRenderer.drawString("Renamed straw chest and basket to reeds", x, y, depth, yellow, 50, 255);
-            y -= 30;
-            fontRenderer.drawString("Changed the texture for reed basket and reed chest", x, y, depth, yellow, 50, 255);
-            y -= 30;
-            fontRenderer.drawString("Reed basket and reed chest crafting UI is now opened by shift right clicking,", x, y, depth, yellow, 50, 255);
-            y -= 30;
-            fontRenderer.drawString("reeds on the ground with a knife in hand", x,y, depth, yellow, 50, 255);
-            y -= 30;
-            fontRenderer.drawString("Reeds in the water are now properly waterlogged", x, y, depth, yellow, 50, 255);
-            y -= 30;
-            fontRenderer.drawString("Item blocks lighting is now correctly calculated", x, y, depth, yellow, 50, 255);
-            y -= 30;
-            fontRenderer.drawString("Added reed seeds, made in the same way as berry seeds, can only be planted in 1 block deep water", x, y, depth, green, 50, 255);
-
+            fontRenderer.drawString("Added leaf decay", x, y, depth, green, 50, 255);
             fontRenderer.toggleItalics();
 
 

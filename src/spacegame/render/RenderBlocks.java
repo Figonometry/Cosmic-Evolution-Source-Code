@@ -52,6 +52,17 @@ public class RenderBlocks {
         this.blueReset = 1f;
         this.skyLightReset = 1f;
 
+        this.handleWaterLoggedBlocks(chunk, world, block, index, face);
+
+        ModelFace[] modelFaces = Block.list[block].blockModel.getModelFaceOfType(face);
+        float[] UVSamples;
+        for (int i = 0; i < modelFaces.length; i++) {
+            UVSamples = face == TOP_FACE || face == BOTTOM_FACE ? autoUVTopBottom(this.getFaceWidth(modelFaces[i]), this.getFaceHeight(modelFaces[i])) : autoUVNSEW(this.getFaceWidth(modelFaces[i]), this.getFaceHeight(modelFaces[i]));
+            renderOpaqueFace(chunk, world, block, index, face, modelFaces[i], UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, greedyMeshSize);
+        }
+    }
+
+    private void handleWaterLoggedBlocks(Chunk chunk, World world, short block, int index, int face){
         if(Block.list[block].waterlogged && block != Block.water.ID){
             if((face == TOP_FACE && !Block.list[world.getBlockID(chunk.getBlockXFromIndex(index), chunk.getBlockYFromIndex(index) + 1, chunk.getBlockZFromIndex(index))].isSolid) ||
                     (face == BOTTOM_FACE && !Block.list[world.getBlockID(chunk.getBlockXFromIndex(index), chunk.getBlockYFromIndex(index) - 1, chunk.getBlockZFromIndex(index))].isSolid) ||
@@ -61,13 +72,6 @@ public class RenderBlocks {
                     (face == WEST_FACE && !Block.list[world.getBlockID(chunk.getBlockXFromIndex(index), chunk.getBlockYFromIndex(index), chunk.getBlockZFromIndex(index) + 1)].isSolid)){
                 this.renderTransparentBlock(chunk, world, Block.water.ID, index, face, new int[2]);
             }
-        }
-
-        ModelFace[] modelFaces = Block.list[block].blockModel.getModelFaceOfType(face);
-        float[] UVSamples;
-        for (int i = 0; i < modelFaces.length; i++) {
-            UVSamples = face == TOP_FACE || face == BOTTOM_FACE ? autoUVTopBottom(this.getFaceWidth(modelFaces[i]), this.getFaceHeight(modelFaces[i])) : autoUVNSEW(this.getFaceWidth(modelFaces[i]), this.getFaceHeight(modelFaces[i]));
-            renderOpaqueFace(chunk, world, block, index, face, modelFaces[i], UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, greedyMeshSize);
         }
     }
 
@@ -929,6 +933,21 @@ public class RenderBlocks {
 
 
         renderTransparentFace(chunk, world, block, index, face, modelFace, 0,0,0,0,0,0,0,0, 3,1,2, 0, new int[2]);
+    }
+
+    public void renderReedGrowing(Chunk chunk, World world, short block, int index, int face){
+
+        ModelLoader baseModel = Block.list[block].blockModel.copyModel();
+
+        float scaleFactor = ((BlockReedGrowing)Block.list[block]).getReedGrowthScale();
+
+        float translateVal = ((BlockReedGrowing)Block.list[block]).getReedTranslation();
+
+        ModelFace modelFace = baseModel.getScaledModel(scaleFactor).translateModel(translateVal, 0, translateVal).getModelFace(face);
+
+        this.handleWaterLoggedBlocks(chunk, world, block, index, face);
+
+        renderOpaqueFace(chunk, world, block, index, face, modelFace, 0,0,0,0,0,0,0,0, 3,1,2, 0, new int[2]);
     }
 
 

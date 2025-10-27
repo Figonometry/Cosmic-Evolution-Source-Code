@@ -932,11 +932,21 @@ public final class EntityPlayer extends EntityLiving {
     }
 
     public void reduceHeldItemDurability(){
+        if(this.inventory.itemStacks[selectedInventorySlot].item == null)return;
+
         if (this.inventory.itemStacks[selectedInventorySlot].durability != -1) {
             this.inventory.itemStacks[selectedInventorySlot].durability--;
             if(this.inventory.itemStacks[selectedInventorySlot].durability == 0){
                 this.removeItemFromInventory();
             }
+        }
+    }
+
+    public void addHeldItemDurability(){
+        if(this.inventory.itemStacks[selectedInventorySlot].item == null)return;
+
+        if (this.inventory.itemStacks[selectedInventorySlot].durability != -1) {
+            this.inventory.itemStacks[selectedInventorySlot].durability++;
         }
     }
 

@@ -204,7 +204,7 @@ public final class ThreadRebuildChunk implements Runnable {
     private void addBlockToRenderData(short block, int index, int face, int[] greedyMeshSize, RenderBlocks renderBlocks) {
         switch (Block.list[block].blockName) {
             case "TORCH" -> renderBlocks.renderTorch(this.workingChunk, this.parentWorld, block, index, face);
-            case "WATER", "TALL_GRASS" ->
+            case "WATER", "TALL_GRASS", "SAPLING" ->
                     renderBlocks.renderTransparentBlock(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);
             case "CAMPFIRE_LIT" -> {
                 renderBlocks.renderCampFire(this.workingChunk, this.parentWorld, block, index, face);
@@ -224,6 +224,7 @@ public final class ThreadRebuildChunk implements Runnable {
             case "ITEM_BLOCK" -> renderBlocks.renderItemBlock(this.workingChunk, this.parentWorld, block, index, face);
             case "BRICK_PILE" -> renderBlocks.renderBrickPile(this.workingChunk, this.parentWorld, block, index, face);
             case "BERRY_BUSH_GROWING" -> renderBlocks.renderBerryBushGrowing(this.workingChunk, this.parentWorld, block, index, face);
+            case "REEDS_GROWTH" -> renderBlocks.renderReedGrowing(this.workingChunk, this.parentWorld, block, index, face);
             case "LEAF" -> {
                 if(GameSettings.transparentLeaves){
                     renderBlocks.renderTransparentBlock(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);

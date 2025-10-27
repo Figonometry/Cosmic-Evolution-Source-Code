@@ -3,6 +3,7 @@ package spacegame.world;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
+import spacegame.block.BlockLeaf;
 import spacegame.block.ITickable;
 import spacegame.block.ITimeUpdate;
 import spacegame.core.CosmicEvolution;
@@ -46,6 +47,7 @@ public final class Chunk implements Comparable<Chunk> {
     public byte[] skyLight = new byte[32768];
     public int[] lightColor = new int[32768];
     public short[] tickableBlockIndex = new short[32768];
+    public short[] decayableLeaves = new short[32768];
     public int[] topFaceBitMask = new int[1024]; //This increments x, then z, each int goes up in Y value //reading is done by a mask with &, if it returns a non zero value it is true
     public int[] bottomFaceBitMask = new int[1024]; //writing is done by using a mask with ^ to flip that specific bit, keeping in mind to only update when a state change occurs
     public int[] northFaceBitMask = new int[1024]; //This increments z, then y, each int goes up in X value
@@ -1105,6 +1107,14 @@ public final class Chunk implements Comparable<Chunk> {
                         }
                     }
             }
+
+            if(this.blocks != null && this.decayableLeaves != null){
+                for(int i = 0; i < this.decayableLeaves.length; i++){
+                    if(Block.list[this.blocks[this.decayableLeaves[i]]] instanceof BlockLeaf){
+                        ((BlockLeaf) Block.list[this.blocks[this.decayableLeaves[i]]]).decayLeaf(this.getBlockXFromIndex(this.decayableLeaves[i]), this.getBlockYFromIndex(this.decayableLeaves[i]), this.getBlockZFromIndex(this.decayableLeaves[i]), this.parentWorld);
+                    }
+                }
+            }
             //Check the time events to see if they need to execute
             TimeUpdateEvent event;
             for(int i = 0; i < this.updateEvents.size(); i++){
@@ -1155,6 +1165,25 @@ public final class Chunk implements Comparable<Chunk> {
             }
         }
         this.tickableBlockIndex = newArray;
+    }
+
+    public void addDecayableLeafToArray(short index){
+        short[] newArray = new short[this.decayableLeaves.length + 1];
+        for(int i = 0; i < this.decayableLeaves.length; i++){
+            newArray[i] = this.decayableLeaves[i];
+        }
+        newArray[this.decayableLeaves.length] = index;
+        this.decayableLeaves = newArray;
+    }
+
+    public void removeDecayableLeafFromArray(short index){
+        short[] newArray = new short[this.decayableLeaves.length - 1];
+        for(int i = 0; i < newArray.length; i++){
+            if(this.decayableLeaves[i] != index) {
+                newArray[i] = this.decayableLeaves[i];
+            }
+        }
+        this.decayableLeaves = newArray;
     }
 
     public void addChestLocation(int x, int y, int z, Inventory inventory){

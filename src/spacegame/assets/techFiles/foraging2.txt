@@ -4,5 +4,5 @@ unlockedTech:Foraging III
 unlockedTech:Grass Domestication
 unlockRequirementAmount:150
 requiredTech:Foraging I
-unlockDescription:Testing This Function
+unlockDescription:50% chance to get an additional     berry when harvesting berry plants
 era:Neolithic

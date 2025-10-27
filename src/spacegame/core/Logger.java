@@ -28,6 +28,56 @@ public final class Logger {
         }
     }
 
+    public Logger(String string){
+        Calendar calendar = new GregorianCalendar();
+        File crashFile = new File(CosmicEvolution.instance.launcherDirectory + "/crashReports/crashReport" + "-" + calendar.get(Calendar.YEAR) + "-" + (calendar.get(Calendar.MONTH)+1) + "-" + calendar.get(Calendar.DAY_OF_MONTH) + "-" + calendar.get(Calendar.HOUR_OF_DAY)  + calendar.get(Calendar.MINUTE)  + calendar.get(Calendar.SECOND) +  ".txt");
+        PrintStream ps;
+        try {
+            ps = new PrintStream(crashFile);
+            ps.println(string);
+            ps.close();
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+
+        JFrame frame = new JFrame("Cosmic Evolution Info Window");
+        this.window = frame;
+        this.window.setSize(new Dimension(854, 480));
+        this.window.setLocationRelativeTo(null);
+        this.window.setResizable(false);
+        this.window.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+
+        JPanel panel = new JPanel();
+        panel.setLayout(null);
+        panel.setBackground(Color.BLACK);
+        this.mainPanel = panel;
+
+        JTextArea textArea = new JTextArea();
+        textArea.setLineWrap(true);
+        textArea.setWrapStyleWord(true);
+        textArea.setEditable(false);
+        textArea.setForeground(Color.YELLOW);
+        textArea.setFocusable(false);
+        textArea.setBackground(new Color(0,0,0,0));
+        textArea.setBorder(null);
+        textArea.setOpaque(false);
+        textArea.setText(string);
+
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        scrollPane.setBounds(0, 0, 854, 480);
+        scrollPane.setBorder(null);
+        scrollPane.setOpaque(false);
+        scrollPane.getViewport().setOpaque(false);
+        scrollPane.setBackground(new Color(0,0,0,0));
+        scrollPane.getViewport().setBackground(new Color(0,0,0,0));
+        scrollPane.setViewportBorder(null);
+
+        panel.add(scrollPane);
+        frame.add(panel);
+        frame.setVisible(true);
+    }
+
 
     public Logger(Exception exception, boolean launchWindow){
         StackTraceElement[] stackTraceElements = exception.getStackTrace();

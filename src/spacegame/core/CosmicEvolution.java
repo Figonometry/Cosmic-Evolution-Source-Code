@@ -10,6 +10,7 @@ import org.lwjgl.openal.AL;
 import org.lwjgl.openal.ALC;
 import org.lwjgl.openal.ALC11;
 import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL46;
 import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryUtil;
@@ -76,7 +77,7 @@ public final class CosmicEvolution implements Runnable {
     }
 
     private CosmicEvolution(String launcherDirectory) {
-        if(instance != null){
+        if (instance != null) {
             throw new RuntimeException("Main Class already initialized");
         }
         this.launcherDirectory = new File(launcherDirectory);
@@ -100,7 +101,7 @@ public final class CosmicEvolution implements Runnable {
     }
 
     private void startGame() {
-        this.title = "Cosmic Evolution Alpha v0.33";
+        this.title = "Cosmic Evolution Alpha v0.34";
         GameSettings.loadOptionsFromFile(this.launcherDirectory);
         this.clearLogFiles(new File(this.launcherDirectory + "/crashReports"));
         this.initLWJGL();
@@ -121,7 +122,7 @@ public final class CosmicEvolution implements Runnable {
     }
 
     private void initLWJGL() {
-        GLFWErrorCallback.createPrint(System.err);
+        GLFWErrorCallback.createPrint(System.err).set();
 
         if (!GLFW.glfwInit()) {
             throw new IllegalStateException("Failed to initialize GLFW");
@@ -166,6 +167,8 @@ public final class CosmicEvolution implements Runnable {
         GLFW.glfwShowWindow(this.window);
 
         GL.createCapabilities();
+
+        Shader.loadShaders();
 
         Shader.terrainShader.uploadBoolean("shadowMapSetting", GameSettings.shadowMap);
         Shader.worldShader2DTexture.uploadBoolean("shadowMapSetting", GameSettings.shadowMap);

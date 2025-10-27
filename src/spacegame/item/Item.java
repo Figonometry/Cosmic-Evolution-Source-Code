@@ -30,6 +30,7 @@ public class Item {
     public static final Item reeds = new ItemReed((short)18, 18, "src/spacegame/assets/itemFiles/reeds.txt");
     public static final Item berrySeed = new Item((short)19, 19, "src/spacegame/assets/itemFiles/berrySeed.txt");
     public static final Item reedSeed = new Item((short)20, 19, "src/spacegame/assets/itemFiles/reedSeed.txt");
+    public static final Item treeSeed = new Item((short)21, 19, "src/spacegame/assets/itemFiles/treeSeed.txt");
     public final short ID;
     public final int textureID;
     public float hardness = 0;

@@ -23,8 +23,10 @@ public final class BlockBerryBush extends Block implements ITimeUpdate {
         if(playerHeldItem != Item.block.ID && playerHeldItem != Item.torch.ID){
             if(world.getBlockID(x,y,z) == Block.berryBush.ID){
                 world.setBlockWithNotify(x,y,z, Block.berryBushNoBerries.ID);
-                EntityItem item = new EntityItem(x + CosmicEvolution.globalRand.nextFloat(), y + 0.5, z + CosmicEvolution.globalRand.nextFloat(), Item.berry.ID, (byte) 0, (byte) 1, (short) -1);
-                world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).addEntityToList(item);
+                world.addEntity(new EntityItem(x + CosmicEvolution.globalRand.nextFloat(), y + 0.5, z + CosmicEvolution.globalRand.nextFloat(), Item.berry.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY));
+                if(Tech.foraging2.state == Tech.UNLOCKED && CosmicEvolution.globalRand.nextBoolean()){
+                    world.addEntity(new EntityItem(x + CosmicEvolution.globalRand.nextFloat(), y + 0.5, z + CosmicEvolution.globalRand.nextFloat(), Item.berry.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY));
+                }
                 world.addTimeEvent(x,y,z,CosmicEvolution.instance.save.time + this.getUpdateTime());
                 Tech.techUpdateEvent(Tech.UPDATE_EVENT_BERRY_COLLECTION);
             }

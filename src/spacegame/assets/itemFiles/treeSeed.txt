@@ -1,0 +1,3 @@
+itemName:TREE_SEED
+canPlaceOnGround:true
+displayName:Tree Seed

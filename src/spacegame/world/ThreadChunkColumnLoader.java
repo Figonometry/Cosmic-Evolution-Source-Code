@@ -54,6 +54,7 @@ public final class ThreadChunkColumnLoader implements Runnable {
                         chunk.empty = chunkData.getBoolean("empty");
                         if (!chunk.empty) {
                             chunk.blocks = chunkData.getShortArray("blocks");
+                            chunk.decayableLeaves = chunkData.getShortArray("decayableLeaves");
                             chunk.topFaceBitMask = chunkData.getIntArray("topFaceBitMask");
                             chunk.bottomFaceBitMask = chunkData.getIntArray("bottomFaceBitMask");
                             chunk.northFaceBitMask = chunkData.getIntArray("northFaceBitMask");
