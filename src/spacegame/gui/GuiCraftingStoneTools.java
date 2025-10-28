@@ -61,10 +61,10 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
 
         for(int i = 0; i < this.selectableRecipes.length; i++){
             switch (i) {
-                case 3 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneFragments.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneFragments.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.stone.ID}, new int[]{1});
-                case 0 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneHandAxe.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneHandAxe.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.stone.ID}, new int[]{1});
-                case 1 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneHandKnifeBlade.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneHandKnifeBlade.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.stone.ID}, new int[]{1});
-                case 2 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneHandShovel.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneHandShovel.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.stone.ID}, new int[]{1});
+                case 3 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneFragments.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneFragments.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.stone.ID}, new int[]{1}, ItemCraftingTemplates.stoneFragments.indices);
+                case 0 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneHandAxe.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneHandAxe.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.stone.ID}, new int[]{1}, ItemCraftingTemplates.stoneHandAxe.indices);
+                case 1 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneHandKnifeBlade.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneHandKnifeBlade.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.stone.ID}, new int[]{1}, ItemCraftingTemplates.knifeBlade.indices);
+                case 2 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneHandShovel.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneHandShovel.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.stone.ID}, new int[]{1}, ItemCraftingTemplates.stoneHandShovel.indices);
             }
             selectableX += 64;
         }
@@ -469,6 +469,15 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
             }
         }
         return null;
+    }
+
+    public int getMaterialIndex(CraftingMaterial material){
+        for(int i = 0; i < this.materials.length; i++){
+            if(this.materials[i].x == material.x && this.materials[i].y == material.y){
+                return i;
+            }
+        }
+        throw new RuntimeException("Unable to locate material index");
     }
 
 

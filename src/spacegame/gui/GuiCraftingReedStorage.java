@@ -38,8 +38,8 @@ public final class GuiCraftingReedStorage extends GuiCrafting {
 
         for(int i = 0; i < this.selectableRecipes.length; i++){
             switch (i) {
-                case 0 -> this.selectableRecipes[i] = new RecipeSelector(Item.reedBasket.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.reedBasket.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.reeds.ID}, new int[]{8});
-                case 1 -> this.selectableRecipes[i] = new RecipeSelector(Item.block.ID, Block.reedChest.ID,selectableX, selectableY, selectableWidth, selectableHeight, Item.block.getDisplayName(Block.reedChest.ID), new short[]{Item.reeds.ID}, new int[]{8});
+                case 0 -> this.selectableRecipes[i] = new RecipeSelector(Item.reedBasket.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.reedBasket.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.reeds.ID}, new int[]{8},null);
+                case 1 -> this.selectableRecipes[i] = new RecipeSelector(Item.block.ID, Block.reedChest.ID,selectableX, selectableY, selectableWidth, selectableHeight, Item.block.getDisplayName(Block.reedChest.ID), new short[]{Item.reeds.ID}, new int[]{8}, null);
             }
             selectableX += 64;
         }

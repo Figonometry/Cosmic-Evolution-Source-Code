@@ -101,7 +101,7 @@ public final class CosmicEvolution implements Runnable {
     }
 
     private void startGame() {
-        this.title = "Cosmic Evolution Alpha v0.34";
+        this.title = "Cosmic Evolution Alpha v0.34.1";
         GameSettings.loadOptionsFromFile(this.launcherDirectory);
         this.clearLogFiles(new File(this.launcherDirectory + "/crashReports"));
         this.initLWJGL();
@@ -647,17 +647,30 @@ public final class CosmicEvolution implements Runnable {
         }
 
         if(this.currentGui instanceof GuiCrafting) {
-            CraftingMaterial material = ((GuiCrafting) this.currentGui).getHoveredCraftingMaterial();
-            if (material != null) {
-                if (material.active) {
-                    material.deactivate();
-                    switch (material.type){
-                        case "stone":
-                            CosmicEvolution.instance.soundPlayer.playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound(Sound.leftClickStoneCraftingMaterial, false), globalRand.nextFloat(0.5f, 1));
-                            break;
-                        case "clay":
-                            CosmicEvolution.instance.soundPlayer.playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound(Sound.clay, false), globalRand.nextFloat(0.5f, 1));
-                            break;
+            if(this.currentGui instanceof GuiCraftingStoneTools){
+                CraftingMaterial material = ((GuiCraftingStoneTools) this.currentGui).getHoveredCraftingMaterial();
+                RecipeSelector selector = ((GuiCraftingStoneTools) this.currentGui).activeRecipe;
+                if (material != null && selector != null) {
+                    if (material.active && !selector.isMaterialRequired(((GuiCraftingStoneTools) this.currentGui).getMaterialIndex(material))){
+                        material.deactivate();
+                        if (material.type.equals("stone")) {
+                            this.soundPlayer.playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound(Sound.leftClickStoneCraftingMaterial, false), globalRand.nextFloat(0.5f, 1));
+                        }
+                    }
+                }
+            } else {
+                CraftingMaterial material = ((GuiCrafting) this.currentGui).getHoveredCraftingMaterial();
+                if (material != null) {
+                    if (material.active) {
+                        material.deactivate();
+                        switch (material.type) {
+                            case "stone":
+                                this.soundPlayer.playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound(Sound.leftClickStoneCraftingMaterial, false), globalRand.nextFloat(0.5f, 1));
+                                break;
+                            case "clay":
+                                this.soundPlayer.playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound(Sound.clay, false), globalRand.nextFloat(0.5f, 1));
+                                break;
+                        }
                     }
                 }
             }
@@ -749,15 +762,10 @@ public final class CosmicEvolution implements Runnable {
         if(this.currentGui instanceof GuiCrafting) {
             CraftingMaterial material = ((GuiCrafting) this.currentGui).getHoveredCraftingMaterial();
             if (material != null) {
-                if (!material.active) {
+                if (!material.active && !(this.currentGui instanceof GuiCraftingStoneTools)) {
                     material.active = true;
-                    switch (material.type){
-                        case "stone":
-                            CosmicEvolution.instance.soundPlayer.playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound(Sound.rightClickStoneCraftingMaterial, false), globalRand.nextFloat(0.5f, 1));
-                            break;
-                        case "clay":
-                            CosmicEvolution.instance.soundPlayer.playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound(Sound.clay, false), globalRand.nextFloat(0.5f, 1));
-                            break;
+                    if (material.type.equals("clay")) {
+                        this.soundPlayer.playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound(Sound.clay, false), globalRand.nextFloat(0.5f, 1));
                     }
                 }
             }

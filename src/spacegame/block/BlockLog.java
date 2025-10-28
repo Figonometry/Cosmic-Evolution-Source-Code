@@ -45,16 +45,16 @@ public final class BlockLog extends Block {
     }
 
     private void notifyNearbyLeafBlocks(int x, int y, int z, World world){
-        int minBoxX = x - 5;
-        int minBoxY = y - 5;
-        int minBoxZ = z - 5;
-        int maxBoxX = x + 5;
-        int maxBoxY = y + 5;
-        int maxBoxZ = z + 5;
+        int minBoxX = x - 1;
+        int minBoxY = y - 1;
+        int minBoxZ = z - 1;
+        int maxBoxX = x + 1;
+        int maxBoxY = y + 1;
+        int maxBoxZ = z + 1;
 
-        for(x = minBoxX; x < maxBoxX; x++){
-            for(y = minBoxY; y < maxBoxY; y++){
-                for(z = minBoxZ; z < maxBoxZ; z++){
+        for(x = minBoxX; x <= maxBoxX; x++){
+            for(y = minBoxY; y <= maxBoxY; y++){
+                for(z = minBoxZ; z <= maxBoxZ; z++){
                     if(Block.list[world.getBlockID(x,y,z)] instanceof BlockLeaf){
                        world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).addDecayableLeafToArray((short) Chunk.getBlockIndexFromCoordinates(x,y,z));
                     }

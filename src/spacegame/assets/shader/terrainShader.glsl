@@ -40,8 +40,7 @@ float sinY(float x, float y, float z){
     float actualTime = float(time);
     int realX = int(x);
     int realZ = int(z);
-    y += sin(actualTime/30 + (realX | realZ)) / 10;
-    return y;
+    return sin(actualTime/30 + (realX | realZ)) / 10;
 }
 
 float sinZ(float x, float y, float z){
@@ -228,9 +227,13 @@ void main()
     vec3 correctPosRelativeToSun = vec3(sunChunkOffset + decompressPosition(aPos, aTexId));
         switch(int(fTexId)){
             case 4://water
-            correctPos.y -= 0.1F;
+            correctPos.y -= 0.15F;
             if (wavyWater){
-                correctPos.y = sinY(correctPos.x, correctPos.y, correctPos.z);
+                correctPos.y += sinY(correctPos.x, correctPos.y, correctPos.z);
+                correctPos.y += (sinY(correctPos.x + 1, correctPos.y, correctPos.z + 1) * 0.5f);
+                correctPos.y += (sinY(correctPos.x - 2, correctPos.y, correctPos.z - 3) * 0.25f);
+                correctPos.y += (sinY(correctPos.x + 4, correctPos.y, correctPos.z + 7) * 0.125f);
+                correctPos.y += (sinY(correctPos.x + 8, correctPos.y, correctPos.z - 7) * 0.0625f);
                 fColor.xyz -= 0.5F;
                 fColor.w = max(fColor.w, 0.5f);
                 fTexCoords.xy += sin(float(time/150));

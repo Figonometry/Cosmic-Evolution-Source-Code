@@ -180,42 +180,42 @@ public abstract class GameSettings {
 
 
     public static void increaseVolume(){
-        volume += 0.01F;
+        volume += KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT) ? 0.1f : 0.01F;
         if(volume >= 1){
             volume = 1;
         }
     }
 
     public static void decreaseVolume(){
-        volume -= 0.01F;
+        volume -= KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT) ? 0.1f : 0.01F;
         if(volume <= 0){
             volume = 0;
         }
     }
 
     public static void increaseMusicVolume(){
-        musicVolume += 0.01F;
+        musicVolume += KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT) ? 0.1f : 0.01F;
         if(musicVolume >= 1){
             musicVolume = 1;
         }
     }
 
     public static void decreaseMusicVolume(){
-        musicVolume -= 0.01F;
+        musicVolume -= KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT) ? 0.1f : 0.01F;
         if(musicVolume <= 0){
             musicVolume = 0;
         }
     }
 
     public static void increaseFOV(){
-        fov += 0.01F;
+        fov += KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT) ? 0.1f : 0.01F;
         if(fov >= 1.3F){
             fov = 1.3F;
         }
     }
 
     public static void decreaseFOV(){
-        fov -= 0.01F;
+        fov -= KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT) ? 0.1f : 0.01F;
         if(fov <= 0.3F){
             fov = 0.3F;
         }
@@ -235,14 +235,14 @@ public abstract class GameSettings {
 
 
     public static void increaseSensitivity(){
-        sensitivity += 0.01F;
-        if(sensitivity >= 2){
-            sensitivity = 2;
+        sensitivity += KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT) ? 0.1f : 0.01F;
+        if(sensitivity >= 10){
+            sensitivity = 10;
         }
     }
 
     public static void decreaseSensitivity(){
-        sensitivity -= 0.01F;
+        sensitivity -= KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT) ? 0.1f : 0.01F;
         if(sensitivity <= 0){
             sensitivity = 0;
         }

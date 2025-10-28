@@ -16,9 +16,10 @@ public final class RecipeSelector {
     public boolean isBlock;
     public short[] requiredItems;
     public int[] requiredItemCount;
+    public short[] template;
 
 
-    public RecipeSelector(short itemID, float x, float y, float width, float height, String displayName, short[] requiredItems, int[] requiredItemCount){
+    public RecipeSelector(short itemID, float x, float y, float width, float height, String displayName, short[] requiredItems, int[] requiredItemCount, short[] template){
         this.itemID = itemID;
         this.x = x;
         this.y = y;
@@ -27,9 +28,10 @@ public final class RecipeSelector {
         this.displayName = displayName;
         this.requiredItems = requiredItems;
         this.requiredItemCount = requiredItemCount;
+        this.template = template;
     }
 
-    public RecipeSelector(short itemID, short blockTextureID, float x, float y, float width, float height, String displayName, short[] requiredItems, int[] requiredItemCount){
+    public RecipeSelector(short itemID, short blockTextureID, float x, float y, float width, float height, String displayName, short[] requiredItems, int[] requiredItemCount, short[] template){
         this.itemID = itemID;
         this.blockID = blockTextureID;
         this.x = x;
@@ -39,6 +41,7 @@ public final class RecipeSelector {
         this.displayName = displayName;
         this.requiredItems = requiredItems;
         this.requiredItemCount = requiredItemCount;
+        this.template = template;
         this.isBlock = true;
     }
 
@@ -57,6 +60,20 @@ public final class RecipeSelector {
             if(!player.containsAmountOfItem(this.requiredItems[i], this.requiredItemCount[i]))return false;
         }
         return true;
+    }
+
+
+    public boolean isMaterialRequired(int index){
+        return this.isIndexSupposedToBeFilled(index);
+    }
+
+    private boolean isIndexSupposedToBeFilled(int testedIndex){
+        for(int i = 0; i < this.template.length; i++){
+            if(testedIndex == this.template[i]){
+                return true;
+            }
+        }
+        return false;
     }
 
 

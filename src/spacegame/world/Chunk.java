@@ -47,7 +47,7 @@ public final class Chunk implements Comparable<Chunk> {
     public byte[] skyLight = new byte[32768];
     public int[] lightColor = new int[32768];
     public short[] tickableBlockIndex = new short[32768];
-    public short[] decayableLeaves = new short[32768];
+    public short[] decayableLeaves = new short[0];
     public int[] topFaceBitMask = new int[1024]; //This increments x, then z, each int goes up in Y value //reading is done by a mask with &, if it returns a non zero value it is true
     public int[] bottomFaceBitMask = new int[1024]; //writing is done by using a mask with ^ to flip that specific bit, keeping in mind to only update when a state change occurs
     public int[] northFaceBitMask = new int[1024]; //This increments z, then y, each int goes up in X value
@@ -1168,6 +1168,12 @@ public final class Chunk implements Comparable<Chunk> {
     }
 
     public void addDecayableLeafToArray(short index){
+        if(this.decayableLeaves == null){
+            this.decayableLeaves = new short[]{index};
+            return;
+        }
+
+
         short[] newArray = new short[this.decayableLeaves.length + 1];
         for(int i = 0; i < this.decayableLeaves.length; i++){
             newArray[i] = this.decayableLeaves[i];

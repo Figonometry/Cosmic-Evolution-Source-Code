@@ -138,19 +138,21 @@ public final class GuiMainMenu extends Gui {
             fontRenderer.drawString(this.ce.title, x, y, depth, 16711875, 50, 255);
             y -= 60;
             fontRenderer.toggleItalics();
-            fontRenderer.drawString("Entering too many characters when setting a world seed no longer causes crashes", x, y, depth, yellow, 50, 255);
+            fontRenderer.drawString("Adjusted mouse sensitivity, sensitivity setting can now be set to a max of 100%", x, y, depth, yellow, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Added growth stages to reeds", x, y, depth, green, 50, 255);
+            fontRenderer.drawString("Holding left or right shift when adjust sensitivity or volume now increases/decreases by 10%", x, y, depth, yellow, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Added unlock feature for Foraging II tech", x, y, depth, green, 50, 255);
+            fontRenderer.drawString("Improved performance related to leaf decay", x, y, depth, yellow, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Reduced shader sampler usage", x, y, depth, yellow, 50, 255);
+            fontRenderer.drawString("Reduced the odds of tree seeds dropping from leaves", x, y, depth, yellow, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Added saplings", x, y, depth, green, 50, 255);
+            fontRenderer.drawString("Block breaking texture no longer z fights", x, y, depth, yellow, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Added tree seeds", x, y, depth, green, 50, 255);
+            fontRenderer.drawString("Removed the ability to right click stone materials to replace them in crafting grid", x, y, depth, red, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Added leaf decay", x, y, depth, green, 50, 255);
+            fontRenderer.drawString("Required stone materials can no longer be left clicked in stone crafting UI", x, y, depth, yellow, 50, 255);
+            y -= 30;
+            fontRenderer.drawString("Updated water wave animation", x, y, depth, yellow, 50, 255);
             fontRenderer.toggleItalics();
 
 

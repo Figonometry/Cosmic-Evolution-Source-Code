@@ -69,8 +69,8 @@ public final class GuiCraftingPottery extends GuiCrafting {
 
         for(int i = 0; i < this.selectableRecipes.length; i++){
             switch (i) {
-                case 0 -> this.selectableRecipes[i] = new RecipeSelector(Item.rawClayAdobeBrick.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.rawClayAdobeBrick.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.straw.ID, Item.clay.ID}, new int[]{1,1});
-                case 1 -> this.selectableRecipes[i] = new RecipeSelector(Item.block.ID, Block.rawRedClayCookingPot.ID,selectableX, selectableY, selectableWidth, selectableHeight, Item.block.getDisplayName(Block.rawRedClayCookingPot.ID), new short[]{Item.clay.ID}, new int[]{16});
+                case 0 -> this.selectableRecipes[i] = new RecipeSelector(Item.rawClayAdobeBrick.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.rawClayAdobeBrick.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.straw.ID, Item.clay.ID}, new int[]{1,1}, ItemCraftingTemplates.brick.indices);
+                case 1 -> this.selectableRecipes[i] = new RecipeSelector(Item.block.ID, Block.rawRedClayCookingPot.ID,selectableX, selectableY, selectableWidth, selectableHeight, Item.block.getDisplayName(Block.rawRedClayCookingPot.ID), new short[]{Item.clay.ID}, new int[]{16}, ItemCraftingTemplates.cookingPot.indices);
             }
             selectableX += 64;
         }

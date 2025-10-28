@@ -413,8 +413,8 @@ public final class EntityPlayer extends EntityLiving {
     }
 
     private void updateYawAndPitch() {
-        float rawDeltaYaw = (MouseListener.getDeltaX() / 9) * GameSettings.sensitivity;
-        float rawDeltaPitch = (MouseListener.getDeltaY() / 9) * GameSettings.sensitivity;
+        float rawDeltaYaw = (MouseListener.getDeltaX()) * GameSettings.sensitivity;
+        float rawDeltaPitch = (MouseListener.getDeltaY()) * GameSettings.sensitivity;
 
         if(GameSettings.invertMouse){
             rawDeltaPitch *= -1;

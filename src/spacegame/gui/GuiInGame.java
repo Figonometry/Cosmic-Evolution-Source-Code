@@ -868,7 +868,10 @@ public final class GuiInGame extends Gui {
                         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
                         GL46.glEnable(GL46.GL_ALPHA_TEST);
                         GL46.glAlphaFunc(GL46.GL_GREATER, 0.1F);
+                        GL46.glEnable(GL46.GL_POLYGON_OFFSET_FILL);
+                        GL46.glPolygonOffset(-1f, -1f);
                         tessellator.drawTexture2DWithAtlas(blockBreaking, Shader.worldShader2DTextureWithAtlas, CosmicEvolution.camera);
+                        GL46.glDisable(GL46.GL_POLYGON_OFFSET_FILL);
                         GL46.glDisable(GL46.GL_BLEND);
                         GL46.glDisable(GL46.GL_ALPHA_TEST);
                         GL46.glDisable(GL46.GL_CULL_FACE);
@@ -966,9 +969,10 @@ public final class GuiInGame extends Gui {
 
                     GL46.glEnable(GL46.GL_CULL_FACE);
                     GL46.glCullFace(GL46.GL_FRONT);
-                    GL46.glPolygonMode(GL46.GL_FRONT_AND_BACK, GL46.GL_LINE);
+                    GL46.glEnable(GL46.GL_POLYGON_OFFSET_FILL);
+                    GL46.glPolygonOffset(-1f, -1f);
                     tessellator.drawTexture2D(outline, Shader.worldShader2DTexture, CosmicEvolution.camera);
-                    GL46.glPolygonMode(GL46.GL_FRONT_AND_BACK, GL46.GL_FILL);
+                    GL46.glDisable(GL46.GL_POLYGON_OFFSET_FILL);
                     GL46.glDisable(GL46.GL_CULL_FACE);
 
                     Shader.worldShader2DTexture.uploadBoolean("compressTest", false);

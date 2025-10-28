@@ -16,9 +16,10 @@ public final class BlockLeaf extends Block {
     @Override
     public void onLeftClick(int x, int y, int z, World world, EntityPlayer player){
         super.onLeftClick(x,y,z, world, player);
-        if(CosmicEvolution.globalRand.nextInt(100) <= 5){
+        if(CosmicEvolution.globalRand.nextInt(100) <= 1){
             world.addEntity(new EntityItem(x + 0.5, y + 0.5, z + 0.5, Item.treeSeed.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY));
         }
+        this.notifySurroundingLeafBlocks(x,y,z, world);
     }
 
     @Override
@@ -28,9 +29,10 @@ public final class BlockLeaf extends Block {
 
 
     public void decayLeaf(int x, int y, int z, World world) {
-        if(!this.canLeafDecay(x,y,z, world))return;
         if(CosmicEvolution.globalRand.nextInt(100) != 0)return;
-        if(CosmicEvolution.globalRand.nextInt(100) <= 5){
+        if(!this.canLeafDecay(x,y,z, world))return;
+
+        if(CosmicEvolution.globalRand.nextInt(100) <= 1){
             world.addEntity(new EntityItem(x + 0.5, y + 0.5, z + 0.5, Item.treeSeed.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY));
         }
         if (this.itemDropChance > CosmicEvolution.globalRand.nextFloat()) {
@@ -38,20 +40,41 @@ public final class BlockLeaf extends Block {
         }
         world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).removeDecayableLeafFromArray((short) Chunk.getBlockIndexFromCoordinates(x,y,z));
         world.setBlockWithNotify(x,y,z, Block.air.ID);
+        this.notifySurroundingLeafBlocks(x,y,z, world);
+    }
+
+    private void notifySurroundingLeafBlocks(int x, int y, int z, World world){
+        int minBoxX = x - 1;
+        int minBoxY = y - 1;
+        int minBoxZ = z - 1;
+        int maxBoxX = x + 1;
+        int maxBoxY = y + 1;
+        int maxBoxZ = z + 1;
+
+        for(x = minBoxX; x <= maxBoxX; x++){
+            for(y = minBoxY; y <= maxBoxY; y++){
+                for(z = minBoxZ; z <= maxBoxZ; z++){
+                    if(Block.list[world.getBlockID(x,y,z)] instanceof BlockLeaf){
+                        world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).addDecayableLeafToArray((short) Chunk.getBlockIndexFromCoordinates(x,y,z));
+                    }
+                }
+            }
+        }
     }
 
 
-    private boolean canLeafDecay(int x, int y, int z, World world){
-        int minBoxX = x - 5;
-        int minBoxY = y - 5;
-        int minBoxZ = z - 5;
-        int maxBoxX = x + 5;
-        int maxBoxY = y + 5;
-        int maxBoxZ = z + 5;
 
-        for(x = minBoxX; x < maxBoxX; x++){
-            for(y = minBoxY; y < maxBoxY; y++){
-                for(z = minBoxZ; z < maxBoxZ; z++){
+    private boolean canLeafDecay(int x, int y, int z, World world){
+        int minBoxX = x - 1;
+        int minBoxY = y - 1;
+        int minBoxZ = z - 1;
+        int maxBoxX = x + 1;
+        int maxBoxY = y + 1;
+        int maxBoxZ = z + 1;
+
+        for(x = minBoxX; x <= maxBoxX; x++){
+            for(y = minBoxY; y <= maxBoxY; y++){
+                for(z = minBoxZ; z <= maxBoxZ; z++){
                     if(Block.list[world.getBlockID(x,y,z)] instanceof BlockLog){
                         return false;
                     }
