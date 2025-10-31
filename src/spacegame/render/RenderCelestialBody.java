@@ -8,7 +8,7 @@ import org.lwjgl.opengl.GL46;
 import spacegame.celestial.CelestialObject;
 import spacegame.celestial.Sun;
 import spacegame.core.CosmicEvolution;
-import spacegame.core.MathUtil;
+import spacegame.util.MathUtil;
 import spacegame.gui.GuiUniverseMap;
 
 public final class RenderCelestialBody {
@@ -110,7 +110,7 @@ public final class RenderCelestialBody {
         float scaleFactor = baseScale * (k / adjustedDistance);
         scaleFactor = Math.max(0.1f, scaleFactor);
 
-        float rotationAmountY = (float) Math.toRadians( 360 * (double) (CosmicEvolution.instance.save.time % celestialObject.rotationPeriod) /celestialObject.rotationPeriod);
+        float rotationAmountY = (float) ((float) Math.toRadians( 360 * (double) (CosmicEvolution.instance.save.time % celestialObject.rotationPeriod) /celestialObject.rotationPeriod) - (0.5 * Math.PI));
         float rotationAmountX = (float) Math.toRadians(celestialObject.axialTiltX);
         float rotationAmountZ = (float) Math.toRadians(celestialObject.axialTiltZ);
         for(int latitude = -90; latitude < 90; latitude += 5){

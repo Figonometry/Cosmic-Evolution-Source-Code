@@ -1,7 +1,6 @@
 package spacegame.world;
 
 import org.joml.Vector3f;
-import org.lwjgl.glfw.GLFW;
 import spacegame.block.*;
 import spacegame.core.*;
 import spacegame.entity.Entity;
@@ -10,7 +9,7 @@ import spacegame.entity.EntityItem;
 import spacegame.gui.*;
 import spacegame.item.Inventory;
 import spacegame.item.Item;
-import spacegame.item.ItemAxe;
+import spacegame.util.MathUtil;
 
 import java.awt.*;
 import java.io.File;
@@ -38,7 +37,7 @@ public abstract class World {
     public float[] defaultSkyColor;
     public float[] skyLightColor; //Do not make any RGB component 0
     public final int size;
-    public static int worldLoadPhase = 0;
+    public static volatile int worldLoadPhase = 0;
     public static int noiseMapsCompleted = 0;
     public static int totalMaps;
     public File worldFolder;
@@ -51,9 +50,7 @@ public abstract class World {
         this.chunkController = new ChunkController(this);
     }
 
-    public void tick() {
-
-    }
+    public void tick() {}
 
     public abstract void initNoiseMaps();
 
@@ -62,6 +59,8 @@ public abstract class World {
     public abstract void saveWorldWithoutUnload();
 
     public abstract void loadWorld();
+
+
 
     public void toggleWorldPause(){
         this.paused = !this.paused;
@@ -852,28 +851,28 @@ public abstract class World {
 
     public double getAverageTemperature(int x, int y, int z){
         if(this instanceof WorldEarth){
-            return ((((WorldEarth) this).temperatureNoise1.getNoiseRaw(x / 4, z / 4) + (((WorldEarth)this).temperatureNoise2.getNoiseRaw(x / 4, z / 4))));
+            return ((((WorldEarth) this).globalTemperatureMap.getNoiseRaw(((WorldEarth) this).convertBlockXToGlobalMap(x), ((WorldEarth) this).convertBlockZToGlobalMap(z)) + (((WorldEarth) this).temperatureNoise1.getNoiseRaw(x / 4, z / 4) * 0.5)));
         }
         return 0;
     }
 
     public double getAverageRainfall(int x, int z){
         if(this instanceof WorldEarth){
-            return ((((WorldEarth) this).rainfallNoise1.getNoiseRaw(x / 4, z / 4) + (((WorldEarth) this).rainfallNoise2.getNoiseRaw(x / 4, z / 4))));
+            return ((((WorldEarth) this).globalRainfallMap.getNoiseRaw(((WorldEarth) this).convertBlockXToGlobalMap(x), ((WorldEarth) this).convertBlockZToGlobalMap(z)) + (((WorldEarth) this).rainfallNoise1.getNoiseRaw(x / 4, z / 4) * 0.5)));
         }
         return 0;
     }
 
     public double getRainfall(int x, int z){
         if(this instanceof WorldEarth) {
-            return ((((WorldEarth) this).rainfallNoise1.getNoiseRaw(x / 4, z / 4) + (((WorldEarth) this).rainfallNoise2.getNoiseRaw(x / 4, z / 4) )));
+            return ((((WorldEarth) this).globalRainfallMap.getNoiseRaw(((WorldEarth) this).convertBlockXToGlobalMap(x), ((WorldEarth) this).convertBlockZToGlobalMap(z)) + (((WorldEarth) this).rainfallNoise1.getNoiseRaw(x / 4, z / 4)) * 0.5));
         }
         return 0;
     }
 
     public double getTemperatureWithoutTimeOfDay(int x, int y, int z){
         if(this instanceof WorldEarth) {
-            double temp = ((((WorldEarth) this).temperatureNoise1.getNoiseRaw(x / 4, z / 4) + (((WorldEarth)this).temperatureNoise2.getNoiseRaw(x / 4, z / 4))));
+            double temp = ((((WorldEarth) this).globalTemperatureMap.getNoiseRaw(((WorldEarth) this).convertBlockXToGlobalMap(x), ((WorldEarth) this).convertBlockZToGlobalMap(z)) + (((WorldEarth) this).temperatureNoise1.getNoiseRaw(x / 4, z / 4) * 0.5)));
             if (y > 0) {
                 temp -= ((y / 5d) * 0.01);
             }
@@ -899,7 +898,7 @@ public abstract class World {
 
     public double getTemperatureWithTimeOfDay(int x, int y, int z){
         if(this instanceof WorldEarth) {
-            double temp = (((WorldEarth) this).temperatureNoise1.getNoiseRaw(x / 4, z / 4) + (((WorldEarth) this).temperatureNoise2.getNoiseRaw(x / 4, z / 4)));
+            double temp = ((((WorldEarth) this).globalTemperatureMap.getNoiseRaw(((WorldEarth) this).convertBlockXToGlobalMap(x), ((WorldEarth) this).convertBlockZToGlobalMap(z)) + (((WorldEarth) this).temperatureNoise1.getNoiseRaw(x / 4, z / 4) * 0.5)));
             if (y > 0) {
                 temp -= ((y / 5d) * 0.01);
             }

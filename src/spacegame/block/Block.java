@@ -9,6 +9,7 @@ import spacegame.item.Inventory;
 import spacegame.item.Item;
 import spacegame.item.ItemKnife;
 import spacegame.render.ModelLoader;
+import spacegame.util.MathUtil;
 import spacegame.world.AxisAlignedBB;
 import spacegame.world.Chunk;
 import spacegame.world.World;

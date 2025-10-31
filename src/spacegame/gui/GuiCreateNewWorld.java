@@ -5,6 +5,7 @@ import org.lwjgl.opengl.GL46;
 import spacegame.core.CosmicEvolution;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
+import spacegame.util.LongHasher;
 
 import java.util.Random;
 
@@ -151,17 +152,7 @@ public final class GuiCreateNewWorld extends Gui {
         if (this.setSeed.text.length() == 0 || this.doesStringContainAllSpaces(this.setSeed.text)) {
             return new Random().nextLong();
         } else {
-            String string = "";
-            long val = 0;
-            for (int i = 0; i < this.setSeed.text.length(); i++) {
-                if (this.setSeed.text.charAt(i) != '0' && this.setSeed.text.charAt(i) != '1' && this.setSeed.text.charAt(i) != '2' && this.setSeed.text.charAt(i) != '3' && this.setSeed.text.charAt(i) != '4' && this.setSeed.text.charAt(i) != '5' && this.setSeed.text.charAt(i) != '6' && this.setSeed.text.charAt(i) != '7' && this.setSeed.text.charAt(i) != '8' && this.setSeed.text.charAt(i) != '9'){
-                    val += this.convertLetterToNumber(this.setSeed.text.charAt(i));
-                } else {
-                    string += this.setSeed.text.charAt(i);
-                }
-            }
-            string += Long.toString(val);
-            return Long.parseLong(string);
+            return new LongHasher().hash( 69420, this.setSeed.text);
         }
     }
 

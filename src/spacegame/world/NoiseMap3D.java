@@ -2,6 +2,7 @@ package spacegame.world;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL46;
+import spacegame.core.CosmicEvolution;
 import spacegame.render.Shader;
 
 import java.nio.FloatBuffer;
@@ -83,6 +84,8 @@ public final class NoiseMap3D {
 
         this.noise = noiseArray;
         GL46.glDeleteShader(noiseShader.shaderProgramID);
+        CosmicEvolution.instance.renderEngine.deleteBuffers(permModBufferID);
+        CosmicEvolution.instance.renderEngine.deleteBuffers(bufferID);
     }
 
 

@@ -5,7 +5,7 @@ import spacegame.block.BlockContainer;
 import spacegame.block.ITickable;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
-import spacegame.core.MathUtil;
+import spacegame.util.MathUtil;
 import spacegame.entity.Entity;
 import spacegame.entity.EntityBlock;
 import spacegame.entity.EntityDeer;
@@ -747,7 +747,7 @@ public final class ChunkController {
         if (this.generateChunksDistance > GameSettings.renderDistance) {
             this.loadChunks = false;
             if(CosmicEvolution.instance.currentGui instanceof GuiWorldLoadingScreen){
-                World.worldLoadPhase = 2;
+                World.worldLoadPhase = 3;
             }
         } else {
             if (!this.isChunkColumnFullyLoaded(this.generateChunksX, this.generateChunksZ)) {

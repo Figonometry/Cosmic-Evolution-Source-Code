@@ -6,7 +6,7 @@ import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
-import spacegame.core.MathUtil;
+import spacegame.util.MathUtil;
 import spacegame.gui.GuiInGame;
 import spacegame.item.Item;
 import spacegame.world.WorldEarth;

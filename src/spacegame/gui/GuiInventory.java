@@ -2,7 +2,7 @@ package spacegame.gui;
 
 import org.lwjgl.opengl.GL46;
 import spacegame.core.CosmicEvolution;
-import spacegame.core.MathUtil;
+import spacegame.util.MathUtil;
 import spacegame.item.Inventory;
 import spacegame.item.ItemStack;
 import spacegame.render.RenderEngine;

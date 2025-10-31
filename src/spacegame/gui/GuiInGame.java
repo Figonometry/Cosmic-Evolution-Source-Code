@@ -10,7 +10,7 @@ import spacegame.block.Block;
 import spacegame.block.ITimeUpdate;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
-import spacegame.core.MathUtil;
+import spacegame.util.MathUtil;
 import spacegame.core.Timer;
 import spacegame.entity.EntityPlayer;
 import spacegame.item.Item;
@@ -24,7 +24,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Random;
-import java.util.Spliterator;
 
 public final class GuiInGame extends Gui {
     public static int vignette;

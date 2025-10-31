@@ -9,7 +9,7 @@ import org.lwjgl.opengl.GL46;
 import spacegame.celestial.CelestialObject;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
-import spacegame.core.MathUtil;
+import spacegame.util.MathUtil;
 import spacegame.core.MouseListener;
 import spacegame.render.Camera;
 import spacegame.render.RenderEngine;

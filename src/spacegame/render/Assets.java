@@ -28,4 +28,9 @@ public abstract class Assets {
         fontTextureLoader = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/atlas/font.png", RenderEngine.TEXTURE_TYPE_2D, 0);
         fontTextureAtlas = CosmicEvolution.instance.renderEngine.createTextureAtlas(512, 512, 32, 32, 256, 0);
     }
+
+    public static void disableFontTextureAtlas(){
+        CosmicEvolution.instance.renderEngine.deleteTexture(fontTextureLoader);
+        fontTextureAtlas = null;
+    }
 }

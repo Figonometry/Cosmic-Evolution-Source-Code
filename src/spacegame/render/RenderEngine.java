@@ -10,11 +10,26 @@ import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.ArrayList;
 
 public final class RenderEngine {
     public static final int TEXTURE_TYPE_2D = 1;
     public static final int TEXTURE_TYPE_2D_ARRAY = 2;
     public static final int TEXTURE_TYPE_CUBEMAP = 3;
+    public ArrayList<LoadableTexture> loadableTexturesForCelestialObjects = new ArrayList<>(); //This is used for textures prepared off the main thread
+
+
+    public void loadTexturesFromList(){
+        LoadableTexture texture;
+        synchronized (this.loadableTexturesForCelestialObjects) {
+            for (int i = 0; i < this.loadableTexturesForCelestialObjects.size(); i++) {
+                texture = this.loadableTexturesForCelestialObjects.get(i);
+                texture.object.mappedTexture = this.createTexture(texture.filepath, texture.textureType, texture.arraySize);
+            }
+
+            this.loadableTexturesForCelestialObjects.clear();
+        }
+    }
 
 
     public int createVAO(){
@@ -676,7 +691,7 @@ public final class RenderEngine {
                 shader.uploadMat4d("uProjection", camera.projectionMatrix);
                 shader.uploadMat4d("uView", camera.viewMatrix);
             }
-            shader.uploadIntArray("uTextures", this.texSlots);
+            shader.uploadInt("uTextures", 0);
             GL46.glEnable(GL46.GL_ALPHA_TEST);
             GL46.glAlphaFunc(GL46.GL_GREATER, 0.1F);
             //bind the VAO being used
@@ -1160,7 +1175,7 @@ public final class RenderEngine {
                 shader.uploadMat4d("uProjection", camera.projectionMatrix);
                 shader.uploadMat4d("uView", camera.viewMatrix);
             }
-            shader.uploadIntArray("uTextures", this.texSlots);
+            shader.uploadInt("uTextures", 0);
             GL46.glEnable(GL46.GL_ALPHA_TEST);
             GL46.glAlphaFunc(GL46.GL_GREATER, 0.1F);
             //bind the VAO being used

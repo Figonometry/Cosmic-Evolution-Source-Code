@@ -10,7 +10,6 @@ import org.lwjgl.openal.AL;
 import org.lwjgl.openal.ALC;
 import org.lwjgl.openal.ALC11;
 import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL46;
 import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryUtil;
@@ -23,14 +22,9 @@ import spacegame.item.Item;
 import spacegame.item.ItemStack;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
-import spacegame.render.Assets;
-import spacegame.render.Camera;
-import spacegame.render.RenderEngine;
-import spacegame.render.Shader;
-import spacegame.world.Save;
-import spacegame.world.Tech;
-import spacegame.world.World;
-import spacegame.world.WorldEarth;
+import spacegame.render.*;
+import spacegame.util.MathUtil;
+import spacegame.world.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -101,7 +95,7 @@ public final class CosmicEvolution implements Runnable {
     }
 
     private void startGame() {
-        this.title = "Cosmic Evolution Alpha v0.34.1";
+        this.title = "Cosmic Evolution Alpha v0.35";
         GameSettings.loadOptionsFromFile(this.launcherDirectory);
         this.clearLogFiles(new File(this.launcherDirectory + "/crashReports"));
         this.initLWJGL();
@@ -214,7 +208,6 @@ public final class CosmicEvolution implements Runnable {
     }
 
     private void initAllGlobalObjects(){
-        this.everything = new Universe();
         camera = new Camera(new Vector3d(), this, 0.1D);
         GuiUniverseMap.universeCamera = new Camera(new Vector3d(), this, 0.0000000000000000001D);
         GuiUniverseMap.universeCamera.setFarPlaneDistance(512);
@@ -248,15 +241,22 @@ public final class CosmicEvolution implements Runnable {
         double x = rand.nextInt(1024, 32768) + 0.5D;
         double z = rand.nextInt(1024, 32768) + 0.5D;
         this.save = new Save(this, saveSlotNumber, saveName, seed, x, z);
+        this.everything = new Universe();
         this.save.thePlayer = new EntityPlayer(this, 0, 0, 0);
         this.save.thePlayer.setPlayerActualPos(x,2, z);
-        this.save.setActiveWorld(new WorldEarth(this, 4006976));
         this.setNewGui(new GuiWorldLoadingScreen(this));
+        this.save.setActiveWorld(new WorldEarth(this, 4006976));
         this.save.activeWorld.paused = true;
+
+        Thread textureLoadThread = new Thread(new ThreadGenerateCelestialBodyTextures(this.everything.earth, true));
+        textureLoadThread.setName("Celestial Load Thread");
+        textureLoadThread.setPriority(10);
+        textureLoadThread.start();
     }
 
     public void startSave(File saveFile) {
         this.save = new Save(this, saveFile);
+        this.everything = new Universe();
         double x = 0;
         double y = 0;
         double z = 0;
@@ -271,14 +271,20 @@ public final class CosmicEvolution implements Runnable {
             e.printStackTrace();
         }
         this.save.thePlayer.setPlayerActualPos(x, y, z); //This needs to read and set the position using the player's actual location read from file
-        this.save.setActiveWorld(new WorldEarth(this, 4006976));
         this.setNewGui(new GuiWorldLoadingScreen(this));
+        this.save.setActiveWorld(new WorldEarth(this, 4006976));
         this.save.activeWorld.paused = true;
+
+        Thread textureLoadThread = new Thread(new ThreadGenerateCelestialBodyTextures(this.everything.earth, false));
+        textureLoadThread.setName("Celestial Load Thread");
+        textureLoadThread.setPriority(10);
+        textureLoadThread.start();
     }
 
     private void tick() {
         if(this.save != null) {
             this.save.tick();
+            this.renderEngine.loadTexturesFromList();
             GuiInGame.fadeMessageText();
             if(this.save.time % 18000 == 0 && this.currentGui instanceof GuiInGame){
                 this.save.saveDataToFileWithoutChunkUnload();
@@ -784,17 +790,17 @@ public final class CosmicEvolution implements Runnable {
         SoundPlayer.checkAllSoundStates();
         if(this.save != null) {
             this.save.thePlayer.resetCamera();
-            if(World.worldLoadPhase >= 1) {
+            if(World.worldLoadPhase >= 2) {
                 this.save.activeWorld.chunkController.update();
             }
             if(this.currentGui instanceof GuiWorldLoadingScreen){
-                if(Thread.activeCount() < 5 && World.worldLoadPhase == 2 && this.save.activeWorld.chunkController.threadQueue.size() == 0){
+                if(Thread.activeCount() < 5 && World.worldLoadPhase == 3 && this.save.activeWorld.chunkController.threadQueue.size() == 0){
                     GLFW.glfwSetInputMode(this.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
                     if(Assets.blockTextureArray == 0 || Assets.itemTextureArray == 0) {
                         Assets.enableBlockTextureArray();
                         Assets.enableItemTextureArray();
                     }
-                    World.worldLoadPhase = 3;
+                    World.worldLoadPhase = 4;
                     this.save.activeWorld.chunkController.addChunkToRebuildQueue(this.save.activeWorld.chunkController.findChunkFromChunkCoordinates(this.save.activeWorld.chunkController.playerChunkX, this.save.activeWorld.chunkController.playerChunkY, this.save.activeWorld.chunkController.playerChunkZ));
                     this.save.activeWorld.paused = false;
                     this.setNewGui(new GuiInGame(this));

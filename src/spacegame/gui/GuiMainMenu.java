@@ -3,7 +3,7 @@ package spacegame.gui;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
 import spacegame.core.CosmicEvolution;
-import spacegame.core.MathUtil;
+import spacegame.util.MathUtil;
 import spacegame.core.Timer;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
@@ -138,21 +138,15 @@ public final class GuiMainMenu extends Gui {
             fontRenderer.drawString(this.ce.title, x, y, depth, 16711875, 50, 255);
             y -= 60;
             fontRenderer.toggleItalics();
-            fontRenderer.drawString("Adjusted mouse sensitivity, sensitivity setting can now be set to a max of 100%", x, y, depth, yellow, 50, 255);
+            fontRenderer.drawString("Earth now uses dynamically generated textures", x, y, depth, yellow, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Holding left or right shift when adjust sensitivity or volume now increases/decreases by 10%", x, y, depth, yellow, 50, 255);
+            fontRenderer.drawString("World generation changed to reflect textures on the orbital map", x, y, depth, yellow, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Improved performance related to leaf decay", x, y, depth, yellow, 50, 255);
+            fontRenderer.drawString("Noisemaps now use unique seeds", x, y, depth, yellow, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Reduced the odds of tree seeds dropping from leaves", x, y, depth, yellow, 50, 255);
+            fontRenderer.drawString("Updated trees, cactus, clay blobs, reeds and berry bushes to not differ in generation on the same seed on different loads", x, y, depth, yellow, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Block breaking texture no longer z fights", x, y, depth, yellow, 50, 255);
-            y -= 30;
-            fontRenderer.drawString("Removed the ability to right click stone materials to replace them in crafting grid", x, y, depth, red, 50, 255);
-            y -= 30;
-            fontRenderer.drawString("Required stone materials can no longer be left clicked in stone crafting UI", x, y, depth, yellow, 50, 255);
-            y -= 30;
-            fontRenderer.drawString("Updated water wave animation", x, y, depth, yellow, 50, 255);
+            fontRenderer.drawString("Setting seeds on the create new world screen no longer crashes the game", x, y, depth, yellow, 50, 255);
             fontRenderer.toggleItalics();
 
 

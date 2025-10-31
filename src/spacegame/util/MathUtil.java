@@ -1,4 +1,7 @@
-package spacegame.core;
+package spacegame.util;
+
+import spacegame.core.CosmicEvolution;
+import spacegame.core.MouseListener;
 
 public abstract class MathUtil {
     private static float[] SIN_TABLE = new float[65536];

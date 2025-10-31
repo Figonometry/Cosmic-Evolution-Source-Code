@@ -3,7 +3,7 @@ package spacegame.gui;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
 import spacegame.core.CosmicEvolution;
-import spacegame.core.MathUtil;
+import spacegame.util.MathUtil;
 import spacegame.item.Item;
 import spacegame.item.ItemCraftingTemplates;
 import spacegame.render.Assets;

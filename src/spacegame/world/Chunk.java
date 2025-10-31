@@ -7,7 +7,7 @@ import spacegame.block.BlockLeaf;
 import spacegame.block.ITickable;
 import spacegame.block.ITimeUpdate;
 import spacegame.core.CosmicEvolution;
-import spacegame.core.MathUtil;
+import spacegame.util.MathUtil;
 import spacegame.entity.Entity;
 import spacegame.entity.EntityBlock;
 import spacegame.entity.EntityItem;

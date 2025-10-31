@@ -1,6 +1,8 @@
 package spacegame.world;
 
 import spacegame.block.Block;
+import spacegame.core.CosmicEvolution;
+import spacegame.util.LongHasher;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -14,7 +16,7 @@ public final class WorldGenClayBlob extends WorldGen {
         this.worldEarth = earth;
         this.index = index;
         this.chunk = chunk;
-        this.rand = new Random(index | chunk.x + chunk.z);
+        this.rand = new Random(new LongHasher().hash(CosmicEvolution.instance.save.seed, String.valueOf(chunk.x + chunk.y + chunk.z + index)));
         this.startGenerate();
     }
     @Override

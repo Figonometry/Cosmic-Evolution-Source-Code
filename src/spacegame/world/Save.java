@@ -1,16 +1,25 @@
 package spacegame.world;
 
+import org.joml.SimplexNoise;
+import org.joml.Vector3f;
+import spacegame.celestial.Universe;
 import spacegame.core.CosmicEvolution;
+import spacegame.util.MathUtil;
 import spacegame.entity.EntityPlayer;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
+import spacegame.render.PlanetaryBiomeColorizer;
+import spacegame.render.RenderEngine;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.Random;
 
 public final class Save {
     private CosmicEvolution ce;
@@ -26,6 +35,7 @@ public final class Save {
     public double spawnY = Double.NEGATIVE_INFINITY;
     public double spawnZ;
     public byte savedSkyLightLevel = 0;
+    public boolean loadedFromFile;
 
     public Save(CosmicEvolution cosmicEvolution, int saveSlotNumber, String saveName, long seed, double x, double z) {
         this.ce = cosmicEvolution;
@@ -58,6 +68,7 @@ public final class Save {
             this.thePlayer = new EntityPlayer(this.ce, 0, 0, 0);
         }
         this.loadDataFromFile();
+        this.loadedFromFile = true;
     }
 
     public void loadDataFromFile(){
@@ -187,5 +198,6 @@ public final class Save {
             return 0;
         }
     }
+
 
 }

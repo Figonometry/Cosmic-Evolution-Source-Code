@@ -2,7 +2,7 @@ package spacegame.entity;
 
 import spacegame.block.Block;
 import spacegame.core.CosmicEvolution;
-import spacegame.core.MathUtil;
+import spacegame.util.MathUtil;
 import spacegame.core.Sound;
 import spacegame.item.Item;
 import spacegame.render.RenderEntityItem;

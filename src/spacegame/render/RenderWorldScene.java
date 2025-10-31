@@ -6,7 +6,7 @@ import spacegame.celestial.CelestialObject;
 import spacegame.celestial.Sun;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
-import spacegame.core.MathUtil;
+import spacegame.util.MathUtil;
 import spacegame.core.Timer;
 import spacegame.gui.GuiInGame;
 import spacegame.gui.GuiUniverseMap;
@@ -546,7 +546,7 @@ public final class RenderWorldScene {
                 Vector3f vertex2;
                 Vector3f vertex3;
                 Vector3f vertex4;
-                float rotationAmountY = (float) Math.toRadians( 360 * (double) (CosmicEvolution.instance.save.time % renderingObject.rotationPeriod) /renderingObject.rotationPeriod);
+                float rotationAmountY = (float) ((float) Math.toRadians( 360 * (double) (CosmicEvolution.instance.save.time % renderingObject.rotationPeriod) /renderingObject.rotationPeriod) - (0.5 * Math.PI));
                 float rotationAmountX = (float) Math.toRadians(renderingObject.axialTiltX);
                 float rotationAmountZ = (float) Math.toRadians(renderingObject.axialTiltZ);
 

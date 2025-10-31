@@ -5,7 +5,7 @@ import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
-import spacegame.core.MathUtil;
+import spacegame.util.MathUtil;
 import spacegame.render.ModelLoader;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;

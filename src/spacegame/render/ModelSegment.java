@@ -1,7 +1,7 @@
 package spacegame.render;
 
 import org.joml.Vector3f;
-import spacegame.core.MathUtil;
+import spacegame.util.MathUtil;
 
 public final class ModelSegment {
     public float width;

@@ -9,7 +9,6 @@ public final class Universe {
     public Moon moon;
     public Sun sun;
     public CelestialObject[] objects = new CelestialObject[3];
-    public int[] cubeMaps = new int[this.objects.length];
 
     public Universe(){
         this.sun = new Sun(null,0, 0,0, 0, 0, 0, 0, 69520200, 0, CelestialObject.surfaceGravity(27.9), 216000, Long.MAX_VALUE, true, 1.9885e30, 1, 0, 0);
@@ -18,12 +17,8 @@ public final class Universe {
         this.objects[0] = this.sun;
         this.objects[1] = this.earth;
         this.objects[2] = this.moon;
-        this.cubeMaps[0] = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiUniverse/sun", RenderEngine.TEXTURE_TYPE_CUBEMAP, 0);
-        this.cubeMaps[1] = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiUniverse/earth", RenderEngine.TEXTURE_TYPE_CUBEMAP, 0);
-        this.cubeMaps[2] = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiUniverse/moon", RenderEngine.TEXTURE_TYPE_CUBEMAP, 0);
-        this.objects[0].mappedTexture = this.cubeMaps[0];
-        this.objects[1].mappedTexture = this.cubeMaps[1];
-        this.objects[2].mappedTexture = this.cubeMaps[2];
+        this.objects[0].mappedTexture = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiUniverse/sun", RenderEngine.TEXTURE_TYPE_CUBEMAP, 0);
+        this.objects[2].mappedTexture = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiUniverse/moon", RenderEngine.TEXTURE_TYPE_CUBEMAP, 0);
     }
 
     public void updateCelestialObjects(){

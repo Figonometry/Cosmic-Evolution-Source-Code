@@ -16,6 +16,7 @@ import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
+import spacegame.util.MathUtil;
 import spacegame.world.Chunk;
 
 import java.io.File;

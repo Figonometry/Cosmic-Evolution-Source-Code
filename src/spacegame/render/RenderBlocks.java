@@ -3,7 +3,7 @@ package spacegame.render;
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 import spacegame.block.*;
-import spacegame.core.MathUtil;
+import spacegame.util.MathUtil;
 import spacegame.item.Item;
 import spacegame.world.ChestLocation;
 import spacegame.world.Chunk;

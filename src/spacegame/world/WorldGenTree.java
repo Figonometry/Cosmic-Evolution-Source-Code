@@ -2,13 +2,25 @@ package spacegame.world;
 
 import spacegame.block.Block;
 import spacegame.block.BlockLog;
+import spacegame.core.CosmicEvolution;
+import spacegame.util.LongHasher;
 
+import java.security.CodeSigner;
 import java.util.ArrayList;
 import java.util.Random;
 
 public class WorldGenTree extends WorldGen {
     public ArrayList<int[]> blockPos = new ArrayList<>();
     public boolean decayIntoDirt;
+
+    public WorldGenTree(Chunk chunk, WorldEarth worldEarth, int index, boolean fixed) {
+        if(chunk.blocks[index] != Block.grass.ID && chunk.blocks[index] != Block.dirt.ID)return; //Guard clause to prevent trees from generating when they shouldnt
+        this.worldEarth = worldEarth;
+        this.index = index;
+        this.chunk = chunk;
+        this.rand = new Random(new LongHasher().hash(CosmicEvolution.instance.save.seed, String.valueOf(chunk.x + chunk.y + chunk.z + index)));
+        this.startGenerate();
+    }
 
     public WorldGenTree(Chunk chunk, WorldEarth worldEarth, int index) {
         if(chunk.blocks[index] != Block.grass.ID && chunk.blocks[index] != Block.dirt.ID)return; //Guard clause to prevent trees from generating when they shouldnt

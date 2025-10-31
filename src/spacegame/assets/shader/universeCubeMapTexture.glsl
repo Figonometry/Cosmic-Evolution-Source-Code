@@ -20,6 +20,7 @@ void main()
 
     vec3 transformedPos = (uModel * vec4(aPos, 1.0)).xyz;
     fTexCoords = normalize(transformedPos);
+    fTexCoords.x = -fTexCoords.x;
 
     vec3 correctedPos = aPos + position;
 

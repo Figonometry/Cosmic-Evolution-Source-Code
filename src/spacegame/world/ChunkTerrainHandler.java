@@ -150,8 +150,8 @@ public final class ChunkTerrainHandler {
         return this.earth.dirtNoise.getNoise(x,z);
     }
 
-    public double getContinentalNoise(int x, int z){
-        return (this.earth.continentalNoise.getNoiseRaw(x >> 5, z >> 5) + this.earth.secondaryContinentalNoise.getNoiseRaw(x >> 5, z >> 5)) / 2;
+    public double getContinentalNoise(int x, int z){ //Elevation
+        return (this.earth.globalElevationMap.getNoiseRaw(this.earth.convertBlockXToGlobalMap(x), this.earth.convertBlockZToGlobalMap(z)) + this.earth.continentalNoise.getNoiseRaw(x >> 5, z >> 5) / 2d);
     }
 
     public double getYScaleNoise(int x, int z){
@@ -222,7 +222,7 @@ public final class ChunkTerrainHandler {
         }
 
         while (treeCount > 0 && grassIndex > 0) {
-            worldGenTree = new WorldGenTree(chunk, (WorldEarth) chunk.parentWorld, grassIndices[rand.nextInt(grassIndices.length)]);
+            worldGenTree = new WorldGenTree(chunk, (WorldEarth) chunk.parentWorld, grassIndices[rand.nextInt(grassIndices.length)], true);
             treeCount--;
         }
 

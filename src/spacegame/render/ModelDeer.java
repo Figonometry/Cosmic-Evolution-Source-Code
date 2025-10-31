@@ -2,7 +2,7 @@ package spacegame.render;
 
 import org.joml.Vector3f;
 import spacegame.core.CosmicEvolution;
-import spacegame.core.MathUtil;
+import spacegame.util.MathUtil;
 import spacegame.entity.Entity;
 import spacegame.entity.EntityDeer;
 import spacegame.gui.GuiInGame;

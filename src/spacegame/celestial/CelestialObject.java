@@ -3,7 +3,8 @@ package spacegame.celestial;
 import org.joml.Matrix3d;
 import org.joml.Vector3d;
 import spacegame.core.CosmicEvolution;
-import spacegame.core.MathUtil;
+import spacegame.util.LongHasher;
+import spacegame.util.MathUtil;
 import spacegame.render.RenderCelestialBody;
 
 public abstract class CelestialObject {
@@ -27,6 +28,7 @@ public abstract class CelestialObject {
     public final int layer;
     public final float axialTiltX;
     public final float axialTiltZ;
+    public final long seed;
     public Vector3d position = new Vector3d();
     public Matrix3d rotation = new Matrix3d();
     public double altitude;
@@ -66,6 +68,28 @@ public abstract class CelestialObject {
             this.rotationPeriod = rotationPeriod;
         }
         this.focalDistance = Math.sqrt(this.semiMajorAxis * this.semiMajorAxis - this.semiMinorAxis * this.semiMinorAxis);
+        //Change to star system seed later
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(this.semiMajorAxis);
+        sb.append(this.apoapsis);
+        sb.append(this.periapsis);
+        sb.append(this.eccentricity);
+        sb.append(this.inclination);
+        sb.append(this.semiMinorAxis);
+        sb.append(this.argumentOfPeriapsis);
+        sb.append(this.radius);
+        sb.append(this.meanAnomaly);
+        sb.append(this.surfaceGravity);
+        sb.append(this.sphereOfInfluence);
+        sb.append(this.tidallyLocked);
+        sb.append(this.mass);
+        sb.append(this.layer);
+        sb.append(this.axialTiltX);
+        sb.append(this.axialTiltZ);
+
+        this.seed = new LongHasher().hash(CosmicEvolution.instance.save.seed, sb.toString());
+
     }
 
     public static double surfaceGravity(double g){

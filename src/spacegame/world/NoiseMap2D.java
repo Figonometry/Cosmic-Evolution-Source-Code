@@ -19,27 +19,41 @@ public final class NoiseMap2D {
         this.width = width;
         this.height = height;
         this.octaves = octaves;
-        this.elevation = new double[height][width];
+        this.elevation = new double[width][height];
 
-        float noise;
         for (int z = 0; z < height; z++) {
             for (int x = 0; x < width; x++) {
-                noise = 0;
-                x = x + width;
-                z = z + width;
-                double nx = (double) x / width - 0.5, nz = (double) z / height - 0.5;
+                float noise = 0;
+
+                int tx = x + width;
+                int tz = z + width;
+
+                double nx = (double) tx / width - 0.5;
+                double nz = (double) tz / height - 0.5;
+
                 for (int i = 0; i < this.octaves; i++) {
-                    noise += (((float) 1 / Math.pow(2, i)) * SimplexNoise.noise((float) (Math.pow(2, i) * nx + offset[i]), (float) (Math.pow(2, i) * nz + offset[i])));
+                    noise += ((float) 1 / Math.pow(2, i)) *
+                            SimplexNoise.noise((float)(Math.pow(2, i) * nx + offset[i]),
+                                    (float)(Math.pow(2, i) * nz + offset[i]));
                 }
+
                 noise = (float) Math.pow(noise, exponent);
                 noise *= scalingFactor;
                 noise += floor;
-                x %= this.width;
-                z %= this.height;
-                this.elevation[z][x] = noise;
+
+                this.elevation[x][z] = noise;
             }
         }
+
     }
+
+    public NoiseMap2D(int width, int height, double[][] noise){
+        this.width = width;
+        this.height = height;
+        this.elevation = noise;
+    }
+
+
 
     public int getNoise(int x, int z) {
         if (x < 0) {

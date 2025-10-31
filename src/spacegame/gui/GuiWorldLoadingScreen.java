@@ -115,6 +115,24 @@ public final class GuiWorldLoadingScreen extends Gui {
                 }
             }
             case 1 -> {
+                if(!this.ce.save.loadedFromFile) {
+                    switch ((int) second) {
+                        case 0 -> fontRenderer.drawCenteredString("Generating Planetary Maps", 0, 128, -15, 16777215, 50, 255);
+                        case 1 -> fontRenderer.drawCenteredString("Generating Planetary Maps.", 0, 128, -15, 16777215, 50, 255);
+                        case 2 -> fontRenderer.drawCenteredString("Generating Planetary Maps..", 0, 128, -15, 16777215, 50, 255);
+                        case 3 -> fontRenderer.drawCenteredString("Generating Planetary Maps...", 0, 128, -15, 16777215, 50, 255);
+                    }
+                } else {
+                    switch ((int) second) {
+                        case 0 -> fontRenderer.drawCenteredString("Loading Planetary Maps", 0, 128, -15, 16777215, 50, 255);
+                        case 1 -> fontRenderer.drawCenteredString("Loading Planetary Maps.", 0, 128, -15, 16777215, 50, 255);
+                        case 2 -> fontRenderer.drawCenteredString("Loading Planetary Maps..", 0, 128, -15, 16777215, 50, 255);
+                        case 3 -> fontRenderer.drawCenteredString("Loading Planetary Maps...", 0, 128, -15, 16777215, 50, 255);
+                    }
+                }
+                fontRenderer.drawCenteredString("This may take a minute", 0, 98, -15, 16777215, 50, 255);
+            }
+            case 2 -> {
                 switch ((int) second) {
                     case 0 -> fontRenderer.drawCenteredString("Generating World", 0, 128, -15,16777215, 50, 255);
                     case 1 -> fontRenderer.drawCenteredString("Generating World.", 0, 128, -15,16777215, 50, 255);
@@ -122,7 +140,7 @@ public final class GuiWorldLoadingScreen extends Gui {
                     case 3 -> fontRenderer.drawCenteredString("Generating World...", 0, 128, -15,16777215, 50, 255);
                 }
             }
-            case 2 -> {
+            case 3 -> {
                 switch ((int) second) {
                     case 0 -> fontRenderer.drawCenteredString("Finalizing Chunk Threads: " + this.ce.save.activeWorld.chunkController.threadQueue.size() + " Threads Remaining", 0, 128,-15, 16777215, 50, 255);
                     case 1 -> fontRenderer.drawCenteredString("Finalizing Chunk Threads: " + this.ce.save.activeWorld.chunkController.threadQueue.size() + " Threads Remaining.", 0, 128, -15,16777215, 50, 255);
