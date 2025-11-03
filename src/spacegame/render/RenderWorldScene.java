@@ -6,6 +6,7 @@ import spacegame.celestial.CelestialObject;
 import spacegame.celestial.Sun;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
+import spacegame.gui.MoveableObject;
 import spacegame.util.MathUtil;
 import spacegame.core.Timer;
 import spacegame.gui.GuiInGame;
@@ -78,9 +79,10 @@ public final class RenderWorldScene {
             GL46.glBindTexture(GL46.GL_TEXTURE_2D, this.nearbyStars.get(0).shadowMap.depthMap);
         }
 
-        Shader.terrainShader.uploadVec3f("playerPositionInChunk", new Vector3f((float) (CosmicEvolution.instance.save.thePlayer.x % 32), (float) (CosmicEvolution.instance.save.thePlayer.y % 32), (float) (CosmicEvolution.instance.save.thePlayer.z % 32)));
-        Shader.worldShaderTextureArray.uploadVec3f("playerPositionInChunk", new Vector3f((float) (CosmicEvolution.instance.save.thePlayer.x % 32), (float) (CosmicEvolution.instance.save.thePlayer.y % 32), (float) (CosmicEvolution.instance.save.thePlayer.z % 32)));
-        Shader.worldShader2DTexture.uploadVec3f("playerPositionInChunk", new Vector3f((float) (CosmicEvolution.instance.save.thePlayer.x % 32), (float) (CosmicEvolution.instance.save.thePlayer.y % 32), (float) (CosmicEvolution.instance.save.thePlayer.z % 32)));
+        Vector3f playerPositionInChunk = new Vector3f(MathUtil.positiveMod(CosmicEvolution.instance.save.thePlayer.x, 32), MathUtil.positiveMod(CosmicEvolution.instance.save.thePlayer.y, 32), MathUtil.positiveMod(CosmicEvolution.instance.save.thePlayer.z, 32));
+        Shader.terrainShader.uploadVec3f("playerPositionInChunk", playerPositionInChunk);
+        Shader.worldShaderTextureArray.uploadVec3f("playerPositionInChunk", playerPositionInChunk);
+        Shader.worldShader2DTexture.uploadVec3f("playerPositionInChunk", playerPositionInChunk);
         Shader.terrainShader.uploadInt("shadowMap", 1);
         Shader.terrainShader.uploadMat4d("uProjection", CosmicEvolution.camera.projectionMatrix);
         Shader.terrainShader.uploadMat4d("uView", CosmicEvolution.camera.viewMatrix);
@@ -267,7 +269,7 @@ public final class RenderWorldScene {
     public void renderWorldWithoutChunks(){
         Shader.worldShader2DTexture.uploadBoolean("useFog", true);
         Shader.worldShader2DTexture.uploadFloat("fogDistance", GameSettings.renderDistance * 20f);
-        Shader.worldShader2DTexture.uploadVec3f("playerPositionInChunk", new Vector3f((float) (CosmicEvolution.instance.save.thePlayer.x % 32), (float) (CosmicEvolution.instance.save.thePlayer.y % 32), (float) (CosmicEvolution.instance.save.thePlayer.z % 32)));
+        Shader.worldShader2DTexture.uploadVec3f("playerPositionInChunk", new Vector3f(MathUtil.positiveMod(CosmicEvolution.instance.save.thePlayer.x, 32), MathUtil.positiveMod(CosmicEvolution.instance.save.thePlayer.z, 32), MathUtil.positiveMod(CosmicEvolution.instance.save.thePlayer.z, 32)));
         Shader.terrainShader.uploadMat4d("uView", CosmicEvolution.camera.viewMatrix);
         for(int i = 0; i < this.nearbyStars.size(); i++){
             this.setShadowMap(this.nearbyStars.get(i),this.nearbyStarPos.get(i));
@@ -475,7 +477,8 @@ public final class RenderWorldScene {
         double zThreshold = (double) (worldSizeRadius * 2) / 360;
 
         playerLat = -(CosmicEvolution.instance.save.thePlayer.x / (double)worldSizeRadius) * 90;
-        playerLon = ((worldSizeRadius + CosmicEvolution.instance.save.thePlayer.z) / zThreshold);
+        playerLon =  (CosmicEvolution.instance.save.thePlayer.z / worldSizeRadius) * 180;
+
 
         ArrayList<Vector3f> starPositions = new ArrayList<>();
         CelestialObject currentCelestialObject = CosmicEvolution.instance.everything.getObjectAssociatedWithWorld(this.controller.parentWorld);
@@ -510,30 +513,28 @@ public final class RenderWorldScene {
                 positionDifference.mul(0.00001);
 
 
-                Vector3f celestialObjectPosition = new Vector3f((float) positionDifference.y, (float) positionDifference.z, (float) positionDifference.x);
-                celestialObjectPosition.rotateX((float) (Math.toRadians(playerLon) + Math.toRadians((360 * ((double) CosmicEvolution.instance.save.time / currentCelestialObject.rotationPeriod)) % 360)));
+                Vector3f normalizedCelestialObjectPosition = new Vector3f((float) positionDifference.x, (float) positionDifference.y, (float) positionDifference.z).normalize();
 
-                float zRotation = (float) ((float)  Math.toRadians(playerLat) + Math.toRadians((currentCelestialObject.axialTiltX)));
-                float orbitRatio = (float) MathUtil.sin(((double) (CosmicEvolution.instance.save.time % currentCelestialObject.orbitalPeriod) / currentCelestialObject.orbitalPeriod) * 2 * Math.PI);
 
-                zRotation *= orbitRatio;
-                // MathUtils.sin(((double) (SpaceGame.instance.save.time % currentCelestialObject.orbitalPeriod) / currentCelestialObject.orbitalPeriod) * 2 * Math.PI)))
-                CosmicEvolution.instance.save.activeWorld.sunAngle = zRotation;
-                celestialObjectPosition.rotateZ(zRotation);
+                float absoluteDistance = (float) positionDifference.distance(new Vector3d());
 
-                float absoluteDistance = celestialObjectPosition.distance(new Vector3f());
-                float latRatio = (float) (playerLat / 90f);
 
-                celestialObjectPosition.y += ((absoluteDistance * latRatio) * orbitRatio);
-                orbitRatio = (float) MathUtil.sin(((double) ((CosmicEvolution.instance.save.time % currentCelestialObject.orbitalPeriod) / currentCelestialObject.orbitalPeriod) * 2 * Math.PI) + (0.5f * Math.PI));
+                float rotationAmountY = (float) (Math.toRadians((double) (360 * (CosmicEvolution.instance.save.time % currentCelestialObject.rotationPeriod)) / currentCelestialObject.rotationPeriod) - (1.5f * (float)Math.PI));
 
-                if(playerLat > 0.0){
-                    celestialObjectPosition.x += (celestialObjectPosition.x * ((latRatio) * orbitRatio));
-                    celestialObjectPosition.z += (celestialObjectPosition.z *  ((latRatio) * orbitRatio));
-                } else {
-                    celestialObjectPosition.x -= (celestialObjectPosition.x * ((latRatio) * orbitRatio));
-                    celestialObjectPosition.z -= (celestialObjectPosition.z *  ((latRatio) * orbitRatio));
-                }
+                normalizedCelestialObjectPosition.rotateY(rotationAmountY); // daily rotation
+
+                float latRad = (float) Math.toRadians(playerLat);
+
+                float orbitalPhase = (CosmicEvolution.instance.save.time % currentCelestialObject.orbitalPeriod) / (float)currentCelestialObject.orbitalPeriod;
+
+                float seasonalFactor = (float) (4 + Math.sin((-orbitalPhase * (2 * Math.PI))));
+
+                normalizedCelestialObjectPosition.rotateZ(-latRad * seasonalFactor);
+
+                Vector3f differenceVector = normalizedCelestialObjectPosition.normalize(); // now it's already relative to origin
+
+                Vector3f celestialObjectPosition = new Vector3f(differenceVector).mul(absoluteDistance);
+
 
                 //Take the value for calculating the rotation z and use it to determine the angle of the sun relative to being directly overhead, use to determine temp falloff, logarithm function
                 if(renderingObject instanceof Sun){
@@ -542,42 +543,36 @@ public final class RenderWorldScene {
                     this.nearbyStars.add((Sun) renderingObject);
                 }
 
+                Shader.worldShaderCubeMapTexture.uploadBoolean("isStar", renderingObject instanceof Sun);
+
                 Vector3f vertex1;
                 Vector3f vertex2;
                 Vector3f vertex3;
                 Vector3f vertex4;
-                float rotationAmountY = (float) ((float) Math.toRadians( 360 * (double) (CosmicEvolution.instance.save.time % renderingObject.rotationPeriod) /renderingObject.rotationPeriod) - (0.5 * Math.PI));
-                float rotationAmountX = (float) Math.toRadians(renderingObject.axialTiltX);
-                float rotationAmountZ = (float) Math.toRadians(renderingObject.axialTiltZ);
+                rotationAmountY = (float) ((float) Math.toRadians( 360 * (double) (CosmicEvolution.instance.save.time % renderingObject.rotationPeriod) /renderingObject.rotationPeriod) - (0.5 * Math.PI));
+
+                this.setStarlightAndLightDir(new Vector3f(), starPositions);
 
                 if(CosmicEvolution.camera.doesSphereIntersectFrustum(celestialObjectPosition.x, celestialObjectPosition.y, celestialObjectPosition.z, (currentCelestialObject.radius * 0.000000)  * 2)) {
                     RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
                     for (int latitude = -90; latitude < 90; latitude += 10) {
                         for (int longitude = 0; longitude < 360; longitude += 10) {
                             if (renderingObject instanceof Sun) {
-                                vertex1 = this.getPositionOnSphere(latitude + 10, longitude, renderingObject.radius * scaleFactor).rotateY(-rotationAmountY).rotateX(rotationAmountX).rotateZ(rotationAmountZ);
-                                vertex2 = this.getPositionOnSphere(latitude + 10, longitude + 10, renderingObject.radius * scaleFactor).rotateY(-rotationAmountY).rotateX(rotationAmountX).rotateZ(rotationAmountZ);
-                                vertex3 = this.getPositionOnSphere(latitude, longitude, renderingObject.radius * scaleFactor).rotateY(-rotationAmountY).rotateX(rotationAmountX).rotateZ(rotationAmountZ);
-                                vertex4 = this.getPositionOnSphere(latitude, longitude + 10, renderingObject.radius * scaleFactor).rotateY(-rotationAmountY).rotateX(rotationAmountX).rotateZ(rotationAmountZ);
+                                vertex1 = this.getPositionOnSphere(latitude + 10, longitude, renderingObject.radius * scaleFactor).rotateY(-rotationAmountY);
+                                vertex2 = this.getPositionOnSphere(latitude + 10, longitude + 10, renderingObject.radius * scaleFactor).rotateY(-rotationAmountY);
+                                vertex3 = this.getPositionOnSphere(latitude, longitude, renderingObject.radius * scaleFactor).rotateY(-rotationAmountY);
+                                vertex4 = this.getPositionOnSphere(latitude, longitude + 10, renderingObject.radius * scaleFactor).rotateY(-rotationAmountY);
                             } else {
-                                vertex1 = this.getPositionOnSphereNonStar(latitude + 10, longitude, renderingObject.radius * scaleFactor).rotateY(-rotationAmountY).rotateX(rotationAmountX).rotateZ(rotationAmountZ);
-                                vertex2 = this.getPositionOnSphereNonStar(latitude + 10, longitude + 10, renderingObject.radius * scaleFactor).rotateY(-rotationAmountY).rotateX(rotationAmountX).rotateZ(rotationAmountZ);
-                                vertex3 = this.getPositionOnSphereNonStar(latitude, longitude, renderingObject.radius * scaleFactor).rotateY(-rotationAmountY).rotateX(rotationAmountX).rotateZ(rotationAmountZ);
-                                vertex4 = this.getPositionOnSphereNonStar(latitude, longitude + 10, renderingObject.radius * scaleFactor).rotateY(-rotationAmountY).rotateX(rotationAmountX).rotateZ(rotationAmountZ);
+                                vertex1 = this.getPositionOnSphereNonStar(latitude + 10, longitude, renderingObject.radius * scaleFactor).rotateY(-rotationAmountY);
+                                vertex2 = this.getPositionOnSphereNonStar(latitude + 10, longitude + 10, renderingObject.radius * scaleFactor).rotateY(-rotationAmountY);
+                                vertex3 = this.getPositionOnSphereNonStar(latitude, longitude, renderingObject.radius * scaleFactor).rotateY(-rotationAmountY);
+                                vertex4 = this.getPositionOnSphereNonStar(latitude, longitude + 10, renderingObject.radius * scaleFactor).rotateY(-rotationAmountY);
                             }
-                            if (renderingObject instanceof Sun) {
-                                tessellator.addVertexCubeMap(this.getSunColor(), vertex4.x + celestialObjectPosition.x, vertex4.y + celestialObjectPosition.y, vertex4.z + celestialObjectPosition.z); //All non star objects need to have their lighting values calculated
-                                tessellator.addVertexCubeMap(this.getSunColor(), vertex1.x + celestialObjectPosition.x, vertex1.y + celestialObjectPosition.y, vertex1.z + celestialObjectPosition.z);
-                                tessellator.addVertexCubeMap(this.getSunColor(), vertex2.x + celestialObjectPosition.x, vertex2.y + celestialObjectPosition.y, vertex2.z + celestialObjectPosition.z);
-                                tessellator.addVertexCubeMap(this.getSunColor(), vertex3.x + celestialObjectPosition.x, vertex3.y + celestialObjectPosition.y, vertex3.z + celestialObjectPosition.z);
-                                tessellator.addElements();
-                            } else {
-                                tessellator.addVertexCubeMap(this.calculateLighting(vertex4, this.getSunColor(), starPositions), vertex4.x + celestialObjectPosition.x, vertex4.y + celestialObjectPosition.y, vertex4.z + celestialObjectPosition.z); //All non star objects need to have their lighting values calculated
-                                tessellator.addVertexCubeMap(this.calculateLighting(vertex1, this.getSunColor(), starPositions), vertex1.x + celestialObjectPosition.x, vertex1.y + celestialObjectPosition.y, vertex1.z + celestialObjectPosition.z);
-                                tessellator.addVertexCubeMap(this.calculateLighting(vertex2, this.getSunColor(), starPositions), vertex2.x + celestialObjectPosition.x, vertex2.y + celestialObjectPosition.y, vertex2.z + celestialObjectPosition.z);
-                                tessellator.addVertexCubeMap(this.calculateLighting(vertex3, this.getSunColor(), starPositions), vertex3.x + celestialObjectPosition.x, vertex3.y + celestialObjectPosition.y, vertex3.z + celestialObjectPosition.z);
-                                tessellator.addElements();
-                            }
+                            tessellator.addVertexCubeMapCelestialBody(this.calculateNormals(vertex4) ,vertex4.x + celestialObjectPosition.x, vertex4.y + celestialObjectPosition.y, vertex4.z + celestialObjectPosition.z); //All non star objects need to have their lighting values calculated
+                            tessellator.addVertexCubeMapCelestialBody(this.calculateNormals(vertex1) ,vertex1.x + celestialObjectPosition.x, vertex1.y + celestialObjectPosition.y, vertex1.z + celestialObjectPosition.z);
+                            tessellator.addVertexCubeMapCelestialBody(this.calculateNormals(vertex2) ,vertex2.x + celestialObjectPosition.x, vertex2.y + celestialObjectPosition.y, vertex2.z + celestialObjectPosition.z);
+                            tessellator.addVertexCubeMapCelestialBody(this.calculateNormals(vertex3) ,vertex3.x + celestialObjectPosition.x, vertex3.y + celestialObjectPosition.y, vertex3.z + celestialObjectPosition.z);
+                            tessellator.addElements();
                         }
                     }
                     Shader.worldShaderCubeMapTexture.uploadVec3f("position", celestialObjectPosition);
@@ -587,7 +582,7 @@ public final class RenderWorldScene {
                     }
                     GL46.glEnable(GL46.GL_CULL_FACE);
                     GL46.glCullFace(GL46.GL_FRONT);
-                    tessellator.drawCubeMapTexture(renderingObject.mappedTexture, Shader.worldShaderCubeMapTexture, CosmicEvolution.camera);
+                    tessellator.drawCubeMapTextureCelestialBody(renderingObject.mappedTexture, Shader.worldShaderCubeMapTexture, CosmicEvolution.camera);
                     GL46.glDisable(GL46.GL_CULL_FACE);
                     if(this.blendCelestialObjects) {
                         GL46.glDisable(GL46.GL_BLEND);
@@ -621,11 +616,7 @@ public final class RenderWorldScene {
     }
 
     private int getSunColor(){
-        int red = (int) (this.sunRed * 255);
-        int green = (int) (this.sunGreen * 255);
-        int blue = (int) (this.sunBlue * 255);
-
-        return (red << 16) | (green << 8) | blue;
+        return (MathUtil.floatToIntRGBA(this.sunRed) << 16) | (MathUtil.floatToIntRGBA(this.sunGreen) << 8) | MathUtil.floatToIntRGBA(this.sunBlue);
     }
 
     private void renderSkybox(CelestialObject currentCelestialObject, double playerLon, double playerLat) {
@@ -641,26 +632,35 @@ public final class RenderWorldScene {
             Vector3f vertex4;
             Matrix4f modelMatrix = new Matrix4f();
             modelMatrix.rotateX((float) -(Math.toRadians(playerLon) + Math.toRadians((360 * ((double) CosmicEvolution.instance.save.time / currentCelestialObject.rotationPeriod)) % 360)));
-            modelMatrix.rotateZ(-(float) ((float)  Math.toRadians(playerLat) + Math.toRadians(currentCelestialObject.axialTiltX)));
+
+            float latRad = (float) Math.toRadians(playerLat);
+
+            float orbitalPhase = (CosmicEvolution.instance.save.time % currentCelestialObject.orbitalPeriod) / (float)currentCelestialObject.orbitalPeriod;
+
+            float declination = (float) (currentCelestialObject.axialTiltX * Math.sin((orbitalPhase * (2 * Math.PI))));
+
+            float tiltAngle = (float) (latRad - Math.toRadians(declination));
+
+            modelMatrix.rotateZ(tiltAngle);
+
             for (int latitude = -90; latitude < 90; latitude += 45) {
                 for (int longitude = 0; longitude < 360; longitude += 45) {
                     vertex1 = this.getPositionOnSphere(latitude + 45, longitude, 400000);
                     vertex2 = this.getPositionOnSphere(latitude + 45, longitude + 45, 400000);
                     vertex3 = this.getPositionOnSphere(latitude, longitude, 400000);
                     vertex4 = this.getPositionOnSphere(latitude, longitude + 45, 400000);
-                    tessellator.addVertexCubeMap(16777215, (vertex4.x), (vertex4.y), (vertex4.z));
-                    tessellator.addVertexCubeMap(16777215, (vertex1.x), (vertex1.y), (vertex1.z));
-                    tessellator.addVertexCubeMap(16777215, (vertex2.x), (vertex2.y), (vertex2.z));
-                    tessellator.addVertexCubeMap(16777215, (vertex3.x), (vertex3.y), (vertex3.z));
+                    tessellator.addVertexCubeMap((vertex4.x), (vertex4.y), (vertex4.z));
+                    tessellator.addVertexCubeMap((vertex1.x), (vertex1.y), (vertex1.z));
+                    tessellator.addVertexCubeMap((vertex2.x), (vertex2.y), (vertex2.z));
+                    tessellator.addVertexCubeMap((vertex3.x), (vertex3.y), (vertex3.z));
                     tessellator.addElements();
                 }
             }
 
-            Shader.worldShaderCubeMapTexture.uploadVec3f("position", new Vector3f());
-            Shader.worldShaderCubeMapTexture.uploadBoolean("skybox", true);
-            Shader.worldShaderCubeMapTexture.uploadMat4f("uModel", modelMatrix);
-            tessellator.drawCubeMapTexture(GuiUniverseMap.skybox, Shader.worldShaderCubeMapTexture, CosmicEvolution.camera);
-            Shader.worldShaderCubeMapTexture.uploadBoolean("skybox", false);
+            Shader.worldSkybox.uploadVec3f("position", new Vector3f());
+            Shader.worldSkybox.uploadMat4f("uModel", modelMatrix);
+            tessellator.drawCubeMapTexture(GuiUniverseMap.skybox, Shader.worldSkybox, CosmicEvolution.camera);
+            Shader.worldSkybox.uploadBoolean("skybox", false);
 
             GL46.glDisable(GL46.GL_BLEND);
             GL46.glDepthMask(true);
@@ -685,6 +685,8 @@ public final class RenderWorldScene {
         }
 
         closestStar.normalize();
+
+       // System.out.println(closestStar.y);
 
         byte calculatedSkyLightLevel = this.calculateSkyLightLevel(closestStar.y);
         this.setClearColor(closestStar.y);
@@ -1035,41 +1037,35 @@ public final class RenderWorldScene {
         return position;
     }
 
-    private int calculateLighting(Vector3f vertexPosOnObject, int baseColor, ArrayList<Vector3f> starPositions){
+    private Vector3f calculateNormals(Vector3f vertexPosOnObject){
+       return new Vector3f(vertexPosOnObject).normalize();
+    }
+
+    private void setStarlightAndLightDir(Vector3f objectPos, ArrayList<Vector3f> starPositions){
         Vector3f closestStar = null;
         float minDistance = Float.MAX_VALUE;
 
-        for(Vector3f starPos : starPositions){
-            float distance = starPos.distance(vertexPosOnObject);
-            if(distance < minDistance){
+        Sun star = null;
+        Vector3f starPos;
+
+        for(int i = 0; i < starPositions.size(); i++) {
+            starPos = starPositions.get(i);
+            float distance = starPos.distance(objectPos);
+            if (distance < minDistance) {
                 minDistance = distance;
                 closestStar = starPos;
+                star = this.nearbyStars.get(i);
             }
         }
 
         if(closestStar == null){
-            return 0;
+            closestStar = new Vector3f();
         }
 
 
-        Vector3f vertexDir = new Vector3f(vertexPosOnObject).normalize();
         Vector3f lightDir = new Vector3f(closestStar).normalize();
-
-        float dotProduct = vertexDir.dot(lightDir);
-        float angle = (float) Math.toDegrees(Math.acos(dotProduct));
-
-
-        float intensity = Math.max(0, (float) MathUtil.cos(Math.toRadians(angle)));
-
-        int red = (baseColor >> 16) & 0xFF;
-        int green = (baseColor >> 8) & 0xFF;
-        int blue = baseColor & 0xFF;
-
-        red = Math.min(255, Math.max(0, (int)(red * intensity)));
-        green = Math.min(255, Math.max(0, (int)(green * intensity)));
-        blue = Math.min(255, Math.max(0, (int)(blue * intensity)));
-
-        return (red << 16) | (green << 8) | blue;
+        Shader.worldShaderCubeMapTexture.uploadVec3f("normalizedLightDir", lightDir);
+        Shader.worldShaderCubeMapTexture.uploadInt("lightColor", star == null ? 0 : star.lightColor);
     }
 
 }

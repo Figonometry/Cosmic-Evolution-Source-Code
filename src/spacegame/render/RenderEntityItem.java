@@ -86,9 +86,9 @@ public final class RenderEntityItem {
         Shader.worldShaderTextureArray.uploadVec3f("chunkOffset", chunkOffset);
         WorldEarth worldEarth = (WorldEarth) CosmicEvolution.instance.save.activeWorld;
         this.currentTime = CosmicEvolution.instance.save.time;
-        float x = (float) (this.x % 32);
-        float y = (float) ((float) (this.y % 32) + 0.05F + (0.05F * ((MathUtil.sin((((double) this.currentTime / 120) * Math.PI * 2) - (0.5 * Math.PI)) * 0.5) + 0.5f)));
-        float z = (float) (this.z % 32);
+        float x = MathUtil.positiveMod(this.x, 32);
+        float y = (float) (MathUtil.positiveMod(this.y, 32) + 0.05F + (0.05F * ((MathUtil.sin((((double) this.currentTime / 120) * Math.PI * 2) - (0.5 * Math.PI)) * 0.5) + 0.5f)));
+        float z = MathUtil.positiveMod(this.z,32);
 
         if(x < 0){
             x += 32;
@@ -111,7 +111,7 @@ public final class RenderEntityItem {
         Vector3d vertex4 = new Vector3d(0, -0.125, 0.125).rotateY(-Math.toRadians(CosmicEvolution.instance.save.thePlayer.yaw)).add(blockPosition);
         Vector3d normal = new Vector3d(0, 0, 1).rotateY(-Math.toRadians(CosmicEvolution.instance.save.thePlayer.yaw));
         this.resetLight();
-        this.setVertexLight1Arg(worldEarth.getBlockLightValue((int)(this.chunkX * 32 + x), (int)(this.chunkY * 32 + y), (int)(this.chunkZ * 32 + z)),  x, y, z, worldEarth.getBlockLightColor((int)(this.chunkX * 32 + x), (int)(this.chunkY * 32 + y), (int)(this.chunkZ * 32 + z)));
+        this.setVertexLight1Arg(worldEarth.getBlockLightValue(MathUtil.floorDouble(this.chunkX * 32 + x), MathUtil.floorDouble(this.chunkY * 32 + y), MathUtil.floorDouble(this.chunkZ * 32 + z)),  x, y, z, worldEarth.getBlockLightColor(MathUtil.floorDouble(this.chunkX * 32 + x), MathUtil.floorDouble(this.chunkY * 32 + y), MathUtil.floorDouble(this.chunkZ * 32 + z)));
         float skyLightValue = GuiInGame.getLightValueFromMap(worldEarth.getBlockSkyLightValue((int)(this.chunkX * 32 + x), (int)(this.chunkY * 32 + y), (int)(this.chunkZ * 32 + z)));
         int colorValue = new Color(this.red, this.green, this.blue, 0).getRGB();
         worldTessellator.addVertexTextureArray(colorValue, (float) vertex1.x, (float) vertex1.y, (float) vertex1.z, 3, blockID, RenderBlocks.WEST_FACE, (float) normal.x, (float) normal.y, (float) normal.z, skyLightValue);

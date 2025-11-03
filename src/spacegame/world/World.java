@@ -851,28 +851,28 @@ public abstract class World {
 
     public double getAverageTemperature(int x, int y, int z){
         if(this instanceof WorldEarth){
-            return ((((WorldEarth) this).globalTemperatureMap.getNoiseRaw(((WorldEarth) this).convertBlockXToGlobalMap(x), ((WorldEarth) this).convertBlockZToGlobalMap(z)) + (((WorldEarth) this).temperatureNoise1.getNoiseRaw(x / 4, z / 4) * 0.5)));
+            return ((((WorldEarth) this).globalTemperatureMap.getNoiseRaw(((WorldEarth) this).convertBlockZToGlobalMap(z), ((WorldEarth) this).convertBlockXToGlobalMap(x)) + (((WorldEarth) this).temperatureNoise1.getNoiseRaw(x / 4, z / 4)))) * 0.5;
         }
         return 0;
     }
 
     public double getAverageRainfall(int x, int z){
         if(this instanceof WorldEarth){
-            return ((((WorldEarth) this).globalRainfallMap.getNoiseRaw(((WorldEarth) this).convertBlockXToGlobalMap(x), ((WorldEarth) this).convertBlockZToGlobalMap(z)) + (((WorldEarth) this).rainfallNoise1.getNoiseRaw(x / 4, z / 4) * 0.5)));
+            return ((((WorldEarth) this).globalRainfallMap.getNoiseRaw(((WorldEarth) this).convertBlockZToGlobalMap(z), ((WorldEarth) this).convertBlockXToGlobalMap(x)) + (((WorldEarth) this).rainfallNoise1.getNoiseRaw(x / 4, z / 4)))) * 0.5;
         }
         return 0;
     }
 
     public double getRainfall(int x, int z){
         if(this instanceof WorldEarth) {
-            return ((((WorldEarth) this).globalRainfallMap.getNoiseRaw(((WorldEarth) this).convertBlockXToGlobalMap(x), ((WorldEarth) this).convertBlockZToGlobalMap(z)) + (((WorldEarth) this).rainfallNoise1.getNoiseRaw(x / 4, z / 4)) * 0.5));
+            return ((((WorldEarth) this).globalRainfallMap.getNoiseRaw(((WorldEarth) this).convertBlockZToGlobalMap(z), ((WorldEarth) this).convertBlockXToGlobalMap(x)) + (((WorldEarth) this).rainfallNoise1.getNoiseRaw(x / 4, z / 4)))) * 0.5;
         }
         return 0;
     }
 
     public double getTemperatureWithoutTimeOfDay(int x, int y, int z){
         if(this instanceof WorldEarth) {
-            double temp = ((((WorldEarth) this).globalTemperatureMap.getNoiseRaw(((WorldEarth) this).convertBlockXToGlobalMap(x), ((WorldEarth) this).convertBlockZToGlobalMap(z)) + (((WorldEarth) this).temperatureNoise1.getNoiseRaw(x / 4, z / 4) * 0.5)));
+            double temp = ((((WorldEarth) this).globalTemperatureMap.getNoiseRaw(((WorldEarth) this).convertBlockZToGlobalMap(z), ((WorldEarth) this).convertBlockXToGlobalMap(x)) + (((WorldEarth) this).temperatureNoise1.getNoiseRaw(x / 4, z / 4)))) * 0.5;
             if (y > 0) {
                 temp -= ((y / 5d) * 0.01);
             }
@@ -896,9 +896,10 @@ public abstract class World {
         return Math.floor((this.getTemperatureWithTimeOfDay(x,y,z) * 100) * 10) / 10.0;
     }
 
+
     public double getTemperatureWithTimeOfDay(int x, int y, int z){
         if(this instanceof WorldEarth) {
-            double temp = ((((WorldEarth) this).globalTemperatureMap.getNoiseRaw(((WorldEarth) this).convertBlockXToGlobalMap(x), ((WorldEarth) this).convertBlockZToGlobalMap(z)) + (((WorldEarth) this).temperatureNoise1.getNoiseRaw(x / 4, z / 4) * 0.5)));
+            double temp = ((((WorldEarth) this).globalTemperatureMap.getNoiseRaw(((WorldEarth) this).convertBlockZToGlobalMap(x), ((WorldEarth) this).convertBlockXToGlobalMap(x)) + (((WorldEarth) this).temperatureNoise1.getNoiseRaw(x / 4, z / 4)))) * 0.5;
             if (y > 0) {
                 temp -= ((y / 5d) * 0.01);
             }
@@ -936,7 +937,7 @@ public abstract class World {
     }
 
     public double getTempChangeFromLatitude(double latitude){
-        return -((latitude - (23.5)) / 65f);
+        return -((latitude/ 90f));
     }
 
 
@@ -1227,9 +1228,14 @@ public abstract class World {
         return false;
     }
 
-    public boolean intersectsBlockBoundingBox(Block block, double x, double y, double z){
-        return block.standardCollisionBoundingBox.pointInsideBoundingBox(x + (int)-x,y + (int)-y, z + (int)-z); //Localizes the world coords back to model space
+    public boolean intersectsBlockBoundingBox(Block block, double x, double y, double z) {
+        double localX = x - MathUtil.floorDouble(x);
+        double localY = y - MathUtil.floorDouble(y);
+        double localZ = z - MathUtil.floorDouble(z);
+
+        return block.standardCollisionBoundingBox.pointInsideBoundingBox(localX, localY, localZ);
     }
+
 
     public boolean wouldBlockIntersectPlayer(int x, int y, int z){
         AxisAlignedBB blockBoundingBox = new AxisAlignedBB(x,y,z,x + 1, y + 1,z + 1);
@@ -1245,6 +1251,7 @@ public abstract class World {
             final double yDif = (rayCast[1] - (this.ce.save.thePlayer.y + this.ce.save.thePlayer.height/2));
             final double zDif = (rayCast[2] - this.ce.save.thePlayer.z);
 
+
             int blockX = 0;
             int blockY = 0;
             int blockZ = 0;
@@ -1253,6 +1260,7 @@ public abstract class World {
                 blockX = MathUtil.floorDouble(this.ce.save.thePlayer.x + xDif * multiplier * loopPass);
                 blockY = MathUtil.floorDouble(this.ce.save.thePlayer.y  + this.ce.save.thePlayer.height/2 + yDif * multiplier * loopPass);
                 blockZ = MathUtil.floorDouble(this.ce.save.thePlayer.z + zDif * multiplier * loopPass);
+
 
                 Block checkedBlock = Block.list[this.getBlockID(blockX, blockY, blockZ)];
 

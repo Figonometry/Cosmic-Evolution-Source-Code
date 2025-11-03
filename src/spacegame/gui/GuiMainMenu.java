@@ -138,17 +138,30 @@ public final class GuiMainMenu extends Gui {
             fontRenderer.drawString(this.ce.title, x, y, depth, 16711875, 50, 255);
             y -= 60;
             fontRenderer.toggleItalics();
-            fontRenderer.drawString("Earth now uses dynamically generated textures", x, y, depth, yellow, 50, 255);
+            fontRenderer.drawString("Logger will now show window if object initializers fail ", x, y, depth, yellow, 50, 255);
             y -= 30;
-            fontRenderer.drawString("World generation changed to reflect textures on the orbital map", x, y, depth, yellow, 50, 255);
+            fontRenderer.drawString("Info window will now show if game does not receive launcher directory path", x, y, depth, yellow, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Noisemaps now use unique seeds", x, y, depth, yellow, 50, 255);
+            fontRenderer.drawString("Improved performance on orbital map", x, y, depth, yellow, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Updated trees, cactus, clay blobs, reeds and berry bushes to not differ in generation on the same seed on different loads", x, y, depth, yellow, 50, 255);
+            fontRenderer.drawString("Logs no longer auto UV", x, y, depth, yellow, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Setting seeds on the create new world screen no longer crashes the game", x, y, depth, yellow, 50, 255);
+            fontRenderer.drawString("Blocks can now be broken correctly on negative axes", x, y ,depth, yellow, 50, 255);
+            y -= 30;
+            fontRenderer.drawString("Fog now works correctly on negative axes", x, y, depth, yellow, 50, 255);
+            y -= 30;
+            fontRenderer.drawString("Deer now render correctly on negative axes", x, y, depth, yellow, 50, 255);
+            y -= 30;
+            fontRenderer.drawString("Particles now render correctly on negative axes", x, y, depth, yellow, 50, 255);
+            y  -= 30;
+            fontRenderer.drawString("Dropped items now render correctly on negative axes", x, y, depth, yellow, 50, 255);
+            y -= 30;
+            fontRenderer.drawString("Adjusted temperature and rainfall calculations", x, y, depth, yellow, 50, 255);
+            y -= 30;
+            fontRenderer.drawString("Adjusted celestial object movement around the player", x, y, depth, yellow, 50, 255);
+            y -= 30;
+            fontRenderer.drawString("Skybox now rotates correctly with celestial objects", x, y, depth, yellow, 50, 255);
             fontRenderer.toggleItalics();
-
 
 
 

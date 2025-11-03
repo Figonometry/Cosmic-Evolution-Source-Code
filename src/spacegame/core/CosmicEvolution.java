@@ -23,6 +23,7 @@ import spacegame.item.ItemStack;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.render.*;
+import spacegame.util.Logger;
 import spacegame.util.MathUtil;
 import spacegame.world.*;
 
@@ -60,7 +61,7 @@ public final class CosmicEvolution implements Runnable {
         if(args.length != 0) {
             startMainThread(new Thread(new CosmicEvolution(args[0])));
         } else {
-            System.out.println("Incorrect number of arguments");
+            new Logger("Failed to provide launcher directory", true);
         }
     }
 
@@ -83,8 +84,8 @@ public final class CosmicEvolution implements Runnable {
         this.running = true;
         try {
             this.startGame();
-        } catch(Exception exception){
-            new Logger(exception, true);
+        } catch(Throwable t){
+            new Logger(t, true);
             if(this.save != null){
                 this.save.saveDataToFile();
                 this.save.activeWorld.saveWorld();
@@ -95,7 +96,7 @@ public final class CosmicEvolution implements Runnable {
     }
 
     private void startGame() {
-        this.title = "Cosmic Evolution Alpha v0.35";
+        this.title = "Cosmic Evolution Alpha v0.36";
         GameSettings.loadOptionsFromFile(this.launcherDirectory);
         this.clearLogFiles(new File(this.launcherDirectory + "/crashReports"));
         this.initLWJGL();
@@ -236,10 +237,10 @@ public final class CosmicEvolution implements Runnable {
         this.shutdown();
     }
 
+
     public void startSave(int saveSlotNumber, String saveName, long seed) {
-        Random rand = new Random(seed);
-        double x = rand.nextInt(1024, 32768) + 0.5D;
-        double z = rand.nextInt(1024, 32768) + 0.5D;
+        double x = -667829;
+        double z = 0;
         this.save = new Save(this, saveSlotNumber, saveName, seed, x, z);
         this.everything = new Universe();
         this.save.thePlayer = new EntityPlayer(this, 0, 0, 0);
@@ -288,7 +289,6 @@ public final class CosmicEvolution implements Runnable {
             GuiInGame.fadeMessageText();
             if(this.save.time % 18000 == 0 && this.currentGui instanceof GuiInGame){
                 this.save.saveDataToFileWithoutChunkUnload();
-                this.save.thePlayer.savePlayerToFile();
             }
             if(this.everything != null){
                 this.everything.updateCelestialObjects();
@@ -518,7 +518,6 @@ public final class CosmicEvolution implements Runnable {
             this.save.activeWorld.paused = true;
             this.setNewGui(new GuiPauseInGame(this));
             this.save.saveDataToFileWithoutChunkUnload();
-            this.save.thePlayer.savePlayerToFile();
         }
         if (!MouseListener.mouseButtonDown(GLFW.GLFW_MOUSE_BUTTON_LEFT)) {
             MouseListener.leftClickReleased = true;

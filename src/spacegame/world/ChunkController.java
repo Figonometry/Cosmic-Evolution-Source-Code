@@ -75,12 +75,30 @@ public final class ChunkController {
         this.playerChunkY = MathUtil.floorDouble(this.parentWorld.ce.save.thePlayer.y) >> 5;
         this.playerChunkZ = MathUtil.floorDouble(this.parentWorld.ce.save.thePlayer.z) >> 5;
         if (!this.loadedInitialColumn) {
-            this.loadChunkColumn(this.playerChunkX, this.playerChunkZ);
-            if(!this.parentWorld.ce.save.thePlayer.loadedFromFile) {
-                while (Block.list[this.parentWorld.getBlockID(MathUtil.floorDouble(this.parentWorld.ce.save.thePlayer.x), MathUtil.floorDouble(parentWorld.ce.save.thePlayer.y), MathUtil.floorDouble(this.parentWorld.ce.save.thePlayer.z))].isSolid) {
-                    this.parentWorld.ce.save.thePlayer.y++;
+
+            if(!CosmicEvolution.instance.save.thePlayer.loadedFromFile) {
+                int count = 0;
+                WorldEarth earth = (WorldEarth) this.parentWorld;
+                while (earth.globalElevationMap.elevation[earth.convertBlockZToGlobalMap(MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z))][earth.convertBlockXToGlobalMap(MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x))] < 0) {
+                    if ((count & 1) == 0) {
+                        CosmicEvolution.instance.save.thePlayer.z = -489.1328125 * count * 10;
+                    } else {
+                        CosmicEvolution.instance.save.thePlayer.z = 489.1328125 * count * 10;
+                    }
+                    count++;
                 }
-                this.parentWorld.ce.save.thePlayer.y += 3;
+
+                this.playerChunkX = MathUtil.floorDouble(this.parentWorld.ce.save.thePlayer.x) >> 5;
+                this.playerChunkZ = MathUtil.floorDouble(this.parentWorld.ce.save.thePlayer.z) >> 5;
+            }
+
+            this.loadChunkColumn(MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x) >> 5, MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z) >> 5);
+
+            if(!CosmicEvolution.instance.save.thePlayer.loadedFromFile) {
+                while (Block.list[this.parentWorld.getBlockID(MathUtil.floorDouble(this.parentWorld.ce.save.thePlayer.x), MathUtil.floorDouble(parentWorld.ce.save.thePlayer.y), MathUtil.floorDouble(this.parentWorld.ce.save.thePlayer.z))].isSolid) {
+                    CosmicEvolution.instance.save.thePlayer.y++;
+                }
+                CosmicEvolution.instance.save.thePlayer.y += 3;
                 if(CosmicEvolution.instance.save.spawnY == Double.NEGATIVE_INFINITY){
                     CosmicEvolution.instance.save.spawnY = CosmicEvolution.instance.save.thePlayer.y;
                     CosmicEvolution.instance.save.saveDataToFileWithoutChunkUnload();
@@ -497,13 +515,9 @@ public final class ChunkController {
 
 
 
-    public void removeChunkFromLists(Chunk chunk, ChunkRegion region) {
+    public void removeChunkFromLists(Chunk chunk) {
         this.nonPopulatedChunks.remove(chunk);
         this.dirtyChunks.remove(chunk);
-        Thread thread = new Thread(new ThreadChunkUnloader(chunk, region));
-        thread.setName("Chunk Unloader Thread For Chunk: " + chunk.x + " " + chunk.y + " " + chunk.z);
-        thread.setPriority(1);
-        thread.start();
     }
 
 
@@ -799,6 +813,8 @@ public final class ChunkController {
     private void unloadChunks() {
         Chunk chunk;
         ChunkRegion region;
+        Chunk[] unloadingChunks = new Chunk[this.regions.length * 512];
+        int unloadingChunksIndex = 0;
 
         for (int i = 0; i < this.regions.length; i++) {
             region = this.regions[i];
@@ -807,12 +823,21 @@ public final class ChunkController {
                     chunk = region.chunks[k];
                     if (chunk != null) {
                         if (this.shouldChunkUnload(chunk)) {
-                            this.removeChunkFromLists(chunk, region);
+                            this.removeChunkFromLists(chunk);
+                            unloadingChunks[unloadingChunksIndex] = chunk;
+                            unloadingChunksIndex++;
                         }
                     }
                 }
             }
         }
+
+        Thread chunkUnloaderThread = new Thread(new ThreadChunkUnloader(unloadingChunks));
+        chunkUnloaderThread.setName("Chunk Unloading Thread");
+        chunkUnloaderThread.setPriority(1);
+        chunkUnloaderThread.start();
+
+
 
         ChunkColumnSkylightMap lightmap;
         for(int i = 0; i < this.columnLightMaps.length; i++){
@@ -890,12 +915,20 @@ public final class ChunkController {
 
     public void saveRegion(ChunkRegion region) {
         Chunk chunk;
+        Chunk[] unloadingChunks = new Chunk[region.chunks.length];
+        int unloadingChunksIndex = 0;
         for (int i = 0; i < region.chunks.length; i++) {
             chunk = region.chunks[i];
             if (chunk != null) {
-                this.removeChunkFromLists(chunk, region);
+                this.removeChunkFromLists(chunk);
+                unloadingChunks[unloadingChunksIndex] = chunk;
+                unloadingChunksIndex++;
             }
         }
+        Thread chunkUnloaderThread = new Thread(new ThreadChunkUnloader(unloadingChunks));
+        chunkUnloaderThread.setName("Chunk Unloading Thread");
+        chunkUnloaderThread.setPriority(1);
+        chunkUnloaderThread.start();
     }
 
     public void saveAllRegionsWithoutUnload() {
@@ -913,10 +946,13 @@ public final class ChunkController {
         for (int i = 0; i < region.chunks.length; i++) {
             chunk = region.chunks[i];
             if (chunk != null) {
-                Thread thread = new Thread(new ThreadChunkSave(chunk));
-                thread.setName("Chunk Saving Thread For Chunk: " + chunk.x + " " + chunk.y + " " + chunk.z);
-                thread.setPriority(1);
-                thread.start();
+                if (chunk.modifiedSinceLastSave) {
+                    Thread thread = new Thread(new ThreadChunkSave(chunk));
+                    thread.setName("Chunk Saving Thread For Chunk: " + chunk.x + " " + chunk.y + " " + chunk.z);
+                    thread.setPriority(1);
+                    thread.start();
+                    chunk.modifiedSinceLastSave = false;
+                }
             }
         }
     }

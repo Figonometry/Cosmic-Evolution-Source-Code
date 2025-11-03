@@ -48,6 +48,10 @@ public abstract class MathUtil {
         return comp / 255f;
     }
 
+    public static float positiveMod(double value, float modulus){
+        return (float) (((value % modulus) + modulus) % modulus);
+    }
+
     public static int RGBToInt(float red, float green, float blue){
         int r = (int) (red * 255);
         int g = (int) (green * 255);

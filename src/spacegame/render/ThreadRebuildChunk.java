@@ -4,7 +4,7 @@ import org.lwjgl.BufferUtils;
 import spacegame.block.Block;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
-import spacegame.core.Logger;
+import spacegame.util.Logger;
 import spacegame.world.Chunk;
 import spacegame.world.World;
 
@@ -21,7 +21,7 @@ public final class ThreadRebuildChunk implements Runnable {
     public void run() {
         try {
             this.rebuildChunk();
-        } catch (Exception e){
+        } catch (Throwable e){
             new Logger(e);
         }
     }
@@ -225,6 +225,7 @@ public final class ThreadRebuildChunk implements Runnable {
             case "BRICK_PILE" -> renderBlocks.renderBrickPile(this.workingChunk, this.parentWorld, block, index, face);
             case "BERRY_BUSH_GROWING" -> renderBlocks.renderBerryBushGrowing(this.workingChunk, this.parentWorld, block, index, face);
             case "REEDS_GROWTH" -> renderBlocks.renderReedGrowing(this.workingChunk, this.parentWorld, block, index, face);
+            case "OAK_LOG" -> renderBlocks.renderStandardBlockWithoutAutoUV(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);
             case "LEAF" -> {
                 if(GameSettings.transparentLeaves){
                     renderBlocks.renderTransparentBlock(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);

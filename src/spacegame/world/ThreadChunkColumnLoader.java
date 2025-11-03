@@ -4,7 +4,7 @@ import spacegame.block.Block;
 import spacegame.block.BlockContainer;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
-import spacegame.core.Logger;
+import spacegame.util.Logger;
 import spacegame.entity.Entity;
 import spacegame.entity.EntityBlock;
 import spacegame.entity.EntityDeer;

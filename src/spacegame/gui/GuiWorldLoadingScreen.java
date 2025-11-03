@@ -88,14 +88,14 @@ public final class GuiWorldLoadingScreen extends Gui {
 
     public double getProgressBarCompletion(){
         switch (World.worldLoadPhase){
-            case 0 -> {
+            case 1 -> {
                 return (double) World.noiseMapsCompleted / (double)World.totalMaps;
             }
-            case 1 -> {
+            case 2 -> {
                 return ((double)(this.ce.save.activeWorld.chunkController.numberOfLoadedChunks / (double)((GameSettings.renderDistance * 2 + 1) * (GameSettings.renderDistance * 2 + 1) * (GameSettings.chunkColumnHeight * 2))));
             }
-            case 2 -> {
-                return (double) 1 / this.ce.save.activeWorld.chunkController.threadQueue.size();
+            case 3 -> {
+                return (double) 1 / Thread.activeCount();
             }
         }
         return 0;

@@ -1,4 +1,6 @@
-package spacegame.core;
+package spacegame.util;
+
+import spacegame.core.CosmicEvolution;
 
 import javax.swing.*;
 import java.awt.*;
@@ -11,14 +13,14 @@ import java.util.GregorianCalendar;
 public final class Logger {
     public JFrame window;
     public JPanel mainPanel;
-    public Logger(Exception exception){
+    public Logger(Throwable throwable){
         Calendar calendar = new GregorianCalendar();
         File crashFile = new File(CosmicEvolution.instance.launcherDirectory + "/crashReports/crashReport" + "-" + calendar.get(Calendar.YEAR) + "-" + (calendar.get(Calendar.MONTH)+1) + "-" + calendar.get(Calendar.DAY_OF_MONTH) + "-" + calendar.get(Calendar.HOUR_OF_DAY)  + calendar.get(Calendar.MINUTE)  + calendar.get(Calendar.SECOND) +  ".txt");
         PrintStream ps;
         try {
             ps = new PrintStream(crashFile);
-            exception.printStackTrace(ps);
-            exception.printStackTrace();
+            throwable.printStackTrace(ps);
+            throwable.printStackTrace();
             ps.println("WARNING: EXCEPTION FOUND IN THREAD: " + Thread.currentThread().getName());
             System.out.println("WARNING: EXCEPTION FOUND IN THREAD: " + Thread.currentThread().getName());
             ps.println("Please forward the stacktrace to Fig");
@@ -78,11 +80,49 @@ public final class Logger {
         frame.setVisible(true);
     }
 
+    public Logger(String string, boolean forMainInvocation){
+        JFrame frame = new JFrame("Cosmic Evolution Info Window");
+        this.window = frame;
+        this.window.setSize(new Dimension(854, 480));
+        this.window.setLocationRelativeTo(null);
+        this.window.setResizable(false);
+        this.window.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
-    public Logger(Exception exception, boolean launchWindow){
-        StackTraceElement[] stackTraceElements = exception.getStackTrace();
+        JPanel panel = new JPanel();
+        panel.setLayout(null);
+        panel.setBackground(Color.BLACK);
+        this.mainPanel = panel;
+
+        JTextArea textArea = new JTextArea();
+        textArea.setLineWrap(true);
+        textArea.setWrapStyleWord(true);
+        textArea.setEditable(false);
+        textArea.setForeground(Color.YELLOW);
+        textArea.setFocusable(false);
+        textArea.setBackground(new Color(0,0,0,0));
+        textArea.setBorder(null);
+        textArea.setOpaque(false);
+        textArea.setText(string);
+
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        scrollPane.setBounds(0, 0, 854, 480);
+        scrollPane.setBorder(null);
+        scrollPane.setOpaque(false);
+        scrollPane.getViewport().setOpaque(false);
+        scrollPane.setBackground(new Color(0,0,0,0));
+        scrollPane.getViewport().setBackground(new Color(0,0,0,0));
+        scrollPane.setViewportBorder(null);
+
+        panel.add(scrollPane);
+        frame.add(panel);
+        frame.setVisible(true);
+    }
+
+
+    public Logger(Throwable throwable, boolean launchWindow){
+        StackTraceElement[] stackTraceElements = throwable.getStackTrace();
         StringBuilder stackTrace = new StringBuilder();
-        stackTrace.append(exception.toString());
+        stackTrace.append(throwable.toString());
         for(int i = 0; i < stackTraceElements.length; i++){
             stackTrace.append("\n");
             stackTrace.append(stackTraceElements[i].toString());
@@ -106,8 +146,8 @@ public final class Logger {
         PrintStream ps;
         try {
             ps = new PrintStream(crashFile);
-            exception.printStackTrace(ps);
-            exception.printStackTrace();
+            throwable.printStackTrace(ps);
+            throwable.printStackTrace();
             ps.println("WARNING: EXCEPTION FOUND IN THREAD: " + Thread.currentThread().getName());
             System.out.println("WARNING: EXCEPTION FOUND IN THREAD: " + Thread.currentThread().getName());
             ps.println("Please forward the stacktrace to Fig");

@@ -8,12 +8,13 @@ import org.lwjgl.opengl.GL46;
 import spacegame.celestial.CelestialObject;
 import spacegame.celestial.Sun;
 import spacegame.core.CosmicEvolution;
+import spacegame.gui.Gui;
 import spacegame.util.MathUtil;
 import spacegame.gui.GuiUniverseMap;
 
 public final class RenderCelestialBody {
 
-    public void renderCelestialObject(int texture, CelestialObject celestialObject) {
+    public void renderCelestialObject(CelestialObject celestialObject) {
         float x;
         float y;
         float z;
@@ -40,14 +41,15 @@ public final class RenderCelestialBody {
         z *= GuiUniverseMap.mapScale;
 
 
-        float distance = x * x + y * y + z * z;
-        distance = (float) Math.sqrt(distance);
         Vector3f position = new Vector3f(x,y,z);
         Shader.universeShaderCubeMapTexture.uploadVec3f("position", position);
 
         if(celestialObject instanceof Sun){
             GuiUniverseMap.starPositions.add(position);
+            GuiUniverseMap.stars.add((Sun) celestialObject);
         }
+
+        Shader.universeShaderCubeMapTexture.uploadBoolean("isStar", celestialObject instanceof Sun);
 
         if(!(celestialObject instanceof Sun)) {
             RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
@@ -93,53 +95,45 @@ public final class RenderCelestialBody {
                 return;
             }
         }
-        x = 0;
-        y = 0;
-        z = 0;
-        RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
-        Vector3f vertex1;
-        Vector3f vertex2;
-        Vector3f vertex3;
-        Vector3f vertex4;
-        float baseScale = 1.0f;
-        float distanceThreshold = 500000f;
-        float maxDistanceEffect = Float.MAX_VALUE;
-        float k = 500000f;
 
-        float adjustedDistance = Math.max(distanceThreshold, distance);
-        float scaleFactor = baseScale * (k / adjustedDistance);
-        scaleFactor = Math.max(0.1f, scaleFactor);
+        this.setStarlightAndLightDir(new Vector3f());
 
         float rotationAmountY = (float) ((float) Math.toRadians( 360 * (double) (CosmicEvolution.instance.save.time % celestialObject.rotationPeriod) /celestialObject.rotationPeriod) - (0.5 * Math.PI));
         float rotationAmountX = (float) Math.toRadians(celestialObject.axialTiltX);
         float rotationAmountZ = (float) Math.toRadians(celestialObject.axialTiltZ);
-        for(int latitude = -90; latitude < 90; latitude += 5){
-            for(int longitude = 0; longitude < 360; longitude += 5){
-                    vertex1 = this.getPositionOnSphere(latitude + 5, longitude, celestialObject.radius * scaleFactor).rotateY(-rotationAmountY).rotateX(rotationAmountX).rotateZ(rotationAmountZ);
-                    vertex2 = this.getPositionOnSphere(latitude + 5, longitude + 5, celestialObject.radius * scaleFactor).rotateY(-rotationAmountY).rotateX(rotationAmountX).rotateZ(rotationAmountZ);
-                    vertex3 = this.getPositionOnSphere(latitude, longitude, celestialObject.radius * scaleFactor).rotateY(-rotationAmountY).rotateX(rotationAmountX).rotateZ(rotationAmountZ);
-                    vertex4 = this.getPositionOnSphere(latitude, longitude + 5, celestialObject.radius * scaleFactor).rotateY(-rotationAmountY).rotateX(rotationAmountX).rotateZ(rotationAmountZ);
-                    if(celestialObject instanceof Sun){
-                        tessellator.addVertexCubeMap(16777215, vertex4.x + x, vertex4.y + y, vertex4.z + z); //All non star objects need to have their lighting values calculated
-                        tessellator.addVertexCubeMap(16777215, vertex1.x + x, vertex1.y + y, vertex1.z + z);
-                        tessellator.addVertexCubeMap(16777215, vertex2.x + x, vertex2.y + y, vertex2.z + z);
-                        tessellator.addVertexCubeMap(16777215, vertex3.x + x, vertex3.y + y, vertex3.z + z);
-                        tessellator.addElements();
-                    } else {
-                        tessellator.addVertexCubeMap(this.calculateLighting(vertex4, 16777215), vertex4.x + x, vertex4.y + y, vertex4.z + z); //All non star objects need to have their lighting values calculated
-                        tessellator.addVertexCubeMap(this.calculateLighting(vertex1, 16777215), vertex1.x + x, vertex1.y + y, vertex1.z + z);
-                        tessellator.addVertexCubeMap(this.calculateLighting(vertex2, 16777215), vertex2.x + x, vertex2.y + y, vertex2.z + z);
-                        tessellator.addVertexCubeMap(this.calculateLighting(vertex3, 16777215), vertex3.x + x, vertex3.y + y, vertex3.z + z);
-                        tessellator.addElements();
-                    }
-            }
-        }
         Matrix4f modelMatrix = new Matrix4f().identity().rotateY(-rotationAmountY).rotateX(rotationAmountX).rotateZ(rotationAmountZ);
 
         Shader.universeShaderCubeMapTexture.uploadMat4f("uModel", modelMatrix);
-        tessellator.drawCubeMapTexture(texture, Shader.universeShaderCubeMapTexture, GuiUniverseMap.universeCamera);
+
+        GL46.glBindVertexArray(celestialObject.vaoID);
+        GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, celestialObject.vboID);
+        GL46.glBindBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, celestialObject.eboID);
+
+        GL46.glBindTexture(GL46.GL_TEXTURE_CUBE_MAP, celestialObject.mappedTexture);
+
+        GL46.glUseProgram(Shader.universeShaderCubeMapTexture.shaderProgramID);
+
+        Shader.universeShaderCubeMapTexture.uploadMat4d("uProjection", GuiUniverseMap.universeCamera.projectionMatrix);
+        Shader.universeShaderCubeMapTexture.uploadMat4d("uView", GuiUniverseMap.universeCamera.viewMatrix);
+
+        Shader.universeShaderCubeMapTexture.uploadInt("cubeTexture", 0);
+
+        GL46.glEnable(GL46.GL_ALPHA_TEST);
+        GL46.glAlphaFunc(GL46.GL_GREATER, 0.1f);
+        GL46.glEnable(GL46.GL_CULL_FACE);
+        GL46.glCullFace(GL46.GL_FRONT);
+
+        GL46.glDrawElements(GL46.GL_TRIANGLES, celestialObject.elementBuffer.limit(), GL46.GL_UNSIGNED_INT, 0);
+
+        GL46.glDisable(GL46.GL_ALPHA_TEST);
+        GL46.glDisable(GL46.GL_CULL_FACE);
+
+        GL46.glBindTexture(GL46.GL_TEXTURE_CUBE_MAP, 0);
+
+
 
         if(celestialObject instanceof Sun){
+            RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
             float size = 500000000F * GuiUniverseMap.mapScale;
             Quaterniond viewMatrixRotation = new Quaterniond();
             GuiUniverseMap.universeCamera.viewMatrix.getNormalizedRotation(viewMatrixRotation);
@@ -150,10 +144,10 @@ public final class RenderCelestialBody {
             Vector3d vertex2SunFlare = new Vector3d(size, size, 0).rotate(inverseRotation).add(position);
             Vector3d vertex3SunFlare = new Vector3d(-size, size, 0).rotate(inverseRotation).add(position);
             Vector3d vertex4SunFlare = new Vector3d(size, -size, 0).rotate(inverseRotation).add(position);
-            tessellator.addVertex2DTexture(16777215, (float) vertex1SunFlare.x, (float) vertex1SunFlare.y, (float) vertex1SunFlare.z, 3); //Lighting doesnt need to be calculated because this is the light source in the system
-            tessellator.addVertex2DTexture(16777215, (float) vertex2SunFlare.x, (float) vertex2SunFlare.y, (float) vertex2SunFlare.z, 1);
-            tessellator.addVertex2DTexture(16777215, (float) vertex3SunFlare.x, (float) vertex3SunFlare.y, (float) vertex3SunFlare.z, 2);
-            tessellator.addVertex2DTexture(16777215, (float) vertex4SunFlare.x, (float) vertex4SunFlare.y, (float) vertex4SunFlare.z, 0);
+            tessellator.addVertex2DTexture(((Sun) celestialObject).lightColor, (float) vertex1SunFlare.x, (float) vertex1SunFlare.y, (float) vertex1SunFlare.z, 3); //Lighting doesnt need to be calculated because this is the light source in the system
+            tessellator.addVertex2DTexture(((Sun) celestialObject).lightColor, (float) vertex2SunFlare.x, (float) vertex2SunFlare.y, (float) vertex2SunFlare.z, 1);
+            tessellator.addVertex2DTexture(((Sun) celestialObject).lightColor, (float) vertex3SunFlare.x, (float) vertex3SunFlare.y, (float) vertex3SunFlare.z, 2);
+            tessellator.addVertex2DTexture(((Sun) celestialObject).lightColor, (float) vertex4SunFlare.x, (float) vertex4SunFlare.y, (float) vertex4SunFlare.z, 0);
             tessellator.addElements();
             GL46.glEnable(GL46.GL_BLEND);
             GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_COLOR);
@@ -171,42 +165,34 @@ public final class RenderCelestialBody {
         return !(cameraDistance <= (renderingObject.semiMajorAxis * 0.1) * GuiUniverseMap.mapScale);
     }
 
-    private int calculateLighting(Vector3f vertexPosOnObject, int baseColor){
+    private Vector3f calculateNormal(Vector3f vertexPosOnObject){
+        return new Vector3f(vertexPosOnObject).normalize();
+    }
+
+    private void setStarlightAndLightDir(Vector3f objectPos){
         Vector3f closestStar = null;
         float minDistance = Float.MAX_VALUE;
 
-        for(Vector3f starPos : GuiUniverseMap.starPositions){
-            float distance = starPos.distance(vertexPosOnObject);
-            if(distance < minDistance){
+        Sun star = null;
+        Vector3f starPos;
+
+        for(int i = 0; i < GuiUniverseMap.starPositions.size(); i++) {
+            starPos = GuiUniverseMap.starPositions.get(i);
+            float distance = starPos.distance(objectPos);
+            if (distance < minDistance) {
                 minDistance = distance;
                 closestStar = starPos;
+                star = GuiUniverseMap.stars.get(i);
             }
         }
 
         if(closestStar == null){
-            return 0;
+            closestStar = new Vector3f();
         }
 
-
-        Vector3f vertexDir = new Vector3f(vertexPosOnObject).normalize();
         Vector3f lightDir = new Vector3f(closestStar).normalize();
-
-        float dotProduct = vertexDir.dot(lightDir);
-        float angle = (float) Math.toDegrees(Math.acos(dotProduct));
-
-        float intensity = Math.max(0, (float) MathUtil.cos(Math.toRadians(angle)));
-
-        int red = (baseColor >> 16) & 0xFF;
-        int green = (baseColor >> 8) & 0xFF;
-        int blue = baseColor & 0xFF;
-
-        // Scale each color channel by intensity
-        red = Math.min(255, Math.max(0, (int)(red * intensity)));
-        green = Math.min(255, Math.max(0, (int)(green * intensity)));
-        blue = Math.min(255, Math.max(0, (int)(blue * intensity)));
-
-        // Reconstruct new color value
-        return (red << 16) | (green << 8) | blue;
+        Shader.universeShaderCubeMapTexture.uploadVec3f("normalizedLightDir", lightDir);
+        Shader.universeShaderCubeMapTexture.uploadInt("lightColor", star == null ? 0 : star.lightColor);
     }
 
     public Vector3f getPositionOnSphere(int latitude, int longitude, float R){

@@ -7,6 +7,7 @@ import spacegame.block.BlockLeaf;
 import spacegame.block.ITickable;
 import spacegame.block.ITimeUpdate;
 import spacegame.core.CosmicEvolution;
+import spacegame.render.RenderEngine;
 import spacegame.util.MathUtil;
 import spacegame.entity.Entity;
 import spacegame.entity.EntityBlock;
@@ -42,6 +43,7 @@ public final class Chunk implements Comparable<Chunk> {
     public final int x;
     public final int y;
     public final int z;
+    public boolean modifiedSinceLastSave;
     public short[] blocks = new short[32768];
     public byte[] lighting = new byte[32768];
     public byte[] skyLight = new byte[32768];
@@ -98,6 +100,7 @@ public final class Chunk implements Comparable<Chunk> {
         y %= 32;
         z %= 32;
         this.blocks[getBlockIndexFromCoordinates(x, y, z)] = blockID;
+        this.modifiedSinceLastSave = true;
     }
 
     public void setBlockWithNotify(int x, int y, int z, short blockID) {
@@ -107,6 +110,7 @@ public final class Chunk implements Comparable<Chunk> {
         this.blocks[getBlockIndexFromCoordinates(x, y, z)] = blockID;
         this.notifyBlock(x, y, z);
         this.markDirty();
+        this.modifiedSinceLastSave = true;
     }
 
 
@@ -848,58 +852,88 @@ public final class Chunk implements Comparable<Chunk> {
     }
 
     public void deleteGLObjects() {
-        GL46.glDeleteVertexArrays(this.opaqueVAOID);
-        GL46.glDeleteVertexArrays(this.transparentVAOID);
-        GL46.glDeleteBuffers(this.opaqueVBOID);
-        GL46.glDeleteBuffers(this.transparentVBOID);
-        GL46.glDeleteBuffers(this.opaqueEBOID);
-        GL46.glDeleteBuffers(this.transparentEBOID);
+        if(GL46.glIsVertexArray(this.opaqueVAOID)){
+            CosmicEvolution.instance.renderEngine.deleteVAO(this.opaqueVAOID);
+        }
+
+        if(GL46.glIsVertexArray(this.transparentVAOID)){
+            CosmicEvolution.instance.renderEngine.deleteVAO(this.transparentVAOID);
+        }
+
+        if(GL46.glIsBuffer(this.opaqueVBOID)){
+            CosmicEvolution.instance.renderEngine.deleteBuffers(this.opaqueVBOID);
+        }
+
+        if(GL46.glIsBuffer(this.transparentVBOID)){
+            CosmicEvolution.instance.renderEngine.deleteBuffers(this.transparentVBOID);
+        }
+
+        if(GL46.glIsBuffer(this.opaqueEBOID)){
+            CosmicEvolution.instance.renderEngine.deleteBuffers(this.opaqueEBOID);
+        }
+
+        if(GL46.glIsBuffer(this.transparentEBOID)){
+            CosmicEvolution.instance.renderEngine.deleteBuffers(this.transparentEBOID);
+        }
+
     }
 
     public void bindRenderData(){
         if(this.opaqueVAOID == -10 || this.opaqueVBOID == -10 || this.opaqueEBOID == -10 || this.transparentVAOID == -10 || this.transparentVBOID == -10 || this.transparentEBOID == -10){
             this.createGLObjects();
+
+            GL46.glBindVertexArray(this.opaqueVAOID);
+            GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, this.opaqueVBOID);
+            GL46.glVertexAttribPointer(0, Chunk.positionsSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes, 0);
+            GL46.glEnableVertexAttribArray(0);
+
+            GL46.glVertexAttribPointer(1, Chunk.colorSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes, Chunk.positionsSize * Float.BYTES);
+            GL46.glEnableVertexAttribArray(1);
+
+            GL46.glVertexAttribPointer(2, Chunk.texCoordsSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes, (Chunk.positionsSize + Chunk.colorSize) * Float.BYTES);
+            GL46.glEnableVertexAttribArray(2);
+
+            GL46.glVertexAttribPointer(3, Chunk.texIndexSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes, (Chunk.positionsSize + Chunk.colorSize + Chunk.texCoordsSize) * Float.BYTES);
+            GL46.glEnableVertexAttribArray(3);
+
+            GL46.glVertexAttribPointer(4, Chunk.normalSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes, (Chunk.positionsSize + Chunk.colorSize + Chunk.texCoordsSize + Chunk.texIndexSize) * Float.BYTES);
+            GL46.glEnableVertexAttribArray(4);
+
+            GL46.glBindBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, this.opaqueEBOID);
+
+            GL46.glBindVertexArray(0);
+
+            GL46.glBindVertexArray(this.transparentVAOID);
+            GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, this.transparentVBOID);
+            GL46.glVertexAttribPointer(0, Chunk.positionsSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes, 0);
+            GL46.glEnableVertexAttribArray(0);
+
+            GL46.glVertexAttribPointer(1, Chunk.colorSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes, Chunk.positionsSize * Float.BYTES);
+            GL46.glEnableVertexAttribArray(1);
+
+            GL46.glVertexAttribPointer(2, Chunk.texCoordsSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes, (Chunk.positionsSize + Chunk.colorSize) * Float.BYTES);
+            GL46.glEnableVertexAttribArray(2);
+
+            GL46.glVertexAttribPointer(3, Chunk.texIndexSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes, (Chunk.positionsSize + Chunk.colorSize + Chunk.texCoordsSize) * Float.BYTES);
+            GL46.glEnableVertexAttribArray(3);
+
+            GL46.glVertexAttribPointer(4, Chunk.normalSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes, (Chunk.positionsSize + Chunk.colorSize + Chunk.texCoordsSize + Chunk.texIndexSize) * Float.BYTES);
+            GL46.glEnableVertexAttribArray(4);
+
+            GL46.glBindBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, this.transparentEBOID);
         }
-        GL46.glBindVertexArray(this.opaqueVAOID);
+
+
         GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, this.opaqueVBOID);
-        GL46.glVertexAttribPointer(0, Chunk.positionsSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes, 0);
-        GL46.glEnableVertexAttribArray(0);
-
-        GL46.glVertexAttribPointer(1, Chunk.colorSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes, Chunk.positionsSize * Float.BYTES);
-        GL46.glEnableVertexAttribArray(1);
-
-        GL46.glVertexAttribPointer(2, Chunk.texCoordsSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes, (Chunk.positionsSize + Chunk.colorSize) * Float.BYTES);
-        GL46.glEnableVertexAttribArray(2);
-
-        GL46.glVertexAttribPointer(3, Chunk.texIndexSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes, (Chunk.positionsSize + Chunk.colorSize + Chunk.texCoordsSize) * Float.BYTES);
-        GL46.glEnableVertexAttribArray(3);
-
-        GL46.glVertexAttribPointer(4, Chunk.normalSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes, (Chunk.positionsSize + Chunk.colorSize + Chunk.texCoordsSize + Chunk.texIndexSize) * Float.BYTES);
-        GL46.glEnableVertexAttribArray(4);
+        GL46.glBufferData(GL46.GL_ARRAY_BUFFER, this.vertexBufferOpaque, GL46.GL_STATIC_DRAW);
 
         GL46.glBindBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, this.opaqueEBOID);
-        GL46.glBufferData(GL46.GL_ARRAY_BUFFER, this.vertexBufferOpaque, GL46.GL_STATIC_DRAW);
         GL46.glBufferData(GL46.GL_ELEMENT_ARRAY_BUFFER, this.elementBufferOpaque, GL46.GL_STATIC_DRAW);
 
-        GL46.glBindVertexArray(this.transparentVAOID);
         GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, this.transparentVBOID);
-        GL46.glVertexAttribPointer(0, Chunk.positionsSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes, 0);
-        GL46.glEnableVertexAttribArray(0);
-
-        GL46.glVertexAttribPointer(1, Chunk.colorSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes, Chunk.positionsSize * Float.BYTES);
-        GL46.glEnableVertexAttribArray(1);
-
-        GL46.glVertexAttribPointer(2, Chunk.texCoordsSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes, (Chunk.positionsSize + Chunk.colorSize) * Float.BYTES);
-        GL46.glEnableVertexAttribArray(2);
-
-        GL46.glVertexAttribPointer(3, Chunk.texIndexSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes, (Chunk.positionsSize + Chunk.colorSize + Chunk.texCoordsSize) * Float.BYTES);
-        GL46.glEnableVertexAttribArray(3);
-
-        GL46.glVertexAttribPointer(4, Chunk.normalSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes, (Chunk.positionsSize + Chunk.colorSize + Chunk.texCoordsSize + Chunk.texIndexSize) * Float.BYTES);
-        GL46.glEnableVertexAttribArray(4);
+        GL46.glBufferData(GL46.GL_ARRAY_BUFFER, this.vertexBufferTransparent, GL46.GL_STATIC_DRAW);
 
         GL46.glBindBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, this.transparentEBOID);
-        GL46.glBufferData(GL46.GL_ARRAY_BUFFER, this.vertexBufferTransparent, GL46.GL_STATIC_DRAW);
         GL46.glBufferData(GL46.GL_ELEMENT_ARRAY_BUFFER, this.elementBufferTransparent, GL46.GL_STATIC_DRAW);
     }
 

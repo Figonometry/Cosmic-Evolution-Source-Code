@@ -46,7 +46,7 @@ public class RenderBlocks {
     public static final int WEST_FACE_UNSORTED = 11;
 
 
-    public  void renderStandardBlock(Chunk chunk, World world, short block, int index, int face, int[] greedyMeshSize) {
+    public void renderStandardBlock(Chunk chunk, World world, short block, int index, int face, int[] greedyMeshSize) {
         this.redReset = 1f;
         this.greenReset = 1f;
         this.blueReset = 1f;
@@ -59,6 +59,20 @@ public class RenderBlocks {
         for (int i = 0; i < modelFaces.length; i++) {
             UVSamples = face == TOP_FACE || face == BOTTOM_FACE ? autoUVTopBottom(this.getFaceWidth(modelFaces[i]), this.getFaceHeight(modelFaces[i])) : autoUVNSEW(this.getFaceWidth(modelFaces[i]), this.getFaceHeight(modelFaces[i]));
             renderOpaqueFace(chunk, world, block, index, face, modelFaces[i], UVSamples[0], UVSamples[1], UVSamples[2], UVSamples[3], UVSamples[4], UVSamples[5], UVSamples[6], UVSamples[7], 3, 1, 2, 0, greedyMeshSize);
+        }
+    }
+
+    public void renderStandardBlockWithoutAutoUV(Chunk chunk, World world, short block, int index, int face, int[] greedyMeshSize) {
+        this.redReset = 1f;
+        this.greenReset = 1f;
+        this.blueReset = 1f;
+        this.skyLightReset = 1f;
+
+        this.handleWaterLoggedBlocks(chunk, world, block, index, face);
+
+        ModelFace[] modelFaces = Block.list[block].blockModel.getModelFaceOfType(face);
+        for (int i = 0; i < modelFaces.length; i++) {
+            renderOpaqueFace(chunk, world, block, index, face, modelFaces[i], 0,0,0,0,0,0,0,0, 3, 1, 2, 0, greedyMeshSize);
         }
     }
 

@@ -165,13 +165,17 @@ public final class ModelDeer extends Model {
             this.rotateYaw(-angleDeg, eastFace);
             this.rotateYaw(-angleDeg, westFace);
 
+            float entityModX = MathUtil.positiveMod(associatedEntity.x, 32);
+            float entityModY = MathUtil.positiveMod(associatedEntity.y, 32);
+            float entityModZ = MathUtil.positiveMod(associatedEntity.z, 32);
+
             for(int j = 0; j < 4; j++){
-                topFace[j].add(new Vector3f((float) associatedEntity.x % 32, (float) associatedEntity.y % 32, (float) associatedEntity.z % 32));
-                bottomFace[j].add(new Vector3f((float) associatedEntity.x % 32, (float) associatedEntity.y % 32, (float) associatedEntity.z % 32));
-                northFace[j].add(new Vector3f((float) associatedEntity.x % 32, (float) associatedEntity.y % 32, (float) associatedEntity.z % 32));
-                southFace[j].add(new Vector3f((float) associatedEntity.x % 32, (float) associatedEntity.y % 32, (float) associatedEntity.z % 32));
-                eastFace[j].add(new Vector3f((float) associatedEntity.x % 32, (float) associatedEntity.y % 32, (float) associatedEntity.z % 32));
-                westFace[j].add(new Vector3f((float) associatedEntity.x % 32, (float) associatedEntity.y % 32, (float) associatedEntity.z % 32));
+                topFace[j].add(new Vector3f(entityModX, entityModY, entityModZ));
+                bottomFace[j].add(new Vector3f(entityModX, entityModY, entityModZ));
+                northFace[j].add(new Vector3f(entityModX, entityModY, entityModZ));
+                southFace[j].add(new Vector3f(entityModX, entityModY, entityModZ));
+                eastFace[j].add(new Vector3f(entityModX, entityModY, entityModZ));
+                westFace[j].add(new Vector3f(entityModX, entityModY, entityModZ));
             }
 
             switch (i) {
@@ -195,21 +199,17 @@ public final class ModelDeer extends Model {
 
         }
 
-        int playerChunkX = (int) (CosmicEvolution.instance.save.thePlayer.x) >> 5;
-        int playerChunkY = (int) (CosmicEvolution.instance.save.thePlayer.y) >> 5;
-        int playerChunkZ = (int) (CosmicEvolution.instance.save.thePlayer.z) >> 5;
+        int playerChunkX = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x) >> 5;
+        int playerChunkY = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.y) >> 5;
+        int playerChunkZ = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z) >> 5;
 
-        int chunkX = (int) (associatedEntity.x) >> 5;
-        int chunkY = (int) (associatedEntity.y) >> 5;
-        int chunkZ = (int) (associatedEntity.z) >> 5;
+        int chunkX = MathUtil.floorDouble(associatedEntity.x) >> 5;
+        int chunkY = MathUtil.floorDouble(associatedEntity.y) >> 5;
+        int chunkZ = MathUtil.floorDouble(associatedEntity.z) >> 5;
 
-        float offsetX = chunkX - playerChunkX;
-        float offsetY = chunkY - playerChunkY;
-        float offsetZ = chunkZ - playerChunkZ;
-
-        offsetX *= 32;
-        offsetY *= 32;
-        offsetZ *= 32;
+        int offsetX = (chunkX - playerChunkX) << 5;
+        int offsetY = (chunkY - playerChunkY) << 5;
+        int offsetZ = (chunkZ - playerChunkZ) << 5;
 
         Shader.worldShader2DTexture.uploadVec3f("chunkOffset", new Vector3f(offsetX, offsetY, offsetZ));
         worldTessellator.drawTexture2D(EntityDeer.texture, Shader.worldShader2DTexture, CosmicEvolution.camera);
@@ -254,9 +254,9 @@ public final class ModelDeer extends Model {
 
     private int calculateVertexLightColor(Vector3f vertex, Entity associatedEntity){
         this.resetLight();
-        float x = (float) (Math.abs((associatedEntity.x % 32f) - vertex.x) + associatedEntity.x);
-        float y = (float) (Math.abs((associatedEntity.y % 32f) - vertex.y) + associatedEntity.y);
-        float z = (float) (Math.abs((associatedEntity.z % 32f) - vertex.z) + associatedEntity.z);
+        float x = (float) (Math.abs(MathUtil.positiveMod(associatedEntity.x,32f) - vertex.x) + associatedEntity.x);
+        float y = (float) (Math.abs(MathUtil.positiveMod(associatedEntity.y,32f) - vertex.y) + associatedEntity.y);
+        float z = (float) (Math.abs(MathUtil.positiveMod(associatedEntity.z,32f) - vertex.z) + associatedEntity.z);
         int xInt = MathUtil.floorDouble(x);
         int yInt = MathUtil.floorDouble(y);
         int zInt = MathUtil.floorDouble(z);

@@ -299,12 +299,7 @@ vec4 setFog(vec4 color){
     float distanceFromPlayer = distance(fragPosInWorldSpace, fPlayerPositionInChunk);
     if(distanceFromPlayer > fogStart){
         float fogDepth = ((distanceFromPlayer - fogStart) / fogEnd);
-        if (fogDepth < 0){
-            fogDepth = 0;
-        }
-        if (fogDepth > 1){
-            fogDepth = 0.99;
-        }
+        fogDepth = clamp(fogDepth, 0.0, 0.99);
         color.x -= (color.x - fogRed) * ((fogDepth));
         color.y -= (color.y - fogGreen) * ((fogDepth));
         color.z -= (color.z - fogBlue) * ((fogDepth));

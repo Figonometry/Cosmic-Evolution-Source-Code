@@ -1,12 +1,11 @@
 package spacegame.gui;
 
-import org.joml.Matrix4d;
-import org.joml.Quaterniond;
-import org.joml.Vector3d;
-import org.joml.Vector3f;
+import org.joml.*;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
 import spacegame.celestial.CelestialObject;
+import spacegame.celestial.Sun;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
 import spacegame.util.MathUtil;
@@ -15,6 +14,9 @@ import spacegame.render.Camera;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
 
+import java.lang.Math;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 
 public final class GuiUniverseMap extends Gui {
@@ -28,7 +30,7 @@ public final class GuiUniverseMap extends Gui {
     public static int skybox;
     public static float mapScale = 0.00000000000000000000001F;
     public static ArrayList<Vector3f> starPositions = new ArrayList<>();
-
+    public static ArrayList<Sun> stars = new ArrayList<Sun>();
 
     public GuiUniverseMap(CosmicEvolution cosmicEvolution) {
         super(cosmicEvolution);
@@ -64,10 +66,11 @@ public final class GuiUniverseMap extends Gui {
         fontRenderer.drawString("Current Selected Object: " + this.selectedObject, leftSide, 430,-15, 16777215, 50, 255);
 
 
-        this.ce.everything.sun.render(this.ce.everything.sun.mappedTexture);
-        this.ce.everything.earth.render(this.ce.everything.earth.mappedTexture);
-        this.ce.everything.moon.render(this.ce.everything.moon.mappedTexture);
+        this.ce.everything.sun.render();
+        this.ce.everything.earth.render();
+        this.ce.everything.moon.render();
         starPositions.clear();
+        stars.clear();
 
         fontRenderer.drawString("Yaw: " + yaw, leftSide, 400,-15, 16777215, 50, 255);
         fontRenderer.drawString("Pitch: " + pitch, leftSide, 370,-15, 16777215, 50, 255);
@@ -76,11 +79,9 @@ public final class GuiUniverseMap extends Gui {
     }
 
 
+
     private void renderSkybox(){
         RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
-        float x = 0;
-        float y = 0;
-        float z = 0;
         Vector3f vertex1;
         Vector3f vertex2;
         Vector3f vertex3;
@@ -91,18 +92,17 @@ public final class GuiUniverseMap extends Gui {
                 vertex2 = this.getPositionOnSphere(latitude + 5, longitude + 5, 50000);
                 vertex3 = this.getPositionOnSphere(latitude, longitude,50000);
                 vertex4 = this.getPositionOnSphere(latitude, longitude + 5, 50000);
-                tessellator.addVertexCubeMap(16777215, (vertex4.x + x), (vertex4.y + y),(vertex4.z + z));
-                tessellator.addVertexCubeMap(16777215, (vertex1.x + x), (vertex1.y + y),(vertex1.z + z));
-                tessellator.addVertexCubeMap(16777215, (vertex2.x + x), (vertex2.y + y),(vertex2.z + z));
-                tessellator.addVertexCubeMap(16777215, (vertex3.x + x), (vertex3.y + y),(vertex3.z + z));
+                tessellator.addVertexCubeMap((vertex4.x), (vertex4.y),(vertex4.z));
+                tessellator.addVertexCubeMap((vertex1.x), (vertex1.y),(vertex1.z));
+                tessellator.addVertexCubeMap((vertex2.x), (vertex2.y),(vertex2.z));
+                tessellator.addVertexCubeMap((vertex3.x), (vertex3.y),(vertex3.z));
                 tessellator.addElements();
             }
         }
 
-        Shader.universeShaderCubeMapTexture.uploadBoolean("skybox", true);
-        Shader.universeShaderCubeMapTexture.uploadVec3f("position", new Vector3f());
-        tessellator.drawCubeMapTexture(skybox, Shader.universeShaderCubeMapTexture, GuiUniverseMap.universeCamera);
-        Shader.universeShaderCubeMapTexture.uploadBoolean("skybox", false);
+        Shader.universeSkybox.uploadVec3f("position", new Vector3f());
+        Shader.universeSkybox.uploadMat4f("uModel", new Matrix4f());
+        tessellator.drawCubeMapTexture(skybox, Shader.universeSkybox, GuiUniverseMap.universeCamera);
     }
 
     public Vector3f getPositionOnSphere(int latitude, int longitude, float R){

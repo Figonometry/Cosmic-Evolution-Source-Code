@@ -24,8 +24,10 @@ public final class Shader {
     public static Shader worldShader2DTexture;
     public static Shader worldShader2DTextureWithAtlas;
     public static Shader worldShaderCubeMapTexture;
+    public static Shader worldSkybox;
     public static Shader universeShaderCubeMapTexture;
     public static Shader universeShader2DTexture;
+    public static Shader universeSkybox;
     public static Shader screen2DTextureAtlas;
     public static Shader screen2DTexture;
     public static Shader screenTextureArray;
@@ -38,8 +40,10 @@ public final class Shader {
        worldShader2DTexture = new Shader("src/spacegame/assets/shader/world2DTexture.glsl");
        worldShader2DTextureWithAtlas = new Shader("src/spacegame/assets/shader/world2DTextureWithAtlas.glsl");
        worldShaderCubeMapTexture = new Shader("src/spacegame/assets/shader/worldCubeMapTexture.glsl");
+       worldSkybox = new Shader("src/spacegame/assets/shader/worldSkybox.glsl");
        universeShaderCubeMapTexture = new Shader("src/spacegame/assets/shader/universeCubeMapTexture.glsl");
        universeShader2DTexture = new Shader("src/spacegame/assets/shader/universe2DTexture.glsl");
+       universeSkybox = new Shader("src/spacegame/assets/shader/universeSkybox.glsl");
        screen2DTexture = new Shader("src/spacegame/assets/shader/screen2DTexture.glsl");
        screen2DTextureAtlas = new Shader("src/spacegame/assets/shader/screen2DTextureAtlas.glsl");
        screenTextureArray = new Shader("src/spacegame/assets/shader/screenTextureArray.glsl");

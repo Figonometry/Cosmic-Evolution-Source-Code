@@ -9,6 +9,7 @@ import spacegame.core.GameSettings;
 import spacegame.render.Assets;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
+import spacegame.util.MathUtil;
 import spacegame.world.World;
 
 import java.awt.*;
@@ -55,29 +56,29 @@ public final class EntityParticle extends EntityNonLiving {
     @Override
     public void render(){
         RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
-        this.chunkX = (int)this.x >> 5;
-        this.chunkY = (int)this.y >> 5;
-        this.chunkZ = (int)this.z >> 5;
+        this.chunkX = MathUtil.floorDouble(this.x) >> 5;
+        this.chunkY = MathUtil.floorDouble(this.y) >> 5;
+        this.chunkZ = MathUtil.floorDouble(this.z) >> 5;
         Shader.worldShaderTextureArray.uploadBoolean("useFog", true);
         Shader.worldShaderTextureArray.uploadFloat("fogRed", CosmicEvolution.instance.save.activeWorld.skyColor[0]);
         Shader.worldShaderTextureArray.uploadFloat("fogGreen", CosmicEvolution.instance.save.activeWorld.skyColor[1]);
         Shader.worldShaderTextureArray.uploadFloat("fogBlue", CosmicEvolution.instance.save.activeWorld.skyColor[2]);
         Shader.worldShaderTextureArray.uploadFloat("fogDistance", GameSettings.renderDistance << 5);
-        int playerChunkX = ((int) CosmicEvolution.instance.save.thePlayer.x >> 5);
-        int playerChunkY = ((int) CosmicEvolution.instance.save.thePlayer.y >> 5);
-        int playerChunkZ = ((int) CosmicEvolution.instance.save.thePlayer.z >> 5);
-        int xOffset = ((int)this.x >> 5) - playerChunkX;
-        int yOffset = ((int)this.y >> 5) - playerChunkY;
-        int zOffset = ((int)this.z >> 5) - playerChunkZ;
-        xOffset *= 32;
-        yOffset *= 32;
-        zOffset *= 32;
+        int playerChunkX = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x) >> 5;
+        int playerChunkY = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.y) >> 5;
+        int playerChunkZ = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z) >> 5;
+        int xOffset = MathUtil.floorDouble(this.x) >> 5 - playerChunkX;
+        int yOffset = MathUtil.floorDouble(this.y) >> 5 - playerChunkY;
+        int zOffset = MathUtil.floorDouble(this.z) >> 5 - playerChunkZ;
+        xOffset <<= 5;
+        yOffset <<= 5;
+        zOffset <<= 5;
         Vector3f chunkOffset = new Vector3f(xOffset, yOffset, zOffset);
         Shader.worldShaderTextureArray.uploadVec3f("chunkOffset", chunkOffset);
         World world = CosmicEvolution.instance.save.activeWorld;
-        float x = (float) (this.x % 32);
-        float y = (float) (this.y % 32);
-        float z = (float) (this.z % 32);
+        float x = MathUtil.positiveMod(this.x, 32);
+        float y = MathUtil.positiveMod(this.y, 32);
+        float z = MathUtil.positiveMod(this.z, 32);
 
         if(x < 0){
             x += 32;

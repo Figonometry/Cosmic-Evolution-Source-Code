@@ -2,10 +2,18 @@ package spacegame.celestial;
 
 import org.joml.Matrix3d;
 import org.joml.Vector3d;
+import org.joml.Vector3f;
+import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.GL46;
 import spacegame.core.CosmicEvolution;
+import spacegame.gui.GuiUniverseMap;
 import spacegame.util.LongHasher;
 import spacegame.util.MathUtil;
 import spacegame.render.RenderCelestialBody;
+
+import java.nio.Buffer;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 
 public abstract class CelestialObject {
     public final CelestialObject parentObject;
@@ -35,6 +43,11 @@ public abstract class CelestialObject {
     public double focalDistance;
     public double orbitalVelocity;
     public int mappedTexture;
+    public int vaoID;
+    public int vboID;
+    public int eboID;
+    public FloatBuffer vertexBuffer;
+    public IntBuffer elementBuffer;
 
     public CelestialObject(CelestialObject parentObject, double semiMajorAxis, double apoapsis, double periapsis, double eccentricity, float inclination, float argumentOfPeriapsis, float longitudeOfAscendingNode, long radius, double meanAnomaly, double surfaceGravity, long rotationPeriod, long sphereOfInfluence, boolean tidallyLocked, double mass, int layer, float axialTiltX, float axialTiltZ){
         this.parentObject = parentObject;
@@ -90,6 +103,26 @@ public abstract class CelestialObject {
 
         this.seed = new LongHasher().hash(CosmicEvolution.instance.save.seed, sb.toString());
 
+        this.vaoID = CosmicEvolution.instance.renderEngine.createVAO();
+        this.vboID = CosmicEvolution.instance.renderEngine.createBuffers();
+        this.eboID = CosmicEvolution.instance.renderEngine.createBuffers();
+
+        int positionSize = 3;
+        int normalSize = 3;
+        int vertexSizeBytes = (positionSize + normalSize) * Float.BYTES;
+        CosmicEvolution.instance.renderEngine.setVertexAttribute(this.vaoID, 0, positionSize, vertexSizeBytes, 0, this.vboID);
+        CosmicEvolution.instance.renderEngine.setVertexAttribute(this.vaoID, 1, normalSize, vertexSizeBytes, positionSize * Float.BYTES, this.vboID);
+
+
+        int quadCount = 2596;
+        this.vertexBuffer = BufferUtils.createFloatBuffer(quadCount * 24);
+        this.elementBuffer = BufferUtils.createIntBuffer(quadCount * 6);
+    }
+
+    public void deleteGLObjects(){
+        CosmicEvolution.instance.renderEngine.deleteVAO(this.vaoID);
+        CosmicEvolution.instance.renderEngine.deleteBuffers(this.vboID);
+        CosmicEvolution.instance.renderEngine.deleteBuffers(this.eboID);
     }
 
     public static double surfaceGravity(double g){
@@ -230,8 +263,94 @@ public abstract class CelestialObject {
         return distanceFromParentObject;
     }
 
+    public void generateRenderData(){
+        int elementOffset = 0;
+        Vector3f vertex1;
+        Vector3f vertex2;
+        Vector3f vertex3;
+        Vector3f vertex4;
+        for(int latitude = -90; latitude < 90; latitude += 5){
+            for(int longitude = 0; longitude < 360; longitude += 5){
+                vertex1 = this.getPositionOnSphere(latitude + 5, longitude, this.radius);
+                vertex2 = this.getPositionOnSphere(latitude + 5, longitude + 5, this.radius);
+                vertex3 = this.getPositionOnSphere(latitude, longitude, this.radius);
+                vertex4 = this.getPositionOnSphere(latitude, longitude + 5, this.radius);
+                Vector3f normal4 = this.calculateNormal(vertex4);
+                this.vertexBuffer.put(vertex4.x);
+                this.vertexBuffer.put(vertex4.y);
+                this.vertexBuffer.put(vertex4.z);
+                this.vertexBuffer.put(normal4.x);
+                this.vertexBuffer.put(normal4.y);
+                this.vertexBuffer.put(normal4.z);
 
-    public void render(int texture){
-        new RenderCelestialBody().renderCelestialObject(texture,this);
+                Vector3f normal1 = this.calculateNormal(vertex1);
+                this.vertexBuffer.put(vertex1.x);
+                this.vertexBuffer.put(vertex1.y);
+                this.vertexBuffer.put(vertex1.z);
+                this.vertexBuffer.put(normal1.x);
+                this.vertexBuffer.put(normal1.y);
+                this.vertexBuffer.put(normal1.z);
+
+                Vector3f normal2 = this.calculateNormal(vertex2);
+                this.vertexBuffer.put(vertex2.x);
+                this.vertexBuffer.put(vertex2.y);
+                this.vertexBuffer.put(vertex2.z);
+                this.vertexBuffer.put(normal2.x);
+                this.vertexBuffer.put(normal2.y);
+                this.vertexBuffer.put(normal2.z);
+
+                Vector3f normal3 = this.calculateNormal(vertex3);
+                this.vertexBuffer.put(vertex3.x);
+                this.vertexBuffer.put(vertex3.y);
+                this.vertexBuffer.put(vertex3.z);
+                this.vertexBuffer.put(normal3.x);
+                this.vertexBuffer.put(normal3.y);
+                this.vertexBuffer.put(normal3.z);
+
+                this.addElements(elementOffset);
+                elementOffset += 4;
+            }
+        }
+
+        this.vertexBuffer.flip();
+        this.elementBuffer.flip();
+
+
+        GL46.glBindVertexArray(this.vaoID);
+
+        GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, this.vboID);
+        GL46.glBufferData(GL46.GL_ARRAY_BUFFER, this.vertexBuffer, GL46.GL_STATIC_DRAW);
+
+        GL46.glBindBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, this.eboID);
+        GL46.glBufferData(GL46.GL_ELEMENT_ARRAY_BUFFER, this.elementBuffer, GL46.GL_STATIC_DRAW);
+    }
+
+    private void addElements(int offset){
+        this.elementBuffer.put(offset + 2);
+        this.elementBuffer.put(offset + 1);
+        this.elementBuffer.put(offset + 0);
+        this.elementBuffer.put(offset + 0);
+        this.elementBuffer.put(offset + 1);
+        this.elementBuffer.put(offset + 3);
+    }
+
+    private Vector3f calculateNormal(Vector3f vertexPosOnObject){
+        return new Vector3f(vertexPosOnObject).normalize();
+    }
+
+    public Vector3f getPositionOnSphere(int latitude, int longitude, float R){
+        R *= GuiUniverseMap.mapScale;
+        Vector3f position = new Vector3f();
+        float latRad = (float) Math.toRadians(latitude);
+        float lonRad = (float) Math.toRadians(longitude);
+        position.x = (float) (R * MathUtil.cos(latRad) * MathUtil.cos(lonRad));
+        position.y = (float) (R * MathUtil.sin(latRad));
+        position.z = (float) (R * MathUtil.cos(latRad) * MathUtil.sin(lonRad));
+        return position;
+    }
+
+
+    public void render(){
+        new RenderCelestialBody().renderCelestialObject(this);
     }
 }

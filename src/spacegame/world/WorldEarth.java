@@ -99,13 +99,15 @@ public final class WorldEarth extends World {
 
     public int convertBlockXToGlobalMap(int x) {
         double blocksPerPixel = (double) this.size / 4096;
-        return  (int)((x +(this.size / 2)) / blocksPerPixel);
+        return  (int)((x + (this.size / 2)) / blocksPerPixel);
     }
 
     public int convertBlockZToGlobalMap(int z) {
         double blocksPerPixel = (double) this.size / 8192;
-        return (int)((z + ((this.size * 2) / 2)) / blocksPerPixel);
+        return (int)((z + (this.size / 2)) / blocksPerPixel);
     }
+
+
 
 
 

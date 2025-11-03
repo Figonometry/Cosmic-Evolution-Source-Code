@@ -151,7 +151,7 @@ public final class ChunkTerrainHandler {
     }
 
     public double getContinentalNoise(int x, int z){ //Elevation
-        return (this.earth.globalElevationMap.getNoiseRaw(this.earth.convertBlockXToGlobalMap(x), this.earth.convertBlockZToGlobalMap(z)) + this.earth.continentalNoise.getNoiseRaw(x >> 5, z >> 5) / 2d);
+        return (this.earth.globalElevationMap.getNoiseRaw(this.earth.convertBlockZToGlobalMap(z), this.earth.convertBlockXToGlobalMap(x)) + this.earth.continentalNoise.getNoiseRaw(x >> 5, z >> 5) / 2d);
     }
 
     public double getYScaleNoise(int x, int z){

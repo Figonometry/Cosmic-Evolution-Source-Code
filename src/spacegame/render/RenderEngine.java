@@ -1,6 +1,7 @@
 package spacegame.render;
 
 import org.joml.Matrix4d;
+import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL46;
 import org.lwjgl.stb.STBImage;
@@ -411,12 +412,12 @@ public final class RenderEngine {
         public FloatBuffer vertexBuffer = BufferUtils.createFloatBuffer(524288);
         public IntBuffer elementBuffer = BufferUtils.createIntBuffer(524288);
         private int elementOffset = 0;
-        private int texture2DVAO;
+        public int texture2DVAO;
         private int texture2DAtlasVAO;
         private int textureCubeMapVAO;
-        private int vboID;
-        private int eboID;
-        private int[] texSlots = new int[256];
+        private int textureCelestialBodyVAO;
+        public int vboID;
+        public int eboID;
         public boolean isOrtho;
         private int boundTexture;
 
@@ -429,11 +430,13 @@ public final class RenderEngine {
             this.texture2DVAO = CosmicEvolution.instance.renderEngine.createVAO();
             this.texture2DAtlasVAO = CosmicEvolution.instance.renderEngine.createVAO();
             this.textureCubeMapVAO = CosmicEvolution.instance.renderEngine.createVAO();
+            this.textureCelestialBodyVAO = CosmicEvolution.instance.renderEngine.createVAO();
 
             int positionsSize = 3;
             int colorSize = 4;
             int texIndexSize = 1;
             int texCoordsSize = 2;
+            int normalSize = 3;
             int vertexSizeBytes = (positionsSize + colorSize + texCoordsSize + texIndexSize) * Float.BYTES;
 
             CosmicEvolution.instance.renderEngine.setVertexAttribute(this.texture2DAtlasVAO, 0, positionsSize, vertexSizeBytes, 0, this.vboID);
@@ -448,9 +451,12 @@ public final class RenderEngine {
             CosmicEvolution.instance.renderEngine.setVertexAttribute(this.texture2DVAO, 2, texCoordsSize, vertexSizeBytes, (positionsSize + colorSize) * Float.BYTES, this.vboID);
 
 
-            vertexSizeBytes = (positionsSize + colorSize) * Float.BYTES;
+            vertexSizeBytes = positionsSize * Float.BYTES;
             CosmicEvolution.instance.renderEngine.setVertexAttribute(this.textureCubeMapVAO, 0, positionsSize, vertexSizeBytes, 0, this.vboID);
-            CosmicEvolution.instance.renderEngine.setVertexAttribute(this.textureCubeMapVAO, 1, colorSize, vertexSizeBytes, positionsSize * Float.BYTES, this.vboID);
+
+            vertexSizeBytes = (positionsSize + normalSize) * Float.BYTES;
+            CosmicEvolution.instance.renderEngine.setVertexAttribute(this.textureCelestialBodyVAO, 0, positionsSize, vertexSizeBytes, 0, this.vboID);
+            CosmicEvolution.instance.renderEngine.setVertexAttribute(this.textureCelestialBodyVAO, 1, normalSize, vertexSizeBytes, positionsSize * Float.BYTES, this.vboID);
         }
 
 
@@ -563,26 +569,19 @@ public final class RenderEngine {
             }
         }
 
-        public void addVertexCubeMap(int colorValue, float x, float y, float z){
-            if(colorValue > 16777215){
-                colorValue = 16777215;
-            }
-            if(colorValue < 0){
-                colorValue = 0;
-            }
-
-            final float red = ((colorValue >> 16) & 255) / 255f;
-            final float green = ((colorValue >> 8) & 255) / 255f;
-            final float blue = (colorValue & 255) / 255f;
-            final float alpha = 1f;
-
+        public void addVertexCubeMap(float x, float y, float z){
             this.vertexBuffer.put(x);
             this.vertexBuffer.put(y);
             this.vertexBuffer.put(z);
-            this.vertexBuffer.put(red);
-            this.vertexBuffer.put(green);
-            this.vertexBuffer.put(blue);
-            this.vertexBuffer.put(alpha);
+        }
+
+        public void addVertexCubeMapCelestialBody(Vector3f normal, float x, float y, float z){
+            this.vertexBuffer.put(x);
+            this.vertexBuffer.put(y);
+            this.vertexBuffer.put(z);
+            this.vertexBuffer.put(normal.x);
+            this.vertexBuffer.put(normal.y);
+            this.vertexBuffer.put(normal.z);
         }
 
         public void addVertexTextureArray(int colorValue, float x, float y, float z, int corner, float blockID, int faceType){
@@ -684,6 +683,8 @@ public final class RenderEngine {
 
             GL46.glUseProgram(shader.shaderProgramID);
 
+
+
             if(this.isOrtho) {
                 shader.uploadMat4d("uProjection", camera.guiProjectionMatrix);
                 shader.uploadMat4d("uView", new Matrix4d());
@@ -694,7 +695,6 @@ public final class RenderEngine {
             shader.uploadInt("uTextures", 0);
             GL46.glEnable(GL46.GL_ALPHA_TEST);
             GL46.glAlphaFunc(GL46.GL_GREATER, 0.1F);
-            //bind the VAO being used
 
 
             GL46.glDrawElements(GL46.GL_TRIANGLES, this.elementBuffer.limit(), GL46.GL_UNSIGNED_INT, 0);
@@ -718,11 +718,11 @@ public final class RenderEngine {
             GL46.glBindBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, eboID);
             GL46.glBufferData(GL46.GL_ELEMENT_ARRAY_BUFFER, this.elementBuffer, GL46.GL_STATIC_DRAW);
 
-
             GL46.glBindTexture(GL46.GL_TEXTURE_2D, this.boundTexture);
 
             //bind shader program
             GL46.glUseProgram(shader.shaderProgramID);
+
 
             //upload texture to shader
             if(this.isOrtho) {
@@ -804,10 +804,41 @@ public final class RenderEngine {
 
             GL46.glBindTexture(GL46.GL_TEXTURE_CUBE_MAP, this.boundTexture);
 
-            //bind shader program
             GL46.glUseProgram(shader.shaderProgramID);
 
-            //upload texture to shader
+            if (this.isOrtho) {
+                shader.uploadMat4d("uProjection", camera.guiProjectionMatrix);
+                shader.uploadMat4d("uView", new Matrix4d());
+            } else {
+                shader.uploadMat4d("uProjection", camera.projectionMatrix);
+                shader.uploadMat4d("uView", camera.viewMatrix);
+            }
+            shader.uploadInt("cubeTexture", 0);
+
+            GL46.glDrawElements(GL46.GL_TRIANGLES, this.elementBuffer.limit(), GL46.GL_UNSIGNED_INT, 0);
+
+            GL46.glBindTexture(GL46.GL_TEXTURE_CUBE_MAP, 0);
+            this.reset();
+        }
+
+        public void drawCubeMapTextureCelestialBody(int texID, Shader shader, Camera camera) {
+            this.boundTexture = texID;
+
+            GL46.glBindVertexArray(this.textureCelestialBodyVAO);
+
+            this.vertexBuffer.flip();
+            this.elementBuffer.flip();
+
+            GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, vboID);
+            GL46.glBufferData(GL46.GL_ARRAY_BUFFER, this.vertexBuffer, GL46.GL_STATIC_DRAW);
+
+            GL46.glBindBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, eboID);
+            GL46.glBufferData(GL46.GL_ELEMENT_ARRAY_BUFFER, this.elementBuffer, GL46.GL_STATIC_DRAW);
+
+
+            GL46.glBindTexture(GL46.GL_TEXTURE_CUBE_MAP, this.boundTexture);
+
+            GL46.glUseProgram(shader.shaderProgramID);
 
             if (this.isOrtho) {
                 shader.uploadMat4d("uProjection", camera.guiProjectionMatrix);
@@ -820,7 +851,6 @@ public final class RenderEngine {
 
             GL46.glEnable(GL46.GL_ALPHA_TEST);
             GL46.glAlphaFunc(GL46.GL_GREATER, 0.1F);
-            //bind the VAO being used
 
             GL46.glDrawElements(GL46.GL_TRIANGLES, this.elementBuffer.limit(), GL46.GL_UNSIGNED_INT, 0);
 
