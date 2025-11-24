@@ -3,7 +3,6 @@ package spacegame.block;
 import org.lwjgl.glfw.GLFW;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.KeyListener;
-import spacegame.core.MouseListener;
 import spacegame.entity.EntityBlock;
 import spacegame.entity.EntityItem;
 import spacegame.entity.EntityPlayer;
@@ -21,7 +20,7 @@ public final class BlockLog extends Block {
     @Override
     public void onLeftClick(int x, int y, int z, World world, EntityPlayer player){
         this.handleSpecialLeftClickFunctions(x,y,z, world, player);
-        world.setBlockWithNotify(x,y,z, Block.air.ID);
+        world.setBlockWithNotify(x,y,z, Block.air.ID, false);
         this.notifyNearbyLeafBlocks(x,y,z, world);
         player.reduceHeldItemDurability();
     }

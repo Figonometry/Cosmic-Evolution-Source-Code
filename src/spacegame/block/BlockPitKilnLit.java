@@ -25,7 +25,7 @@ public final class BlockPitKilnLit extends BlockPitKilnUnlit implements ITimeUpd
         EntityParticle particle;
         Chunk chunk = CosmicEvolution.instance.save.activeWorld.chunkController.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
         for(int i = 0; i < particleCount; i++){
-            particle = new EntityParticle(xPos + CosmicEvolution.globalRand.nextDouble(-0.5, 0.5), yPos + CosmicEvolution.globalRand.nextDouble(0.125), zPos + CosmicEvolution.globalRand.nextDouble(-0.5, 0.5), false, CosmicEvolution.globalRand.nextInt(30, 180), Block.campfireLit.ID, false);
+            particle = new EntityParticle(xPos + CosmicEvolution.globalRand.nextDouble(-0.5, 0.5), yPos + CosmicEvolution.globalRand.nextDouble(0.125), zPos + CosmicEvolution.globalRand.nextDouble(-0.5, 0.5), false, CosmicEvolution.globalRand.nextInt(30, 180), Block.campfireLit.ID, false, false);
             chunk.addEntityToList(particle);
         }
     }
@@ -48,12 +48,12 @@ public final class BlockPitKilnLit extends BlockPitKilnUnlit implements ITimeUpd
 
         if(itemID == Item.block.ID){
             if(blockID == Block.rawRedClayCookingPot.ID) {
-                world.setBlockWithNotify(x, y, z, Block.redClayCookingPot.ID);
+                world.setBlockWithNotify(x, y, z, Block.redClayCookingPot.ID, false);
             }
         }
 
         if(itemID == Item.rawClayAdobeBrick.ID){
-            world.setBlockWithNotify(x,y,z, Block.brickPile.ID);
+            world.setBlockWithNotify(x,y,z, Block.brickPile.ID, false);
             Inventory pileInventory = new Inventory(1,1);
             pileInventory.itemStacks[0].item = Item.firedRedClayAdobeBrick;
             pileInventory.itemStacks[0].count = itemQuantity;
@@ -65,7 +65,7 @@ public final class BlockPitKilnLit extends BlockPitKilnUnlit implements ITimeUpd
 
     @Override
     public long getUpdateTime() {
-        return 10 * Timer.HOUR; //10 in game hours
+        return 10 * Timer.GAME_HOUR; //10 in game hours
     }
 
     @Override
@@ -76,6 +76,6 @@ public final class BlockPitKilnLit extends BlockPitKilnUnlit implements ITimeUpd
     @Override
     public void tick(int x, int y, int z, World world) {
         this.generateParticles(x, y, z);
-        CosmicEvolution.instance.soundPlayer.playSound(x, y, z, new Sound(Sound.fireCrackling, false), CosmicEvolution.globalRand.nextFloat(0.75f, 1));
+        CosmicEvolution.instance.soundPlayer.playSound(x, y, z, new Sound(Sound.fireCrackling, false, 1f), CosmicEvolution.globalRand.nextFloat(0.75f, 1));
     }
 }

@@ -3,6 +3,7 @@ package spacegame.render;
 import org.joml.*;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL46;
+import spacegame.core.CosmicEvolution;
 
 import java.io.IOException;
 import java.nio.DoubleBuffer;
@@ -49,6 +50,22 @@ public final class Shader {
        screenTextureArray = new Shader("src/spacegame/assets/shader/screenTextureArray.glsl");
        terrainShader = new Shader("src/spacegame/assets/shader/terrainShader.glsl"); //This is split from the other shaders to have a very specialized shader for the terrain itself since this is the most time consuming part of rendering a frame
        shadowMapShader = new Shader("src/spacegame/assets/shader/shadowMap.glsl");
+    }
+
+    public static void reloadAllShaders(){
+        CosmicEvolution.instance.renderEngine.reloadShader(worldShaderTextureArray);
+        CosmicEvolution.instance.renderEngine.reloadShader(worldShader2DTexture);
+        CosmicEvolution.instance.renderEngine.reloadShader(worldShader2DTextureWithAtlas);
+        CosmicEvolution.instance.renderEngine.reloadShader(worldShaderCubeMapTexture);
+        CosmicEvolution.instance.renderEngine.reloadShader(worldSkybox);
+        CosmicEvolution.instance.renderEngine.reloadShader(universeShaderCubeMapTexture);
+        CosmicEvolution.instance.renderEngine.reloadShader(universeShader2DTexture);
+        CosmicEvolution.instance.renderEngine.reloadShader(universeSkybox);
+        CosmicEvolution.instance.renderEngine.reloadShader(screen2DTexture);
+        CosmicEvolution.instance.renderEngine.reloadShader(screen2DTextureAtlas);
+        CosmicEvolution.instance.renderEngine.reloadShader(screenTextureArray);
+        CosmicEvolution.instance.renderEngine.reloadShader(terrainShader);
+        CosmicEvolution.instance.renderEngine.reloadShader(shadowMapShader);
     }
 
     public Shader(String filepath) {

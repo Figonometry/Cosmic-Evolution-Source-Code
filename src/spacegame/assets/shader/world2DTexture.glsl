@@ -17,6 +17,9 @@ uniform bool performNormals;
 uniform vec3 normalizedLightVector;
 uniform vec3 playerPositionInChunk;
 uniform bool compressTest;
+uniform bool animateTexture;
+uniform float animateHorizontal;
+uniform float animateVertical;
 
 out vec4 fColor;
 out vec2 fTexCoords;
@@ -29,24 +32,22 @@ vec4 performLightingNormals(vec4 skyLightColor, vec3 vertexNormal){
     vertexNormal = normalize(vertexNormal);
     float angleCos = dot(vertexNormal, normalizedLightVector);
 
-    float baseLight = baseLight;
-    float shadeFactor = 0.5 * baseLight;//50% of the baseLight
-    float shaded = 0.5 * baseLight;//Fully shaded is a reduction of 50% of the baseLight
+    float lightVal = baseLight;
+    float shadeFactor = 0.25 * lightVal;//50% of the baseLight
     float perpendicular = 0;
 
-    shadeFactor= clamp(shadeFactor, 0.1, 1.0);
-    shaded = clamp(shaded, 0.1, 1.0);
+    shadeFactor = clamp(shadeFactor, 0.1, 1.0);
 
-    if (performNormals){
-        if (angleCos < perpendicular){
-            skyLightColor *= shaded;
-        } else {
-            baseLight -= (shadeFactor * (1.0 - angleCos));
-            baseLight = clamp(baseLight, 0.1, 1.0);
-            skyLightColor *= baseLight;
-        }
+    if (angleCos < perpendicular){
+        lightVal -= 0.25;
+        shadeFactor = 0.125;
+        lightVal -= (shadeFactor * (-angleCos));
+        lightVal = clamp(lightVal, 0.1, 1.0);
+        skyLightColor *= lightVal;
     } else {
-        skyLightColor *= shaded;
+        lightVal -= (shadeFactor * (1.0 - angleCos));
+        lightVal = clamp(lightVal, 0.1, 1.0);
+        skyLightColor *= lightVal;
     }
 
     skyLightColor *= lightColor;
@@ -55,27 +56,9 @@ vec4 performLightingNormals(vec4 skyLightColor, vec3 vertexNormal){
 }
 
 vec4 setFinalColor(vec4 skyLightColor, vec4 vertexColor){
-    vec4 finalColor = vec4(1.0, 1.0, 1.0, 1.0);
-    if(skyLightColor.x > vertexColor.x){
-        finalColor.x = skyLightColor.x;
-    } else {
-        finalColor.x = vertexColor.x;
-    }
-
-    if(skyLightColor.y > vertexColor.y){
-        finalColor.y = skyLightColor.y;
-    } else {
-        finalColor.y = vertexColor.y;
-    }
-
-    if(skyLightColor.z > vertexColor.z){
-        finalColor.z = skyLightColor.z;
-    } else {
-        finalColor.z = vertexColor.z;
-    }
-
-    return finalColor;
+    return vec4(vertexColor.rgb * skyLightColor.rgb, vertexColor.a);
 }
+
 
 int floatToHalf(float value) {
     uint floatBits = floatBitsToUint(value);
@@ -129,7 +112,11 @@ void main()
 {
 
     vec4 skyLightColor = performLightingNormals(vec4(skyLightValue, skyLightValue, skyLightValue, 1.0), normal);
-    fColor = setFinalColor(skyLightColor, aColor);
+    if(performNormals){
+        fColor = setFinalColor(skyLightColor, aColor);
+    } else {
+        fColor = aColor;
+    }
 
     fTexCoords = aTexCoords;
 
@@ -147,6 +134,11 @@ void main()
     fPlayerPositionInChunk = playerPositionInChunk;
 
     isInShadowRange = distance(correctPos, playerPositionInChunk) < 256.0 ? 1 : 0;
+
+    if(animateTexture){
+        fTexCoords.x += animateHorizontal;
+        fTexCoords.y += animateVertical;
+    }
 }
 
 
@@ -167,6 +159,9 @@ uniform bool underwater;
 uniform bool renderShadows;
 uniform bool shadowMapSetting;
 uniform bool useFog;
+
+uniform bool blendColorForSkyTransition;
+uniform float blendColorRatio;
 
 uniform float fogRed;
 uniform float fogGreen;
@@ -229,6 +224,12 @@ void main()
     if (renderShadows && isInShadowRange == 1){
         float shadow = getShadowFactor(fragPosInLightSpace);
         color.xyz *= shadow;
+    }
+
+    if(blendColorForSkyTransition){
+        color.x *= 1 - blendColorRatio;
+        color.y *= 1 - blendColorRatio;
+        color.z *= 1 - blendColorRatio;
     }
 
     if (useFog){

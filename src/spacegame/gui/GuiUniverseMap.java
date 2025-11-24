@@ -1,7 +1,6 @@
 package spacegame.gui;
 
 import org.joml.*;
-import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
 import spacegame.celestial.CelestialObject;
@@ -15,8 +14,6 @@ import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
 
 import java.lang.Math;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 import java.util.ArrayList;
 
 public final class GuiUniverseMap extends Gui {
@@ -39,11 +36,11 @@ public final class GuiUniverseMap extends Gui {
 
     @Override
     public void loadTextures() {
-        orbitLine = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiUniverse/orbitLine.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        orbitLine = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiUniverse/orbitLine.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
     }
 
     public static void initSkyboxTexture(){
-        skybox = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiUniverse/skybox", RenderEngine.TEXTURE_TYPE_CUBEMAP, 0);
+        skybox = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiUniverse/skybox", RenderEngine.TEXTURE_TYPE_CUBEMAP, 0, true);
     }
 
     @Override

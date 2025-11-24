@@ -24,14 +24,20 @@ public final class Sound {
     public static String rightClickStoneCraftingMaterial = "src/spacegame/assets/sound/rightClickCraftingMaterialStone.ogg";
     public static String fireCrackling = "src/spacegame/assets/sound/fireCrackling.ogg";
     public static String clay = "src/spacegame/assets/sound/stepClay.ogg";
+    public static String rainIndoors = "src/spacegame/assets/sound/rainIndoors.ogg";
+    public static String rainUnderTree = "src/spacegame/assets/sound/rainUnderTree.ogg";
+    public static String rainOutside = "src/spacegame/assets/sound/rainOutside.ogg";
+    public static String wind = "src/spacegame/assets/sound/wind.ogg";
     public String filepath;
     public int bufferID;
     public int sourceID;
     public boolean isPlaying;
+    public float soundMultiplier;
 
 
-    public Sound(String filepath, boolean loops) {
+    public Sound(String filepath, boolean loops, float soundMultiplier) {
         this.filepath = filepath;
+        this.soundMultiplier = soundMultiplier;
         if (this.filepath == null) {
             return;
         }

@@ -48,15 +48,15 @@ public final class GuiInGame extends Gui {
     @Override
     public void loadTextures() {
         if (vignette == 0) {
-            vignette = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/vignette.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-            water = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/waterOverlay.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-            outline = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInGame/outline.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-            blockBreaking = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInGame/blockBreaking.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+            vignette = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/vignette.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
+            water = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/waterOverlay.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
+            outline = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInGame/outline.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
+            blockBreaking = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInGame/blockBreaking.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
             blockBreakingAtlas = CosmicEvolution.instance.renderEngine.createTextureAtlas(96, 96, 32, 32, 7, 0);
-            hotbar = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInGame/hotbarSlot.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-            transparentBackground = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-            fillableColorWithShadedBottom = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColorWithShadedBottom.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-            fillableColor = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColor.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+            hotbar = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInGame/hotbarSlot.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
+            transparentBackground = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
+            fillableColorWithShadedBottom = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColorWithShadedBottom.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
+            fillableColor = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColor.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
         }
     }
 
@@ -181,9 +181,9 @@ public final class GuiInGame extends Gui {
             TimeUpdateEvent updateEvent = CosmicEvolution.instance.save.activeWorld.getTimeEvent(blockCoordinates[0], blockCoordinates[1], blockCoordinates[2]);
             if(updateEvent != null) {
                 long timeUntil = updateEvent.updateTime - CosmicEvolution.instance.save.time;
-                long daysUntil = timeUntil / Timer.DAY;
-                long hoursUntil = (timeUntil % Timer.DAY) / Timer.HOUR;
-                long minutesUntil = (timeUntil % Timer.HOUR) / Timer.MINUTE;
+                long daysUntil = timeUntil / Timer.GAME_DAY;
+                long hoursUntil = (timeUntil % Timer.GAME_DAY) / Timer.GAME_HOUR;
+                long minutesUntil = (timeUntil % Timer.GAME_HOUR) / Timer.GAME_MINUTE;
 
                 stringBuilder.append(((ITimeUpdate) Block.list[blockID]).getDisplayStringText());
                 if (daysUntil != 0) {

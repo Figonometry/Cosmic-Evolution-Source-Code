@@ -16,7 +16,7 @@ public final class BlockItemStick extends Block {
         short playerHeldItem = player.getHeldItem();
 
             if(playerHeldItem == Item.stoneFragments.ID){
-                world.setBlockWithNotify(x,y,z, Block.air.ID);
+                world.setBlockWithNotify(x,y,z, Block.air.ID, false);
                 world.addEntity(new EntityItem(x + 0.5, y + 0.1, z + 0.5, Item.unlitTorch.ID, Item.NULL_ITEM_METADATA, (byte) 1, Item.NULL_ITEM_DURABILITY));
                 MouseListener.rightClickReleased = false;
             }

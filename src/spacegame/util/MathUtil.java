@@ -4,7 +4,7 @@ import spacegame.core.CosmicEvolution;
 import spacegame.core.MouseListener;
 
 public abstract class MathUtil {
-    private static float[] SIN_TABLE = new float[65536];
+    private static final float[] SIN_TABLE = new float[65536];
 
     public static double distance3D(double a1, double b1, double c1, double a2, double b2, double c2){
         double a = a1 - a2;

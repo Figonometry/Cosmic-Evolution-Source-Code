@@ -27,10 +27,10 @@ public final class ButtonTechTree extends Button {
         this.techTree = techTree;
         switch (this.era){
             case Tech.NEOLITHIC_ERA -> {
-                this.texture = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiTechTree/neolithicButton.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+                this.texture = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiTechTree/neolithicButton.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
             }
             default -> {
-                this.texture = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiTechTree/emptyButton.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+                this.texture = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiTechTree/emptyButton.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
             }
         }
     }
@@ -38,10 +38,10 @@ public final class ButtonTechTree extends Button {
     public void reloadTexture(){
         switch (this.era){
             case Tech.NEOLITHIC_ERA -> {
-                this.texture = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiTechTree/neolithicButton.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+                this.texture = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiTechTree/neolithicButton.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
             }
             default -> {
-                this.texture = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiTechTree/emptyButton.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+                this.texture = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiTechTree/emptyButton.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
             }
         }
     }

@@ -22,7 +22,7 @@ public final class BlockBerryBush extends Block implements ITimeUpdate {
 
         if(playerHeldItem != Item.block.ID && playerHeldItem != Item.torch.ID){
             if(world.getBlockID(x,y,z) == Block.berryBush.ID){
-                world.setBlockWithNotify(x,y,z, Block.berryBushNoBerries.ID);
+                world.setBlockWithNotify(x,y,z, Block.berryBushNoBerries.ID, false);
                 world.addEntity(new EntityItem(x + CosmicEvolution.globalRand.nextFloat(), y + 0.5, z + CosmicEvolution.globalRand.nextFloat(), Item.berry.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY));
                 if(Tech.foraging2.state == Tech.UNLOCKED && CosmicEvolution.globalRand.nextBoolean()){
                     world.addEntity(new EntityItem(x + CosmicEvolution.globalRand.nextFloat(), y + 0.5, z + CosmicEvolution.globalRand.nextFloat(), Item.berry.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY));
@@ -43,10 +43,10 @@ public final class BlockBerryBush extends Block implements ITimeUpdate {
     @Override
     public void onTimeUpdate(int x, int y, int z, World world) {
         if(this.ID == Block.berryBushNoBerries.ID){
-            world.setBlockWithNotify(x,y,z, Block.berryBushFlower.ID);
+            world.setBlockWithNotify(x,y,z, Block.berryBushFlower.ID, false);
             world.updateTimeEventTime(x,y,z, CosmicEvolution.instance.save.time + this.getUpdateTime());
         } else if(this.ID == Block.berryBushFlower.ID){
-            world.setBlockWithNotify(x,y,z, Block.berryBush.ID);
+            world.setBlockWithNotify(x,y,z, Block.berryBush.ID, false);
             world.removeTimeEvent(x,y,z);
         }
     }
@@ -58,7 +58,7 @@ public final class BlockBerryBush extends Block implements ITimeUpdate {
 
     @Override
     public long getUpdateTime() {
-        return 7 * Timer.DAY;
+        return 7 * Timer.GAME_DAY;
     }
 
     @Override

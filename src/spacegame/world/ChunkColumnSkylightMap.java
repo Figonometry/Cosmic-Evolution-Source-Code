@@ -10,7 +10,7 @@ public final class ChunkColumnSkylightMap {
     public ChunkColumnSkylightMap(int x, int z) {
         this.x = x;
         this.z = z;
-        Arrays.fill(this.lightMap, -1024);
+        Arrays.fill(this.lightMap, Integer.MIN_VALUE);
     }
 
     public int getBlockXFromIndex(int index) {

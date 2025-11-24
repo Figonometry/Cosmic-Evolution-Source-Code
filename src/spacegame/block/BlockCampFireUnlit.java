@@ -23,14 +23,14 @@ public final class BlockCampFireUnlit extends BlockCampFire {
             if (playerHeldItem == Item.fireWood.ID) {
                 int logCount = this.getLogCount();
                 switch (logCount) {
-                    case 0 -> world.setBlockWithNotify(x, y, z, Block.campFire1FireWood.ID);
-                    case 1 -> world.setBlockWithNotify(x, y, z, Block.campFire2FireWood.ID);
-                    case 2 -> world.setBlockWithNotify(x, y, z, Block.campFire3Firewood.ID);
-                    case 3 -> world.setBlockWithNotify(x, y, z, Block.campFire4FireWood.ID);
+                    case 0 -> world.setBlockWithNotify(x, y, z, Block.campFire1FireWood.ID, false);
+                    case 1 -> world.setBlockWithNotify(x, y, z, Block.campFire2FireWood.ID, false);
+                    case 2 -> world.setBlockWithNotify(x, y, z, Block.campFire3Firewood.ID, false);
+                    case 3 -> world.setBlockWithNotify(x, y, z, Block.campFire4FireWood.ID, false);
                 }
                 if (logCount != 4) {
                     player.removeItemFromInventory();
-                    CosmicEvolution.instance.soundPlayer.playSound(x, y, z, new Sound(Sound.wood, false), new Random().nextFloat(0.6F, 1));
+                    CosmicEvolution.instance.soundPlayer.playSound(x, y, z, new Sound(Sound.wood, false, 1f), new Random().nextFloat(0.6F, 1));
                 }
                 MouseListener.rightClickReleased = false;
                 return;

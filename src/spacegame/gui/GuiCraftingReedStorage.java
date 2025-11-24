@@ -47,10 +47,10 @@ public final class GuiCraftingReedStorage extends GuiCrafting {
 
     @Override
     public void loadTextures() {
-        this.inventoryUI = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiTechTree/clayTexture.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        this.transparentBackground = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        this.fillableColor = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColor.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        this.outline = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/outline.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.inventoryUI = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiTechTree/clayTexture.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
+        this.transparentBackground = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
+        this.fillableColor = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColor.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
+        this.outline = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/outline.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
     }
 
     @Override
@@ -231,11 +231,11 @@ public final class GuiCraftingReedStorage extends GuiCrafting {
 
     public void setRecipeSelected(RecipeSelector selectedRecipe){
         if(selectedRecipe.isBlock){
-            this.ce.save.activeWorld.setBlockWithNotify(x,y,z, Block.reedChestTier0.ID);
+            this.ce.save.activeWorld.setBlockWithNotify(x,y,z, Block.reedChestTier0.ID, false);
             this.ce.save.activeWorld.clearChestLocation(x,y,z);
             this.ce.save.activeWorld.removeChestLocation(x,y,z);
         } else {
-            this.ce.save.activeWorld.setBlockWithNotify(x,y,z, Block.reedBasketTier0.ID);
+            this.ce.save.activeWorld.setBlockWithNotify(x,y,z, Block.reedBasketTier0.ID, false);
             this.ce.save.activeWorld.clearChestLocation(x,y,z);
             this.ce.save.activeWorld.removeChestLocation(x,y,z);
         }

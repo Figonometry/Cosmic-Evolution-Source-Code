@@ -34,10 +34,34 @@ public final class SoundPlayer {
     public void playSound(double x, double y, double z, Sound sound, float pitch) {
         if (sound == null) {return;}
         //AL11.alSourcef(sound.sourceID, AL11.AL_GAIN, 3);
-        AL11.alSourcef(sound.sourceID, AL11.AL_GAIN, calculateGain(distanceFromCameraToSound(x,y,z)));
+        AL11.alSourcef(sound.sourceID, AL11.AL_GAIN, calculateGain(distanceFromCameraToSound(x,y,z), sound.soundMultiplier));
         AL11.alSourcef(sound.sourceID, AL11.AL_PITCH, pitch);
         AL11.alSourcePlay(sound.sourceID);
         sounds.add(sound);
+    }
+
+    public void stopSound(Sound sound){
+        for(int i = 0; i < sounds.size(); i++){
+            if(sound.equals(sounds.get(i))){
+                AL11.alSourceStop(sound.sourceID);
+                AL11.alDeleteSources(sound.sourceID);
+                AL11.alDeleteBuffers(sound.bufferID);
+                sounds.remove(sound);
+            }
+        }
+    }
+
+    public void stopSound(String soundString){
+        Sound sound;
+        for(int i = 0; i < sounds.size(); i++){
+            sound = sounds.get(i);
+            if(sound.filepath.equals(soundString)){
+                AL11.alSourceStop(sound.sourceID);
+                AL11.alDeleteSources(sound.sourceID);
+                AL11.alDeleteBuffers(sound.bufferID);
+                sounds.remove(sound);
+            }
+        }
     }
 
     public float distanceFromCameraToSound(double x, double y, double z){
@@ -56,9 +80,9 @@ public final class SoundPlayer {
         return (float)Math.sqrt(xDif * xDif + zDif * zDif + yDif * yDif);
     }
 
-    private static float calculateGain(float distanceFromPlayer){
+    private static float calculateGain(float distanceFromPlayer, float soundMultiplier){
         if(1 - distanceFromPlayer/MAX_SOUND_DISTANCE > 0){
-            return (float) (((1 - distanceFromPlayer/MAX_SOUND_DISTANCE)/4) * GameSettings.volume);
+            return (float) (((1 - distanceFromPlayer/MAX_SOUND_DISTANCE)/4) * (GameSettings.volume * soundMultiplier));
         } else {
             return 0;
         }

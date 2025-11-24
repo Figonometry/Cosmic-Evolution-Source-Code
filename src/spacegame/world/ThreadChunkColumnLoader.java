@@ -34,6 +34,7 @@ public final class ThreadChunkColumnLoader implements Runnable {
     }
 
     public void loadChunkColumn(int x, int z) {
+        this.controller.parentWorld.generateWeatherSystems(x,z);
         for (int y = this.controller.playerChunkY - GameSettings.chunkColumnHeight; y < this.controller.playerChunkY + GameSettings.chunkColumnHeight; y++) {
             if (!this.controller.doesChunkExitAtPos(x, y, z)) {
                 Chunk chunk = null;

@@ -96,7 +96,7 @@ public final class CosmicEvolution implements Runnable {
     }
 
     private void startGame() {
-        this.title = "Cosmic Evolution Alpha v0.36";
+        this.title = "Cosmic Evolution Alpha v0.37";
         GameSettings.loadOptionsFromFile(this.launcherDirectory);
         this.clearLogFiles(new File(this.launcherDirectory + "/crashReports"));
         this.initLWJGL();
@@ -141,6 +141,7 @@ public final class CosmicEvolution implements Runnable {
         GLFW.glfwGetWindowSize(this.window, windowWidth,windowHeight);
         width = windowWidth[0];
         height = windowHeight[0];
+
 
         if (this.window == MemoryUtil.NULL) {
             System.out.println("Failed to create game window");
@@ -224,6 +225,7 @@ public final class CosmicEvolution implements Runnable {
             this.timer.advanceTime();
             for (int i = 0; i < this.timer.ticks; i++) {
                 this.tick();
+
                 fpsTimer--;
                 if (fpsTimer <= 0) {
                     this.fps = (int) (1000000000.0 / (lastTime - System.nanoTime()));
@@ -337,21 +339,16 @@ public final class CosmicEvolution implements Runnable {
             }
         }
 
+      //  if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_G) && KeyListener.keyReleased[GLFW.GLFW_KEY_G]){
+      //      GL46.glDeleteProgram(Shader.terrainShader.shaderProgramID);
+      //      Shader.terrainShader = new Shader("src/spacegame/assets/shader/terrainShader.glsl");
+      //      KeyListener.setKeyReleased(GLFW.GLFW_KEY_G);
+      //  }
+
         if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_CAPS_LOCK) && KeyListener.keyReleased[GLFW.GLFW_KEY_CAPS_LOCK]){
             KeyListener.capsLockEnabled = !KeyListener.capsLockEnabled;
             KeyListener.setKeyReleased(GLFW.GLFW_KEY_CAPS_LOCK);
         }
-//
-      //    if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_G) && KeyListener.keyReleased[GLFW.GLFW_KEY_G]){
-      //        if(this.save != null){
-      //            if(this.save.thePlayer != null && this.save.activeWorld != null){
-      //                EntityDeer deer =  new EntityDeer(this.save.thePlayer.x,this.save.thePlayer.y - 0.5, this.save.thePlayer.z, false, false);
-      //                this.save.activeWorld.addEntity(deer);
-      //            }
-      //        }
-      //        KeyListener.setKeyReleased(GLFW.GLFW_KEY_G);
-      //    }
-//
 
         if(DEBUG_MODE) {
             if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_MINUS)) {
@@ -630,9 +627,9 @@ public final class CosmicEvolution implements Runnable {
         if(button != null){
             if(MouseListener.leftClickReleased) {
                 if(this.save != null) {
-                    CosmicEvolution.instance.soundPlayer.playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound("src/spacegame/assets/sound/buttonPress.ogg", false), 1);
+                    CosmicEvolution.instance.soundPlayer.playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound("src/spacegame/assets/sound/buttonPress.ogg", false, 1f), 1);
                 } else {
-                    CosmicEvolution.instance.soundPlayer.playSound(CosmicEvolution.camera.position.x, CosmicEvolution.camera.position.y, CosmicEvolution.camera.position.z, new Sound("src/spacegame/assets/sound/buttonPress.ogg", false), 1);
+                    CosmicEvolution.instance.soundPlayer.playSound(CosmicEvolution.camera.position.x, CosmicEvolution.camera.position.y, CosmicEvolution.camera.position.z, new Sound("src/spacegame/assets/sound/buttonPress.ogg", false, 1f), 1);
                 }
                     button.onLeftClick();
             }
@@ -659,7 +656,7 @@ public final class CosmicEvolution implements Runnable {
                     if (material.active && !selector.isMaterialRequired(((GuiCraftingStoneTools) this.currentGui).getMaterialIndex(material))){
                         material.deactivate();
                         if (material.type.equals("stone")) {
-                            this.soundPlayer.playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound(Sound.leftClickStoneCraftingMaterial, false), globalRand.nextFloat(0.5f, 1));
+                            this.soundPlayer.playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound(Sound.leftClickStoneCraftingMaterial, false, 1f), globalRand.nextFloat(0.5f, 1));
                         }
                     }
                 }
@@ -670,10 +667,10 @@ public final class CosmicEvolution implements Runnable {
                         material.deactivate();
                         switch (material.type) {
                             case "stone":
-                                this.soundPlayer.playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound(Sound.leftClickStoneCraftingMaterial, false), globalRand.nextFloat(0.5f, 1));
+                                this.soundPlayer.playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound(Sound.leftClickStoneCraftingMaterial, false, 1f), globalRand.nextFloat(0.5f, 1));
                                 break;
                             case "clay":
-                                this.soundPlayer.playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound(Sound.clay, false), globalRand.nextFloat(0.5f, 1));
+                                this.soundPlayer.playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound(Sound.clay, false, 1f), globalRand.nextFloat(0.5f, 1));
                                 break;
                         }
                     }
@@ -770,7 +767,7 @@ public final class CosmicEvolution implements Runnable {
                 if (!material.active && !(this.currentGui instanceof GuiCraftingStoneTools)) {
                     material.active = true;
                     if (material.type.equals("clay")) {
-                        this.soundPlayer.playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound(Sound.clay, false), globalRand.nextFloat(0.5f, 1));
+                        this.soundPlayer.playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound(Sound.clay, false, 1f), globalRand.nextFloat(0.5f, 1));
                     }
                 }
             }

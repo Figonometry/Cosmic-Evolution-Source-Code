@@ -1,7 +1,6 @@
 package spacegame.block;
 
 import spacegame.core.CosmicEvolution;
-import spacegame.entity.EntityPlayer;
 import spacegame.world.World;
 
 public final class BlockDirt extends Block implements ITickable {
@@ -15,7 +14,7 @@ public final class BlockDirt extends Block implements ITickable {
             if ((world.getBlockLightValue(x, y + 1, z) >= 9 || world.getBlockSkyLightValue(x, y + 1, z) >= 9) && !Block.list[world.getBlockID(x, y + 1, z)].isSolid) {
                 if (this.isNearGrassBlock(x, y, z)) {
                     if(world.chunkFullySurrounded(x >> 5, y >> 5, z >> 5)) {
-                        world.setBlockWithNotify(x, y, z, Block.grass.ID);
+                        world.setBlockWithNotify(x, y, z, Block.grass.ID, false);
                     }
                 }
             }

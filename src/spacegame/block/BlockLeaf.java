@@ -39,7 +39,7 @@ public final class BlockLeaf extends Block {
             world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).addEntityToList(new EntityItem(x + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), y + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), z + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), this.droppedItemID, Item.NULL_ITEM_METADATA, (byte) 1, Item.list[this.droppedItemID].durability));
         }
         world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).removeDecayableLeafFromArray((short) Chunk.getBlockIndexFromCoordinates(x,y,z));
-        world.setBlockWithNotify(x,y,z, Block.air.ID);
+        world.setBlockWithNotify(x,y,z, Block.air.ID, false);
         this.notifySurroundingLeafBlocks(x,y,z, world);
     }
 

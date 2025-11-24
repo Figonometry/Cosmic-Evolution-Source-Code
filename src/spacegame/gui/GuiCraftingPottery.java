@@ -79,18 +79,18 @@ public final class GuiCraftingPottery extends GuiCrafting {
     public void activateRecipeOverlay(){
         switch (this.selectedItemID) {
             case 0 ->
-                    this.recipeOverlay = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/item/recipeTemplates/cookingPot.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+                    this.recipeOverlay = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/item/recipeTemplates/cookingPot.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
             case 15 ->
-                    this.recipeOverlay = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/item/recipeTemplates/brick.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+                    this.recipeOverlay = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/item/recipeTemplates/brick.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
         }
     }
 
     @Override
     public void loadTextures() {
-        this.backgroundTexture = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiCrafting/potteryBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        this.transparentBackground = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        this.fillableColor = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColor.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        this.outline = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/outline.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.backgroundTexture = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiCrafting/potteryBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
+        this.transparentBackground = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
+        this.fillableColor = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColor.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
+        this.outline = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/outline.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
     }
 
     @Override

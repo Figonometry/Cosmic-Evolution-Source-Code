@@ -84,6 +84,12 @@ public abstract class Entity {
 
     }
 
+    protected void moveOnly(){
+        this.x += this.deltaX;
+        this.y += this.deltaY;
+        this.z += this.deltaZ;
+    }
+
     protected void moveWithVector(){
         this.deltaX = this.movementVector.x * this.speed;
         this.deltaY = this.movementVector.y * this.speed;
@@ -124,10 +130,10 @@ public abstract class Entity {
             Vector3f chunkOffset = new Vector3f(xOffset, yOffset, zOffset);
             Shader.worldShader2DTexture.uploadVec3f("chunkOffset", chunkOffset);
             RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
-            tessellator.addVertex2DTexture(16777215, (float) ((this.x % 32) + (this.width)), (float) ((this.y % 32) - (this.height / 2) + 0.01F), (float) ((this.z % 32) - (this.width)), 3);
-            tessellator.addVertex2DTexture(16777215, (float) ((this.x % 32) - (this.width)), (float) ((this.y % 32) - (this.height / 2) + 0.01F), (float) ((this.z % 32) + (this.width)), 1);
-            tessellator.addVertex2DTexture(16777215, (float) ((this.x % 32) + (this.width)), (float) ((this.y % 32) - (this.height / 2) + 0.01F), (float) ((this.z % 32) + (this.width)), 2);
-            tessellator.addVertex2DTexture(16777215, (float) ((this.x % 32) - (this.width)), (float) ((this.y % 32) - (this.height / 2) + 0.01F), (float) ((this.z % 32) - (this.width)), 0);
+            tessellator.addVertex2DTexture(16777215, (float) ((MathUtil.positiveMod(this.x, 32)) + (this.width)), (float) ((MathUtil.positiveMod(this.y, 32)) - (this.height / 2) + 0.01F), (float) ((MathUtil.positiveMod(this.z, 32)) - (this.width)), 3);
+            tessellator.addVertex2DTexture(16777215, (float) ((MathUtil.positiveMod(this.x, 32)) - (this.width)), (float) ((MathUtil.positiveMod(this.y, 32)) - (this.height / 2) + 0.01F), (float) ((MathUtil.positiveMod(this.z, 32)) + (this.width)), 1);
+            tessellator.addVertex2DTexture(16777215, (float) ((MathUtil.positiveMod(this.x, 32)) + (this.width)), (float) ((MathUtil.positiveMod(this.y, 32)) - (this.height / 2) + 0.01F), (float) ((MathUtil.positiveMod(this.z, 32)) + (this.width)), 2);
+            tessellator.addVertex2DTexture(16777215, (float) ((MathUtil.positiveMod(this.x, 32)) - (this.width)), (float) ((MathUtil.positiveMod(this.y, 32)) - (this.height / 2) + 0.01F), (float) ((MathUtil.positiveMod(this.z, 32)) - (this.width)), 0);
             tessellator.addElements();
             GL46.glEnable(GL46.GL_BLEND);
             GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
@@ -176,6 +182,16 @@ public abstract class Entity {
         if(!this.moveEntityUp) {
             this.timeFalling++;
             this.deltaY -= this.timeFalling * this.acceleration;
+            if(this.timeFalling > 120){
+                this.timeFalling = 120;
+            }
+        }
+    }
+
+    protected void doGravityWithoutAcceleration(){
+        if(!this.moveEntityUp) {
+            this.timeFalling++;
+            this.deltaY -= this.timeFalling;
             if(this.timeFalling > 120){
                 this.timeFalling = 120;
             }
@@ -249,7 +265,7 @@ public abstract class Entity {
     }
 
     public static void initShadow(){
-        shadow = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/item/shadow.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        shadow = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/item/shadow.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
     }
 
 }

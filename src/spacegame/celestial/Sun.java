@@ -16,7 +16,7 @@ public final class Sun extends CelestialObject{
     }
 
     public static void initSunFlare(){
-        sunFlare = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiUniverse/sun/sunHalo.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        sunFlare = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiUniverse/sun/sunHalo.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
     }
 
     public void createShadowMap(){

@@ -6,6 +6,7 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL46;
 import org.lwjgl.stb.STBImage;
 import spacegame.core.CosmicEvolution;
+import spacegame.util.MathUtil;
 
 import java.io.File;
 import java.nio.ByteBuffer;
@@ -25,7 +26,7 @@ public final class RenderEngine {
         synchronized (this.loadableTexturesForCelestialObjects) {
             for (int i = 0; i < this.loadableTexturesForCelestialObjects.size(); i++) {
                 texture = this.loadableTexturesForCelestialObjects.get(i);
-                texture.object.mappedTexture = this.createTexture(texture.filepath, texture.textureType, texture.arraySize);
+                texture.object.mappedTexture = this.createTexture(texture.filepath, texture.textureType, texture.arraySize, true);
             }
 
             this.loadableTexturesForCelestialObjects.clear();
@@ -53,6 +54,16 @@ public final class RenderEngine {
         GL46.glDeleteBuffers(bufferID);
     }
 
+    public void reloadShader(Shader shader){
+        String filepath = shader.filepath;
+
+        GL46.glDeleteShader(shader.vertexID);
+        GL46.glDeleteShader(shader.fragmentID);
+        GL46.glDeleteProgram(shader.shaderProgramID);
+
+        shader = new Shader(filepath);
+    }
+
     public void setVertexAttribute(int vaoID, int index, int size, int vertexSizeBytes, int pointer, int vboID){
         GL46.glBindVertexArray(vaoID);
         GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, vboID);
@@ -60,7 +71,7 @@ public final class RenderEngine {
         GL46.glEnableVertexAttribArray(index);
     }
 
-    public int createTexture(String filepath, int textureType, int arraySize){
+    public int createTexture(String filepath, int textureType, int arraySize, boolean clampTextureToEdge){
         switch (textureType){
             case TEXTURE_TYPE_2D -> {
 
@@ -77,8 +88,8 @@ public final class RenderEngine {
 
                 //set texture parameters
                 //repeat image in both directions
-                GL46.glTexParameteri(GL46.GL_TEXTURE_2D, GL46.GL_TEXTURE_WRAP_S, GL46.GL_CLAMP_TO_EDGE);
-                GL46.glTexParameteri(GL46.GL_TEXTURE_2D, GL46.GL_TEXTURE_WRAP_T, GL46.GL_CLAMP_TO_EDGE);
+                GL46.glTexParameteri(GL46.GL_TEXTURE_2D, GL46.GL_TEXTURE_WRAP_S, clampTextureToEdge ? GL46.GL_CLAMP_TO_EDGE : GL46.GL_REPEAT);
+                GL46.glTexParameteri(GL46.GL_TEXTURE_2D, GL46.GL_TEXTURE_WRAP_T, clampTextureToEdge ? GL46.GL_CLAMP_TO_EDGE : GL46.GL_REPEAT);
                 //When stretching the image pixelate
                 GL46.glTexParameteri(GL46.GL_TEXTURE_2D, GL46.GL_TEXTURE_MIN_FILTER, GL46.GL_NEAREST);
                 //when shrinking an image, pixelate
@@ -423,6 +434,15 @@ public final class RenderEngine {
 
         //top, bottom, north, south, east, west
 
+        /*
+        top, x high z low, x low z high, x high z high, x low z low
+        bottom, x low z low, x high z high, x low z high, x high z low
+        north y low z low, y high z high, y high z low, y low z high
+        south y low z high, y high z low, y high z high, y low z low
+        east x high y low, x low y high, x high y high, x low y low
+        west x low y low, x high y high, x low y high, x high y low
+         */
+
         private Tessellator() {
             this.vboID = CosmicEvolution.instance.renderEngine.createBuffers();
             this.eboID = CosmicEvolution.instance.renderEngine.createBuffers();
@@ -468,10 +488,10 @@ public final class RenderEngine {
                 colorValue = 0;
             }
 
-            final float red = ((colorValue >> 16) & 255) / 255f;
-            final float green = ((colorValue >> 8) & 255) / 255f;
-            final float blue = (colorValue & 255) / 255f;
-            final float alpha = alphaValue / 255f;
+            final float red = MathUtil.intToFloatRGBA((colorValue >> 16) & 255);
+            final float green = MathUtil.intToFloatRGBA((colorValue >> 8) & 255);
+            final float blue = MathUtil.intToFloatRGBA(colorValue & 255);
+            final float alpha = MathUtil.intToFloatRGBA(alphaValue);
 
             this.vertexBuffer.put(x);
             this.vertexBuffer.put(y);
@@ -493,9 +513,9 @@ public final class RenderEngine {
                 colorValue = 0;
             }
 
-            final float red = ((colorValue >> 16) & 255) / 255f;
-            final float green = ((colorValue >> 8) & 255) / 255f;
-            final float blue = (colorValue & 255) / 255f;
+            final float red = MathUtil.intToFloatRGBA((colorValue >> 16) & 255);
+            final float green = MathUtil.intToFloatRGBA((colorValue >> 8) & 255);
+            final float blue = MathUtil.intToFloatRGBA(colorValue & 255);
             final float alpha = 1f;
 
             this.vertexBuffer.put(x);
@@ -536,9 +556,9 @@ public final class RenderEngine {
                 colorValue = 0;
             }
 
-            final float red = ((colorValue >> 16) & 255) / 255f;
-            final float green = ((colorValue >> 8) & 255) / 255f;
-            final float blue = (colorValue & 255) / 255f;
+            final float red = MathUtil.intToFloatRGBA((colorValue >> 16) & 255);
+            final float green = MathUtil.intToFloatRGBA((colorValue >> 8) & 255);
+            final float blue = MathUtil.intToFloatRGBA(colorValue & 255);
             final float alpha = 1f;
 
             this.vertexBuffer.put(x);
@@ -592,9 +612,9 @@ public final class RenderEngine {
                 colorValue = 0;
             }
 
-            final float red = ((colorValue >> 16) & 255) / 255f;
-            final float green = ((colorValue >> 8) & 255) / 255f;
-            final float blue = (colorValue & 255) / 255f;
+            final float red = MathUtil.intToFloatRGBA((colorValue >> 16) & 255);
+            final float green = MathUtil.intToFloatRGBA((colorValue >> 8) & 255);
+            final float blue = MathUtil.intToFloatRGBA(colorValue & 255);
             final float alpha = 1f;
 
             float[] texCoords = this.texCoords(corner);
@@ -618,9 +638,9 @@ public final class RenderEngine {
                 colorValue = 0;
             }
 
-            final float red = ((colorValue >> 16) & 255) / 255f;
-            final float green = ((colorValue >> 8) & 255) / 255f;
-            final float blue = (colorValue & 255) / 255f;
+            final float red = MathUtil.intToFloatRGBA((colorValue >> 16) & 255);
+            final float green = MathUtil.intToFloatRGBA((colorValue >> 8) & 255);
+            final float blue = MathUtil.intToFloatRGBA(colorValue & 255);
             final float alpha = 1f;
 
             float[] texCoords = this.texCoords(corner);
@@ -882,7 +902,7 @@ public final class RenderEngine {
 
     //All vertices within this class are assumed to use vertex normals and the skylighting values for lighting, block lighting is encoded within the color values in the vertex buffer
     public static final class WorldTessellator {
-        public static final WorldTessellator instance = new WorldTessellator(8192);
+        public static final WorldTessellator instance = new WorldTessellator(1048576);
         public FloatBuffer vertexBuffer;
         public IntBuffer elementBuffer;
         private int elementOffset = 0;
@@ -949,9 +969,9 @@ public final class RenderEngine {
             }
 
 
-            final float red = ((colorValue >> 16) & 255) / 255f;
-            final float green = ((colorValue >> 8) & 255) / 255f;
-            final float blue = (colorValue & 255) / 255f;
+            final float red = MathUtil.intToFloatRGBA((colorValue >> 16) & 255);
+            final float green = MathUtil.intToFloatRGBA((colorValue >> 8) & 255);
+            final float blue = MathUtil.intToFloatRGBA(colorValue & 255);
             final float alpha = 1f;
 
             this.vertexBuffer.put(x);
@@ -970,7 +990,7 @@ public final class RenderEngine {
             this.vertexBuffer.put(skyLightValue);
         }
 
-        public void addVertex2DTexture(int colorValue, float x, float y, float z, int corner, float normalX, float normalY, float normalZ, float skyLightValue){
+        public void addVertex2DTexture(int colorValue, float x, float y, float z, int corner, float normalX, float normalY, float normalZ, float skyLightValue, int alphaValue){
             if(colorValue > 16777215){
                 colorValue = 16777215;
             }
@@ -978,10 +998,10 @@ public final class RenderEngine {
                 colorValue = 0;
             }
 
-            final float red = ((colorValue >> 16) & 255) / 255f;
-            final float green = ((colorValue >> 8) & 255) / 255f;
-            final float blue = (colorValue & 255) / 255f;
-            final float alpha = 1f;
+            final float red = MathUtil.intToFloatRGBA((colorValue >> 16) & 255);
+            final float green = MathUtil.intToFloatRGBA((colorValue >> 8) & 255);
+            final float blue = MathUtil.intToFloatRGBA(colorValue & 255);
+            final float alpha = MathUtil.intToFloatRGBA(alphaValue);
 
             this.vertexBuffer.put(x);
             this.vertexBuffer.put(y);
@@ -1024,9 +1044,9 @@ public final class RenderEngine {
                 colorValue = 0;
             }
 
-            final float red = ((colorValue >> 16) & 255) / 255f;
-            final float green = ((colorValue >> 8) & 255) / 255f;
-            final float blue = (colorValue & 255) / 255f;
+            final float red = MathUtil.intToFloatRGBA((colorValue >> 16) & 255);
+            final float green = MathUtil.intToFloatRGBA((colorValue >> 8) & 255);
+            final float blue = MathUtil.intToFloatRGBA(colorValue & 255);
             final float alpha = 1f;
 
             this.vertexBuffer.put(x);
@@ -1071,9 +1091,9 @@ public final class RenderEngine {
             }
 
 
-            final float red = ((colorValue >> 16) & 255) / 255f;
-            final float green = ((colorValue >> 8) & 255) / 255f;
-            final float blue = (colorValue & 255) / 255f;
+            final float red = MathUtil.intToFloatRGBA((colorValue >> 16) & 255);
+            final float green = MathUtil.intToFloatRGBA((colorValue >> 8) & 255);
+            final float blue = MathUtil.intToFloatRGBA(colorValue & 255);
             final float alpha = 1f;
 
             this.vertexBuffer.put(x);
@@ -1097,9 +1117,9 @@ public final class RenderEngine {
                 colorValue = 0;
             }
 
-            final float red = ((colorValue >> 16) & 255) / 255f;
-            final float green = ((colorValue >> 8) & 255) / 255f;
-            final float blue = (colorValue & 255) / 255f;
+            final float red = MathUtil.intToFloatRGBA((colorValue >> 16) & 255);
+            final float green = MathUtil.intToFloatRGBA((colorValue >> 8) & 255);
+            final float blue = MathUtil.intToFloatRGBA(colorValue & 255);
             final float alpha = 1f;
 
 
@@ -1129,9 +1149,9 @@ public final class RenderEngine {
             }
 
 
-            final float red = ((colorValue >> 16) & 255) / 255f;
-            final float green = ((colorValue >> 8) & 255) / 255f;
-            final float blue = (colorValue & 255) / 255f;
+            final float red = MathUtil.intToFloatRGBA((colorValue >> 16) & 255);
+            final float green = MathUtil.intToFloatRGBA((colorValue >> 8) & 255);
+            final float blue = MathUtil.intToFloatRGBA(colorValue & 255);
             final float alpha = 1f;
 
             float[] texCoords = this.texCoords(corner);
@@ -1255,7 +1275,6 @@ public final class RenderEngine {
             shader.uploadInt("uTexture", 0);
             GL46.glEnable(GL46.GL_ALPHA_TEST);
             GL46.glAlphaFunc(GL46.GL_GREATER, 0.1F);
-            //bind the VAO being used
 
 
 

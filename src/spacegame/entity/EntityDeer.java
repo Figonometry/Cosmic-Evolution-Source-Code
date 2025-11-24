@@ -41,7 +41,7 @@ public final class EntityDeer extends EntityLiving {
 
 
     public static void loadTexture(){
-        texture = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/entity/deer.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        texture = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/entity/deer.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
     }
 
     @Override

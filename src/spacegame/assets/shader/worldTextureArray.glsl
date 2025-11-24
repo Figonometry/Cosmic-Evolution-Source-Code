@@ -40,7 +40,11 @@ vec4 performLightingNormals(vec4 skyLightColor, vec3 vertexNormal){
 
     if (performNormals){
         if (angleCos < perpendicular){
-            skyLightColor *= shaded;
+            baseLight -= 0.5;
+            shadeFactor = 0.25;
+            baseLight -= (shadeFactor * (-angleCos));
+            baseLight = clamp(baseLight, 0.1, 1.0);
+            skyLightColor *= baseLight;
         } else {
             baseLight -= (shadeFactor * (1.0 - angleCos));
             baseLight = clamp(baseLight, 0.1, 1.0);

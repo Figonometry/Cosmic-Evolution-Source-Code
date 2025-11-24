@@ -14,28 +14,28 @@ public final class BlockReedGrowing extends Block implements ITimeUpdate {
 
         switch (this.ID){
             case 113 -> {
-                world.setBlockWithNotify(x,y,z, Block.reedGrowth1.ID);
+                world.setBlockWithNotify(x,y,z, Block.reedGrowth1.ID, false);
                 world.updateTimeEventTime(x,y,z, CosmicEvolution.instance.save.time + this.getUpdateTime());
             }
             case 114 -> {
-                world.setBlockWithNotify(x,y,z, Block.reedGrowth2.ID);
+                world.setBlockWithNotify(x,y,z, Block.reedGrowth2.ID, false);
                 world.updateTimeEventTime(x,y,z, CosmicEvolution.instance.save.time + this.getUpdateTime());
             }
             case 115 -> {
-                world.setBlockWithNotify(x,y,z, Block.reedGrowth3.ID);
+                world.setBlockWithNotify(x,y,z, Block.reedGrowth3.ID, false);
                 world.updateTimeEventTime(x,y,z, CosmicEvolution.instance.save.time + this.getUpdateTime());
             }
             case 116 -> {
-                world.setBlockWithNotify(x,y,z, Block.reedGrowth4.ID);
+                world.setBlockWithNotify(x,y,z, Block.reedGrowth4.ID, false);
                 world.updateTimeEventTime(x,y,z, CosmicEvolution.instance.save.time + this.getUpdateTime());
             }
             case 117 -> {
-                world.setBlockWithNotify(x,y,z, Block.reedGrowth5.ID);
+                world.setBlockWithNotify(x,y,z, Block.reedGrowth5.ID, false);
                 world.updateTimeEventTime(x,y,z, CosmicEvolution.instance.save.time + this.getUpdateTime());
             }
             case 118 -> {
-                world.setBlockWithNotify(x,y,z, Block.reedLower.ID);
-                world.setBlockWithNotify(x,y + 1,z, Block.reedUpper.ID);
+                world.setBlockWithNotify(x,y,z, Block.reedLower.ID, false);
+                world.setBlockWithNotify(x,y + 1,z, Block.reedUpper.ID, false);
                 world.removeTimeEvent(x,y,z);
             }
         }
@@ -65,7 +65,7 @@ public final class BlockReedGrowing extends Block implements ITimeUpdate {
 
     @Override
     public long getUpdateTime() {
-        return Timer.DAY;
+        return Timer.GAME_DAY;
     }
 
     @Override

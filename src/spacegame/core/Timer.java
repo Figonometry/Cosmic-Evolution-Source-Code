@@ -9,9 +9,13 @@ public final class Timer {
     private float ticksPerSecond;
     public static long elapsedTime = 0L;
     public static long elapseFrames = 0L;
-    public static final long DAY = 216000;
-    public static final long HOUR = DAY / 24;
-    public static final long MINUTE = HOUR / 60;
+    public static final long GAME_DAY = 216000;
+    public static final long GAME_HOUR = GAME_DAY / 24;
+    public static final long GAME_MINUTE = GAME_HOUR / 60;
+    public static final long REAL_SECOND = 60;
+    public static final long REAL_MINUTE = REAL_SECOND * 60;
+    public static final long REAL_HOUR = REAL_MINUTE * 60;
+    public static final long REAL_DAY  = REAL_HOUR * 24;
     private long lastTime;
     public int ticks;
     public float a;

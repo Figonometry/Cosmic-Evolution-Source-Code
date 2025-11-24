@@ -12,6 +12,7 @@ import spacegame.item.Item;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.render.*;
+import spacegame.world.weather.Cloud;
 import spacegame.world.Save;
 import spacegame.world.Tech;
 
@@ -31,7 +32,7 @@ public class Button {
     public String name;
     private Gui Gui;
     private CosmicEvolution ce;
-    public static int buttonTextureLoader = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/button.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+    public static int buttonTextureLoader = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/button.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
     public static TextureAtlas buttonTextureAtlas = CosmicEvolution.instance.renderEngine.createTextureAtlas(256,256, 256, 64, 3, 0);
 
 
@@ -212,6 +213,8 @@ public class Button {
                 this.ce.save = null;
                 this.ce.setNewGui(new GuiMainMenu(this.ce));
                 CosmicEvolution.setGLClearColor(0,0,0,0);
+                CosmicEvolution.instance.renderEngine.deleteTexture(Cloud.texture);
+                CosmicEvolution.instance.renderEngine.deleteTexture(RenderWorldScene.rainTexture);
             }
             case SAVE_1 -> {
                 if(this.clicked) {
@@ -404,7 +407,7 @@ public class Button {
                     int y = ((GuiCraftingStoneTools) this.Gui).y;
                     int z = ((GuiCraftingStoneTools) this.Gui).z;
                     short outputItem = ((GuiCraftingStoneTools) this.Gui).outputItemID;
-                    this.ce.save.activeWorld.setBlockWithNotify(x,y,z, Block.air.ID);
+                    this.ce.save.activeWorld.setBlockWithNotify(x,y,z, Block.air.ID, false);
                     this.ce.save.activeWorld.addEntity(new EntityItem(x + 0.5, y + 0.5, z + 0.5, outputItem, Item.NULL_ITEM_METADATA, (byte) 1, Item.list[outputItem].durability));
 
                     for(int i = 0; i < ((GuiCraftingStoneTools) this.Gui).activeRecipe.requiredItemCount.length; i++){
@@ -423,7 +426,7 @@ public class Button {
                     int z = ((GuiCraftingPottery) this.Gui).z;
                     short outputItem = ((GuiCraftingPottery) this.Gui).outputItemID;
                     short outputBlockID = ((GuiCraftingPottery)this.Gui).outputBlockID;
-                    this.ce.save.activeWorld.setBlockWithNotify(x,y,z, Block.air.ID);
+                    this.ce.save.activeWorld.setBlockWithNotify(x,y,z, Block.air.ID, false);
                     if(outputItem == Item.block.ID){
                         this.ce.save.activeWorld.addEntity(new EntityBlock(x + 0.5, y + 0.5, z + 0.5, outputBlockID, (byte)1));
                     } else {
@@ -521,7 +524,7 @@ public class Button {
         this.drawCenteredString();
 
         if((this.name.equals(EnumButtonEffects.SINGLE_PLAYER.name()) || this.name.equals(EnumButtonEffects.QUIT_GAME.name())) && this.active && this.isMouseHoveredOver() || this.name.equals(EnumButtonEffects.SETTINGS.name()) && this.active && this.isMouseHoveredOver() && this.Gui instanceof GuiMainMenu){
-            int texture = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/star.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+            int texture = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/star.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
             tessellator.toggleOrtho();
             tessellator.addVertex2DTexture(16711680,this.x - 350, this.y - 50, -10,3);
             tessellator.addVertex2DTexture(16711680,this.x - 250, this.y + 50, -10,1);
@@ -534,7 +537,7 @@ public class Button {
         }
 
         if(this.name.equals(EnumButtonEffects.BUG_REPORT.name())){
-            int wrench = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/wrench.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+            int wrench = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/wrench.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
             tessellator.toggleOrtho();
             tessellator.addVertex2DTexture(16777215,this.x - 30, this.y - 30, -9,3);
             tessellator.addVertex2DTexture(16777215,this.x + 30, this.y + 30, -9,1);
@@ -547,7 +550,7 @@ public class Button {
         }
 
         if(this.name.equals(EnumButtonEffects.INFORMATION.name())){
-            int info = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/info.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+            int info = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/info.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
             tessellator.toggleOrtho();
             tessellator.addVertex2DTexture(16711680,this.x - 30, this.y - 30, -9,3);
             tessellator.addVertex2DTexture(16711680,this.x + 30, this.y + 30, -9,1);

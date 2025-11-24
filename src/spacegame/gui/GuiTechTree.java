@@ -63,13 +63,13 @@ public final class GuiTechTree extends Gui {
 
     @Override
     public void loadTextures() {
-        this.techBlock = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiTechTree/techBlock.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        this.line = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiTechTree/line.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        this.transparentBackground = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.techBlock = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiTechTree/techBlock.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
+        this.line = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiTechTree/line.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
+        this.transparentBackground = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
         switch (this.eraDisplayed){
             case Tech.NEOLITHIC_ERA -> {
-                this.background = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiTechTree/neolithicBackGround.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-                this.treeArea = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiTechTree/clayTexture.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+                this.background = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiTechTree/neolithicBackGround.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
+                this.treeArea = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiTechTree/clayTexture.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
             }
         }
     }

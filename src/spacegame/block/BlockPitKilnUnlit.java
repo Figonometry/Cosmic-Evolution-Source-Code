@@ -27,9 +27,9 @@ public class BlockPitKilnUnlit extends BlockContainer {
             if(playerHeldItem == Item.straw.ID){ //Adds straw
                 switch (this.ID) {
                     case 74, 75, 76, 77, 78, 79, 80 -> {
-                        world.setBlockWithNotify(x, y, z, (short) (this.ID + 1));
+                        world.setBlockWithNotify(x, y, z, (short) (this.ID + 1), false);
                         player.removeItemFromInventory();
-                        CosmicEvolution.instance.soundPlayer.playSound(x, y, z, new Sound(Sound.grass, false), new Random().nextFloat(0.6F, 1));
+                        CosmicEvolution.instance.soundPlayer.playSound(x, y, z, new Sound(Sound.grass, false, 1f), new Random().nextFloat(0.6F, 1));
                     }
                 }
             }
@@ -37,14 +37,14 @@ public class BlockPitKilnUnlit extends BlockContainer {
             if(playerHeldItem == Item.fireWood.ID){ //Adds logs
                 switch (this.ID) {
                     case 81 -> {
-                        world.setBlockWithNotify(x, y, z, Block.pitKilnUnlitLog1.ID);
+                        world.setBlockWithNotify(x, y, z, Block.pitKilnUnlitLog1.ID, false);
                         player.removeItemFromInventory();
-                        CosmicEvolution.instance.soundPlayer.playSound(x, y, z, new Sound(Sound.wood, false), new Random().nextFloat(0.6F, 1));
+                        CosmicEvolution.instance.soundPlayer.playSound(x, y, z, new Sound(Sound.wood, false, 1f), new Random().nextFloat(0.6F, 1));
                     }
                     case 95, 96, 97 -> {
-                        world.setBlockWithNotify(x, y, z, (short) (this.ID + 1));
+                        world.setBlockWithNotify(x, y, z, (short) (this.ID + 1), false);
                         player.removeItemFromInventory();
-                        CosmicEvolution.instance.soundPlayer.playSound(x, y, z, new Sound(Sound.wood, false), new Random().nextFloat(0.6F, 1));
+                        CosmicEvolution.instance.soundPlayer.playSound(x, y, z, new Sound(Sound.wood, false, 1f), new Random().nextFloat(0.6F, 1));
                     }
                 }
             }
@@ -54,7 +54,7 @@ public class BlockPitKilnUnlit extends BlockContainer {
 
 
         if(this.ID == Block.pitKilnUnlit.ID && playerHeldItem == Item.torch.ID && KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT)){
-            world.setBlockWithNotify(x,y,z, Block.pitKilnLit.ID);
+            world.setBlockWithNotify(x,y,z, Block.pitKilnLit.ID, false);
 
             world.addTimeEvent(x,y,z, CosmicEvolution.instance.save.time + ((ITimeUpdate) Block.pitKilnLit).getUpdateTime());
 

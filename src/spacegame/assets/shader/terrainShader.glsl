@@ -19,6 +19,9 @@ uniform vec4 lightColor;
 uniform bool performNormals;
 uniform bool wavyWater;
 uniform bool wavyLeaves;
+uniform bool windy;
+uniform float windDirection;
+uniform float windIntensity;
 
 out vec4 fColor;
 out vec2 fTexCoords;
@@ -26,6 +29,7 @@ out float fTexId;
 out vec4 fragPosInLightSpace;
 out vec3 fragPosInWorldSpace;
 flat out int isInShadowRange;
+flat out vec3 chunkOffsets;
 out vec3 fPlayerPositionInChunk;
 
 float sinX(float x, float y, float z){
@@ -112,24 +116,22 @@ vec4 performLightingNormals(vec4 skyLightColor, vec3 vertexNormal){
     vertexNormal = normalize(vertexNormal);
     float angleCos = dot(vertexNormal, normalizedLightVector);
 
-    float baseLight = baseLight;
-    float shadeFactor = 0.5 * baseLight;//50% of the baseLight
-    float shaded = 0.5 * baseLight;//Fully shaded is a reduction of 50% of the baseLight
+    float lightVal = baseLight;
+    float shadeFactor = 0.25 * lightVal;//50% of the baseLight
     float perpendicular = 0;
 
-    shadeFactor= clamp(shadeFactor, 0.1, 1.0);
-    shaded = clamp(shaded, 0.1, 1.0);
+    shadeFactor = clamp(shadeFactor, 0.1, 1.0);
 
-    if (performNormals){
-        if (angleCos < perpendicular){
-            skyLightColor *= shaded;
-        } else {
-            baseLight -= (shadeFactor * (1.0 - angleCos));
-            baseLight = clamp(baseLight, 0.1, 1.0);
-            skyLightColor *= baseLight;
-        }
+    if (angleCos < perpendicular){
+        lightVal -= 0.25;
+        shadeFactor = 0.125;
+        lightVal -= (shadeFactor * (-angleCos));
+        lightVal = clamp(lightVal, 0.1, 1.0);
+        skyLightColor *= lightVal;
     } else {
-        skyLightColor *= shaded;
+        lightVal -= (shadeFactor * (1.0 - angleCos));
+        lightVal = clamp(lightVal, 0.1, 1.0);
+        skyLightColor *= lightVal;
     }
 
     skyLightColor *= lightColor;
@@ -217,6 +219,18 @@ vec4 setFinalColor(vec4 skyLightColor, vec4 vertexColor){
     //This code should only run when doing any kind of grayscale coloring, this is worthless to do on dirt stone snow, etc.
 }
 
+vec3 windyGrass(vec3 vertexPos){
+    if(fTexCoords.y == 1)return vertexPos;
+
+    float xMove = sin(windDirection - (0.5 * 3.14159)) * (0.5f * windIntensity);
+    float zMove = sin(windDirection - 3.14159) * (0.5f * windIntensity);
+
+    vertexPos.x += xMove;
+    vertexPos.z += zMove;
+
+    return vertexPos;
+}
+
 void main()
 {
     vec4 color = decompressColor(aColor);
@@ -263,6 +277,12 @@ void main()
     fPlayerPositionInChunk = playerPositionInChunk;
     fragPosInWorldSpace = correctPos;
 
+    chunkOffsets = chunkOffset;
+
+    if(windy && int(fTexId) == 30){
+        correctPos = windyGrass(correctPos);
+    }
+
     fragPosInLightSpace = vec4(lightViewProjectionMatrix * vec4(correctPosRelativeToSun, 1.0));
     gl_Position = vec4(uProjection * uView * vec4(correctPos, 1.0));
 }
@@ -278,6 +298,7 @@ in vec4 fragPosInLightSpace;
 flat in int isInShadowRange;
 in vec3 fragPosInWorldSpace;
 in vec3 fPlayerPositionInChunk;
+flat in vec3 chunkOffsets;
 
 uniform sampler2DArray textureArray;
 uniform sampler2D shadowMap;
@@ -286,6 +307,9 @@ uniform float fogDistance;
 uniform bool underwater;
 uniform bool renderShadows;
 uniform bool shadowMapSetting;
+uniform bool raining;
+uniform double playerAbsoluteHeight;
+uniform float rainFogFactor;
 
 uniform float fogRed;
 uniform float fogGreen;
@@ -297,13 +321,69 @@ vec4 setFog(vec4 color){
     float fogStart = (fogDistance - 128);
     float fogEnd = (fogDistance - 64);
     float distanceFromPlayer = distance(fragPosInWorldSpace, fPlayerPositionInChunk);
-    if(distanceFromPlayer > fogStart){
-        float fogDepth = ((distanceFromPlayer - fogStart) / fogEnd);
+    float fogDepth;
+
+    if (raining && (fragPosInWorldSpace.y) < 10){
+        float rainFog = rainFogFactor;
+        if(rainFog < 0){
+            rainFog = 0;
+        }
+        if(rainFog > 0.75f){
+            rainFog = 0.75f;
+        }
+
+        float distance = distance(fragPosInWorldSpace.y, fPlayerPositionInChunk.y);
+        float distanceThreshold = float(playerAbsoluteHeight) - 10;
+        if (distance > distanceThreshold){
+            float thresholdDif = distance - distanceThreshold;
+            if (playerAbsoluteHeight < 10){
+                if(fragPosInWorldSpace.y > playerAbsoluteHeight){
+                    distance *= -1;
+                    distanceThreshold = float(playerAbsoluteHeight) - 10;
+                    thresholdDif = distance - distanceThreshold;
+                }
+                fogDepth += rainFog - (rainFog * ((10 - thresholdDif) / 10.0));
+            } else {
+                fogDepth += rainFog - (rainFog * ((10 - thresholdDif) / 10.0));
+            }
+        }
+    } else if(raining == false && rainFogFactor >= 0 && rainFogFactor <= 0.75f){
+        float rainFog = rainFogFactor;
+        if(rainFog < 0){
+            rainFog = 0;
+        }
+        if(rainFog > 0.75f){
+            rainFog = 0.75f;
+        }
+
+        float distance = distance(fragPosInWorldSpace.y, fPlayerPositionInChunk.y);
+        float distanceThreshold = float(playerAbsoluteHeight) - 10;
+        if (distance > distanceThreshold){
+            float thresholdDif = distance - distanceThreshold;
+            if (playerAbsoluteHeight < 10){
+                if(fragPosInWorldSpace.y > playerAbsoluteHeight){
+                    distance *= -1;
+                    distanceThreshold = float(playerAbsoluteHeight) - 10;
+                    thresholdDif = distance - distanceThreshold;
+                }
+                fogDepth += rainFog - (rainFog * ((10 - thresholdDif) / 10.0));
+            } else {
+                fogDepth += rainFog - (rainFog * ((10 - thresholdDif) / 10.0));
+            }
+        }
+    }
+
+    if (distanceFromPlayer > fogStart){
+        fogDepth += ((distanceFromPlayer - fogStart) / fogEnd);
+    }
+
+    if (distanceFromPlayer > fogStart || (raining && fragPosInWorldSpace.y < 10)){
         fogDepth = clamp(fogDepth, 0.0, 0.99);
         color.x -= (color.x - fogRed) * ((fogDepth));
         color.y -= (color.y - fogGreen) * ((fogDepth));
         color.z -= (color.z - fogBlue) * ((fogDepth));
     }
+
     return color;
 }
 
@@ -355,6 +435,10 @@ void main()
             }
         }
     }
+
+
+
+
    // float maxDynamicLightDistance = 16.0;
    // float distanceFromPlayer = distance(fragPosInWorldSpace, fPlayerPositionInChunk);
    // if(distanceFromPlayer < maxDynamicLightDistance){

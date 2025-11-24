@@ -30,7 +30,7 @@ public final class BlockBrickPile extends BlockPile {
             chest.inventory.itemStacks[0].count++;
             player.removeItemFromInventory();
             KeyListener.setKeyReleased(GLFW.GLFW_KEY_LEFT_SHIFT);
-            CosmicEvolution.instance.soundPlayer.playSound(x, y, z, new Sound(playerHeldItem == Item.rawClayAdobeBrick.ID ? Sound.clay : Sound.stone, false), new Random().nextFloat(0.6F, 1));
+            CosmicEvolution.instance.soundPlayer.playSound(x, y, z, new Sound(playerHeldItem == Item.rawClayAdobeBrick.ID ? Sound.clay : Sound.stone, false, 1f), new Random().nextFloat(0.6F, 1));
             world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).notifyBlock(x,y,z);
             return;
         }
@@ -39,7 +39,7 @@ public final class BlockBrickPile extends BlockPile {
             ChestLocation chest = world.getChestLocation(x,y,z);
             chest.inventory.itemStacks[0].count--;
             KeyListener.setKeyReleased(GLFW.GLFW_KEY_LEFT_SHIFT);
-            CosmicEvolution.instance.soundPlayer.playSound(x, y, z, new Sound( chest.inventory.itemStacks[0].item.ID == Item.rawClayAdobeBrick.ID ? Sound.clay : Sound.stone, false), new Random().nextFloat(0.6F, 1));
+            CosmicEvolution.instance.soundPlayer.playSound(x, y, z, new Sound( chest.inventory.itemStacks[0].item.ID == Item.rawClayAdobeBrick.ID ? Sound.clay : Sound.stone, false, 1f), new Random().nextFloat(0.6F, 1));
 
             if(chest.inventory.itemStacks[0].count <= 0){
                 chest.inventory.itemStacks[0].item = null;
@@ -47,7 +47,7 @@ public final class BlockBrickPile extends BlockPile {
                 chest.inventory.itemStacks[0].metadata = Item.NULL_ITEM_METADATA;
                 chest.inventory.itemStacks[0].durability = Item.NULL_ITEM_DURABILITY;
                 world.removeChestLocation(x,y,z);
-                world.setBlockWithNotify(x,y,z, Block.air.ID);
+                world.setBlockWithNotify(x,y,z, Block.air.ID, false);
             }
 
             world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).notifyBlock(x,y,z);
@@ -60,7 +60,7 @@ public final class BlockBrickPile extends BlockPile {
             if(chestLocation.inventory.itemStacks[0].item.ID == Item.firedRedClayAdobeBrick.ID && chestLocation.inventory.itemStacks[0].count == 8){
                 world.clearChestLocation(x,y,z);
                 world.removeChestLocation(x,y,z);
-                world.setBlockWithNotify(x,y,z, Block.air.ID);
+                world.setBlockWithNotify(x,y,z, Block.air.ID, false);
                 world.addEntity(new EntityBlock(x + 0.5, y + 0.5, z + 0.5, Block.adobeBrick.ID, (byte)2));
                 player.removeItemFromInventory();
                 return;

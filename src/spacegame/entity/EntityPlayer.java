@@ -54,6 +54,7 @@ public final class EntityPlayer extends EntityLiving {
     public byte inventoryUpgradeLevel = 1;
     public float hardnessThreshold = 0.1f;
     public short blockIDPlayerLookingAt;
+    public int rainSoundState; //1 is in room, 2 is under tree, 3 is outside
     public int spawnX;
     public int spawnY;
     public int spawnZ;
@@ -614,11 +615,11 @@ public final class EntityPlayer extends EntityLiving {
         }
 
         if(this.inWater && !this.prevInWater){
-            CosmicEvolution.instance.soundPlayer.playSound(this.x, this.y - 2 ,this.z, new Sound(Sound.waterSplash, false), new Random().nextFloat(0.4F, 0.7F));
+            CosmicEvolution.instance.soundPlayer.playSound(this.x, this.y - 2 ,this.z, new Sound(Sound.waterSplash, false, 1f), new Random().nextFloat(0.4F, 0.7F));
         }
 
         if(this.prevBlockUnderPlayer != this.blockUnderPlayer){
-            CosmicEvolution.instance.soundPlayer.playSound(this.x, this.y - 2 ,this.z, new Sound(Block.list[this.blockUnderPlayer].getStepSound(MathUtil.floorDouble(this.x), MathUtil.floorDouble(this.y - (this.height/2) - 0.1), MathUtil.floorDouble(this.z)), false), new Random().nextFloat(0.4F, 0.7F));
+            CosmicEvolution.instance.soundPlayer.playSound(this.x, this.y - 2 ,this.z, new Sound(Block.list[this.blockUnderPlayer].getStepSound(MathUtil.floorDouble(this.x), MathUtil.floorDouble(this.y - (this.height/2) - 0.1), MathUtil.floorDouble(this.z)), false, 1f), new Random().nextFloat(0.4F, 0.7F));
         }
 
         this.damageTimer--;
@@ -744,7 +745,7 @@ public final class EntityPlayer extends EntityLiving {
         if(this.lastYOnGround - this.y > 3){
             this.health -= this.lastYOnGround - this.y;
             this.runDamageTilt = true;
-            CosmicEvolution.instance.soundPlayer.playSound(this.x, this.y, this.z, new Sound(Sound.fallDamage, false), new Random().nextFloat(0.4F, 0.7F));
+            CosmicEvolution.instance.soundPlayer.playSound(this.x, this.y, this.z, new Sound(Sound.fallDamage, false, 1f), new Random().nextFloat(0.4F, 0.7F));
         }
     }
 
@@ -864,10 +865,10 @@ public final class EntityPlayer extends EntityLiving {
             Vector3f chunkOffset = new Vector3f(0,0,0);
             Shader.worldShader2DTexture.uploadVec3f("chunkOffset", chunkOffset);
             RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
-            tessellator.addVertex2DTexture(16777215, (float) ((this.x % 32) + (this.width / 1.5)), (float) ((this.y % 32) - (this.height/2) + 0.01F), (float) ((this.z % 32) - (this.width / 1.5)), 3);
-            tessellator.addVertex2DTexture(16777215, (float) ((this.x % 32) - (this.width / 1.5)), (float) ((this.y % 32) - (this.height/2) + 0.01F), (float) ((this.z % 32) + (this.width / 1.5)), 1);
-            tessellator.addVertex2DTexture(16777215, (float) ((this.x % 32) + (this.width / 1.5)), (float) ((this.y % 32) - (this.height/2) + 0.01F), (float) ((this.z % 32) + (this.width / 1.5)), 2);
-            tessellator.addVertex2DTexture(16777215, (float) ((this.x % 32) - (this.width / 1.5)), (float) ((this.y % 32) - (this.height/2) + 0.01F), (float) ((this.z % 32) - (this.width / 1.5)), 0);
+            tessellator.addVertex2DTexture(16777215, (float) ((MathUtil.positiveMod(this.x, 32)) + (this.width / 1.5)), (float) ((MathUtil.positiveMod(this.y, 32)) - (this.height/2) + 0.01F), (float) ((MathUtil.positiveMod(this.z, 32)) - (this.width / 1.5)), 3);
+            tessellator.addVertex2DTexture(16777215, (float) ((MathUtil.positiveMod(this.x, 32)) - (this.width / 1.5)), (float) ((MathUtil.positiveMod(this.y, 32)) - (this.height/2) + 0.01F), (float) ((MathUtil.positiveMod(this.z, 32)) + (this.width / 1.5)), 1);
+            tessellator.addVertex2DTexture(16777215, (float) ((MathUtil.positiveMod(this.x, 32)) + (this.width / 1.5)), (float) ((MathUtil.positiveMod(this.y, 32)) - (this.height/2) + 0.01F), (float) ((MathUtil.positiveMod(this.z, 32)) + (this.width / 1.5)), 2);
+            tessellator.addVertex2DTexture(16777215, (float) ((MathUtil.positiveMod(this.x, 32)) - (this.width / 1.5)), (float) ((MathUtil.positiveMod(this.y, 32)) - (this.height/2) + 0.01F), (float) ((MathUtil.positiveMod(this.z, 32)) - (this.width / 1.5)), 0);
             tessellator.addElements();
             GL46.glEnable(GL46.GL_BLEND);
             GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
@@ -899,7 +900,7 @@ public final class EntityPlayer extends EntityLiving {
         this.damageTimer = 30;
         this.roll = 0;
         this.canDamage = false;
-        CosmicEvolution.instance.soundPlayer.playSound(this.x, this.y, this.z, new Sound(Sound.fallDamage, false), new Random().nextFloat(0.4F, 0.7F));
+        CosmicEvolution.instance.soundPlayer.playSound(this.x, this.y, this.z, new Sound(Sound.fallDamage, false, 1f), new Random().nextFloat(0.4F, 0.7F));
     }
 
     @Override

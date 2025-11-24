@@ -471,7 +471,7 @@ public class Block {
                 world.clearChestLocation(x,y,z);
             }
             world.addChestLocation(x,y,z, kilnInventory);
-            world.setBlockWithNotify(x,y,z, Block.pitKilnUnlit1.ID);
+            world.setBlockWithNotify(x,y,z, Block.pitKilnUnlit1.ID, false);
             player.removeItemFromInventory();
             MouseListener.rightClickReleased = false;
         }
@@ -502,7 +502,7 @@ public class Block {
 
     public void onLeftClickWithNoSpecialFunctions(int x, int y, int z, World world, EntityPlayer player){
         if (!this.canBeBroken) {return;}
-        world.setBlockWithNotify(x, y, z, Block.air.ID);
+        world.setBlockWithNotify(x, y, z, Block.air.ID, true);
 
         if(this instanceof ITickable){
             world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).removeTickableBlockFromArray((short) Chunk.getBlockIndexFromCoordinates(x,y,z));
@@ -526,7 +526,7 @@ public class Block {
             }
         }
 
-        world.setBlockWithNotify(x, y, z, list[world.getBlockID(x,y,z)].waterlogged ? water.ID : air.ID);
+        world.setBlockWithNotify(x, y, z, list[world.getBlockID(x,y,z)].waterlogged ? water.ID : air.ID, true);
 
 
         if(this.isSolid) {
@@ -596,7 +596,7 @@ public class Block {
             world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).removeTickableBlockFromArray((short) Chunk.getBlockIndexFromCoordinates(x,y,z));
         }
 
-        CosmicEvolution.instance.soundPlayer.playSound(x, y, z, new Sound(this.getStepSound(x,y,z), false), new Random().nextFloat(0.6F, 1));
+        CosmicEvolution.instance.soundPlayer.playSound(x, y, z, new Sound(this.getStepSound(x,y,z), false, 1f), new Random().nextFloat(0.6F, 1));
         player.reduceHeldItemDurability();
     }
 
@@ -701,9 +701,9 @@ public class Block {
             }
         }
 
-        CosmicEvolution.instance.soundPlayer.playSound(x, y, z, new Sound(list[player.getHeldBlock()].stepSound, false), new Random().nextFloat(0.6F, 1));
+        CosmicEvolution.instance.soundPlayer.playSound(x, y, z, new Sound(list[player.getHeldBlock()].stepSound, false, 1f), new Random().nextFloat(0.6F, 1));
         player.removeItemFromInventory();
-        world.setBlockWithNotify(x, y, z, heldBlock);
+        world.setBlockWithNotify(x, y, z, heldBlock, true);
         player.isSwinging = true;
     }
 

@@ -77,11 +77,12 @@ public final class WorldEarth extends World {
     @Override
     public void saveWorld() {
         this.chunkController.saveAllRegions();
+        this.saveWeatherSystemsToFile();
     }
 
     @Override
     public void loadWorld() {
-
+        this.loadWeatherSystemsFromFile();
     }
 
     @Override
@@ -91,8 +92,11 @@ public final class WorldEarth extends World {
 
     public void tick() {
         this.chunkController.tick();
-        if(this.delayWhenExitingUI > 0) {
+        if (this.delayWhenExitingUI > 0) {
             this.delayWhenExitingUI--;
+        }
+        if(!this.paused) {
+            super.tick();
         }
     }
 

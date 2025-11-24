@@ -508,6 +508,7 @@ public final class ChunkController {
                 }
             }
         }
+
         ChunkColumnSkylightMap lightMap = new ChunkColumnSkylightMap(x,z);
         this.addColumnLightMap(lightMap);
         return lightMap;
@@ -610,6 +611,15 @@ public final class ChunkController {
         return true;
     }
 
+    private boolean doChunksExistInColumn(int x, int z){
+        for (int y = this.playerChunkY - GameSettings.chunkColumnHeight; y < this.playerChunkY + GameSettings.chunkColumnHeight; y++) {
+            if (this.doesChunkExitAtPos(x, y, z)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void addColumnLightMap(int x, int z) {
         for (int i = 0; i < this.columnLightMaps.length; i++) {
             if (this.columnLightMaps[i] == null) {
@@ -634,6 +644,7 @@ public final class ChunkController {
 
 
     public void loadChunkColumn(int x, int z) {
+        this.parentWorld.generateWeatherSystems(x,z);
         this.addColumnLightMap(x, z);
         for (int y = this.playerChunkY - GameSettings.chunkColumnHeight; y < this.playerChunkY + GameSettings.chunkColumnHeight; y++) {
             if (!this.doesChunkExitAtPos(x, y, z)) {
@@ -765,7 +776,7 @@ public final class ChunkController {
             }
         } else {
             if (!this.isChunkColumnFullyLoaded(this.generateChunksX, this.generateChunksZ)) {
-                this.addColumnLightMap(this.generateChunksX, this.generateChunksZ);
+                this.findChunkSkyLightMap(this.generateChunksX, this.generateChunksZ);
                 Thread thread = new Thread(new ThreadChunkColumnLoader(this.generateChunksX, this.generateChunksZ, this));
                 thread.setName("Chunk Column Loader Thread for X: " + this.generateChunksX + " Z: " + this.generateChunksZ);
                 thread.setPriority(1);
@@ -843,7 +854,7 @@ public final class ChunkController {
         for(int i = 0; i < this.columnLightMaps.length; i++){
             if(this.columnLightMaps[i] != null){
                 lightmap = this.columnLightMaps[i];
-                if(!this.isChunkColumnFullyLoaded(lightmap.x, lightmap.z)){
+                if(!this.doChunksExistInColumn(lightmap.x, lightmap.z)){
                     this.columnLightMaps[i] = null;
                 }
             }

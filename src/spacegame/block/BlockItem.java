@@ -29,7 +29,7 @@ public final class BlockItem extends BlockContainer {
                 chest.inventory.itemStacks[0].durability = Item.NULL_ITEM_DURABILITY;
                 chest.inventory.itemStacks[0].metadata = Item.NULL_ITEM_METADATA;
                 world.removeChestLocation(x,y,z);
-                world.setBlockWithNotify(x,y,z, Block.air.ID);
+                world.setBlockWithNotify(x,y,z, Block.air.ID, false);
             }
             return;
         }

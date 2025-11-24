@@ -14,27 +14,27 @@ public final class BlockBerryBushGrowing extends Block implements ITimeUpdate {
 
         switch (this.ID){
             case 107 ->{ //berry seed
-                world.setBlockWithNotify(x,y,z, Block.berryBushGrowth1.ID);
+                world.setBlockWithNotify(x,y,z, Block.berryBushGrowth1.ID, false);
                 world.updateTimeEventTime(x,y,z, CosmicEvolution.instance.save.time + this.getUpdateTime());
             }
             case 108 -> { //berry growth 1
-                world.setBlockWithNotify(x,y,z, Block.berryBushGrowth2.ID);
+                world.setBlockWithNotify(x,y,z, Block.berryBushGrowth2.ID, false);
                 world.updateTimeEventTime(x,y,z, CosmicEvolution.instance.save.time + this.getUpdateTime());
             }
             case 109 -> {//berry growth 2
-                world.setBlockWithNotify(x,y,z, Block.berryBushGrowth3.ID);
+                world.setBlockWithNotify(x,y,z, Block.berryBushGrowth3.ID, false);
                 world.updateTimeEventTime(x,y,z, CosmicEvolution.instance.save.time + this.getUpdateTime());
             }
             case 110 -> {//berry growth 3
-                world.setBlockWithNotify(x,y,z, Block.berryBushGrowth4.ID);
+                world.setBlockWithNotify(x,y,z, Block.berryBushGrowth4.ID, false);
                 world.updateTimeEventTime(x,y,z, CosmicEvolution.instance.save.time + this.getUpdateTime());
             }
             case 111 -> {//berry growth 4
-                world.setBlockWithNotify(x,y,z, Block.berryBushGrowth5.ID);
+                world.setBlockWithNotify(x,y,z, Block.berryBushGrowth5.ID, false);
                 world.updateTimeEventTime(x,y,z, CosmicEvolution.instance.save.time + this.getUpdateTime());
             }
             case 112 -> {
-                world.setBlockWithNotify(x,y,z, Block.berryBushNoBerries.ID);
+                world.setBlockWithNotify(x,y,z, Block.berryBushNoBerries.ID, false);
                 world.updateTimeEventTime(x,y,z, CosmicEvolution.instance.save.time + ((ITimeUpdate)Block.berryBushNoBerries).getUpdateTime());
             }
         }
@@ -64,7 +64,7 @@ public final class BlockBerryBushGrowing extends Block implements ITimeUpdate {
 
     @Override
     public long getUpdateTime() {
-        return Timer.DAY;
+        return Timer.GAME_DAY;
     }
 
     @Override

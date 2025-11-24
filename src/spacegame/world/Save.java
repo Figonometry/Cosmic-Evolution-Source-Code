@@ -174,6 +174,7 @@ public final class Save {
         this.activeWorld = world;
         this.activeWorld.skyLightLevel = this.savedSkyLightLevel;
         this.activeWorld.initNoiseMaps();
+        this.activeWorld.loadWorld();
     }
 
     public void handleLeftClick() {

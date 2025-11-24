@@ -17,6 +17,7 @@ import java.awt.*;
 public final class EntityParticle extends EntityNonLiving {
     public boolean useGravity;
     public boolean useLight;
+    public boolean despawnOnGroundContact;
     public int timer;
     public short associatedBlock;
     public int chunkX;
@@ -26,7 +27,7 @@ public final class EntityParticle extends EntityNonLiving {
     public float green;
     public float blue;
 
-    public EntityParticle(double x, double y, double z, boolean useGravity, int timer, short associatedBlock, boolean useLight){
+    public EntityParticle(double x, double y, double z, boolean useGravity, int timer, short associatedBlock, boolean useLight, boolean despawnOnGroundContact){
         this.x = x;
         this.y = y;
         this.z = z;
@@ -34,6 +35,9 @@ public final class EntityParticle extends EntityNonLiving {
         this.timer = timer;
         this.associatedBlock = associatedBlock;
         this.useLight = useLight;
+        this.despawnOnGroundContact = despawnOnGroundContact;
+        this.speed = 0.05f;
+        this.acceleration = 0.005;
     }
 
 
@@ -41,14 +45,27 @@ public final class EntityParticle extends EntityNonLiving {
     @Override
     public void tick(){
         this.timer--;
+
+        if(this.canMoveWithVector){
+            this.moveWithVector();
+        }
+
         if(this.useGravity){
             this.doGravity();
+            this.moveOnly();
         } else {
             this.y += 0.00666f;
         }
 
         if(this.timer <= 0){
             this.despawn = true;
+        }
+
+        if(this.despawnOnGroundContact){
+            World world = CosmicEvolution.instance.save.activeWorld;
+            if(Block.list[world.getBlockID(MathUtil.floorDouble(this.x), MathUtil.floorDouble(this.y), MathUtil.floorDouble(this.z))].isSolid){
+                this.despawn = true;
+            }
         }
     }
 
@@ -67,30 +84,20 @@ public final class EntityParticle extends EntityNonLiving {
         int playerChunkX = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x) >> 5;
         int playerChunkY = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.y) >> 5;
         int playerChunkZ = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z) >> 5;
-        int xOffset = MathUtil.floorDouble(this.x) >> 5 - playerChunkX;
-        int yOffset = MathUtil.floorDouble(this.y) >> 5 - playerChunkY;
-        int zOffset = MathUtil.floorDouble(this.z) >> 5 - playerChunkZ;
-        xOffset <<= 5;
-        yOffset <<= 5;
-        zOffset <<= 5;
+        int xOffset = this.chunkX - playerChunkX;
+        int yOffset = this.chunkY - playerChunkY;
+        int zOffset = this.chunkZ - playerChunkZ;
+
+        xOffset *= 32;
+        yOffset *= 32;
+        zOffset *= 32;
+
         Vector3f chunkOffset = new Vector3f(xOffset, yOffset, zOffset);
         Shader.worldShaderTextureArray.uploadVec3f("chunkOffset", chunkOffset);
         World world = CosmicEvolution.instance.save.activeWorld;
         float x = MathUtil.positiveMod(this.x, 32);
         float y = MathUtil.positiveMod(this.y, 32);
         float z = MathUtil.positiveMod(this.z, 32);
-
-        if(x < 0){
-            x += 32;
-        }
-
-        if(y < 0){
-            y += 32;
-        }
-
-        if(z < 0){
-            z += 32;
-        }
 
         float blockID = Block.list[this.associatedBlock].textureID;
 
@@ -102,7 +109,7 @@ public final class EntityParticle extends EntityNonLiving {
         Vector3d vertex4 = new Vector3d(0, -size, size).rotateY(-Math.toRadians(CosmicEvolution.instance.save.thePlayer.yaw)).add(blockPosition);
         this.resetLight();
         if(this.useLight) {
-            this.setVertexLight1Arg(world.getBlockLightValue((int) (this.chunkX * 32 + x), (int) (this.chunkY * 32 + y), (int) (this.chunkZ * 32 + z)), x, y, z, world.getBlockLightColor((int) (this.chunkX * 32 + x), (int) (this.chunkY * 32 + y), (int) (this.chunkZ * 32 + z)));
+            this.setVertexLight1Arg(world.getBlockLightValue(MathUtil.floorDouble(this.chunkX * 32 + x), MathUtil.floorDouble(this.chunkY * 32 + y), MathUtil.floorDouble(this.chunkZ * 32 + z)), x, y, z, world.getBlockLightColor((int) (this.chunkX * 32 + x), (int) (this.chunkY * 32 + y), (int) (this.chunkZ * 32 + z)));
         }
         int colorValue = new Color(this.red, this.green, this.blue, 0).getRGB();
         tessellator.addVertexTextureArrayWithSampling(colorValue, (float) vertex1.x, (float) vertex1.y, (float) vertex1.z, 3, blockID, 0.46875f, -0.46875f);

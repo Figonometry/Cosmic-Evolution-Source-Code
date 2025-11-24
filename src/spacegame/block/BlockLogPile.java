@@ -29,7 +29,7 @@ public final class BlockLogPile extends BlockPile {
             player.removeItemFromInventory();
             player.removeItemFromInventory();
             KeyListener.setKeyReleased(GLFW.GLFW_KEY_LEFT_SHIFT);
-            CosmicEvolution.instance.soundPlayer.playSound(x, y, z, new Sound(Sound.wood, false), new Random().nextFloat(0.6F, 1));
+            CosmicEvolution.instance.soundPlayer.playSound(x, y, z, new Sound(Sound.wood, false, 1f), new Random().nextFloat(0.6F, 1));
             world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).notifyBlock(x,y,z);
             return;
         }
@@ -38,7 +38,7 @@ public final class BlockLogPile extends BlockPile {
             ChestLocation chest = world.getChestLocation(x,y,z);
             chest.inventory.itemStacks[0].count -= 2;
             KeyListener.setKeyReleased(GLFW.GLFW_KEY_LEFT_SHIFT);
-            CosmicEvolution.instance.soundPlayer.playSound(x, y, z, new Sound(Sound.wood, false), new Random().nextFloat(0.6F, 1));
+            CosmicEvolution.instance.soundPlayer.playSound(x, y, z, new Sound(Sound.wood, false, 1f), new Random().nextFloat(0.6F, 1));
 
             if(chest.inventory.itemStacks[0].count <= 0){
                 chest.inventory.itemStacks[0].item = null;
@@ -46,7 +46,7 @@ public final class BlockLogPile extends BlockPile {
                 chest.inventory.itemStacks[0].metadata = Item.NULL_ITEM_METADATA;
                 chest.inventory.itemStacks[0].durability = Item.NULL_ITEM_DURABILITY;
                 world.removeChestLocation(x,y,z);
-                world.setBlockWithNotify(x,y,z, Block.air.ID);
+                world.setBlockWithNotify(x,y,z, Block.air.ID, false);
             }
 
             world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).notifyBlock(x,y,z);

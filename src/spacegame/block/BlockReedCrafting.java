@@ -20,7 +20,7 @@ public final class BlockReedCrafting extends Block {
 
         if(this.ID == Block.reedChestTier0.ID && playerHeldItem == Item.reeds.ID ){
             if(CosmicEvolution.instance.save.thePlayer.getHeldItemCount() >= 8){
-                world.setBlockWithNotify(x,y,z, Block.reedChestTier1.ID);
+                world.setBlockWithNotify(x,y,z, Block.reedChestTier1.ID, false);
                 for(int i = 0; i < 8; i++){
                     CosmicEvolution.instance.save.thePlayer.removeItemFromInventory();
                 }
@@ -31,7 +31,7 @@ public final class BlockReedCrafting extends Block {
 
         if(this.ID == Block.reedChestTier1.ID && playerHeldItem == Item.reeds.ID){
             if(CosmicEvolution.instance.save.thePlayer.getHeldItemCount() >= 8){
-                world.setBlockWithNotify(x,y,z, Block.reedChest.ID);
+                world.setBlockWithNotify(x,y,z, Block.reedChest.ID, false);
                 world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).addChestLocation(x, y, z,  new Inventory(((BlockContainer)(Block.reedChest)).inventoryWidth, ((BlockContainer)(Block.reedChest)).inventoryHeight));
                 for(int i = 0; i < 8; i++){
                     CosmicEvolution.instance.save.thePlayer.removeItemFromInventory();
@@ -43,7 +43,7 @@ public final class BlockReedCrafting extends Block {
 
         if(this.ID == Block.reedBasketTier0.ID && playerHeldItem == Item.reeds.ID){
             if(CosmicEvolution.instance.save.thePlayer.getHeldItemCount() >= 4){
-                world.setBlockWithNotify(x,y,z, Block.air.ID);
+                world.setBlockWithNotify(x,y,z, Block.air.ID, false);
                 world.addEntity(new EntityItem(x + 0.5, y + 0.5, z + 0.5, Item.reedBasket.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY));
                 for(int i = 0; i < 4; i++){
                     CosmicEvolution.instance.save.thePlayer.removeItemFromInventory();

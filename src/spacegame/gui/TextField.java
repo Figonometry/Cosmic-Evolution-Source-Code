@@ -24,8 +24,8 @@ public final class TextField {
 
     public void renderTextFieldAndText(){
         RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
-        int textFieldOutline = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/outline32.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        int cursor = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColor.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        int textFieldOutline = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/outline32.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
+        int cursor = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColor.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
 
         tessellator.toggleOrtho();
 

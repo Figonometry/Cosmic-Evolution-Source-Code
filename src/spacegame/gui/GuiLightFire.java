@@ -41,10 +41,10 @@ public final class GuiLightFire extends GuiAction {
 
     @Override
     public void loadTextures() {
-        this.campFire = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInGame/campFireLighting.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        this.stone1Texture = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInventory/stone1.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        this.stone2Texture = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInventory/stone2.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        this.transparentBackground = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.campFire = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInGame/campFireLighting.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
+        this.stone1Texture = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInventory/stone1.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
+        this.stone2Texture = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInventory/stone2.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
+        this.transparentBackground = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
     }
 
     @Override
@@ -98,14 +98,14 @@ public final class GuiLightFire extends GuiAction {
         if (this.ce.currentlySelectedMoveableObject != null) {
             if (this.ce.currentlySelectedMoveableObject.equals(this.stone1)) {
                 if (this.stone2.isMouseHoveredOver() && this.ce.currentlySelectedMoveableObject.pickedUp && Math.abs(x) <= 256 && Math.abs(y) <= 256) {
-                   this.ce.save.activeWorld.setBlockWithNotify(this.x, this.y, this.z, Block.campfireLit.ID);
+                   this.ce.save.activeWorld.setBlockWithNotify(this.x, this.y, this.z, Block.campfireLit.ID, false);
                    this.ce.save.activeWorld.findChunkFromChunkCoordinates(this.x >> 5, this.y >> 5, this.z >> 5).addTickableBlockToArray((short) Chunk.getBlockIndexFromCoordinates(this.x,this.y,this.z));
                    GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
                    this.ce.setNewGui(new GuiInGame(this.ce));
                 }
             } else if (this.ce.currentlySelectedMoveableObject.equals(this.stone2)) {
                 if (this.stone1.isMouseHoveredOver() && this.ce.currentlySelectedMoveableObject.pickedUp && Math.abs(x) <= 256 && Math.abs(y) <= 256) {
-                    this.ce.save.activeWorld.setBlockWithNotify(this.x, this.y, this.z, Block.campfireLit.ID);
+                    this.ce.save.activeWorld.setBlockWithNotify(this.x, this.y, this.z, Block.campfireLit.ID, false);
                     this.ce.save.activeWorld.findChunkFromChunkCoordinates(this.x >> 5, this.y >> 5, this.z >> 5).addTickableBlockToArray((short) Chunk.getBlockIndexFromCoordinates(this.x,this.y,this.z));
                     GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
                     this.ce.setNewGui(new GuiInGame(this.ce));

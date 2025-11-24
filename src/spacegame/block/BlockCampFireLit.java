@@ -60,7 +60,7 @@ public final class BlockCampFireLit extends BlockCampFire implements ITickable, 
         EntityParticle particle;
         Chunk chunk = CosmicEvolution.instance.save.activeWorld.chunkController.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
         for(int i = 0; i < particleCount; i++){
-            particle = new EntityParticle(xPos + CosmicEvolution.globalRand.nextDouble(-0.125, 0.125), yPos + CosmicEvolution.globalRand.nextDouble(0.125), zPos + CosmicEvolution.globalRand.nextDouble(-0.125, 0.125), false, CosmicEvolution.globalRand.nextInt(30, 180), this.ID, false);
+            particle = new EntityParticle(xPos + CosmicEvolution.globalRand.nextDouble(-0.125, 0.125), yPos + CosmicEvolution.globalRand.nextDouble(0.125), zPos + CosmicEvolution.globalRand.nextDouble(-0.125, 0.125), false, CosmicEvolution.globalRand.nextInt(30, 180), this.ID, false, false);
             chunk.addEntityToList(particle);
         }
     }
@@ -68,7 +68,7 @@ public final class BlockCampFireLit extends BlockCampFire implements ITickable, 
     @Override
     public void tick(int x, int y, int z, World world) {
         this.generateParticles(x,y,z);
-        CosmicEvolution.instance.soundPlayer.playSound(x, y, z, new Sound(Sound.fireCrackling, false), CosmicEvolution.globalRand.nextFloat(0.75f, 1));
+        CosmicEvolution.instance.soundPlayer.playSound(x, y, z, new Sound(Sound.fireCrackling, false, 1f), CosmicEvolution.globalRand.nextFloat(0.75f, 1));
     }
 
 }

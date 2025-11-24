@@ -68,10 +68,10 @@ public final class GuiMainMenu extends Gui {
 
     @Override
     public void loadTextures() {
-        this.star = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/star.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        this.earth = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/earth.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        this.title = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/logo.png", RenderEngine.TEXTURE_TYPE_2D, 0);
-        this.background = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0);
+        this.star = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/star.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
+        this.earth = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/earth.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
+        this.title = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/logo.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
+        this.background = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
     }
 
     @Override
@@ -138,29 +138,25 @@ public final class GuiMainMenu extends Gui {
             fontRenderer.drawString(this.ce.title, x, y, depth, 16711875, 50, 255);
             y -= 60;
             fontRenderer.toggleItalics();
-            fontRenderer.drawString("Logger will now show window if object initializers fail ", x, y, depth, yellow, 50, 255);
+            fontRenderer.drawString("Sunset texture now rotates to always face the player", x, y, depth, yellow, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Info window will now show if game does not receive launcher directory path", x, y, depth, yellow, 50, 255);
+            fontRenderer.drawString("Tweaked the effect of normal shading", x, y, depth, yellow, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Improved performance on orbital map", x, y, depth, yellow, 50, 255);
+            fontRenderer.drawString("Entity shadows now render correctly on negative axes", x, y, depth, yellow, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Logs no longer auto UV", x, y, depth, yellow, 50, 255);
+            fontRenderer.drawString("Added weather systems, five types: clear, partly cloudy, overcast, stratus rain, thunderstorm rain", x, y, depth, green, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Blocks can now be broken correctly on negative axes", x, y ,depth, yellow, 50, 255);
+            fontRenderer.drawString("Added clouds, five types: Cumulus, Stratus, Cirrus, NimboStratus and Cumolonimbus", x, y, depth, green, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Fog now works correctly on negative axes", x, y, depth, yellow, 50, 255);
+            fontRenderer.drawString("Added rain sounds, three types: inside, outside, under a tree", x, y, depth, green, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Deer now render correctly on negative axes", x, y, depth, yellow, 50, 255);
+            fontRenderer.drawString("Added a wind effect and a wind sound", x, y, depth, green, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Particles now render correctly on negative axes", x, y, depth, yellow, 50, 255);
-            y  -= 30;
-            fontRenderer.drawString("Dropped items now render correctly on negative axes", x, y, depth, yellow, 50, 255);
+            fontRenderer.drawString("Sky will now darken during rainstorms", x, y, depth, yellow, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Adjusted temperature and rainfall calculations", x, y, depth, yellow, 50, 255);
+            fontRenderer.drawString("Sky color will now change during rainstorms/cloudy weather", x,y, depth, yellow, 50, 255);
             y -= 30;
-            fontRenderer.drawString("Adjusted celestial object movement around the player", x, y, depth, yellow, 50, 255);
-            y -= 30;
-            fontRenderer.drawString("Skybox now rotates correctly with celestial objects", x, y, depth, yellow, 50, 255);
+            fontRenderer.drawString("Celestial Objects will now dissapear during rainstorms/cloudy weather", x,y ,depth, yellow, 50, 255);
             fontRenderer.toggleItalics();
 
 

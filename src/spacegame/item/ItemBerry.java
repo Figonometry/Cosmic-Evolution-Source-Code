@@ -18,6 +18,6 @@ public final class ItemBerry extends ItemFood {
         world.addEntity(new EntityItem(x + 0.5, y + 0.5, z + 0.5, Item.berrySeed.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY));
         world.clearChestLocation(x,y,z);
         world.removeChestLocation(x,y,z);
-        world.setBlockWithNotify(x,y,z, Block.air.ID);
+        world.setBlockWithNotify(x,y,z, Block.air.ID, false);
     }
 }

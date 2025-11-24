@@ -45,7 +45,7 @@ public final class EntityBlock extends EntityNonLiving {
         if(CosmicEvolution.instance.save.thePlayer.boundingBox != null) {
             if (this.boundingBox.clip(CosmicEvolution.instance.save.thePlayer.boundingBox) && this.pickupTimer >= 60) {
                 if (CosmicEvolution.instance.save.thePlayer.addItemToInventory(Item.block.ID, this.block, this.count, Item.NULL_ITEM_DURABILITY)) {
-                    CosmicEvolution.instance.soundPlayer.playSound(this.x, this.y, this.z, new Sound(Sound.itemPickup, false), new Random().nextFloat(1.5F, 1.9F));
+                    CosmicEvolution.instance.soundPlayer.playSound(this.x, this.y, this.z, new Sound(Sound.itemPickup, false, 1f), new Random().nextFloat(1.5F, 1.9F));
                     this.despawn = true;
                 }
             }

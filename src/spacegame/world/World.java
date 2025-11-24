@@ -6,13 +6,23 @@ import spacegame.core.*;
 import spacegame.entity.Entity;
 import spacegame.entity.EntityBlock;
 import spacegame.entity.EntityItem;
+import spacegame.entity.EntityParticle;
 import spacegame.gui.*;
 import spacegame.item.Inventory;
 import spacegame.item.Item;
+import spacegame.nbt.NBTIO;
+import spacegame.nbt.NBTTagCompound;
+import spacegame.render.RenderEngine;
+import spacegame.render.RenderWorldScene;
+import spacegame.render.Shader;
 import spacegame.util.MathUtil;
+import spacegame.world.weather.Cloud;
+import spacegame.world.weather.CloudFormation;
+import spacegame.world.weather.RainQuad;
+import spacegame.world.weather.WeatherSystem;
 
 import java.awt.*;
-import java.io.File;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
@@ -25,6 +35,12 @@ public abstract class World {
     public ArrayList<int[]> previouslyQueuedDarknessUpdate = new ArrayList<>();
     public ArrayList<int[]> lightSearchQueue = new ArrayList<>();
     public ArrayList<int[]> previousLightSearchQueue = new ArrayList<>();
+    public ArrayList<int[]> roomCheckQueue = new ArrayList<>();
+    public ArrayList<int[]> previousRoomCheckQueue = new ArrayList<>();
+    public ArrayList<WeatherSystem> activeWeatherSystems = new ArrayList<>();
+    public ArrayList<WeatherSystem> inactiveWeatherSystems = new ArrayList<>();
+    public static final int CLOUD_LIMIT = 500;
+    public int cloudCount;
     public int safetyThreshold = 0;
     public int resetLightX;
     public int resetLightY;
@@ -43,14 +59,220 @@ public abstract class World {
     public File worldFolder;
     public ChunkController chunkController;
     public boolean paused = false;
+    public boolean raining;
+    public boolean prevRaining;
+    public long timeStartedRaining;
+    public float averagePrecipitation;
+    public float averageStrength;
+    public float refWindDirection;
+    public float refWindIntensity;
+    public float windDirection;
+    public float windIntensity;
+    public float targetWindDirection;
+    public float targetWindIntensity;
+    public boolean windy;
+
 
     public World(CosmicEvolution cosmicEvolution, int size) {
         this.ce = cosmicEvolution;
         this.size = size;
         this.chunkController = new ChunkController(this);
+        Cloud.texture = cosmicEvolution.renderEngine.createTexture("src/spacegame/assets/textures/misc/cloud.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
+        RenderWorldScene.rainTexture = cosmicEvolution.renderEngine.createTexture("src/spacegame/assets/textures/misc/rainTexture.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
     }
 
-    public void tick() {}
+    public void tick() {
+        WeatherSystem weatherSystem;
+        CloudFormation cloudFormation;
+        Cloud cloud;
+        float totalPrecipitation = 0;
+        float totalStrength = 0;
+        int cloudCount = 0;
+        this.cloudCount = 0;
+        this.chunkController.renderWorldScene.cloudy = false;
+        for (int i = 0; i < this.activeWeatherSystems.size(); i++) {
+            weatherSystem = this.activeWeatherSystems.get(i);
+            weatherSystem.update();
+            if(this.ce.save.time >= weatherSystem.killTime){
+                this.activeWeatherSystems.remove(weatherSystem);
+            }
+
+            for(int j = 0; j < weatherSystem.cloudFormations.size(); j++){
+                cloudFormation = weatherSystem.cloudFormations.get(j);
+
+                if(cloudFormation.centralCloud != null){
+                    cloud = cloudFormation.centralCloud;
+
+
+                        totalPrecipitation += cloud.precipitation;
+                        totalStrength += cloud.strength;
+
+                        cloudCount++;
+
+                }
+
+                for(int k = 0; k < cloudFormation.clouds.length; k++){
+                    if(cloudFormation.clouds[k] == null)continue;
+
+                    cloud = cloudFormation.clouds[k];
+
+
+                        totalPrecipitation += cloud.precipitation;
+                        totalStrength += cloud.strength;
+
+                        cloudCount++;
+
+                }
+            }
+        }
+
+        float averagePrecipitation = totalPrecipitation / (float)cloudCount;
+        float averageStrength = totalStrength / (float)cloudCount;
+
+        this.averagePrecipitation = averagePrecipitation;
+        this.averageStrength = averageStrength;
+
+        this.chunkController.renderWorldScene.cloudy = averagePrecipitation > 0.5f && averageStrength > 0.25f;
+
+        this.raining = this.chunkController.renderWorldScene.overrideSkyColor && averagePrecipitation > 0.5f && averageStrength > 0.5f;
+
+        if(this.prevRaining != this.raining) {
+            this.timeStartedRaining = this.ce.save.time;
+        }
+
+        if(this.chunkController.renderWorldScene.cloudy != this.chunkController.renderWorldScene.prevCloudy){
+            if(this.chunkController.renderWorldScene.cloudy){
+                this.chunkController.renderWorldScene.transitionSkyColor = true;
+
+                float colorVal = (1 - (averagePrecipitation * 0.75f));
+
+                this.chunkController.renderWorldScene.targetSkyColor[0] = colorVal;
+                this.chunkController.renderWorldScene.targetSkyColor[1] = colorVal;
+                this.chunkController.renderWorldScene.targetSkyColor[2] = colorVal;
+
+                this.chunkController.renderWorldScene.originalSkyColor[0] = this.skyColor[0];
+                this.chunkController.renderWorldScene.originalSkyColor[1] = this.skyColor[1];
+                this.chunkController.renderWorldScene.originalSkyColor[2] = this.skyColor[2];
+
+                this.chunkController.renderWorldScene.timeStartedSkyColorTransition = this.ce.save.time;
+            }
+            if(!this.chunkController.renderWorldScene.cloudy) {
+                this.chunkController.renderWorldScene.transitionSkyColor = true;
+
+                this.chunkController.renderWorldScene.targetSkyColor[0] = this.chunkController.renderWorldScene.unblendedSkyColor[0];
+                this.chunkController.renderWorldScene.targetSkyColor[1] = this.chunkController.renderWorldScene.unblendedSkyColor[1];
+                this.chunkController.renderWorldScene.targetSkyColor[2] = this.chunkController.renderWorldScene.unblendedSkyColor[2];
+
+                this.chunkController.renderWorldScene.originalSkyColor[0] = this.skyColor[0];
+                this.chunkController.renderWorldScene.originalSkyColor[1] = this.skyColor[1];
+                this.chunkController.renderWorldScene.originalSkyColor[2] = this.skyColor[2];
+
+                this.chunkController.renderWorldScene.timeStartedSkyColorTransition = this.ce.save.time;
+            }
+        }
+        this.chunkController.renderWorldScene.prevCloudy = this.chunkController.renderWorldScene.cloudy;
+
+        this.prevRaining = raining;
+
+        this.chunkController.renderWorldScene.transitionSkyColor();
+
+        this.activeWeatherSystems.trimToSize();
+
+        if((MathUtil.floorDouble(this.ce.save.thePlayer.x) >> 5 != MathUtil.floorDouble(this.ce.save.thePlayer.prevX) >> 5) || (MathUtil.floorDouble(this.ce.save.thePlayer.z) >> 5 != MathUtil.floorDouble(this.ce.save.thePlayer.prevZ) >> 5)){
+            this.moveWeatherSystemsToInactiveList();
+        }
+
+        if(this.ce.save.time % 3600 == 0){
+            WeatherSystem weatherSystem1;
+            for(int i = 0; i < this.inactiveWeatherSystems.size(); i++){
+                weatherSystem1 = this.inactiveWeatherSystems.get(i);
+                if(this.ce.save.time > weatherSystem1.killTime){
+                    this.inactiveWeatherSystems.remove(weatherSystem1);
+                }
+            }
+            this.inactiveWeatherSystems.trimToSize();
+        }
+
+
+        EntityParticle rainParticle;
+        for(int i = 0; i < this.chunkController.renderWorldScene.rainParticles.size(); i++){
+            rainParticle = this.chunkController.renderWorldScene.rainParticles.get(i);
+            rainParticle.tick();
+            if(rainParticle.despawn){
+                this.chunkController.renderWorldScene.rainParticles.remove(rainParticle);
+            }
+        }
+
+        this.chunkController.renderWorldScene.rainParticles.trimToSize();
+
+        for(int i = 0; i < this.chunkController.renderWorldScene.rainQuads.length; i++){
+            if(this.chunkController.renderWorldScene.rainQuads[i] == null)continue;
+
+            this.chunkController.renderWorldScene.rainQuads[i].tick();
+
+            double x = this.chunkController.renderWorldScene.rainQuads[i].x;
+            double y = this.chunkController.renderWorldScene.rainQuads[i].y + 0.75;
+            double z = this.chunkController.renderWorldScene.rainQuads[i].z;
+
+            if(this.chunkController.renderWorldScene.rainQuads[i].remove){
+                this.chunkController.renderWorldScene.rainQuads[i] = null;
+
+                if(MathUtil.distance3D(x,y,z, this.ce.save.thePlayer.x, this.ce.save.thePlayer.y, this.ce.save.thePlayer.z) <= 5) {
+                    EntityParticle particle1 = new EntityParticle(x, y, z, true, 120, Block.water.ID, true, true);
+                    EntityParticle particle2 = new EntityParticle(x, y, z, true, 120, Block.water.ID, true, true);
+                    EntityParticle particle3 = new EntityParticle(x, y, z, true, 120, Block.water.ID, true, true);
+
+                    float xMove = CosmicEvolution.globalRand.nextFloat(0.5f, 1);
+                    xMove = CosmicEvolution.globalRand.nextBoolean() ? xMove : -xMove;
+                    float zMove = CosmicEvolution.globalRand.nextFloat(0.5f, 1);
+                    zMove = CosmicEvolution.globalRand.nextBoolean() ? zMove : -zMove;
+                    particle1.setMovementVector(new Vector3f(xMove, 0.5f, zMove));
+
+                    xMove = CosmicEvolution.globalRand.nextFloat(0.5f, 1);
+                    xMove = CosmicEvolution.globalRand.nextBoolean() ? xMove : -xMove;
+                    zMove = CosmicEvolution.globalRand.nextFloat(0.5f, 1);
+                    zMove = CosmicEvolution.globalRand.nextBoolean() ? zMove : -zMove;
+                    particle2.setMovementVector(new Vector3f(xMove, 0.5f, zMove));
+
+                    xMove = CosmicEvolution.globalRand.nextFloat(0.5f, 1);
+                    xMove = CosmicEvolution.globalRand.nextBoolean() ? xMove : -xMove;
+                    zMove = CosmicEvolution.globalRand.nextFloat(0.5f, 1);
+                    zMove = CosmicEvolution.globalRand.nextBoolean() ? zMove : -zMove;
+                    particle3.setMovementVector(new Vector3f(xMove, 0.5f, zMove));
+
+
+                    this.chunkController.renderWorldScene.rainParticles.add(particle1);
+                    this.chunkController.renderWorldScene.rainParticles.add(particle2);
+                    this.chunkController.renderWorldScene.rainParticles.add(particle3);
+                }
+            }
+
+        }
+
+        this.addRainQuads();
+
+        int currentRainSoundState = this.ce.save.thePlayer.rainSoundState;
+        if(this.raining && (MathUtil.floorDouble(this.ce.save.thePlayer.x) != MathUtil.floorDouble(this.ce.save.thePlayer.prevX) || MathUtil.floorDouble(this.ce.save.thePlayer.y) != MathUtil.floorDouble(this.ce.save.thePlayer.prevY) || MathUtil.floorDouble(this.ce.save.thePlayer.z) != MathUtil.floorDouble(this.ce.save.thePlayer.prevZ))){
+            if(this.isPlayerInRoom(MathUtil.floorDouble(this.ce.save.thePlayer.x), MathUtil.floorDouble(this.ce.save.thePlayer.y), MathUtil.floorDouble(this.ce.save.thePlayer.z))){
+                this.ce.save.thePlayer.rainSoundState = 1;
+            } else if(this.isPlayerUnderTree(MathUtil.floorDouble(this.ce.save.thePlayer.x), MathUtil.floorDouble(this.ce.save.thePlayer.z))){
+                this.ce.save.thePlayer.rainSoundState = 2;
+            } else {
+                this.ce.save.thePlayer.rainSoundState = 3;
+            }
+            if(currentRainSoundState != this.ce.save.thePlayer.rainSoundState && this.raining && this.averagePrecipitation > 0.66f){
+                this.ce.soundPlayer.stopSound(currentRainSoundState == 1 ? Sound.rainIndoors : currentRainSoundState == 2 ? Sound.rainUnderTree : Sound.rainOutside);
+                this.ce.soundPlayer.playSound(this.ce.save.thePlayer.x, this.ce.save.thePlayer.y, this.ce.save.thePlayer.z, new Sound(this.ce.save.thePlayer.rainSoundState == 1 ? Sound.rainIndoors : this.ce.save.thePlayer.rainSoundState == 2 ? Sound.rainUnderTree : Sound.rainOutside, false, 1f), 1.0f);
+            }
+        }
+
+        if(this.raining && this.ce.save.time % 120 == 0  && this.averagePrecipitation > 0.55f){
+            this.ce.soundPlayer.playSound(this.ce.save.thePlayer.x, this.ce.save.thePlayer.y, this.ce.save.thePlayer.z, new Sound(this.ce.save.thePlayer.rainSoundState == 1 ? Sound.rainIndoors : this.ce.save.thePlayer.rainSoundState == 2 ? Sound.rainUnderTree : Sound.rainOutside, false, 1f), 1.0f);
+        }
+
+        this.setWindParameters();
+
+    }
 
     public abstract void initNoiseMaps();
 
@@ -77,7 +299,7 @@ public abstract class World {
             chunk.initChunk();
         }
         chunk.setBlock(x, y, z, blockID);
-        this.findChunkSkyLightMap(x >> 5, z >> 5).updateLightMap(x, y, z);
+
         ChunkColumnSkylightMap lightMap = this.findChunkSkyLightMap(x >> 5, z >> 5);
 
         if (Block.list[blockID].isSolid) {
@@ -97,7 +319,7 @@ public abstract class World {
         chunk.updateSkylight = true;
     }
 
-    public synchronized void setBlockWithNotify(int x, int y, int z, short blockID) {
+    public synchronized void setBlockWithNotify(int x, int y, int z, short blockID, boolean playerInitiated) {
         boolean destroyLight = Block.list[this.getBlockID(x, y, z)].isLightBlock && blockID == Block.air.ID;
         Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
         chunk.setBlockWithNotify(x, y, z, blockID);
@@ -127,6 +349,10 @@ public abstract class World {
             this.propagateDarkness(x, y, z);
         }
         chunk.updateSkylight = true;
+
+        if(playerInitiated){
+            this.setPlayerIsInRoomState();
+        }
     }
 
     public Chunk findChunkFromChunkCoordinates(int x, int y, int z) {
@@ -152,6 +378,236 @@ public abstract class World {
         }
 
     }
+
+    private boolean doesWeatherSystemAlreadyExist(int weatherSystemX, int weatherSystemZ){
+        WeatherSystem weatherSystem;
+        for(int i = 0; i < this.activeWeatherSystems.size(); i++){
+            weatherSystem = this.activeWeatherSystems.get(i);
+            if(MathUtil.floorDouble(weatherSystem.x) >> 10 == weatherSystemX && MathUtil.floorDouble(weatherSystem.z) >> 10 == weatherSystemZ){
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean isWeatherSystemInInactiveList(int weatherSystemX, int weatherSystemZ){
+        WeatherSystem weatherSystem;
+        for(int i = 0; i < this.inactiveWeatherSystems.size(); i++){
+            weatherSystem = this.inactiveWeatherSystems.get(i);
+            if(MathUtil.floorDouble(weatherSystem.x) >> 10 == weatherSystemX && MathUtil.floorDouble(weatherSystem.z) >> 10 == weatherSystemZ){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    //Weather systems cover a 512x512 range,
+    // this will determine if a weather system exists for a chunk column and load from the inactive list if it finds it otherwise it will generate a new system
+    public synchronized void generateWeatherSystems(int chunkColumnX, int chunkColumnZ){
+        chunkColumnX >>= 5;
+        chunkColumnZ >>= 5;
+        if(this.doesWeatherSystemAlreadyExist(chunkColumnX, chunkColumnZ))return;
+
+        if(this.isWeatherSystemInInactiveList(chunkColumnX, chunkColumnZ)){
+            WeatherSystem weatherSystem;
+            for(int i = 0; i < this.inactiveWeatherSystems.size(); i++){
+                weatherSystem = this.inactiveWeatherSystems.get(i);
+                if(MathUtil.floorDouble(weatherSystem.x) >> 10 == chunkColumnX && MathUtil.floorDouble(weatherSystem.z) >> 10 == chunkColumnZ){
+                    this.activeWeatherSystems.add(weatherSystem);
+                    this.inactiveWeatherSystems.remove(weatherSystem);
+                }
+            }
+        } else {
+            WeatherSystem weatherSystem = new WeatherSystem(WeatherSystem.getRandomWeatherSystemType(CosmicEvolution.globalRand.nextInt(5)), (chunkColumnX << 10) + 256, 0, (chunkColumnZ << 10) + 256, Timer.GAME_DAY);
+            this.activeWeatherSystems.add(weatherSystem);
+        }
+
+        this.inactiveWeatherSystems.trimToSize();
+    }
+
+    private void setWindParameters(){
+        if(this.ce.save.time % 600 == 0){
+            this.targetWindDirection = (float) (this.windDirection + CosmicEvolution.globalRand.nextFloat(-0.5f, 0.5f) * Math.PI);
+            this.targetWindIntensity = (this.averageStrength * 0.5f + this.averagePrecipitation * 0.5f) + CosmicEvolution.globalRand.nextFloat(-0.25f, 0.25f);
+        }
+
+        if(this.ce.save.time % 360 == 0) {
+            this.ce.soundPlayer.playSound(this.ce.save.thePlayer.x, this.ce.save.thePlayer.y, this.ce.save.thePlayer.z, new Sound(Sound.wind, false, 3.5f + (this.averageStrength * 0.5f + this.averagePrecipitation * 0.5f)), 1f);
+        }
+
+        if(this.targetWindIntensity > 1){
+            this.targetWindIntensity = 1;
+        }
+
+        this.refWindDirection = (float) (Math.PI * 0.5f);
+        this.refWindIntensity = this.averageStrength * 0.5f + this.averagePrecipitation * 0.5f;
+
+        boolean changeWindDirection = true;
+        boolean changeWindIntensity = true;
+
+        if(changeWindDirection){
+            this.windDirection += this.targetWindDirection - this.windDirection > 0.0f ? 0.03125f : -0.03125f;
+        }
+
+        if(changeWindIntensity){
+            this.windIntensity += this.targetWindIntensity - this.windIntensity > 0.0f ? 0.03125f : -0.03125f;
+        }
+
+        Shader.terrainShader.uploadBoolean("windy", true);
+        Shader.terrainShader.uploadFloat("windDirection", this.windDirection);
+        Shader.terrainShader.uploadFloat("windIntensity", this.windIntensity);
+    }
+
+    public void moveWeatherSystemsToInactiveList(){ //Triggers on player chunk boundary crossing
+        int playerX = MathUtil.floorDouble(this.ce.save.thePlayer.x);
+        int playerZ = MathUtil.floorDouble(this.ce.save.thePlayer.z);
+
+        int weatherX;
+        int weatherZ;
+        WeatherSystem weatherSystem;
+
+        for(int i = 0; i < this.activeWeatherSystems.size(); i++){
+            weatherSystem = this.activeWeatherSystems.get(i);
+            weatherX = MathUtil.floorDouble(weatherSystem.x);
+            weatherZ = MathUtil.floorDouble(weatherSystem.z);
+            if(Math.abs(playerX - weatherX) > 512 || Math.abs(playerZ - weatherZ) > 512){
+                this.inactiveWeatherSystems.add(weatherSystem);
+                this.activeWeatherSystems.remove(weatherSystem);
+            }
+        }
+        this.activeWeatherSystems.trimToSize();
+
+    }
+
+    public void saveWeatherSystemsToFile(){
+        this.inactiveWeatherSystems.addAll(this.activeWeatherSystems);
+        File weatherFile = new File(this.ce.save.saveFolder + "/worlds/worldEarth/weather.dat");
+        try {
+            FileOutputStream outputStream = new FileOutputStream(weatherFile);
+            NBTTagCompound data = new NBTTagCompound();
+            NBTTagCompound weatherData = new NBTTagCompound();
+            data.setTag("weatherData", weatherData);
+
+            int numberWeatherSystems = 0;
+            NBTTagCompound[] weatherSystemsTag = new NBTTagCompound[this.inactiveWeatherSystems.size()];
+
+            for(int i = 0; i < this.inactiveWeatherSystems.size(); i++){
+                weatherSystemsTag[i] = new NBTTagCompound();
+
+                this.inactiveWeatherSystems.get(i).saveWeatherSystemToFile(weatherSystemsTag[i]);
+
+                weatherData.setTag("weatherSystem " + numberWeatherSystems, weatherSystemsTag[i]);
+                numberWeatherSystems++;
+            }
+
+            int numberOfRainQuads = 0;
+            int rainQuadIndex = 0;
+            NBTTagCompound[] rainQuadsTags = new NBTTagCompound[this.chunkController.renderWorldScene.rainQuads.length];
+            for(int i = 0; i < this.chunkController.renderWorldScene.rainQuads.length; i++){
+                if(this.chunkController.renderWorldScene.rainQuads[i] == null)continue;
+
+                rainQuadsTags[rainQuadIndex] = new NBTTagCompound();
+                rainQuadsTags[rainQuadIndex].setDouble("x", this.chunkController.renderWorldScene.rainQuads[i].x);
+                rainQuadsTags[rainQuadIndex].setDouble("y", this.chunkController.renderWorldScene.rainQuads[i].y);
+                rainQuadsTags[rainQuadIndex].setDouble("z", this.chunkController.renderWorldScene.rainQuads[i].z);
+                weatherData.setTag("rainQuad " + numberOfRainQuads, rainQuadsTags[rainQuadIndex]);
+
+                numberOfRainQuads++;
+                rainQuadIndex++;
+            }
+
+            weatherData.setInteger("numberOfRainQuads", numberOfRainQuads);
+
+
+            weatherData.setInteger("weatherSystemCount", numberWeatherSystems);
+            weatherData.setBoolean("raining", this.raining);
+            NBTIO.writeCompressed(data, outputStream);
+            outputStream.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void loadWeatherSystemsFromFile(){
+        File weatherFile = new File(this.ce.save.saveFolder + "/worlds/worldEarth/weather.dat");
+        if(!weatherFile.exists())return;
+        try {
+            FileInputStream inputStream = new FileInputStream(weatherFile);
+            NBTTagCompound data = NBTIO.readCompressed(inputStream);
+            NBTTagCompound weatherData = data.getCompoundTag("weatherData");
+            if(weatherData == null){
+                inputStream.close();
+                return;
+            }
+
+            int numberWeatherSystems = weatherData.getInteger("weatherSystemCount");
+
+            NBTTagCompound weatherSystemTag;
+            for(int i = 0; i < numberWeatherSystems; i++){
+                weatherSystemTag = weatherData.getCompoundTag("weatherSystem " + i);
+                if(weatherSystemTag != null) {
+                    this.inactiveWeatherSystems.add(new WeatherSystem(weatherSystemTag));
+                }
+            }
+
+            int numberOfRainQuads = weatherData.getInteger("numberOfRainQuads");
+            int rainQuadIndex = 0;
+            NBTTagCompound rainQuadTag;
+            for(int i = 0; i < numberOfRainQuads; i++){
+                rainQuadTag = weatherData.getCompoundTag("rainQuad " + i);
+                if(rainQuadTag == null)continue;
+
+                this.chunkController.renderWorldScene.rainQuads[rainQuadIndex] = new RainQuad(rainQuadTag.getDouble("x"), rainQuadTag.getDouble("y"), rainQuadTag.getDouble("z"));
+
+                rainQuadIndex++;
+            }
+
+
+            this.raining = weatherData.getBoolean("raining");
+
+            inputStream.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private boolean shouldRainQuadGenerate(){
+        return CosmicEvolution.globalRand.nextFloat(0.51f) < this.averagePrecipitation - 0.5f;
+    }
+
+    private void addRainQuads(){
+        if(this.ce.save.time % 7 != 0 || !this.raining)return;
+
+        int y = MathUtil.floorDouble(this.ce.save.thePlayer.y + 8);
+        int boxMinX = MathUtil.floorDouble(this.ce.save.thePlayer.x - 16);
+        int boxMaxX = MathUtil.floorDouble(this.ce.save.thePlayer.x + 16);
+        int boxMinZ = MathUtil.floorDouble(this.ce.save.thePlayer.z - 16);
+        int boxMaxZ = MathUtil.floorDouble(this.ce.save.thePlayer.z + 16);
+
+        for(int x = boxMinX; x < boxMaxX; x++){
+            for(int z = boxMinZ; z < boxMaxZ; z++){
+
+                if(!this.shouldRainQuadGenerate())continue;
+                if(!this.doesBlockAllowRain(x,y,z))continue;
+
+                this.addRainQuad(x + CosmicEvolution.globalRand.nextDouble(-0.25, 0.25),y + CosmicEvolution.globalRand.nextDouble(-0.25, 0.25),z + CosmicEvolution.globalRand.nextDouble(-0.25, 0.25));
+
+            }
+        }
+    }
+
+    private void addRainQuad(double x, double y, double z){
+        for(int i = 0; i < this.chunkController.renderWorldScene.rainQuads.length; i++){
+            if(this.chunkController.renderWorldScene.rainQuads[i] != null)continue;
+
+            this.chunkController.renderWorldScene.rainQuads[i] = new RainQuad(x,y,z);
+            return;
+        }
+
+        throw new RuntimeException("Unable to add more rain quads, are there more quads attempting to generate than in the array size?");
+    }
+
 
     public ArrayList<AxisAlignedBB> getBlockBoundingBoxes(AxisAlignedBB boundingBox, ArrayList<AxisAlignedBB> blockBoundingBoxes){
 
@@ -819,6 +1275,126 @@ public abstract class World {
         return false;
     }
 
+    public void setPlayerIsInRoomState() {
+        int currentRainSoundState = this.ce.save.thePlayer.rainSoundState;
+
+        if (this.isPlayerInRoom(MathUtil.floorDouble(this.ce.save.thePlayer.x), MathUtil.floorDouble(this.ce.save.thePlayer.y), MathUtil.floorDouble(this.ce.save.thePlayer.z))) {
+            this.ce.save.thePlayer.rainSoundState = 1;
+        } else if (this.isPlayerUnderTree(MathUtil.floorDouble(this.ce.save.thePlayer.x), MathUtil.floorDouble(this.ce.save.thePlayer.z))) {
+            this.ce.save.thePlayer.rainSoundState = 2;
+        } else {
+            this.ce.save.thePlayer.rainSoundState = 3;
+        }
+
+        if(currentRainSoundState != this.ce.save.thePlayer.rainSoundState && this.raining && this.averagePrecipitation > 0.55f){
+            this.ce.soundPlayer.stopSound(currentRainSoundState == 1 ? Sound.rainIndoors : currentRainSoundState == 2 ? Sound.rainUnderTree : Sound.rainOutside);
+            this.ce.soundPlayer.playSound(this.ce.save.thePlayer.x, this.ce.save.thePlayer.y, this.ce.save.thePlayer.z, new Sound(this.ce.save.thePlayer.rainSoundState == 1 ? Sound.rainIndoors : this.ce.save.thePlayer.rainSoundState == 2 ? Sound.rainUnderTree : Sound.rainOutside, false, 1f), 1.0f);
+        }
+    }
+
+    public boolean isPlayerInRoom(int x, int y, int z){
+
+        if(this.doesBlockAllowRain(x,y,z))return false;
+
+        this.previousRoomCheckQueue.clear();
+        this.roomCheckQueue.clear();
+
+        this.addBlockToRoomQueue(x,y,z);
+
+        int[] roomCheckCoords;
+        ArrayList<int[]> localCopyRoomCheckQueue = new ArrayList<>();
+        while(!this.roomCheckQueue.isEmpty()){
+
+            for(int i = 0; i < this.roomCheckQueue.size(); i++){
+                roomCheckCoords = this.roomCheckQueue.get(i);
+                if(this.doesBlockAllowRain(roomCheckCoords[0], roomCheckCoords[1], roomCheckCoords[2])){
+                    return false;
+                }
+            }
+
+            localCopyRoomCheckQueue.addAll(this.roomCheckQueue);
+            this.roomCheckQueue.clear();
+
+            for(int i = 0; i < localCopyRoomCheckQueue.size(); i++){
+                this.addBlocksToRoomQueue(localCopyRoomCheckQueue.get(i));
+            }
+            localCopyRoomCheckQueue.clear();
+        }
+
+        return true;
+    }
+
+    private void addBlocksToRoomQueue(int[] coords){
+        this.addBlocksToRoomQueue(coords[0], coords[1], coords[2]);
+    }
+
+    private void addBlocksToRoomQueue(int x, int y, int z){
+        if(this.shouldBlockAddToRoomQueue(x - 1, y, z)){
+            this.addBlockToRoomQueue(x - 1, y, z);
+        }
+
+        if(this.shouldBlockAddToRoomQueue(x + 1, y, z)){
+            this.addBlockToRoomQueue(x + 1, y, z);
+        }
+
+        if(this.shouldBlockAddToRoomQueue(x, y - 1, z)){
+            this.addBlockToRoomQueue(x, y - 1, z);
+        }
+
+        if(this.shouldBlockAddToRoomQueue(x, y + 1, z)){
+            this.addBlockToRoomQueue(x, y + 1, z);
+        }
+
+        if(this.shouldBlockAddToRoomQueue(x, y, z - 1)){
+            this.addBlockToRoomQueue(x, y, z - 1);
+        }
+
+        if(this.shouldBlockAddToRoomQueue(x, y, z + 1)){
+            this.addBlockToRoomQueue(x, y, z + 1);
+        }
+    }
+
+    private boolean shouldBlockAddToRoomQueue(int x, int y, int z){
+        return !Block.list[this.getBlockID(x,y,z)].isSolid && !this.hasBlockAlreadyEnteredRoomQueue(x,y,z) && this.isBlockInRangeToCheckIfRoom(x,y,z);
+    }
+
+    private boolean isBlockInRangeToCheckIfRoom(int x, int y, int z){
+        int playerX = MathUtil.floorDouble(this.ce.save.thePlayer.x);
+        int playerY = MathUtil.floorDouble(this.ce.save.thePlayer.y);
+        int playerZ = MathUtil.floorDouble(this.ce.save.thePlayer.z);
+
+        int xDif = x - playerX;
+        int yDif = y - playerY;
+        int zDif = z - playerZ;
+
+        return  xDif <= 8 && yDif <= 8 && zDif <= 8;
+    }
+
+    private boolean hasBlockAlreadyEnteredRoomQueue(int x, int y, int z){
+        int[] coordinates;
+        for(int i = 0; i < this.previousRoomCheckQueue.size(); i++){
+            coordinates = this.previousRoomCheckQueue.get(i);
+            if(coordinates[0] == x && coordinates[1] == y && coordinates[2] == z){
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    private void addBlockToRoomQueue(int x, int y, int z){
+        this.roomCheckQueue.add(new int[]{x,y,z});
+        this.previousRoomCheckQueue.add(new int[]{x,y,z});
+    }
+
+    private boolean isPlayerUnderTree(int x, int z){
+        ChunkColumnSkylightMap skylightMap = this.findChunkSkyLightMap(x >> 5, z >> 5);
+        int y = skylightMap.getHeightValue(x,z);
+
+
+        return Block.list[this.getBlockID(x,y,z)].ID == Block.leaf.ID;
+    }
+
     public synchronized byte getBlockSkyLightValue(int[] coordinates){
         return this.getBlockSkyLightValue(coordinates[0], coordinates[1], coordinates[2]);
     }
@@ -980,13 +1556,46 @@ public abstract class World {
         x %= 32;
         z %= 32;
         if(lightMap.lightMap[x + (z << 5)] < y){
-            if(this.isLineOfBlocksClear(x,y,z, lightMap)){
-                return true;
-            } else {
-                return false;
-            }
+            return this.isLineOfBlocksClear(x, y, z, lightMap);
         } else {
             return true;
+        }
+    }
+
+    public boolean doesBlockAllowRain(int x, int y, int z){
+        ChunkColumnSkylightMap lightMap = this.findChunkSkyLightMap(x >> 5, z >> 5);
+        if (x < 0) {
+            x %= 32;
+            x += 32;
+        }
+        if (z < 0) {
+            z %= 32;
+            z += 32;
+        }
+        x %= 32;
+        z %= 32;
+        return lightMap.lightMap[x + (z << 5)] < y;
+    }
+
+    private boolean isLineOfBlocksClearForRain(int x, int y, int z, ChunkColumnSkylightMap lightMap){
+        int endY = lightMap.lightMap[x + (z << 5)];
+
+        for(int i = y; i <= endY; i++){
+            if(this.doesBlockStopRain(x,i,z)){
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private boolean doesBlockStopRain(int x, int y, int z){
+        String blockName = Block.list[this.getBlockID(x,y,z)].blockName;
+        switch (blockName){
+            case "AIR", "WATER", "TALL_GRASS", "SAPLING", "TORCH", "BERRY_BUSH", "BERRY_BUSH_GROWING", "REEDS_GROWTH", "LOG_PILE", "ITEM_BLOCK", "ITEM_STICK", "ITEM_STONE", "BRICK_PILE", "CAMPFIRE_LIT", "CAMPFIRE":
+                return false;
+            default:
+                return true;
         }
     }
 
@@ -1281,7 +1890,7 @@ public abstract class World {
                             checkedBlock.onLeftClick(blockX, blockY, blockZ, this, this.ce.save.thePlayer);
                             this.ce.save.thePlayer.breakTimer = 0;
                         } else if(this.ce.save.time % 20 == 0) {
-                            CosmicEvolution.instance.soundPlayer.playSound(blockX, blockY, blockZ, new Sound(checkedBlock.stepSound, false),  new Random().nextFloat(0.4F, 0.7F));
+                            CosmicEvolution.instance.soundPlayer.playSound(blockX, blockY, blockZ, new Sound(checkedBlock.stepSound, false, 1f),  new Random().nextFloat(0.4F, 0.7F));
                         }
                     } else {
                         this.ce.save.thePlayer.breakTimer = 0;

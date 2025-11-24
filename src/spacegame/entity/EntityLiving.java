@@ -51,12 +51,12 @@ public abstract class EntityLiving extends Entity {
         this.alerted = true;
         this.alertTimer = new Random().nextInt(300, 600);
         AIPassive.chooseNewTargetAndSetAngle(this);
-        CosmicEvolution.instance.soundPlayer.playSound(this.x, this.y, this.z, new Sound(this.getHurtSound(), false), new Random().nextFloat(0.9F, 1));
+        CosmicEvolution.instance.soundPlayer.playSound(this.x, this.y, this.z, new Sound(this.getHurtSound(), false, 1f), new Random().nextFloat(0.9F, 1));
     }
 
     public void playAmbientSound(){
         if(CosmicEvolution.globalRand.nextInt(1200) == 0){
-            CosmicEvolution.instance.soundPlayer.playSound(this.x, this.y, this.z, new Sound(this.getAmbientSound(), false), new Random().nextFloat(0.9F, 1));
+            CosmicEvolution.instance.soundPlayer.playSound(this.x, this.y, this.z, new Sound(this.getAmbientSound(), false, 1f), new Random().nextFloat(0.9F, 1));
         }
     }
 
@@ -69,7 +69,7 @@ public abstract class EntityLiving extends Entity {
             int prevZ = MathUtil.floorDouble(this.prevZ);
             if ((x != prevX || z != prevZ) && this.stepTimer <= 0) {
                 int lowerY = MathUtil.floorDouble(this.y - (this.height/2) - 0.1);
-                CosmicEvolution.instance.soundPlayer.playSound(this.x, lowerY, this.z, new Sound(Block.list[CosmicEvolution.instance.save.activeWorld.getBlockID(x, lowerY, z)].getStepSound(x, lowerY, z), false), new Random().nextFloat(0.6F, 1));
+                CosmicEvolution.instance.soundPlayer.playSound(this.x, lowerY, this.z, new Sound(Block.list[CosmicEvolution.instance.save.activeWorld.getBlockID(x, lowerY, z)].getStepSound(x, lowerY, z), false, 1f), new Random().nextFloat(0.6F, 1));
                 this.stepTimer = 30;
             } else {
                 this.stepTimer--;
@@ -81,7 +81,7 @@ public abstract class EntityLiving extends Entity {
         if (Block.list[this.blockUnderEntity].isSolid && !this.inWater) {
             if (this.lastYOnGround - this.y > 3) {
                 this.health -= this.lastYOnGround - this.y;
-                CosmicEvolution.instance.soundPlayer.playSound(this.x, this.y, this.z, new Sound(Sound.fallDamage, false), new Random().nextFloat(0.4F, 0.7F));
+                CosmicEvolution.instance.soundPlayer.playSound(this.x, this.y, this.z, new Sound(Sound.fallDamage, false, 1f), new Random().nextFloat(0.4F, 0.7F));
             }
             this.lastYOnGround = this.y;
         }

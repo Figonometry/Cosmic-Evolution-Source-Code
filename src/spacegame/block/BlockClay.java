@@ -14,7 +14,7 @@ public final class BlockClay extends Block implements ITickable {
             if ((world.getBlockLightValue(x, y + 1, z) >= 9 || world.getBlockSkyLightValue(x, y + 1, z) >= 9) && !Block.list[world.getBlockID(x, y + 1, z)].isSolid) {
                 if (this.isNearGrassBlock(x, y, z)) {
                     if(world.chunkFullySurrounded(x >> 5, y >> 5, z >> 5)) {
-                        world.setBlockWithNotify(x, y, z, Block.grassWithClay.ID);
+                        world.setBlockWithNotify(x, y, z, Block.grassWithClay.ID, false);
                     }
                 }
             }

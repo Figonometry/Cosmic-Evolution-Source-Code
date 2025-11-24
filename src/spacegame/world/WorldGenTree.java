@@ -5,7 +5,6 @@ import spacegame.block.BlockLog;
 import spacegame.core.CosmicEvolution;
 import spacegame.util.LongHasher;
 
-import java.security.CodeSigner;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -95,7 +94,7 @@ public class WorldGenTree extends WorldGen {
             y = this.worldEarth.chunkController.findChunkSkyLightMap(x >> 5, z >> 5).getHeightValue(x,z);
 
             if(this.worldEarth.getBlockID(x,y,z) == Block.grass.ID && this.worldEarth.getBlockID(x, y + 1, z) == Block.air.ID){
-                this.worldEarth.setBlockWithNotify(x, y + 1, z, Block.itemStick.ID);
+                this.worldEarth.setBlockWithNotify(x, y + 1, z, Block.itemStick.ID, false);
             }
         }
 

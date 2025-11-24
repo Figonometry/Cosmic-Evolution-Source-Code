@@ -243,7 +243,7 @@ public final class ChunkTerrainHandler {
             z = chunk.getBlockZFromIndex(stonePlacementIndex);
 
             if(this.world.getBlockID(x,y,z) == Block.air.ID && this.world.getBlockID(x, y - 1, z) == Block.grass.ID){
-                this.world.setBlockWithNotify(x,y,z, Block.itemStone.ID);
+                this.world.setBlockWithNotify(x,y,z, Block.itemStone.ID, false);
             }
             rockCount--;
         }
@@ -256,7 +256,7 @@ public final class ChunkTerrainHandler {
             z = chunk.getBlockZFromIndex(tallGrassPlacementIndex);
 
             if(this.world.getBlockID(x,y,z) == Block.air.ID && this.world.getBlockID(x, y - 1, z) == Block.grass.ID){
-                this.world.setBlockWithNotify(x,y,z, Block.tallGrass.ID);
+                this.world.setBlockWithNotify(x,y,z, Block.tallGrass.ID, false);
             }
 
             tallGrassCount--;

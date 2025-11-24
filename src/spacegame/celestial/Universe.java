@@ -17,8 +17,8 @@ public final class Universe {
         this.objects[0] = this.sun;
         this.objects[1] = this.earth;
         this.objects[2] = this.moon;
-        this.objects[0].mappedTexture = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiUniverse/sun", RenderEngine.TEXTURE_TYPE_CUBEMAP, 0);
-        this.objects[2].mappedTexture = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiUniverse/moon", RenderEngine.TEXTURE_TYPE_CUBEMAP, 0);
+        this.objects[0].mappedTexture = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiUniverse/sun", RenderEngine.TEXTURE_TYPE_CUBEMAP, 0, true);
+        this.objects[2].mappedTexture = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiUniverse/moon", RenderEngine.TEXTURE_TYPE_CUBEMAP, 0, true);
 
         for(int i = 0; i < this.objects.length; i ++){
             this.objects[i].generateRenderData();
