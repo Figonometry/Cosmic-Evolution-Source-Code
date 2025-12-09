@@ -454,6 +454,10 @@ public abstract class World {
             this.windIntensity += this.targetWindIntensity - this.windIntensity > 0.0f ? 0.03125f : -0.03125f;
         }
 
+        if(this.windIntensity > 1){
+            this.windIntensity = 1;
+        }
+
         Shader.terrainShader.uploadBoolean("windy", true);
         Shader.terrainShader.uploadFloat("windDirection", this.windDirection);
         Shader.terrainShader.uploadFloat("windIntensity", this.windIntensity);
@@ -1392,7 +1396,7 @@ public abstract class World {
         int y = skylightMap.getHeightValue(x,z);
 
 
-        return Block.list[this.getBlockID(x,y,z)].ID == Block.leaf.ID;
+        return Block.list[this.getBlockID(x,y,z)].ID == Block.leaf.ID && MathUtil.floorDouble(this.ce.save.thePlayer.y) < y;
     }
 
     public synchronized byte getBlockSkyLightValue(int[] coordinates){
@@ -1713,6 +1717,18 @@ public abstract class World {
 
     public ChestLocation getChestLocation(int x, int y, int z){
         return this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).getChestLocation(x,y,z);
+    }
+
+    public void addHeatableBlock(int x, int y, int z){
+        this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).addHeatableBlock(x,y,z);
+    }
+
+    public void removeHeatableBlock(int x, int y, int z){
+        this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).removeHeatableBlock(x,y,z);
+    }
+
+    public HeatableBlockLocation getHeatableBlock(int x, int y , int z){
+        return this.findChunkFromChunkCoordinates(x >> 5 ,y >> 5, z >> 5).getHeatableBlock(x,y,z);
     }
 
     public void clearChestLocation(int x, int y, int z){ //Destroys the item before deleting the chest inventory in case a item data transfer occurs internally between two chest locations

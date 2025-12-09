@@ -7,6 +7,7 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
+import spacegame.block.BlockTorch;
 import spacegame.block.ITimeUpdate;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
@@ -110,7 +111,7 @@ public final class GuiInGame extends Gui {
         renderMessageText();
         renderHeldItem();
         renderHotbar();
-        renderHealthbar();
+        renderHealthAndHungerBar();
     }
 
     public static void renderGuiFromOtherGuis(){
@@ -120,7 +121,7 @@ public final class GuiInGame extends Gui {
         renderMessageText();
         renderHeldItem();
         renderHotbar();
-        renderHealthbar();
+        renderHealthAndHungerBar();
     }
 
     public static void renderVignette(){
@@ -176,7 +177,7 @@ public final class GuiInGame extends Gui {
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
         int[] blockCoordinates = CosmicEvolution.instance.save.thePlayer.getPlayerLookingAtBlockCoords();
-        if(Block.list[blockID] instanceof ITimeUpdate) {
+        if(Block.list[blockID] instanceof ITimeUpdate && !(Block.list[blockID] instanceof BlockTorch)) {
             StringBuilder stringBuilder = new StringBuilder();
             TimeUpdateEvent updateEvent = CosmicEvolution.instance.save.activeWorld.getTimeEvent(blockCoordinates[0], blockCoordinates[1], blockCoordinates[2]);
             if(updateEvent != null) {
@@ -387,28 +388,46 @@ public final class GuiInGame extends Gui {
             x += size;
         }
 
-        if(CosmicEvolution.instance.currentGui instanceof GuiInventoryStrawChest){
-            CosmicEvolution.instance.save.thePlayer.inventory.shiftPlayerHotbar(((GuiInventoryStrawChest) CosmicEvolution.instance.currentGui).getPlayerInventoryShiftX(), 0);
+        if(CosmicEvolution.instance.currentGui instanceof GuiInventoryStrawChest || CosmicEvolution.instance.currentGui instanceof GuiCampfire){
+            CosmicEvolution.instance.save.thePlayer.inventory.shiftPlayerHotbar(-256, 0);
         }
     }
 
-    private static void renderHealthbar(){ //Full red 16711680, half red 8323072
+    private static void renderHealthAndHungerBar(){ //Full red 16711680, half red 8323072
         RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         tessellator.toggleOrtho();
         int x = -428;
         int y = -395;
+
         tessellator.addVertex2DTexture(4128768, x, y, -90, 3);
-        tessellator.addVertex2DTexture(4128768, x + 864, y + 16, -90, 1);
+        tessellator.addVertex2DTexture(4128768, x + 368, y + 16, -90, 1);
         tessellator.addVertex2DTexture(4128768, x, y + 16, -90, 2);
-        tessellator.addVertex2DTexture(4128768, x + 864, y, -90, 0);
+        tessellator.addVertex2DTexture(4128768, x + 368, y, -90, 0);
         tessellator.addElements();
 
-        float progress = (int) (864 * (CosmicEvolution.instance.save.thePlayer.health / CosmicEvolution.instance.save.thePlayer.maxHealth));
-        tessellator.addVertex2DTexture(16711680, x, y, -89, 3);
-        tessellator.addVertex2DTexture(16711680, x + progress, y + 16, -89, 1);
-        tessellator.addVertex2DTexture(16711680, x, y + 16, -89, 2);
-        tessellator.addVertex2DTexture(16711680, x + progress, y, -89, 0);
+        float progress = (int) (368 * (CosmicEvolution.instance.save.thePlayer.health / CosmicEvolution.instance.save.thePlayer.maxHealth));
+        tessellator.addVertex2DTexture(11016473, x, y, -89, 3);
+        tessellator.addVertex2DTexture(11016473, x + progress, y + 16, -89, 1);
+        tessellator.addVertex2DTexture(11016473, x, y + 16, -89, 2);
+        tessellator.addVertex2DTexture(11016473, x + progress, y, -89, 0);
         tessellator.addElements();
+
+        x += 496;
+        tessellator.addVertex2DTexture(5522201, x, y, -90, 3);
+        tessellator.addVertex2DTexture(5522201, x + 368, y + 16, -90, 1);
+        tessellator.addVertex2DTexture(5522201, x, y + 16, -90, 2);
+        tessellator.addVertex2DTexture(5522201, x + 368, y, -90, 0);
+        tessellator.addElements();
+
+        progress = (int) (368 * (CosmicEvolution.instance.save.thePlayer.saturation / CosmicEvolution.instance.save.thePlayer.maxSaturation));
+        tessellator.addVertex2DTexture(16764748, x, y, -89, 3);
+        tessellator.addVertex2DTexture(16764748, x + progress, y + 16, -89, 1);
+        tessellator.addVertex2DTexture(16764748, x, y + 16, -89, 2);
+        tessellator.addVertex2DTexture(16764748, x + progress, y, -89, 0);
+        tessellator.addElements();
+
+
+
         tessellator.drawTexture2D(fillableColorWithShadedBottom, Shader.screen2DTexture, CosmicEvolution.camera);
         tessellator.toggleOrtho();
     }

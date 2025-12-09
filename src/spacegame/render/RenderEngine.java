@@ -385,6 +385,8 @@ public final class RenderEngine {
                 case 35 -> "seed";
                 case 36 -> "reedGrowing";
                 case 37 -> "sapling";
+                case 38 -> "torchUnlit";
+                case 39 -> "torchBurnedOut";
                 default -> "missing";
             };
         } else if(textureFolderpath.contains("item")){
@@ -408,6 +410,7 @@ public final class RenderEngine {
                 case 17 -> "mud";
                 case 18 -> "reeds";
                 case 19 -> "berrySeed";
+                case 20 -> "cookedVenison";
                 default -> "missing";
             };
         }

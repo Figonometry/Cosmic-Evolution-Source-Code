@@ -30,7 +30,7 @@ public final class Inventory {
         this.itemStacks = new ItemStack[(inventoryHeight * inventoryWidth) + extraSpaces];
         float x = 22;
         float y = -192;
-        int i = 0;
+        int i;
         for(i = 0; i < this.itemStacks.length - extraSpaces; i++){
             this.itemStacks[i] = new ItemStack(null, (byte)0,x,y);
             x += 65;

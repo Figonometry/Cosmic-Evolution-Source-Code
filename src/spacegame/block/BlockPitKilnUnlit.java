@@ -17,6 +17,7 @@ public class BlockPitKilnUnlit extends BlockContainer {
         super(ID, textureID, filepath, inventoryWidth, inventoryHeight);
     }
 
+    @Override
     public void handleSpecialRightClickFunctions(int x, int y, int z, World world, EntityPlayer player){
         if(!MouseListener.rightClickReleased)return;;
         short playerHeldItem = player.getHeldItem();

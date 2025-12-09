@@ -7,3 +7,4 @@ blockName:TORCH
 requireSolidBlockBelow:true
 blockModel:torchBlockModel
 alwaysRenderFace:true
+displayName:Torch

@@ -8,16 +8,18 @@ import spacegame.core.Sound;
 import spacegame.entity.EntityItem;
 import spacegame.entity.EntityParticle;
 import spacegame.entity.EntityPlayer;
+import spacegame.gui.GuiCampfire;
 import spacegame.gui.GuiInGame;
 import spacegame.item.Item;
 import spacegame.world.Chunk;
 import spacegame.world.World;
 
 public final class BlockCampFireLit extends BlockCampFire implements ITickable, IParticleGenerator {
-    public BlockCampFireLit(short ID, int textureID, String filepath) {
-        super(ID, textureID, filepath);
-    }
 
+
+    public BlockCampFireLit(short ID, int textureID, String filepath, int inventoryWidth, int inventoryHeight) {
+        super(ID, textureID, filepath, inventoryWidth, inventoryHeight);
+    }
 
     @Override
     public void onLeftClick(int x, int y, int z, World world, EntityPlayer player){
@@ -34,12 +36,14 @@ public final class BlockCampFireLit extends BlockCampFire implements ITickable, 
         if(!MouseListener.rightClickReleased)return;
         short playerHeldItem = player.getHeldItem();
 
-        if(playerHeldItem == Item.unlitTorch.ID) {
-            CosmicEvolution.instance.save.thePlayer.removeItemFromInventory();
-            if (!CosmicEvolution.instance.save.thePlayer.addItemToInventory(Item.torch.ID, Item.NULL_ITEM_METADATA, (byte) 1, Item.NULL_ITEM_DURABILITY)) {
-                world.addEntity(new EntityItem(CosmicEvolution.instance.save.thePlayer.x, CosmicEvolution.instance.save.thePlayer.y, CosmicEvolution.instance.save.thePlayer.z, Item.torch.ID, Item.NULL_ITEM_METADATA, (byte) 1, Item.NULL_ITEM_DURABILITY));
-                MouseListener.rightClickReleased = false;
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) && KeyListener.keyReleased[GLFW.GLFW_KEY_LEFT_SHIFT]) {
+            if (playerHeldItem == Item.unlitTorch.ID) {
+                CosmicEvolution.instance.save.thePlayer.removeItemFromInventory();
+                if (!CosmicEvolution.instance.save.thePlayer.addItemToInventory(Item.torch.ID, Item.NULL_ITEM_METADATA, (byte) 1, Item.NULL_ITEM_DURABILITY)) {
+                    world.addEntity(new EntityItem(CosmicEvolution.instance.save.thePlayer.x, CosmicEvolution.instance.save.thePlayer.y, CosmicEvolution.instance.save.thePlayer.z, Item.torch.ID, Item.NULL_ITEM_METADATA, (byte) 1, Item.NULL_ITEM_DURABILITY));
+                }
             }
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_LEFT_SHIFT);
         }
 
         if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) && KeyListener.keyReleased[GLFW.GLFW_KEY_LEFT_SHIFT]){
@@ -48,7 +52,11 @@ public final class BlockCampFireLit extends BlockCampFire implements ITickable, 
             player.spawnZ = z;
             KeyListener.setKeyReleased(GLFW.GLFW_KEY_LEFT_SHIFT);
             GuiInGame.setMessageText("Spawn Point Set", 16777215);
+        } else if(!KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT)) {
+            CosmicEvolution.instance.setNewGui(new GuiCampfire(CosmicEvolution.instance, CosmicEvolution.instance.save.thePlayer.inventory, world.getChestLocation(x,y,z).inventory, world.getHeatableBlock(x,y,z), x,y,z));
         }
+
+        MouseListener.rightClickReleased = false;
     }
 
     @Override

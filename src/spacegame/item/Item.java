@@ -14,13 +14,13 @@ public class Item {
     public static final Item stone = new Item((short)2, 2, "src/spacegame/assets/itemFiles/stone.txt"); //Remove
     public static final Item stoneFragments = new ItemStoneFragments((short)3, 3, "src/spacegame/assets/itemFiles/stoneFragments.txt");
     public static final Item stoneHandAxe = new ItemAxe((short)4, 4, "src/spacegame/assets/itemFiles/stoneHandAxe.txt", Material.RAW_STONE);
-    public static final Item berry = new ItemBerry((short)5, 5, "src/spacegame/assets/itemFiles/berry.txt", 5f);
+    public static final Item berry = new ItemBerry((short)5, 5, "src/spacegame/assets/itemFiles/berry.txt", 50f);
     public static final Item rawStick = new Item((short)6, 6, "src/spacegame/assets/itemFiles/rawStick.txt"); //Remove
     public static final Item unlitTorch = new Item((short)7, 7, "src/spacegame/assets/itemFiles/unlitTorch.txt");
-    public static final Item fireWood = new Item((short)8, 8, "src/spacegame/assets/itemFiles/fireWood.txt");
+    public static final Item fireWood = new ItemFirewood((short)8, 8, "src/spacegame/assets/itemFiles/fireWood.txt");
     public static final Item stoneHandKnifeBlade = new ItemKnife((short)9, 9, "src/spacegame/assets/itemFiles/stoneHandKnifeBlade.txt", Material.RAW_STONE);
     public static final Item stoneHandShovel = new ItemShovel((short)10, 10, "src/spacegame/assets/itemFiles/stoneHandShovel.txt", Material.RAW_STONE);
-    public static final Item rawVenison = new ItemFood((short)11, 11, "src/spacegame/assets/itemFiles/rawVenison.txt", 5f);
+    public static final Item rawVenison = new ItemRawVenison((short)11, 11, "src/spacegame/assets/itemFiles/rawVenison.txt", 5f);
     public static final Item straw = new Item((short)12, 12, "src/spacegame/assets/itemFiles/straw.txt");
     public static final Item reedBasket = new Item((short)13, 13, "src/spacegame/assets/itemFiles/reedBasket.txt");
     public static final Item clay = new Item((short)14, 14, "src/spacegame/assets/itemFiles/clay.txt"); //Remove
@@ -31,6 +31,7 @@ public class Item {
     public static final Item berrySeed = new Item((short)19, 19, "src/spacegame/assets/itemFiles/berrySeed.txt");
     public static final Item reedSeed = new Item((short)20, 19, "src/spacegame/assets/itemFiles/reedSeed.txt");
     public static final Item treeSeed = new Item((short)21, 19, "src/spacegame/assets/itemFiles/treeSeed.txt");
+    public static final Item cookedVenison = new ItemFood((short)22, 20, "src/spacegame/assets/itemFiles/cookedVenison.txt", 300f);
     public final short ID;
     public final int textureID;
     public float hardness = 0;

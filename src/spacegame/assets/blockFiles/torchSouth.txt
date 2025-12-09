@@ -6,3 +6,4 @@ lightColor:16760877
 blockName:TORCH
 blockModel:torchSouthBlockModel
 alwaysRenderFace:true
+displayName:Torch

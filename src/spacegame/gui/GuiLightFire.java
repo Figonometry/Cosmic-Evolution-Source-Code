@@ -5,6 +5,7 @@ import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.MouseListener;
+import spacegame.item.Inventory;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
 import spacegame.world.Chunk;
@@ -99,6 +100,8 @@ public final class GuiLightFire extends GuiAction {
             if (this.ce.currentlySelectedMoveableObject.equals(this.stone1)) {
                 if (this.stone2.isMouseHoveredOver() && this.ce.currentlySelectedMoveableObject.pickedUp && Math.abs(x) <= 256 && Math.abs(y) <= 256) {
                    this.ce.save.activeWorld.setBlockWithNotify(this.x, this.y, this.z, Block.campfireLit.ID, false);
+                   this.ce.save.activeWorld.addHeatableBlock(this.x, this.y, this.z);
+                   this.ce.save.activeWorld.addChestLocation(this.x, this.y, this.z, new Inventory(1,3));
                    this.ce.save.activeWorld.findChunkFromChunkCoordinates(this.x >> 5, this.y >> 5, this.z >> 5).addTickableBlockToArray((short) Chunk.getBlockIndexFromCoordinates(this.x,this.y,this.z));
                    GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
                    this.ce.setNewGui(new GuiInGame(this.ce));
@@ -106,6 +109,8 @@ public final class GuiLightFire extends GuiAction {
             } else if (this.ce.currentlySelectedMoveableObject.equals(this.stone2)) {
                 if (this.stone1.isMouseHoveredOver() && this.ce.currentlySelectedMoveableObject.pickedUp && Math.abs(x) <= 256 && Math.abs(y) <= 256) {
                     this.ce.save.activeWorld.setBlockWithNotify(this.x, this.y, this.z, Block.campfireLit.ID, false);
+                    this.ce.save.activeWorld.addHeatableBlock(this.x, this.y, this.z);
+                    this.ce.save.activeWorld.addChestLocation(this.x, this.y, this.z, new Inventory(1,3));
                     this.ce.save.activeWorld.findChunkFromChunkCoordinates(this.x >> 5, this.y >> 5, this.z >> 5).addTickableBlockToArray((short) Chunk.getBlockIndexFromCoordinates(this.x,this.y,this.z));
                     GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
                     this.ce.setNewGui(new GuiInGame(this.ce));

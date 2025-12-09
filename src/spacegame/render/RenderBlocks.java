@@ -108,7 +108,7 @@ public class RenderBlocks {
         this.skyLightReset = 1f;
 
         switch (block) {
-            case 2 -> {
+            case 2, 121, 126 -> {
                 switch (face) {
                     case TOP_FACE -> {
                         for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
@@ -152,7 +152,7 @@ public class RenderBlocks {
                     }
                 }
             }
-            case 3, 4 -> {
+            case 3, 4, 122, 123, 127, 128 -> {
                 switch (face) {
                     case TOP_FACE -> {
                         for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {
@@ -196,7 +196,7 @@ public class RenderBlocks {
                     }
                 }
             }
-            case 5, 6 -> {
+            case 5, 6, 124, 125, 129, 130 -> {
                 switch (face) {
                     case TOP_FACE -> {
                         for (int i = 0; i < Block.list[block].blockModel.modelFaces.length; i++) {

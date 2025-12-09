@@ -6,8 +6,8 @@ import spacegame.entity.EntityPlayer;
 import spacegame.world.World;
 
 public final class ItemBerry extends ItemFood {
-    public ItemBerry(short ID, int textureID, String filepath, float healthIncrease) {
-        super(ID, textureID, filepath, healthIncrease);
+    public ItemBerry(short ID, int textureID, String filepath, float saturationIncrease) {
+        super(ID, textureID, filepath, saturationIncrease);
     }
 
     @Override

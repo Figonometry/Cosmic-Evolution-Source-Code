@@ -75,6 +75,7 @@ public final class Chunk implements Comparable<Chunk> {
     public IntBuffer elementBufferTransparent;
     public ArrayList<ChestLocation> chestLocations = new ArrayList<>();
     public ArrayList<TimeUpdateEvent> updateEvents = new ArrayList<>();
+    public ArrayList<HeatableBlockLocation> heatableBlocks = new ArrayList<>();
     public int opaqueVBOID = -10;
     public int opaqueVAOID = -10;
     public int opaqueEBOID = -10;
@@ -1163,6 +1164,16 @@ public final class Chunk implements Comparable<Chunk> {
                 }
             }
         }
+        if(CosmicEvolution.instance.save.time % 15 == 0){
+            HeatableBlockLocation heatableBlockLocation;
+            if(this.heatableBlocks.size() > 0) {
+                System.out.println(this.heatableBlocks.size());
+            }
+            for(int i = 0; i < this.heatableBlocks.size(); i++){
+                heatableBlockLocation = this.heatableBlocks.get(i);
+                heatableBlockLocation.heatItem(this);
+            }
+        }
     }
 
     @Override
@@ -1224,6 +1235,56 @@ public final class Chunk implements Comparable<Chunk> {
             }
         }
         this.decayableLeaves = newArray;
+    }
+
+    public void addHeatableBlock(HeatableBlockLocation heatableBlockLocation){
+        this.heatableBlocks.add(heatableBlockLocation);
+    }
+
+    public void addHeatableBlock(int x, int y, int z){
+        this.heatableBlocks.add(new HeatableBlockLocation((short) getBlockIndexFromCoordinates(x,y,z)));
+    }
+
+    public void addHeatableBlock(short index){
+        this.heatableBlocks.add(new HeatableBlockLocation(index));
+    }
+
+    public HeatableBlockLocation getHeatableBlock(int x, int y, int z){
+        int index = getBlockIndexFromCoordinates(x,y,z);
+        for(int i = 0; i < this.heatableBlocks.size(); i++){
+            if(this.heatableBlocks.get(i).index == index){
+                return this.heatableBlocks.get(i);
+            }
+        }
+        return  null;
+    }
+
+    public HeatableBlockLocation getHeatableBlock(int index){
+        for(int i = 0; i < this.heatableBlocks.size(); i++){
+            if(this.heatableBlocks.get(i).index == index){
+                return this.heatableBlocks.get(i);
+            }
+        }
+        return  null;
+    }
+
+    public void removeHeatableBlock(int x, int y, int z){
+        int index = getBlockIndexFromCoordinates(x,y,z);
+        for(int i = 0; i < this.heatableBlocks.size(); i++){
+            if(this.heatableBlocks.get(i).index == index){
+                this.heatableBlocks.remove(i);
+                break;
+            }
+        }
+    }
+
+    public void removeHeatableBlock(short index){
+        for(int i = 0; i < this.heatableBlocks.size(); i++){
+            if(this.heatableBlocks.get(i).index == index){
+                this.heatableBlocks.remove(i);
+                break;
+            }
+        }
     }
 
     public void addChestLocation(int x, int y, int z, Inventory inventory){

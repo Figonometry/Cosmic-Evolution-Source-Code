@@ -47,6 +47,7 @@ public final class ThreadChunkColumnLoader implements Runnable {
                         NBTTagCompound entity = chunkData.getCompoundTag("Entity");
                         NBTTagCompound chest = chunkData.getCompoundTag("Chest");
                         NBTTagCompound timeEvents = chunkData.getCompoundTag("TimeEvents");
+                        NBTTagCompound heatableBlocks = chunkData.getCompoundTag("HeatableBlocks");
                         chunk = new Chunk(x, y, z, CosmicEvolution.instance.save.activeWorld);
 
                         chunk.containsWater = chunkData.getBoolean("containsWater");
@@ -119,6 +120,32 @@ public final class ThreadChunkColumnLoader implements Runnable {
                                 short index = eventLoadedTag.getShort("index");
                                 long updateTime = eventLoadedTag.getLong("updateTime");
                                 chunk.addTimeUpdateEvent(index, updateTime);
+                            }
+                        }
+
+                        if(heatableBlocks != null){
+                            int heatableBlockCount = heatableBlocks.getInteger("heatableBlockCount");
+                            NBTTagCompound heatableBlockLoadedTag;
+                            HeatableBlockLocation heatableBlockLocation;
+                            for(int i = 0; i < heatableBlockCount; i++){
+                                heatableBlockLoadedTag = heatableBlocks.getCompoundTag("heatableBlock" + i);
+                                short index = heatableBlockLoadedTag.getShort("index");
+                                float currentTemperature = heatableBlockLoadedTag.getFloat("currentTemperature");
+                                short currentFuelBurning = heatableBlockLoadedTag.getShort("currentFuelBurning");
+                                long fuelBurnoutTime = heatableBlockLoadedTag.getLong("fuelBurnoutTime");
+                                long heatingFinishTime = heatableBlockLoadedTag.getLong("heatingFinishTime");
+                                long fuelStartTime = heatableBlockLoadedTag.getLong("fuelStartTime");
+                                long heatStartTime = heatableBlockLoadedTag.getLong("heatStartTime");
+                                boolean heating = heatableBlockLoadedTag.getBoolean("heating");
+                                heatableBlockLocation = new HeatableBlockLocation(index);
+                                heatableBlockLocation.currentTemperature = currentTemperature;
+                                heatableBlockLocation.currentFuelBurning = currentFuelBurning;
+                                heatableBlockLocation.fuelBurnoutTime = fuelBurnoutTime;
+                                heatableBlockLocation.heatingFinishTime = heatingFinishTime;
+                                heatableBlockLocation.heating = heating;
+                                heatableBlockLocation.fuelStartTime = fuelStartTime;
+                                heatableBlockLocation.heatStartTime = heatStartTime;
+                                chunk.addHeatableBlock(heatableBlockLocation);
                             }
                         }
 

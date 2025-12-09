@@ -30,10 +30,12 @@ public final class ThreadChunkSave implements Runnable {
             NBTTagCompound entity = new NBTTagCompound();
             NBTTagCompound chest = new NBTTagCompound();
             NBTTagCompound timeEvents = new NBTTagCompound();
+            NBTTagCompound heatableBlocks = new NBTTagCompound();
             chunkTag.setTag("Chunk", chunkData);
             chunkData.setTag("Entity", entity);
             chunkData.setTag("Chest", chest);
             chunkData.setTag("TimeEvents", timeEvents);
+            chunkData.setTag("HeatableBlocks", heatableBlocks);
 
             chunkData.setInteger("x", chunk.x);
             chunkData.setInteger("y", chunk.y);
@@ -129,6 +131,29 @@ public final class ThreadChunkSave implements Runnable {
                     eventCount++;
                 }
                 timeEvents.setInteger("eventCount", eventCount);
+            }
+
+            if(this.chunk.heatableBlocks.size() > 0){
+                HeatableBlockLocation heatableBlockLocation;
+                int heatableBlockCount = 0;
+                NBTTagCompound[] heatableBlockTags = new NBTTagCompound[this.chunk.heatableBlocks.size()];
+                for(int i = 0; i < heatableBlockTags.length; i++){
+
+                    heatableBlockLocation = this.chunk.heatableBlocks.get(i);
+                    heatableBlockTags[i] = new NBTTagCompound();
+                    heatableBlockTags[i].setShort("index", heatableBlockLocation.index);
+                    heatableBlockTags[i].setFloat("currentTemperature", heatableBlockLocation.currentTemperature);
+                    heatableBlockTags[i].setShort("currentFuelBurning", heatableBlockLocation.currentFuelBurning);
+                    heatableBlockTags[i].setLong("fuelBurnoutTime", heatableBlockLocation.fuelBurnoutTime);
+                    heatableBlockTags[i].setLong("heatingFinishTime", heatableBlockLocation.heatingFinishTime);
+                    heatableBlockTags[i].setBoolean("heating", heatableBlockLocation.heating);
+                    heatableBlockTags[i].setLong("heatStartTime", heatableBlockLocation.heatStartTime);
+                    heatableBlockTags[i].setLong("fuelStartTime", heatableBlockLocation.fuelStartTime);
+
+                    heatableBlocks.setTag("heatableBlock" + heatableBlockCount, heatableBlockTags[i]);
+                    heatableBlockCount++;
+                }
+                heatableBlocks.setInteger("heatableBlockCount", heatableBlockCount);
             }
 
             NBTIO.writeCompressed(chunkTag, outputStream);

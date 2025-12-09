@@ -1,9 +1,15 @@
 package spacegame.block;
 
-public class BlockCampFire extends Block {
-    public BlockCampFire(short ID, int textureID, String filepath) {
-        super(ID, textureID, filepath);
+import spacegame.entity.EntityPlayer;
+import spacegame.world.World;
+
+public class BlockCampFire extends BlockHeating {
+
+
+    public BlockCampFire(short ID, int textureID, String filepath, int inventoryWidth, int inventoryHeight) {
+        super(ID, textureID, filepath, inventoryWidth, inventoryHeight);
     }
+
 
     public int getLogCount(){
         return switch (this.ID) {

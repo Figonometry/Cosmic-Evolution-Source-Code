@@ -21,12 +21,9 @@ public final class GuiInventoryStrawChest extends GuiInventory {
         this.chestInventory = chestInventory;
 
         this.playerInventory.shiftAllItemStacks(-262, 0);
-        this.chestInventory.shiftAllItemStacks(512, 0);
+        this.chestInventory.shiftAllItemStacks(512, -4);
     }
 
-    public int getPlayerInventoryShiftX(){
-        return -256;
-    }
 
     @Override
     public void loadTextures() {
@@ -42,6 +39,7 @@ public final class GuiInventoryStrawChest extends GuiInventory {
         this.playerInventory.resetAllItemStacks();
         this.chestInventory.resetAllItemStacks();
         CosmicEvolution.instance.renderEngine.deleteTexture(this.playerInventoryUI);
+        CosmicEvolution.instance.renderEngine.deleteTexture(this.strawChestInventoryUI);
         CosmicEvolution.instance.renderEngine.deleteTexture(transparentBackground);
         CosmicEvolution.instance.renderEngine.deleteTexture(fillableColorWithShadedBottom);
         this.unloadTexture();
@@ -80,7 +78,7 @@ public final class GuiInventoryStrawChest extends GuiInventory {
         tessellator.addElements();
         tessellator.drawTexture2D(this.playerInventoryUI, Shader.screen2DTexture, CosmicEvolution.camera);
 
-        inventoryUIWidth = 132;
+        inventoryUIWidth = 196;
         inventoryUIHeight = 608;
         inventoryUIX = 512;
         inventoryUIY = 0;

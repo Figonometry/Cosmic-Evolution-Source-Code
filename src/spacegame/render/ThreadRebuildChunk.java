@@ -203,7 +203,7 @@ public final class ThreadRebuildChunk implements Runnable {
 
     private void addBlockToRenderData(short block, int index, int face, int[] greedyMeshSize, RenderBlocks renderBlocks) {
         switch (Block.list[block].blockName) {
-            case "TORCH" -> renderBlocks.renderTorch(this.workingChunk, this.parentWorld, block, index, face);
+            case "TORCH", "TORCH_UNLIT" -> renderBlocks.renderTorch(this.workingChunk, this.parentWorld, block, index, face);
             case "WATER", "TALL_GRASS", "SAPLING" ->
                     renderBlocks.renderTransparentBlock(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);
             case "CAMPFIRE_LIT" -> {

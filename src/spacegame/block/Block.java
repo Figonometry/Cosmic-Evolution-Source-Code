@@ -157,12 +157,12 @@ public class Block {
     public static final Block leaf = new BlockLeaf((short) 60, 10,"src/spacegame/assets/blockFiles/leaf.txt"); //Leaf Erikson
     public static final Block berryBush = new BlockBerryBush((short) 61, 25, "src/spacegame/assets/blockFiles/berryBush.txt");
     public static final Block berryBushNoBerries = new BlockBerryBush((short) 62, 11, "src/spacegame/assets/blockFiles/berryBush.txt");
-    public static final Block campFire1FireWood = new BlockCampFireUnlit((short) 63, 16, "src/spacegame/assets/blockFiles/campFireUnlit.txt");
-    public static final Block campFire2FireWood = new BlockCampFireUnlit((short) 64, 16, "src/spacegame/assets/blockFiles/campFireUnlit.txt");
-    public static final Block campFire3Firewood = new BlockCampFireUnlit((short) 65, 16, "src/spacegame/assets/blockFiles/campFireUnlit.txt");
-    public static final Block campFireNoFirewood = new BlockCampFireUnlit((short) 66, 16, "src/spacegame/assets/blockFiles/campFireUnlit.txt");
+    public static final Block campFire1FireWood = new BlockCampFireUnlit((short) 63, 16, "src/spacegame/assets/blockFiles/campFireUnlit.txt", 0, 0);
+    public static final Block campFire2FireWood = new BlockCampFireUnlit((short) 64, 16, "src/spacegame/assets/blockFiles/campFireUnlit.txt", 0,0);
+    public static final Block campFire3Firewood = new BlockCampFireUnlit((short) 65, 16, "src/spacegame/assets/blockFiles/campFireUnlit.txt", 0,0);
+    public static final Block campFireNoFirewood = new BlockCampFireUnlit((short) 66, 16, "src/spacegame/assets/blockFiles/campFireUnlit.txt", 0,0);
     public static final Block fire = new Block((short)67, 18, "src/spacegame/assets/blockFiles/fire.txt");
-    public static final Block campfireLit = new BlockCampFireLit((short) 68, 16, "src/spacegame/assets/blockFiles/campFireLit.txt");
+    public static final Block campfireLit = new BlockCampFireLit((short) 68, 16, "src/spacegame/assets/blockFiles/campFireLit.txt", 3, 1);
     public static final Block grassWithClay = new BlockGrassWithClay((short)69, 2, "src/spacegame/assets/blockFiles/grassWithClay.txt"); //Nice
     public static final Block grassBlockWithClayLower = new Block((short)70, 14, "src/spacegame/assets/blockFiles/grassBlockWithClayLower.txt");
     public static final Block clay = new BlockClay((short)71, 13, "src/spacegame/assets/blockFiles/clay.txt");
@@ -183,7 +183,7 @@ public class Block {
     public static final Block berryBushFlower = new BlockBerryBush((short)86, 27, "src/spacegame/assets/blockFiles/berryBush.txt");
     public static final Block itemStick = new BlockItemStick((short)87, 29, "src/spacegame/assets/blockFiles/itemStick.txt");
     public static final Block tallGrass = new Block((short)88, 30, "src/spacegame/assets/blockFiles/tallGrass.txt");
-    public static final Block campFire4FireWood = new BlockCampFireUnlit((short) 89, 16, "src/spacegame/assets/blockFiles/campFireUnlit.txt");
+    public static final Block campFire4FireWood = new BlockCampFireUnlit((short) 89, 16, "src/spacegame/assets/blockFiles/campFireUnlit.txt", 3, 1);
     public static final Block fireWoodBlock = new Block((short)90, 31, "src/spacegame/assets/blockFiles/fireWood.txt");
     public static final Block reedChest = new BlockReedChest((short)91, 32, "src/spacegame/assets/blockFiles/reedChest.txt",1, 9);
     public static final Block reedChestTier0 = new BlockReedCrafting((short)92, 32, "src/spacegame/assets/blockFiles/reedChestBuilding0.txt");
@@ -215,6 +215,16 @@ public class Block {
     public static final Block reedGrowth5 = new BlockReedGrowing((short)118, 36, "src/spacegame/assets/blockFiles/reedGrowth.txt");
     public static final Block treeSeed = new BlockSapling((short)119, 35, "src/spacegame/assets/blockFiles/treeSeed.txt");
     public static final Block sapling = new BlockSapling((short)120, 37, "src/spacegame/assets/blockFiles/sapling.txt");
+    public static final Block torchStandardUnlit = new BlockTorchUnlit((short)121, 38, "src/spacegame/assets/blockFiles/torchStandardUnlit.txt");
+    public static final Block torchNorthUnlit = new BlockTorchUnlit((short)122, 38, "src/spacegame/assets/blockFiles/torchNorthUnlit.txt");
+    public static final Block torchSouthUnlit = new BlockTorchUnlit((short)123, 38, "src/spacegame/assets/blockFiles/torchSouthUnlit.txt");
+    public static final Block torchEastUnlit = new BlockTorchUnlit((short)124, 38, "src/spacegame/assets/blockFiles/torchEastUnlit.txt");
+    public static final Block torchWestUnlit = new BlockTorchUnlit((short)125, 38, "src/spacegame/assets/blockFiles/torchWestUnlit.txt");
+    public static final Block torchStandardBurnedOut = new Block((short)126, 39, "src/spacegame/assets/blockFiles/torchStandardBurnedOut.txt");
+    public static final Block torchNorthBurnedOut = new Block((short)127, 39, "src/spacegame/assets/blockFiles/torchNorthBurnedOut.txt");
+    public static final Block torchSouthBurnedOut = new Block((short)128, 39, "src/spacegame/assets/blockFiles/torchSouthBurnedOut.txt");
+    public static final Block torchEastBurnedOut = new Block((short)129, 39, "src/spacegame/assets/blockFiles/torchEastBurnedOut.txt");
+    public static final Block torchWestBurnedOut = new Block((short)130, 39, "src/spacegame/assets/blockFiles/torchWestBurnedOut.txt");
     public final short ID;
     public final int textureID;
     public static int facingDirection;
@@ -526,6 +536,14 @@ public class Block {
             }
         }
 
+        if(this instanceof BlockHeating){
+            world.removeHeatableBlock(x,y,z);
+        }
+
+        if(this instanceof BlockContainer){
+            world.removeChestLocation(x,y,z);
+        }
+
         world.setBlockWithNotify(x, y, z, list[world.getBlockID(x,y,z)].waterlogged ? water.ID : air.ID, true);
 
 
@@ -624,7 +642,7 @@ public class Block {
             };
         }
 
-        if(Item.list[heldItem].canPlaceAsItemBlock && (KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT))){
+        if(Item.list[heldItem].canPlaceAsItemBlock && (KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT)) && list[world.getBlockID(x, y - 1, z)].isSolid){
             heldBlock = itemBlock.ID;
         } else if(Item.list[heldItem].canPlaceAsItemBlock){
             return;

@@ -5,3 +5,5 @@ lightBlockValue:12
 lightColor:16760877
 blockName:TORCH
 blockModel:torchWestBlockModel
+alwaysRenderFace:true
+displayName:Torch

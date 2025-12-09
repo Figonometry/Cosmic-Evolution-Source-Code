@@ -9,11 +9,11 @@ public abstract class Assets {
     public static int itemTextureArray;
 
     public static void enableBlockTextureArray(){
-        blockTextureArray = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/blocks/", RenderEngine.TEXTURE_TYPE_2D_ARRAY, 38, true); //One higher than the expected amount
+        blockTextureArray = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/blocks/", RenderEngine.TEXTURE_TYPE_2D_ARRAY, 40, true); //One higher than the expected amount
     }
 
     public static void enableItemTextureArray(){
-        itemTextureArray = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/item/", RenderEngine.TEXTURE_TYPE_2D_ARRAY, 20, true); //This is one higher than the actual number of item textures
+        itemTextureArray = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/item/", RenderEngine.TEXTURE_TYPE_2D_ARRAY, 21, true); //This is one higher than the actual number of item textures
     }
 
     public static void disableBlockTextureArray(){

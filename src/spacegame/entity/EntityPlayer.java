@@ -58,6 +58,10 @@ public final class EntityPlayer extends EntityLiving {
     public int spawnX;
     public int spawnY;
     public int spawnZ;
+    public float saturation;
+    public float maxSaturation = 1000f;
+    public boolean isHealing;
+    public boolean isStarving;
 
     public EntityPlayer(CosmicEvolution cosmicEvolution, double x, double y, double z) {
         super(Integer.MAX_VALUE);
@@ -73,6 +77,7 @@ public final class EntityPlayer extends EntityLiving {
         this.chunkZ = MathUtil.floorDouble(this.z) >> 5;
         this.health = 100;
         this.maxHealth = 100;
+        this.saturation = 1000f;
         this.spawnX = (int) this.ce.save.spawnX;
         this.spawnY = (int) this.ce.save.spawnY;
         this.spawnZ = (int) this.ce.save.spawnZ;
@@ -127,6 +132,7 @@ public final class EntityPlayer extends EntityLiving {
             this.spawnX = player.getInteger("spawnX");
             this.spawnY = player.getInteger("spawnY");
             this.spawnZ = player.getInteger("spawnZ");
+            this.saturation = player.getFloat("saturation");
             this.inventory = new Inventory(9,this.inventoryUpgradeLevel, 10);
 
             NBTTagCompound item;
@@ -177,6 +183,7 @@ public final class EntityPlayer extends EntityLiving {
             playerData.setInteger("spawnX", this.spawnX);
             playerData.setInteger("spawnY", this.spawnY);
             playerData.setInteger("spawnZ", this.spawnZ);
+            playerData.setFloat("saturation", this.saturation);
 
             ItemStack stack;
             NBTTagCompound[] items = new NBTTagCompound[this.inventory.itemStacks.length];
@@ -629,6 +636,23 @@ public final class EntityPlayer extends EntityLiving {
 
         this.prevInWater = this.inWater;
         this.prevBlockUnderPlayer = this.blockUnderPlayer;
+
+        this.isHealing = this.health < this.maxHealth;
+
+        if(this.saturation <= 0){
+            this.saturation = 0;
+        }
+
+        this.isStarving = this.saturation == 0;
+
+        if(this.ce.save.time % 600 == 0){
+            this.health += this.isHealing ? 1 : 0;
+            this.saturation -= this.isHealing ? 2 : 1;
+            if(this.isStarving){
+                this.damage(2.5f);
+            }
+        }
+
     }
 
 
