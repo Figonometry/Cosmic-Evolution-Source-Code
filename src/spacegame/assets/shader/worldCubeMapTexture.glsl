@@ -10,6 +10,7 @@ uniform vec3 position;
 uniform mat4 uModel;
 uniform int lightColor;
 uniform vec3 normalizedLightDir;
+uniform vec3 playerPositionInChunk;
 uniform bool isStar;
 
 out vec4 fColor;
@@ -43,7 +44,7 @@ void main()
     vec3 correctedPos = aPos - position;
     fTexCoords = normalize(correctedPos);
 
-    gl_Position = vec4(uProjection * uView * vec4(aPos, 1.0));
+    gl_Position = vec4(uProjection * uView * vec4(aPos + playerPositionInChunk, 1.0));
 
 }
 

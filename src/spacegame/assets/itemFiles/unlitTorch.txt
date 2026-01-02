@@ -1,2 +1,3 @@
 itemName:UNLIT_TORCH
 displayName:Unlit Torch
+canPlaceOnGround:true

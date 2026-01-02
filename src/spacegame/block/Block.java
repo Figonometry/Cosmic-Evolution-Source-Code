@@ -89,7 +89,6 @@ public class Block {
     public static final ModelLoader size2VoxelModel = itemVoxelModel.copyModel().getScaledModel(2).translateModel(0.46875f, 0, 0.46875f);
     public static final AxisAlignedBB standardBlock = new AxisAlignedBB(0,0,0,1,1,1);
     public static final AxisAlignedBB fullBlock = new AxisAlignedBB(0, 0, 0, 1, 1, 1);
-    public static final AxisAlignedBB itemStoneBoundingBox = new AxisAlignedBB(0,0,0,1,0.125,1);
     public static final AxisAlignedBB quarterBlock = new AxisAlignedBB(0, 0, 0, 1, 0.25f, 1);
     public static final AxisAlignedBB slab = new AxisAlignedBB(0, 0, 0, 1, 0.5, 1);
     public static final AxisAlignedBB threeQuartersBlock = new AxisAlignedBB(0, 0, 0, 1, 0.75f, 1);
@@ -157,10 +156,10 @@ public class Block {
     public static final Block leaf = new BlockLeaf((short) 60, 10,"src/spacegame/assets/blockFiles/leaf.txt"); //Leaf Erikson
     public static final Block berryBush = new BlockBerryBush((short) 61, 25, "src/spacegame/assets/blockFiles/berryBush.txt");
     public static final Block berryBushNoBerries = new BlockBerryBush((short) 62, 11, "src/spacegame/assets/blockFiles/berryBush.txt");
-    public static final Block campFire1FireWood = new BlockCampFireUnlit((short) 63, 16, "src/spacegame/assets/blockFiles/campFireUnlit.txt", 0, 0);
-    public static final Block campFire2FireWood = new BlockCampFireUnlit((short) 64, 16, "src/spacegame/assets/blockFiles/campFireUnlit.txt", 0,0);
-    public static final Block campFire3Firewood = new BlockCampFireUnlit((short) 65, 16, "src/spacegame/assets/blockFiles/campFireUnlit.txt", 0,0);
-    public static final Block campFireNoFirewood = new BlockCampFireUnlit((short) 66, 16, "src/spacegame/assets/blockFiles/campFireUnlit.txt", 0,0);
+    public static final Block campFire1FireWood = new BlockCampFireUnlit((short) 63, 16, "src/spacegame/assets/blockFiles/campFireUnlit.txt", 1, 3);
+    public static final Block campFire2FireWood = new BlockCampFireUnlit((short) 64, 16, "src/spacegame/assets/blockFiles/campFireUnlit.txt", 1,3);
+    public static final Block campFire3Firewood = new BlockCampFireUnlit((short) 65, 16, "src/spacegame/assets/blockFiles/campFireUnlit.txt", 1,3);
+    public static final Block campFireNoFirewood = new BlockCampFireUnlit((short) 66, 16, "src/spacegame/assets/blockFiles/campFireUnlit.txt", 1,3);
     public static final Block fire = new Block((short)67, 18, "src/spacegame/assets/blockFiles/fire.txt");
     public static final Block campfireLit = new BlockCampFireLit((short) 68, 16, "src/spacegame/assets/blockFiles/campFireLit.txt", 3, 1);
     public static final Block grassWithClay = new BlockGrassWithClay((short)69, 2, "src/spacegame/assets/blockFiles/grassWithClay.txt"); //Nice
@@ -338,7 +337,6 @@ public class Block {
 
             if (properties[0].equals("boundingBox")) {
                 switch (properties[1]){
-                    case "itemStoneBoundingBox" -> this.standardCollisionBoundingBox = itemStoneBoundingBox;
                     case "slab" -> this.standardCollisionBoundingBox = slab;
                     case "quarterBlock" -> this.standardCollisionBoundingBox = quarterBlock;
                     case "threeQuartersBlock" -> this.standardCollisionBoundingBox = threeQuartersBlock;
@@ -634,11 +632,20 @@ public class Block {
         } else if (heldItem == Item.torch.ID) {
             if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT))return;
             heldBlock = switch (facingDirection) {
-                case 1 -> Block.torchNorth.ID;
-                case 2 -> Block.torchSouth.ID;
-                case 3 -> Block.torchEast.ID;
-                case 4 -> Block.torchWest.ID;
-                default -> Block.torchStandard.ID;
+                case 1 -> torchNorth.ID;
+                case 2 -> torchSouth.ID;
+                case 3 -> torchEast.ID;
+                case 4 -> torchWest.ID;
+                default -> torchStandard.ID;
+            };
+        } else if(heldItem == Item.unlitTorch.ID){
+            if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT))return;
+            heldBlock = switch (facingDirection) {
+                case 1 -> torchNorthUnlit.ID;
+                case 2 -> torchSouthUnlit.ID;
+                case 3 -> torchEastUnlit.ID;
+                case 4 -> torchWestUnlit.ID;
+                default -> torchStandardUnlit.ID;
             };
         }
 
@@ -692,6 +699,12 @@ public class Block {
                 }
             }
         };
+
+        if(list[heldBlock].requireSolidBlockBelow){
+            if(!list[world.getBlockID(x,y - 1, z)].isSolid){
+                return;
+            }
+        }
 
         if(Block.list[heldBlock] instanceof ITimeUpdate){
             chunk.addTimeUpdateEvent(x,y,z, CosmicEvolution.instance.save.time + ((ITimeUpdate) Block.list[heldBlock]).getUpdateTime());

@@ -43,10 +43,7 @@ public final class RenderWorldScene {
     public float sunGreen;
     public float sunBlue;
     public float baseLight;
-    public int frameSinceFrustumRecalc = 0;
     public boolean renderWithChunks = true;
-    public int[] opaqueChunks;
-    public int[] transparentChunks;
     public float sunYVector;
     public boolean overrideSkyColor;
     public float[] targetSkyColor = new float[3];
@@ -66,7 +63,6 @@ public final class RenderWorldScene {
     }
 
     public void renderWorldWithChunks(Chunk[] sortedChunks) {
-        this.frameSinceFrustumRecalc++;
         for(int i = 0; i < this.nearbyStars.size(); i++){
             this.setShadowMap(this.nearbyStars.get(i),this.nearbyStarPos.get(i));
         }
@@ -99,6 +95,7 @@ public final class RenderWorldScene {
         Shader.terrainShader.uploadVec3f("playerPositionInChunk", playerPositionInChunk);
         Shader.worldShaderTextureArray.uploadVec3f("playerPositionInChunk", playerPositionInChunk);
         Shader.worldShader2DTexture.uploadVec3f("playerPositionInChunk", playerPositionInChunk);
+        Shader.worldShader2DTextureWithAtlas.uploadVec3f("playerPositionInChunk", playerPositionInChunk);
         Shader.terrainShader.uploadInt("shadowMap", 1);
         Shader.terrainShader.uploadMat4d("uProjection", CosmicEvolution.camera.projectionMatrix);
         Shader.terrainShader.uploadMat4d("uView", CosmicEvolution.camera.viewMatrix);
@@ -114,10 +111,24 @@ public final class RenderWorldScene {
         Shader.worldShader2DTexture.uploadFloat("fogGreen", this.controller.parentWorld.skyColor[1]);
         Shader.worldShader2DTexture.uploadFloat("fogBlue", this.controller.parentWorld.skyColor[2]);
         Shader.terrainShader.uploadDouble("time", (double) Timer.elapsedTime % 8388608);
+
         Shader.terrainShader.uploadBoolean("raining", this.controller.parentWorld.raining);
         Shader.terrainShader.uploadDouble("playerAbsoluteHeight", CosmicEvolution.instance.save.thePlayer.y);
         float rainFogFactor = this.controller.parentWorld.raining ? ((CosmicEvolution.instance.save.time - this.controller.parentWorld.timeStartedRaining) / 60f) * 0.75f : 0.75f - (((CosmicEvolution.instance.save.time - this.controller.parentWorld.timeStartedRaining) / 60f) * 0.75f);
         Shader.terrainShader.uploadFloat("rainFogFactor", rainFogFactor);
+
+        Shader.worldShader2DTexture.uploadBoolean("raining", this.controller.parentWorld.raining);
+        Shader.worldShader2DTexture.uploadDouble("playerAbsoluteHeight", CosmicEvolution.instance.save.thePlayer.y);
+        Shader.worldShader2DTexture.uploadFloat("rainFogFactor", rainFogFactor);
+
+        Shader.worldShaderTextureArray.uploadBoolean("raining", this.controller.parentWorld.raining);
+        Shader.worldShaderTextureArray.uploadDouble("playerAbsoluteHeight", CosmicEvolution.instance.save.thePlayer.y);
+        Shader.worldShaderTextureArray.uploadFloat("rainFogFactor", rainFogFactor);
+
+        Shader.worldShader2DTextureWithAtlas.uploadBoolean("raining", this.controller.parentWorld.raining);
+        Shader.worldShader2DTextureWithAtlas.uploadDouble("playerAbsoluteHeight", CosmicEvolution.instance.save.thePlayer.y);
+        Shader.worldShader2DTextureWithAtlas.uploadFloat("rainFogFactor", rainFogFactor);
+
 
         Chunk chunk;
         int xOffset;
@@ -154,8 +165,6 @@ public final class RenderWorldScene {
                 GL46.glBeginQuery(GL46.GL_ANY_SAMPLES_PASSED, chunk.queryID);
                 chunk.renderOpaque(xOffset, yOffset, zOffset,this.sunX,this.sunY,this.sunZ);
                 GL46.glEndQuery(GL46.GL_ANY_SAMPLES_PASSED);
-
-
             }
 
             if (chunk.vertexBufferTransparent != null && chunk.vertexBufferTransparent.limit() != 0) {
@@ -213,86 +222,6 @@ public final class RenderWorldScene {
 
         this.renderClouds();
         this.renderRain();
-
-
-        if(this.frameSinceFrustumRecalc == 2){
-            this.renderWithChunks = false;
-            this.frameSinceFrustumRecalc = 0;
-
-            int opaqueChunkCount = 0;
-            int transparentChunkCount = 0;
-            for(int i = 0; i < sortedChunks.length; i++){
-                if(!sortedChunks[i].occluded && sortedChunks[i].elementBufferOpaque != null){
-                    if(sortedChunks[i].elementBufferOpaque.limit() != 0) {
-                        opaqueChunkCount++;
-                    }
-                }
-
-                if(sortedChunks[i].elementBufferTransparent != null){
-                    if(sortedChunks[i].elementBufferTransparent.limit() != 0) {
-                        transparentChunkCount++;
-                    }
-                }
-            }
-
-            this.opaqueChunks = new int[opaqueChunkCount * 10]; //Multiplied by the number of ints needed for the renderer
-            this.transparentChunks = new int[transparentChunkCount * 10];
-
-
-
-            int sunOffsetX;
-            int sunOffsetY;
-            int sunOffsetZ;
-
-            int opaqueIndex = 0;
-            int transparentIndex = 0;
-            int baseIndex = 0;
-
-            for(int i = 0; i < sortedChunks.length; i++){
-                xOffset = (sortedChunks[i].x - playerChunkX) << 5;
-                yOffset = (sortedChunks[i].y - playerChunkY) << 5;
-                zOffset = (sortedChunks[i].z - playerChunkZ) << 5;
-
-                sunOffsetX = (sortedChunks[i].x - this.sunX) << 5;
-                sunOffsetY = (sortedChunks[i].y - this.sunY) << 5;
-                sunOffsetZ = (sortedChunks[i].z - this.sunZ) << 5;
-
-
-                if(!sortedChunks[i].occluded && sortedChunks[i].elementBufferOpaque != null){
-                    if(sortedChunks[i].elementBufferOpaque.limit() != 0) {
-                        baseIndex = opaqueIndex * 10;
-                        opaqueIndex++;
-                        this.opaqueChunks[baseIndex] = sortedChunks[i].opaqueVBOID;
-                        this.opaqueChunks[baseIndex + 1] = sortedChunks[i].opaqueEBOID;
-                        this.opaqueChunks[baseIndex + 2] = xOffset;
-                        this.opaqueChunks[baseIndex + 3] = yOffset;
-                        this.opaqueChunks[baseIndex + 4] = zOffset;
-                        this.opaqueChunks[baseIndex + 5] = sunOffsetX;
-                        this.opaqueChunks[baseIndex + 6] = sunOffsetY;
-                        this.opaqueChunks[baseIndex + 7] = sunOffsetZ;
-                        this.opaqueChunks[baseIndex + 8] = sortedChunks[i].elementBufferOpaque.limit();
-                        this.opaqueChunks[baseIndex + 9] = sortedChunks[i].opaqueVAOID;
-                    }
-                }
-
-                if(sortedChunks[i].elementBufferTransparent != null){
-                    if(sortedChunks[i].elementBufferTransparent.limit() != 0) {
-                        baseIndex = transparentIndex * 10;
-                        transparentIndex++;
-                        this.transparentChunks[baseIndex] = sortedChunks[i].transparentVBOID;
-                        this.transparentChunks[baseIndex + 1] = sortedChunks[i].transparentEBOID;
-                        this.transparentChunks[baseIndex + 2] = xOffset;
-                        this.transparentChunks[baseIndex + 3] = yOffset;
-                        this.transparentChunks[baseIndex + 4] = zOffset;
-                        this.transparentChunks[baseIndex + 5] = sunOffsetX;
-                        this.transparentChunks[baseIndex + 6] = sunOffsetY;
-                        this.transparentChunks[baseIndex + 7] = sunOffsetZ;
-                        this.transparentChunks[baseIndex + 8] = sortedChunks[i].elementBufferTransparent.limit();
-                        this.transparentChunks[baseIndex + 9] = sortedChunks[i].transparentVAOID;
-                    }
-                }
-            }
-        }
     }
 
 
@@ -304,7 +233,7 @@ public final class RenderWorldScene {
         CosmicEvolution.camera.viewMatrix.rotate(viewMatrixRotation);
 
 
-        Shader.worldShader2DTexture.uploadBoolean("useFog", true);
+        Shader.worldShader2DTexture.uploadBoolean("useFog", false);
         Shader.worldShader2DTexture.uploadBoolean("performNormals", true);
         Shader.worldShader2DTexture.uploadVec3f("chunkOffset", new Vector3f());
 
@@ -348,10 +277,6 @@ public final class RenderWorldScene {
         }
 
 
-
-
-
-
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
         GL46.glEnable(GL46.GL_CULL_FACE);
@@ -364,6 +289,8 @@ public final class RenderWorldScene {
 
 
         CosmicEvolution.camera.viewMatrix = preservedViewMatrix;
+
+        Shader.worldShader2DTexture.uploadBoolean("useFog", true);
     }
 
     private void renderClouds(){
@@ -388,127 +315,6 @@ public final class RenderWorldScene {
         GL46.glDisable(GL46.GL_BLEND);
 
         CosmicEvolution.camera.viewMatrix = preservedViewMatrix;
-    }
-
-    public void renderWorldWithoutChunks(){
-        Shader.worldShader2DTexture.uploadBoolean("useFog", true);
-        Shader.worldShader2DTexture.uploadFloat("fogDistance", GameSettings.renderDistance * 20f);
-        Shader.worldShader2DTexture.uploadVec3f("playerPositionInChunk", new Vector3f(MathUtil.positiveMod(CosmicEvolution.instance.save.thePlayer.x, 32), MathUtil.positiveMod(CosmicEvolution.instance.save.thePlayer.z, 32), MathUtil.positiveMod(CosmicEvolution.instance.save.thePlayer.z, 32)));
-        Shader.terrainShader.uploadMat4d("uView", CosmicEvolution.camera.viewMatrix);
-        Shader.terrainShader.uploadBoolean("raining", this.controller.parentWorld.raining);
-        Shader.terrainShader.uploadDouble("playerAbsoluteHeight", CosmicEvolution.instance.save.thePlayer.y);
-        float rainFogFactor = this.controller.parentWorld.raining ? ((CosmicEvolution.instance.save.time - this.controller.parentWorld.timeStartedRaining) / 60f) * 0.75f : 0.75f - (((CosmicEvolution.instance.save.time - this.controller.parentWorld.timeStartedRaining) / 60f) * 0.75f);
-        Shader.terrainShader.uploadFloat("rainFogFactor", rainFogFactor);
-        for(int i = 0; i < this.nearbyStars.size(); i++){
-            this.setShadowMap(this.nearbyStars.get(i),this.nearbyStarPos.get(i));
-        }
-
-
-        this.nearbyStars.clear();
-        this.nearbyStarPos.clear();
-
-        this.renderNearbyCelestialObjects();
-
-        if (CosmicEvolution.instance.currentGui instanceof GuiInGame) {
-            GuiInGame.renderBlockOutline();
-            GuiInGame.renderBlockBreakingOutline();
-        }
-
-
-        this.controller.drawCalls = 0;
-
-        GL46.glEnable(GL46.GL_CULL_FACE);
-        GL46.glCullFace(GL46.GL_FRONT);
-        //The block array is bound to texture 0, all shadowmaps are bound from texture unit 1 up, they must all be properly active and unbound during cleanup
-        GL46.glActiveTexture(GL46.GL_TEXTURE0);
-        GL46.glBindTexture(GL46.GL_TEXTURE_2D_ARRAY, Assets.blockTextureArray);
-
-        GL46.glUseProgram(Shader.terrainShader.shaderProgramID);
-
-        if(this.nearbyStars.size() > 0) {
-            GL46.glActiveTexture(GL46.GL_TEXTURE1);
-            GL46.glBindTexture(GL46.GL_TEXTURE_2D, this.nearbyStars.get(0).shadowMap.depthMap);
-        }
-
-        GL46.glEnable(GL46.GL_ALPHA_TEST);
-        GL46.glAlphaFunc(GL46.GL_GREATER, 0.1F);
-
-        //Opaque
-        for(int i = 0 ; i < this.opaqueChunks.length; i += 10){ //These arrays must ensure that the objects are not null pointers
-            Shader.terrainShader.uploadVec3f("chunkOffset", this.opaqueChunks[i + 2], this.opaqueChunks[i + 3], this.opaqueChunks[i + 4]);
-            Shader.terrainShader.uploadVec3f("sunChunkOffset", this.opaqueChunks[i + 5], this.opaqueChunks[i + 6], this.opaqueChunks[i + 7]);
-            GL46.glBindVertexArray(this.opaqueChunks[i + 9]);
-            GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, this.opaqueChunks[i]);
-            GL46.glBindBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, this.opaqueChunks[i + 1]);
-            GL46.glDrawElements(GL46.GL_TRIANGLES, this.opaqueChunks[i + 8], GL46.GL_UNSIGNED_INT, 0);
-            this.controller.drawCalls++;
-        }
-
-        GL46.glBindTexture(GL46.GL_TEXTURE_2D_ARRAY, 0);
-
-        for(int i = 0; i < this.chunksThatContainEntities.size(); i++){
-            this.chunksThatContainEntities.get(i).renderEntities(this.sunX, this.sunY, this.sunZ);
-        }
-
-        for(int i = 0; i < this.rainParticles.size(); i++){
-            this.rainParticles.get(i).render();
-        }
-
-        GL46.glEnable(GL46.GL_ALPHA_TEST);
-        GL46.glAlphaFunc(GL46.GL_GREATER, 0.1F);
-
-        GL46.glEnable(GL46.GL_BLEND);
-        GL46.glBlendFunc(GL46.GL_SRC_ALPHA, GL46.GL_ONE_MINUS_SRC_ALPHA);
-
-        GL46.glEnable(GL46.GL_CULL_FACE);
-        GL46.glCullFace(GL46.GL_FRONT);
-
-        //transparent
-        GL46.glActiveTexture(GL46.GL_TEXTURE0);
-        GL46.glBindTexture(GL46.GL_TEXTURE_2D_ARRAY, Assets.blockTextureArray);
-
-        if(this.nearbyStars.size() > 0) {
-            GL46.glActiveTexture(GL46.GL_TEXTURE1);
-            GL46.glBindTexture(GL46.GL_TEXTURE_2D, this.nearbyStars.get(0).shadowMap.depthMap);
-        }
-
-
-        GL46.glUseProgram(Shader.terrainShader.shaderProgramID);
-
-        for(int i = 0 ; i < this.transparentChunks.length; i += 10){
-            Shader.terrainShader.uploadVec3f("chunkOffset", this.transparentChunks[i + 2], this.transparentChunks[i + 3], this.transparentChunks[i + 4]);
-            Shader.terrainShader.uploadVec3f("sunChunkOffset", this.transparentChunks[i + 5], this.transparentChunks[i + 6], this.transparentChunks[i + 7]);
-            GL46.glBindVertexArray(this.transparentChunks[i + 9]);
-            GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, this.transparentChunks[i]);
-            GL46.glBindBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, this.transparentChunks[i + 1]);
-            GL46.glDrawElements(GL46.GL_TRIANGLES, this.transparentChunks[i + 8], GL46.GL_UNSIGNED_INT, 0);
-            this.controller.drawCalls++;
-        }
-
-
-
-        GL46.glDisable(GL46.GL_BLEND);
-        GL46.glDisable(GL46.GL_ALPHA_TEST);
-
-        //Texture unit 1 is still the active texture from the shadowmap
-        GL46.glActiveTexture(GL46.GL_TEXTURE1);
-        GL46.glBindTexture(GL46.GL_TEXTURE_2D, 0);
-
-        GL46.glActiveTexture(GL46.GL_TEXTURE0);
-        GL46.glBindTexture(GL46.GL_TEXTURE_2D_ARRAY, 0);
-
-        GL46.glDisable(GL46.GL_CULL_FACE);
-
-
-
-
-        this.renderSkybox(CosmicEvolution.instance.everything.getObjectAssociatedWithWorld(this.controller.parentWorld), playerLon, playerLat);
-        for(int i = 0; i < this.nearbyStarPos.size(); i++) {
-            this.renderSunrise(new Vector3f(this.nearbyStarPos.get(i)).normalize().y, this.nearbyStarPos.get(i));
-        }
-
-        this.renderClouds();
-        this.renderRain();
     }
 
     private void setShadowMap(Sun sun, Vector3f dir){
@@ -606,6 +412,8 @@ public final class RenderWorldScene {
         Shader.worldShaderCubeMapTexture.uploadFloat("fogRed", this.controller.parentWorld.skyColor[0]);
         Shader.worldShaderCubeMapTexture.uploadFloat("fogGreen", this.controller.parentWorld.skyColor[1]);
         Shader.worldShaderCubeMapTexture.uploadFloat("fogBlue", this.controller.parentWorld.skyColor[2]);
+        Vector3f playerPositionInChunk = new Vector3f(MathUtil.positiveMod(CosmicEvolution.instance.save.thePlayer.x, 32), MathUtil.positiveMod(CosmicEvolution.instance.save.thePlayer.y, 32), MathUtil.positiveMod(CosmicEvolution.instance.save.thePlayer.z, 32));
+        Shader.worldShaderCubeMapTexture.uploadVec3f("playerPositionInChunk", playerPositionInChunk);
         Matrix4d preservedViewMatrix = CosmicEvolution.camera.viewMatrix.get(new Matrix4d());
         Quaterniond viewMatrixRotation = CosmicEvolution.camera.viewMatrix.getUnnormalizedRotation(new Quaterniond());
         CosmicEvolution.camera.viewMatrix = new Matrix4d();

@@ -140,6 +140,9 @@ public final class AxisAlignedBB {
                     max = this.minX - entityBoundingBox.maxX;
                     if(max < deltaX) {
                         deltaX = max;
+                        if(this.maxY - this.minY <= 0.5 && entity instanceof EntityLiving) {
+                            entity.y += (this.maxY - this.minY);
+                        }
                     }
                 }
 
@@ -147,11 +150,10 @@ public final class AxisAlignedBB {
                     max = this.maxX - entityBoundingBox.minX;
                     if(max > deltaX) {
                         deltaX = max;
+                        if(this.maxY - this.minY <= 0.5 && entity instanceof EntityLiving) {
+                            entity.y += (this.maxY - this.minY);
+                        }
                     }
-                }
-
-                if(this.maxY - this.minY <= 0.5 && entity instanceof EntityLiving) {
-                    entity.y += (this.maxY - this.minY);
                 }
 
             }
@@ -190,6 +192,9 @@ public final class AxisAlignedBB {
                     max = this.minZ - entityBoundingBox.maxZ;
                     if(max < deltaZ) {
                         deltaZ = max;
+                        if(this.maxY - this.minY <= 0.5 && entity instanceof EntityLiving) {
+                            entity.y += (this.maxY - this.minY);
+                        }
                     }
                 }
 
@@ -197,11 +202,10 @@ public final class AxisAlignedBB {
                     max = this.maxZ - entityBoundingBox.minZ;
                     if(max > deltaZ) {
                         deltaZ = max;
+                        if(this.maxY - this.minY <= 0.5 && entity instanceof EntityLiving) {
+                            entity.y += (this.maxY - this.minY);
+                        }
                     }
-                }
-
-                if(this.maxY - this.minY <= 0.5 && entity instanceof EntityLiving) {
-                    entity.y += (this.maxY - this.minY);
                 }
 
             }

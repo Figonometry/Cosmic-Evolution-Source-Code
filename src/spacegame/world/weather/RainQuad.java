@@ -31,7 +31,7 @@ public final class RainQuad {
 
         if(blockID == Block.air.ID)return;
 
-        if(Block.list[blockID].standardCollisionBoundingBox.equals(Block.standardBlock)){
+        if(Block.list[blockID].isSolid || blockID == Block.water.ID){
             if(this.y <= MathUtil.floorDouble(this.y) + 0.5){
                 this.remove = true;
             }

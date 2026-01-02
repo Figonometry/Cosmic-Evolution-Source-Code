@@ -103,11 +103,12 @@ public abstract class World {
                 if(cloudFormation.centralCloud != null){
                     cloud = cloudFormation.centralCloud;
 
+                        if(cloud.strength >= cloud.maxStrength) {
+                            totalPrecipitation += cloud.precipitation;
+                            totalStrength += cloud.strength;
 
-                        totalPrecipitation += cloud.precipitation;
-                        totalStrength += cloud.strength;
-
-                        cloudCount++;
+                            cloudCount++;
+                        }
 
                 }
 
@@ -116,11 +117,12 @@ public abstract class World {
 
                     cloud = cloudFormation.clouds[k];
 
+                        if(cloud.strength >= cloud.maxStrength) {
+                            totalPrecipitation += cloud.precipitation;
+                            totalStrength += cloud.strength;
 
-                        totalPrecipitation += cloud.precipitation;
-                        totalStrength += cloud.strength;
-
-                        cloudCount++;
+                            cloudCount++;
+                        }
 
                 }
             }
@@ -454,9 +456,10 @@ public abstract class World {
             this.windIntensity += this.targetWindIntensity - this.windIntensity > 0.0f ? 0.03125f : -0.03125f;
         }
 
-        if(this.windIntensity > 1){
-            this.windIntensity = 1;
-        }
+
+        this.windIntensity = Math.max(0, this.windIntensity);
+        this.windIntensity = Math.min(1, this.windIntensity);
+
 
         Shader.terrainShader.uploadBoolean("windy", true);
         Shader.terrainShader.uploadFloat("windDirection", this.windDirection);
@@ -793,10 +796,12 @@ public abstract class World {
 
     public void notifySurroundingBlock(int x, int y, int z) {
         Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
-        if(chunk.empty){
-            chunk.initChunk();
+        if(chunk != null){
+            if(chunk.empty){
+                chunk.initChunk();
+            }
+            chunk.notifyBlock(x, y, z);
         }
-        chunk.notifyBlock(x, y, z);
     }
 
     public void notifySurroundingBlockWithoutRebuild(int x, int y, int z) {
@@ -1943,7 +1948,7 @@ public abstract class World {
                 if (checkedBlock.isSolid) {
                     if(checkedBlock.ID != Block.water.ID) {
                         loopPass--;
-                        if(this.ce.save.thePlayer.getHeldItem() != Item.block.ID && this.ce.save.thePlayer.getHeldItem() != Item.torch.ID){
+                        if(this.ce.save.thePlayer.getHeldItem() != Item.block.ID && (this.ce.save.thePlayer.getHeldItem() != Item.torch.ID && this.ce.save.thePlayer.getHeldItem() != Item.unlitTorch.ID)){
                             blockX = MathUtil.floorDouble(this.ce.save.thePlayer.x + xDif * multiplier * loopPass);
                             blockY = MathUtil.floorDouble(this.ce.save.thePlayer.y  + this.ce.save.thePlayer.height/2 + yDif * multiplier * loopPass);
                             blockZ = MathUtil.floorDouble(this.ce.save.thePlayer.z + zDif * multiplier * loopPass);
@@ -1953,7 +1958,7 @@ public abstract class World {
                     if (Block.list[this.ce.save.thePlayer.getHeldBlock()].isSolid && this.ce.save.thePlayer.pitch > -90 && this.wouldBlockIntersectPlayer(blockX, blockY, blockZ)) {
                         break;
                     } else {
-                        if (this.ce.save.thePlayer.getHeldItem() == Item.torch.ID) {
+                        if (this.ce.save.thePlayer.getHeldItem() == Item.torch.ID || this.ce.save.thePlayer.getHeldItem() == Item.unlitTorch.ID) {
                             if (!Block.list[this.getBlockID((int) (this.ce.save.thePlayer.x + xDif * multiplier * loopPass), (int) (this.ce.save.thePlayer.y + yDif * multiplier * (loopPass + 1)), (int) (this.ce.save.thePlayer.z + zDif * multiplier * (loopPass + 1)))].isSolid) {
                                 if ((float) ((this.ce.save.thePlayer.x + xDif * multiplier * (loopPass + 1)) - (this.ce.save.thePlayer.x + xDif * multiplier * loopPass)) > 0) {
                                     Block.facingDirection = 1;

@@ -159,6 +159,9 @@ uniform bool underwater;
 uniform bool renderShadows;
 uniform bool shadowMapSetting;
 uniform bool useFog;
+uniform bool raining;
+uniform double playerAbsoluteHeight;
+uniform float rainFogFactor;
 
 uniform bool blendColorForSkyTransition;
 uniform float blendColorRatio;
@@ -173,18 +176,69 @@ vec4 setFog(vec4 color){
     float fogStart = (fogDistance - 128);
     float fogEnd = (fogDistance - 64);
     float distanceFromPlayer = distance(fragPosInWorldSpace, fPlayerPositionInChunk);
-    if(distanceFromPlayer > fogStart){
-        float fogDepth = ((distanceFromPlayer - fogStart) / fogEnd);
-        if (fogDepth < 0){
-            fogDepth = 0;
+    float fogDepth;
+
+    if (raining && (fragPosInWorldSpace.y) < 10){
+        float rainFog = rainFogFactor;
+        if(rainFog < 0){
+            rainFog = 0;
         }
-        if (fogDepth > 1){
-            fogDepth = 0.99;
+        if(rainFog > 0.75f){
+            rainFog = 0.75f;
         }
+
+        float distance = distance(fragPosInWorldSpace.y, fPlayerPositionInChunk.y);
+        float distanceThreshold = float(playerAbsoluteHeight) - 10;
+        if (distance > distanceThreshold){
+            float thresholdDif = distance - distanceThreshold;
+            if (playerAbsoluteHeight < 10){
+                if(fragPosInWorldSpace.y > playerAbsoluteHeight){
+                    distance *= -1;
+                    distanceThreshold = float(playerAbsoluteHeight) - 10;
+                    thresholdDif = distance - distanceThreshold;
+                }
+                fogDepth += rainFog - (rainFog * ((10 - thresholdDif) / 10.0));
+            } else {
+                fogDepth += rainFog - (rainFog * ((10 - thresholdDif) / 10.0));
+            }
+        }
+    } else if(raining == false && rainFogFactor >= 0 && rainFogFactor <= 0.75f){
+        float rainFog = rainFogFactor;
+        if(rainFog < 0){
+            rainFog = 0;
+        }
+        if(rainFog > 0.75f){
+            rainFog = 0.75f;
+        }
+
+        float distance = distance(fragPosInWorldSpace.y, fPlayerPositionInChunk.y);
+        float distanceThreshold = float(playerAbsoluteHeight) - 10;
+        if (distance > distanceThreshold){
+            float thresholdDif = distance - distanceThreshold;
+            if (playerAbsoluteHeight < 10){
+                if(fragPosInWorldSpace.y > playerAbsoluteHeight){
+                    distance *= -1;
+                    distanceThreshold = float(playerAbsoluteHeight) - 10;
+                    thresholdDif = distance - distanceThreshold;
+                }
+                fogDepth += rainFog - (rainFog * ((10 - thresholdDif) / 10.0));
+            } else {
+                fogDepth += rainFog - (rainFog * ((10 - thresholdDif) / 10.0));
+            }
+        }
+    }
+
+    if (distanceFromPlayer > fogStart){
+        fogDepth += ((distanceFromPlayer - fogStart) / fogEnd);
+    }
+
+    if (distanceFromPlayer > fogStart || (raining && fragPosInWorldSpace.y < 10)){
+        fogDepth = clamp(fogDepth, 0.0, 0.99);
         color.x -= (color.x - fogRed) * ((fogDepth));
         color.y -= (color.y - fogGreen) * ((fogDepth));
         color.z -= (color.z - fogBlue) * ((fogDepth));
     }
+
     return color;
 }
 

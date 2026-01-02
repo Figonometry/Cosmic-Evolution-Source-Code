@@ -96,7 +96,7 @@ public final class CosmicEvolution implements Runnable {
     }
 
     private void startGame() {
-        this.title = "Cosmic Evolution Alpha v0.38";
+        this.title = "Cosmic Evolution Alpha v0.38.1";
         GameSettings.loadOptionsFromFile(this.launcherDirectory);
         this.clearLogFiles(new File(this.launcherDirectory + "/crashReports"));
         this.initLWJGL();
@@ -339,12 +339,6 @@ public final class CosmicEvolution implements Runnable {
             }
         }
 
-      //  if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_G) && KeyListener.keyReleased[GLFW.GLFW_KEY_G]){
-      //      GL46.glDeleteProgram(Shader.terrainShader.shaderProgramID);
-      //      Shader.terrainShader = new Shader("src/spacegame/assets/shader/terrainShader.glsl");
-      //      KeyListener.setKeyReleased(GLFW.GLFW_KEY_G);
-      //  }
-
         if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_CAPS_LOCK) && KeyListener.keyReleased[GLFW.GLFW_KEY_CAPS_LOCK]){
             KeyListener.capsLockEnabled = !KeyListener.capsLockEnabled;
             KeyListener.setKeyReleased(GLFW.GLFW_KEY_CAPS_LOCK);
@@ -511,11 +505,22 @@ public final class CosmicEvolution implements Runnable {
     }
 
     private void checkKeyBindStates() {
-        if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_ESCAPE) && this.save != null && this.currentGui instanceof GuiInGame) {
+        if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_ESCAPE) && this.save != null && this.currentGui instanceof GuiInGame && KeyListener.keyReleased[GLFW.GLFW_KEY_ESCAPE]) {
             this.save.activeWorld.paused = true;
             this.setNewGui(new GuiPauseInGame(this));
             this.save.saveDataToFileWithoutChunkUnload();
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_ESCAPE);
         }
+
+
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_ESCAPE) && this.currentGui instanceof GuiPauseInGame && KeyListener.keyReleased[GLFW.GLFW_KEY_ESCAPE]) {
+            GLFW.glfwSetInputMode(this.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
+            this.save.activeWorld.paused = false;
+            this.setNewGui(new GuiInGame(this));
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_ESCAPE);
+        }
+
+
         if (!MouseListener.mouseButtonDown(GLFW.GLFW_MOUSE_BUTTON_LEFT)) {
             MouseListener.leftClickReleased = true;
             MouseListener.timeHeldLeftClick = 0;

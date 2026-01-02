@@ -4,6 +4,7 @@ import org.joml.SimplexNoise;
 import org.joml.Vector3f;
 import spacegame.celestial.Universe;
 import spacegame.core.CosmicEvolution;
+import spacegame.gui.GuiInGame;
 import spacegame.util.MathUtil;
 import spacegame.entity.EntityPlayer;
 import spacegame.nbt.NBTIO;
@@ -179,7 +180,7 @@ public final class Save {
 
     public void handleLeftClick() {
         this.activeWorld.handleLeftClick();
-        this.thePlayer.isSwinging = true;
+        this.thePlayer.isSwinging = this.ce.currentGui instanceof GuiInGame;
     }
 
     public void handleRightClick() {

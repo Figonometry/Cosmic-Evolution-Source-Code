@@ -257,6 +257,7 @@ public final class ChunkTerrainHandler {
 
             if(this.world.getBlockID(x,y,z) == Block.air.ID && this.world.getBlockID(x, y - 1, z) == Block.grass.ID){
                 this.world.setBlockWithNotify(x,y,z, Block.tallGrass.ID, false);
+                chunk.tallGrassCount++;
             }
 
             tallGrassCount--;

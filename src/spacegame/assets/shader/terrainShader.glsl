@@ -29,7 +29,6 @@ out float fTexId;
 out vec4 fragPosInLightSpace;
 out vec3 fragPosInWorldSpace;
 flat out int isInShadowRange;
-flat out vec3 chunkOffsets;
 out vec3 fPlayerPositionInChunk;
 
 float sinX(float x, float y, float z){
@@ -277,8 +276,6 @@ void main()
     fPlayerPositionInChunk = playerPositionInChunk;
     fragPosInWorldSpace = correctPos;
 
-    chunkOffsets = chunkOffset;
-
     if(windy && int(fTexId) == 30){
         correctPos = windyGrass(correctPos);
     }
@@ -298,7 +295,6 @@ in vec4 fragPosInLightSpace;
 flat in int isInShadowRange;
 in vec3 fragPosInWorldSpace;
 in vec3 fPlayerPositionInChunk;
-flat in vec3 chunkOffsets;
 
 uniform sampler2DArray textureArray;
 uniform sampler2D shadowMap;

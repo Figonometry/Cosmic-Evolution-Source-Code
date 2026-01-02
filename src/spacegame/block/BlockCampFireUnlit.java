@@ -32,11 +32,14 @@ public final class BlockCampFireUnlit extends BlockCampFire {
                     case 2 -> world.setBlockWithNotify(x, y, z, Block.campFire3Firewood.ID, false);
                     case 3 -> {
                         world.setBlockWithNotify(x, y, z, Block.campFire4FireWood.ID, false);
-                        world.addChestLocation(x,y,z, new Inventory(1,3));
 
-                        ChestLocation chestLocation = world.getChestLocation(x,y,z);
-                        chestLocation.inventory.itemStacks[0].item = Item.fireWood;
-                        chestLocation.inventory.itemStacks[0].count = 4;
+                        Inventory inventory = new Inventory(1,3);
+                        inventory.itemStacks[0].item = Item.fireWood;
+                        inventory.itemStacks[0].metadata = Item.NULL_ITEM_METADATA;
+                        inventory.itemStacks[0].count = 4;
+
+                        world.addChestLocation(x,y,z, inventory);
+                        MouseListener.rightClickReleased = false;
                     }
                 }
                 if (logCount != 4) {

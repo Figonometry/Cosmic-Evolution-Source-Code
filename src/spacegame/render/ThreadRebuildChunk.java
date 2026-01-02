@@ -199,6 +199,7 @@ public final class ThreadRebuildChunk implements Runnable {
            this.parentWorld.chunkController.bindingChunks.add(this.workingChunk);
         }
         this.workingChunk.updating = false;
+        this.parentWorld.chunkController.renderWorldScene.recalculateQueries = true;
     }
 
     private void addBlockToRenderData(short block, int index, int face, int[] greedyMeshSize, RenderBlocks renderBlocks) {

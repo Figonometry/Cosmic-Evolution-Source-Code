@@ -500,7 +500,7 @@ public final class EntityPlayer extends EntityLiving {
 
         this.isShifting = KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT);
 
-        this.speed = this.isShifting || this.inWater ? 0.05 : 0.1;
+        this.speed = this.isShifting || this.inWater || (this.moveEntityUp && !this.isJumping) ? 0.05 : 0.1;
 
         //this.developerDebugMovement();
 
@@ -547,13 +547,12 @@ public final class EntityPlayer extends EntityLiving {
         this.blockUnderPlayer = this.ce.save.activeWorld.getBlockID(playerX, MathUtil.floorDouble(this.y - (this.height/2) - 0.1), playerZ);
         if(Block.list[this.blockUnderPlayer].isSolid && !this.inWater){
             this.handleFallDamage();
-            this.lastYOnGround = this.y;
+            this.lastYOnGround = MathUtil.floorDouble(this.y - (this.height/2) - 0.1);
         }
 
-
-        this.inWater = Block.list[this.ce.save.activeWorld.getBlockID(playerX, playerYFoot, playerZ)].waterlogged || Block.list[this.ce.save.activeWorld.getBlockID(playerX, playerYHead, playerZ)].waterlogged;
-        short headBlock = Block.list[this.ce.save.activeWorld.getBlockID(playerX, playerYHead, playerZ)].ID;
-        short footBlock = Block.list[this.ce.save.activeWorld.getBlockID(playerX, playerYFoot, playerZ)].ID;
+        short headBlock = this.ce.save.activeWorld.getBlockID(playerX, playerYHead, playerZ);
+        short footBlock = this.ce.save.activeWorld.getBlockID(playerX, playerYFoot, playerZ);
+        this.inWater = Block.list[headBlock].waterlogged || Block.list[footBlock].waterlogged;
         if(headBlock == Block.water.ID){
             Shader.worldShaderTextureArray.uploadBoolean("underwater", true);
             this.drowningTimer++;
@@ -601,13 +600,12 @@ public final class EntityPlayer extends EntityLiving {
             this.moveEntityUp = true;
             this.moveEntityUpDistance = 0.6;
             this.timeFalling = 0;
-            this.isJumping = true;
-            this.inWater = true;
+            this.isJumping = false;
         }
 
         if (this.moveEntityUp) {
             if(!this.isJumping) {
-                this.speed = 0.01D;
+                this.speed = 0.05D;
             }
             if (this.moveEntityUpDistance <= 0D) {
                 this.moveEntityUp = false;
@@ -766,7 +764,7 @@ public final class EntityPlayer extends EntityLiving {
 
     @Override
     protected void handleFallDamage(){
-        if(this.lastYOnGround - this.y > 3){
+        if(this.lastYOnGround - this.y >= 3){
             this.health -= this.lastYOnGround - this.y;
             this.runDamageTilt = true;
             CosmicEvolution.instance.soundPlayer.playSound(this.x, this.y, this.z, new Sound(Sound.fallDamage, false, 1f), new Random().nextFloat(0.4F, 0.7F));
@@ -907,10 +905,10 @@ public final class EntityPlayer extends EntityLiving {
             this.handleDeath();
         }
     }
-// Har + Jar #4evar #livingthelife #girlboss
+// Har + Jar #4evar #livingthelife #girlboss, girlfriend wrote this here. I'm not removing it
     @Override
     public void handleDeath() {
-        this.clearInventory();
+        this.clearInventoryOnDeath();
         this.inventoryUpgradeLevel = 1;
         this.ce.setNewGui(new GuiDeathScreen(this.ce));
         this.ce.save.activeWorld.paused = true;
@@ -937,7 +935,7 @@ public final class EntityPlayer extends EntityLiving {
         return null;
     }
 
-    private void clearInventory(){
+    private void clearInventoryOnDeath(){
         Chunk chunk = this.ce.save.activeWorld.chunkController.findChunkFromChunkCoordinates(this.chunkX, this.chunkY, this.chunkZ);
         Random rand = new Random();
         for(int i = 0; i < this.inventory.itemStacks.length; i++) {

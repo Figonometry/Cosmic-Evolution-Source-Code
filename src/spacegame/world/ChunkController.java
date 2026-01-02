@@ -5,6 +5,7 @@ import spacegame.block.BlockContainer;
 import spacegame.block.ITickable;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
+import spacegame.gui.GuiInGame;
 import spacegame.util.MathUtil;
 import spacegame.entity.Entity;
 import spacegame.entity.EntityBlock;
@@ -108,11 +109,9 @@ public final class ChunkController {
         }
         this.loadOrUnloadChunks();
         this.numberOfLoadedChunks = this.numberOfLoadedChunks();
-        if(this.numberOfLoadedChunks != this.prevNumberOfLoadedChunks) {
-            this.populateChunks();
-        }
+        this.populateChunks();
         this.rebuildDirtyChunks();
-        if(this.timer <= 0){
+        if(this.timer <= 0){ //This was originally meant per tick, moving it to tick however prevents large amounts of the world from rendering properly due to thread race conditions
             this.checkForMissedChunksAndCheckForUpdateTime();
             this.timer = 2400;
         } else {
@@ -209,6 +208,7 @@ public final class ChunkController {
             this.renderWorldScene.renderWithChunks = true;
             Chunk[] renderableChunks = new Chunk[this.regions.length * 512];
 
+
             ChunkRegion region;
             Chunk chunk;
             int playerChunkX = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x) >> 5;
@@ -228,7 +228,7 @@ public final class ChunkController {
                                 xOffset = (chunk.x - playerChunkX) << 5;
                                 yOffset = (chunk.y - playerChunkY) << 5;
                                 zOffset = (chunk.z - playerChunkZ) << 5;
-                                if (CosmicEvolution.camera.doesBoundingBoxIntersectFrustum(xOffset, yOffset, zOffset, ((xOffset + 31)), ((yOffset + 31)), ((zOffset + 31))) && !chunk.empty && chunk.shouldRender) {
+                                if (CosmicEvolution.camera.doesBoundingBoxIntersectFrustum(xOffset - 32, yOffset - 32, zOffset - 32, ((xOffset + 63)), ((yOffset + 63)), ((zOffset + 63))) && !chunk.empty && chunk.shouldRender) {
                                     xOffset >>= 5;
                                     yOffset >>= 5;
                                     zOffset >>= 5;
@@ -249,6 +249,7 @@ public final class ChunkController {
                     sortedChunks[i].occluded = false;
                 }
             }
+
             this.renderWorldScene.recalculateQueries = false;
 
             Arrays.sort(sortedChunks);
@@ -256,18 +257,15 @@ public final class ChunkController {
             this.sortedChunks = sortedChunks;
         }
 
-        if(this.renderWorldScene.renderWithChunks) {
-            this.renderWorldScene.renderWorldWithChunks(this.sortedChunks);
-        } else {
-            this.renderWorldScene.renderWorldWithoutChunks();
-        }
+        this.renderWorldScene.renderWorldWithChunks(this.sortedChunks);
     }
 
     public void populateChunks() {
         synchronized (this.nonPopulatedChunks) {
             Chunk chunk;
             this.numberOfChunksToPopulate = this.nonPopulatedChunks.size();
-            for (int i = 0; i < this.nonPopulatedChunks.size(); i++) {
+            int i = 0;
+            for (i = 0; i < this.nonPopulatedChunks.size(); i++) {
                 chunk = this.nonPopulatedChunks.get(i);
                 if (chunk != null) {
                     if (this.parentWorld.chunkFullySurrounded(chunk.x, chunk.y, chunk.z) && !chunk.populated) {
@@ -278,8 +276,8 @@ public final class ChunkController {
             }
 
             if (this.numberOfChunksToPopulate == this.prevNumberOfChunksToPopulate) {
-                this.nonPopulatedChunks.trimToSize();
                 WorldGen.markAllChunksInRebuildQueueDirty();
+                this.nonPopulatedChunks.trimToSize();
             }
 
             this.prevNumberOfChunksToPopulate = this.numberOfChunksToPopulate;
@@ -295,11 +293,16 @@ public final class ChunkController {
                 for(int j = 0; j < region.chunks.length; j++){
                     chunk = region.chunks[j];
                     if(chunk != null){
-                        if(!chunk.shouldRender && !chunk.empty && this.parentWorld.chunkFullySurrounded(chunk.x, chunk.y ,chunk.z) && chunk.populated && (chunk.containsAir || chunk.containsWater)){
-                            if(chunk.blocks != null) {
-                                chunk.notifyAllBlocks();
+                        if(!chunk.shouldRender && !chunk.empty && this.parentWorld.chunkFullySurrounded(chunk.x, chunk.y ,chunk.z) && chunk.populated){
+
+                            if(chunk.blocks != null) { //Since all chunks will now be populated this means that fully surrounded chunks that wont ever render will repeatedly tick to notify all blocks, this causes substantial lag
+                                chunk.markDirty();
+                                if(chunk.containsAir || chunk.containsWater){
+                                    chunk.notifyAllBlocks();
+                                }
                             }
                         }
+
                         if(chunk.updateTime <= CosmicEvolution.instance.save.time && chunk.updateTime != 0){
                             chunk.markDirty();
                             chunk.updateTime = 0;
@@ -392,12 +395,10 @@ public final class ChunkController {
         if (addedChunk == null) {return;}
         synchronized (this.nonPopulatedChunks) {
             Chunk chunk;
-            boolean canAdd = true;
             for (int i = 0; i < this.nonPopulatedChunks.size(); i++) {
                 chunk = this.nonPopulatedChunks.get(i);
                 if (chunk != null) {
                     if (chunk.equals(addedChunk)) {
-                        canAdd = false;
                         return;
                     }
                 }
@@ -534,7 +535,7 @@ public final class ChunkController {
         }
 
 
-        if(!chunk.empty && (chunk.containsWater || chunk.containsAir)) {
+        if(!chunk.empty) {
             chunk.markDirty();
             chunk.markToPopulate();
         }
@@ -544,7 +545,7 @@ public final class ChunkController {
 
     public void addChunkFromFile(Chunk chunk) {
         ChunkColumnSkylightMap lightMap = this.findChunkSkyLightMap(chunk.x, chunk.z);
-        if(!chunk.empty && (chunk.containsWater || chunk.containsAir)) {
+        if(!chunk.empty) {
             chunk.markDirty();
             if(!chunk.populated){
                 chunk.markToPopulate();
@@ -574,6 +575,9 @@ public final class ChunkController {
             }
             if(chunk.blocks[i] == Block.air.ID){
                 chunk.skyLight[Chunk.getBlockIndexFromCoordinates(x, y, z)] = 15;
+            }
+            if(chunk.blocks[i] == Block.tallGrass.ID){
+                chunk.tallGrassCount++;
             }
             if(Block.list[chunk.blocks[i]] instanceof ITickable){
                 chunk.tickableBlockIndex[tickableIndex] = (short) i;

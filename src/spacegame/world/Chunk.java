@@ -37,6 +37,7 @@ public final class Chunk implements Comparable<Chunk> {
     public boolean containsAir;
     public boolean updateSkylight;
     public boolean firstRender = true;
+    public int tallGrassCount;
     public float distanceFromPlayer;
     public boolean occluded;
     public int queryID = -10;
@@ -100,6 +101,7 @@ public final class Chunk implements Comparable<Chunk> {
         x %= 32;
         y %= 32;
         z %= 32;
+        if(this.blocks == null)this.initChunk();
         this.blocks[getBlockIndexFromCoordinates(x, y, z)] = blockID;
         this.modifiedSinceLastSave = true;
     }
@@ -108,8 +110,9 @@ public final class Chunk implements Comparable<Chunk> {
         x %= 32;
         y %= 32;
         z %= 32;
+        if(this.blocks == null)this.initChunk();
         this.blocks[getBlockIndexFromCoordinates(x, y, z)] = blockID;
-        this.notifyBlock(x, y, z);
+        this.notifyBlock(x,y,z);
         this.markDirty();
         this.modifiedSinceLastSave = true;
     }
@@ -529,61 +532,11 @@ public final class Chunk implements Comparable<Chunk> {
 
 
     public boolean checkIfChunkShouldRender() {
-        int bitMap = 0;
         for(int i = 0; i <  this.topFaceBitMask.length; i++){
-            bitMap = this.topFaceBitMask[i];
-            for(int j = 0; j < 32; j++){
-                if((bitMap & this.createMask(j)) != 0){
-                    return true;
-                }
+            if(this.topFaceBitMask[i] != 0 || this.bottomFaceBitMask[i] != 0 || this.northFaceBitMask[i] != 0 || this.southFaceBitMask[i] != 0 || this.eastFaceBitMask[i] != 0 || this.westFaceBitMask[i] != 0){
+                return true;
             }
         }
-
-        for(int i = 0; i <  this.bottomFaceBitMask.length; i++){
-            bitMap = this.bottomFaceBitMask[i];
-            for(int j = 0; j < 32; j++){
-                if((bitMap & this.createMask(j)) != 0){
-                    return true;
-                }
-            }
-        }
-
-        for(int i = 0; i <  this.northFaceBitMask.length; i++){
-            bitMap = this.northFaceBitMask[i];
-            for(int j = 0; j < 32; j++){
-                if((bitMap & this.createMask(j)) != 0){
-                    return true;
-                }
-            }
-        }
-
-        for(int i = 0; i <  this.southFaceBitMask.length; i++){
-            bitMap = this.southFaceBitMask[i];
-            for(int j = 0; j < 32; j++){
-                if((bitMap & this.createMask(j)) != 0){
-                    return true;
-                }
-            }
-        }
-
-        for(int i = 0; i <  this.eastFaceBitMask.length; i++){
-            bitMap = this.eastFaceBitMask[i];
-            for(int j = 0; j < 32; j++){
-                if((bitMap & this.createMask(j)) != 0){
-                    return true;
-                }
-            }
-        }
-
-        for(int i = 0; i <  this.westFaceBitMask.length; i++){
-            bitMap = this.westFaceBitMask[i];
-            for(int j = 0; j < 32; j++){
-                if((bitMap & this.createMask(j)) != 0){
-                    return true;
-                }
-            }
-        }
-
 
         return false;
     }
@@ -1166,9 +1119,6 @@ public final class Chunk implements Comparable<Chunk> {
         }
         if(CosmicEvolution.instance.save.time % 15 == 0){
             HeatableBlockLocation heatableBlockLocation;
-            if(this.heatableBlocks.size() > 0) {
-                System.out.println(this.heatableBlocks.size());
-            }
             for(int i = 0; i < this.heatableBlocks.size(); i++){
                 heatableBlockLocation = this.heatableBlocks.get(i);
                 heatableBlockLocation.heatItem(this);

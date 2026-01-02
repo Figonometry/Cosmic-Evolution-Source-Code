@@ -1,7 +1,9 @@
 package spacegame.item;
 
+import spacegame.core.CosmicEvolution;
 import spacegame.core.MouseListener;
 import spacegame.entity.EntityPlayer;
+import spacegame.gui.GuiInGame;
 import spacegame.world.World;
 
 public class ItemFood extends Item {
@@ -14,7 +16,7 @@ public class ItemFood extends Item {
 
     @Override
     public void onRightClick(int x, int y, int z, World world, EntityPlayer player){
-        if(MouseListener.rightClickReleased) {
+        if(MouseListener.rightClickReleased && CosmicEvolution.instance.currentGui instanceof GuiInGame) {
             if (player.saturation < player.maxSaturation) {
                 player.saturation += this.saturationIncrease;
                 player.removeItemFromInventory();
