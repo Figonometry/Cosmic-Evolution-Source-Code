@@ -42,7 +42,6 @@ public enum EnumButtonEffects {
     CREATE_NEW_WORLD,
     RENAME_WORLD,
     RESPAWN,
-    CRAFT,
     CLOSE,
     PAGE_LEFT,
     PAGE_RIGHT,

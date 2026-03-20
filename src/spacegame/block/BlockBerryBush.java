@@ -7,7 +7,6 @@ import spacegame.entity.EntityItem;
 import spacegame.entity.EntityPlayer;
 import spacegame.item.Item;
 import spacegame.render.RenderBlocks;
-import spacegame.world.Tech;
 import spacegame.world.World;
 
 public final class BlockBerryBush extends Block implements ITimeUpdate {
@@ -24,11 +23,7 @@ public final class BlockBerryBush extends Block implements ITimeUpdate {
             if(world.getBlockID(x,y,z) == Block.berryBush.ID){
                 world.setBlockWithNotify(x,y,z, Block.berryBushNoBerries.ID, false);
                 world.addEntity(new EntityItem(x + CosmicEvolution.globalRand.nextFloat(), y + 0.5, z + CosmicEvolution.globalRand.nextFloat(), Item.berry.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY));
-                if(Tech.foraging2.state == Tech.UNLOCKED && CosmicEvolution.globalRand.nextBoolean()){
-                    world.addEntity(new EntityItem(x + CosmicEvolution.globalRand.nextFloat(), y + 0.5, z + CosmicEvolution.globalRand.nextFloat(), Item.berry.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY));
-                }
                 world.addTimeEvent(x,y,z,CosmicEvolution.instance.save.time + this.getUpdateTime());
-                Tech.techUpdateEvent(Tech.UPDATE_EVENT_BERRY_COLLECTION);
             }
             MouseListener.rightClickReleased = false;
         }

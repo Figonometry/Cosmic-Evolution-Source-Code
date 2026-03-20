@@ -2,7 +2,9 @@ package spacegame.gui;
 
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
+import spacegame.block.Block;
 import spacegame.core.CosmicEvolution;
+import spacegame.item.InWorldCraftingRecipe;
 import spacegame.util.MathUtil;
 import spacegame.item.Item;
 import spacegame.item.ItemCraftingTemplates;
@@ -10,18 +12,18 @@ import spacegame.render.Assets;
 import spacegame.render.RenderBlocks;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
+import spacegame.world.Chunk;
+import spacegame.world.InWorldCraftingBlock;
 
 import java.util.Random;
 
 public final class GuiCraftingStoneTools extends GuiCrafting {
-    public Button craft;
     public Button close;
     public int backgroundTexture;
     public int recipeOverlay;
     public int transparentBackground;
     public int fillableColor;
     public int outline;
-    public CraftingMaterial[] materials;
     public short selectedItemID = -1;
     public short outputItemID;
     public RecipeSelector[] selectableRecipes;
@@ -35,22 +37,8 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
         this.y = y;
         this.z = z;
         this.close = new Button(EnumButtonEffects.CLOSE.name(), 50, 50, 349, 190, this, this.ce);
-        this.craft = new Button(EnumButtonEffects.CRAFT.name(), 128,50, 0,-175, this, this.ce);
-        this.craft.active = false;
         this.selectableRecipes = new RecipeSelector[4];
         this.setSelectableItemIDs();
-        this.materials = new CraftingMaterial[64];
-        int xMat; //base -370
-        int yMat; //base -120
-        Random rand = new Random();
-        int color;
-        for(int i = 0 ; i < this.materials.length; i++){
-            color = MathUtil.floatToIntRGBA(rand.nextFloat(0.4f, 0.7f));
-            xMat = -112 + ((i % 8) * 32);
-            yMat = -112 + ((i / 8) * 32);
-            this.materials[i] = new CraftingMaterial(32, 32, xMat, yMat, "stone");
-            this.materials[i].setColor(color << 16 | color << 8 | color);
-        }
     }
 
     private void setSelectableItemIDs(){
@@ -70,15 +58,6 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
         }
     }
 
-    @Override
-    public CraftingMaterial getHoveredCraftingMaterial() {
-        for(int i = 0; i < this.materials.length; i++){
-            if(this.materials[i].isMouseHoveredOver()){
-                return this.materials[i];
-            }
-        }
-        return null;
-    }
 
     @Override
     public void loadTextures() {
@@ -105,11 +84,6 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
         GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
 
         this.close.renderButton();
-        if(this.selectedItemID != -1) {
-            this.renderCraftingMaterials();
-            this.craft.active = this.isOutputComplete();
-            this.craft.renderButton();
-        }
 
         RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         tessellator.toggleOrtho();
@@ -140,35 +114,6 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
         tessellator.addElements();
         tessellator.drawTexture2D(this.backgroundTexture, Shader.screen2DTexture, CosmicEvolution.camera);
 
-        if(this.selectedItemID != -1) {
-            backgroundZ += 10;
-            GL46.glEnable(GL46.GL_BLEND);
-            GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-
-            int outputSlotX = 0;
-            int outputSlotY = 0;
-            int outputWidth = 256;
-            int outputHeight = 256;
-
-            tessellator.addVertex2DTexture(0, outputSlotX - (float) outputWidth / 2, outputSlotY - (float) outputHeight / 2, backgroundZ, 3);
-            tessellator.addVertex2DTexture(0, outputSlotX + (float) outputWidth / 2, outputSlotY + (float) outputHeight / 2, backgroundZ, 1);
-            tessellator.addVertex2DTexture(0, outputSlotX - (float) outputWidth / 2, outputSlotY + (float) outputHeight / 2, backgroundZ, 2);
-            tessellator.addVertex2DTexture(0, outputSlotX + (float) outputWidth / 2, outputSlotY - (float) outputHeight / 2, backgroundZ, 0);
-            tessellator.addElements();
-            tessellator.drawTexture2D(this.transparentBackground, Shader.screen2DTexture, CosmicEvolution.camera);
-
-            backgroundZ += 10;
-            tessellator.addVertex2DTexture(16777215, outputSlotX - (float) outputWidth / 2, outputSlotY - (float) outputHeight / 2, backgroundZ, 3);
-            tessellator.addVertex2DTexture(16777215, outputSlotX + (float) outputWidth / 2, outputSlotY + (float) outputHeight / 2, backgroundZ, 1);
-            tessellator.addVertex2DTexture(16777215, outputSlotX - (float) outputWidth / 2, outputSlotY + (float) outputHeight / 2, backgroundZ, 2);
-            tessellator.addVertex2DTexture(16777215, outputSlotX + (float) outputWidth / 2, outputSlotY - (float) outputHeight / 2, backgroundZ, 0);
-            tessellator.addElements();
-
-            GL46.glBlendFunc(GL46.GL_SRC_ALPHA, GL46.GL_ONE_MINUS_SRC_ALPHA);
-            tessellator.drawTexture2D(this.recipeOverlay, Shader.screen2DTexture, CosmicEvolution.camera);
-
-            GL46.glDisable(GL46.GL_BLEND);
-        }
 
         if(this.selectedItemID == -1){
             float selectableZ = -90;
@@ -267,199 +212,16 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
         }
     }
 
-    public void activateRecipeOverlay(){
-        switch (this.selectedItemID) {
-            case 3 ->
-                    this.recipeOverlay = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/item/recipeTemplates/rockFragmentTemplate.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
-            case 4 ->
-                    this.recipeOverlay = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/item/recipeTemplates/handAxeTemplate.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
-            case 9 ->
-                    this.recipeOverlay = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/item/recipeTemplates/knifeTemplate.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
-            case 10 ->
-                    this.recipeOverlay = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/item/recipeTemplates/shovelHeadTemplate.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
-        }
-    }
-
-    private void renderCraftingMaterials(){
-        RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
-        tessellator.toggleOrtho();
-        int color;
-        float x;
-        float y;
-        float height;
-        float width;
-        float z = -95;
-        for(int i = 0; i < this.materials.length; i++) {
-            if (this.materials[i].active) {
-                color = this.materials[i].getColor();
-                x = this.materials[i].x;
-                y = this.materials[i].y;
-                height = this.materials[i].height;
-                width = this.materials[i].width;
-                tessellator.addVertex2DTexture(color, x - width / 2, y - height / 2, z, 3);
-                tessellator.addVertex2DTexture(color, x + width / 2, y + height / 2, z, 1);
-                tessellator.addVertex2DTexture(color, x - width / 2, y + height / 2, z, 2);
-                tessellator.addVertex2DTexture(color, x + width / 2, y - height / 2, z, 0);
-                tessellator.addElements();
-            }
-        }
-        tessellator.drawTexture2D(this.fillableColor, Shader.screen2DTexture, CosmicEvolution.camera);
-        tessellator.toggleOrtho();
-    }
-
-    private boolean isOutputComplete(){
-        switch (this.selectedItemID) {
-            case 4 -> {
-                if (this.doesInputMatchHandAxeTemplate()) {
-                    this.setOutputItem(Item.stoneHandAxe.ID);
-                    return true;
-                }
-            }
-            case 3 -> {
-                if (this.doesInputMatchStoneFragmentsTemplate()) {
-                    this.setOutputItem(Item.stoneFragments.ID);
-                    return true;
-                }
-            }
-            case 9 -> {
-                if (this.doesInputMatchKnifeTemplate()) {
-                    this.setOutputItem(Item.stoneHandKnifeBlade.ID);
-                    return true;
-                }
-            }
-            case 10 -> {
-                if (this.doesInputMatchHandShovelTemplate()) {
-                    this.setOutputItem(Item.stoneHandShovel.ID);
-                    return true;
-                }
-            }
-        }
-
-
-        return false;
-    }
-
-    private boolean doesInputMatchStoneFragmentsTemplate(){
-        short countCorrect = 0;
-        boolean squareActive;
-        for(int i = 0; i < ItemCraftingTemplates.stoneFragments.indices.length; i++) {
-            countCorrect = 0;
-            for (int j = 0; j < this.materials.length; j++) {
-                squareActive = this.materials[j].active;
-                if(squareActive){
-                    if(this.isIndexSupposedToBeFilled(j, ItemCraftingTemplates.stoneFragments.indices)){
-                        countCorrect++;
-                    }
-                } else {
-                    if(!this.isIndexSupposedToBeFilled(j, ItemCraftingTemplates.stoneFragments.indices)){
-                        countCorrect++;
-                    }
-                }
-            }
-            if(countCorrect / 64f == 1f){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean doesInputMatchHandShovelTemplate(){
-        short countCorrect = 0;
-        boolean squareActive;
-        for(int i = 0; i < ItemCraftingTemplates.stoneHandShovel.indices.length; i++) {
-            countCorrect = 0;
-            for (int j = 0; j < this.materials.length; j++) {
-                squareActive = this.materials[j].active;
-                if(squareActive){
-                    if(this.isIndexSupposedToBeFilled(j, ItemCraftingTemplates.stoneHandShovel.indices)){
-                        countCorrect++;
-                    }
-                } else {
-                    if(!this.isIndexSupposedToBeFilled(j, ItemCraftingTemplates.stoneHandShovel.indices)){
-                        countCorrect++;
-                    }
-                }
-            }
-            if(countCorrect / 64f == 1f){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean doesInputMatchKnifeTemplate(){
-        short countCorrect = 0;
-        boolean squareActive;
-        for(int i = 0; i < ItemCraftingTemplates.knifeBlade.indices.length; i++) {
-            countCorrect = 0;
-            for (int j = 0; j < this.materials.length; j++) {
-                squareActive = this.materials[j].active;
-                if(squareActive){
-                    if(this.isIndexSupposedToBeFilled(j, ItemCraftingTemplates.knifeBlade.indices)){
-                        countCorrect++;
-                    }
-                } else {
-                    if(!this.isIndexSupposedToBeFilled(j, ItemCraftingTemplates.knifeBlade.indices)){
-                        countCorrect++;
-                    }
-                }
-            }
-            if(countCorrect / 64f == 1f){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean doesInputMatchHandAxeTemplate(){
-        short countCorrect = 0;
-        boolean squareActive;
-        for(int i = 0; i < ItemCraftingTemplates.stoneHandAxe.indices.length; i++) {
-            countCorrect = 0;
-            for (int j = 0; j < this.materials.length; j++) {
-                squareActive = this.materials[j].active;
-                if(squareActive){
-                    if(this.isIndexSupposedToBeFilled(j, ItemCraftingTemplates.stoneHandAxe.indices)){
-                        countCorrect++;
-                    }
-                } else {
-                    if(!this.isIndexSupposedToBeFilled(j, ItemCraftingTemplates.stoneHandAxe.indices)){
-                        countCorrect++;
-                    }
-                }
-            }
-            if(countCorrect / 64f == 1f){
-                return true;
-            }
-        }
-        return false;
-    }
-
-
-    private boolean isIndexSupposedToBeFilled(int testedIndex, short[] indices){
-        for(int i = 0; i < indices.length; i++){
-            if(testedIndex == indices[i]){
-                return true;
-            }
-        }
-        return false;
-    }
-
-
-    private void setOutputItem(short itemID){
-        this.outputItemID = itemID;
-    }
 
     @Override
     public Button getActiveButton() {
-        if(this.craft.isMouseHoveredOver() && this.craft.active){
-            return this.craft;
-        }
         if(this.close.isMouseHoveredOver() && this.close.active){
             return this.close;
         }
         return null;
     }
+
+
 
     public RecipeSelector getSelectedRecipeSelector(){
         if(this.selectableRecipes == null)return null;
@@ -471,13 +233,36 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
         return null;
     }
 
-    public int getMaterialIndex(CraftingMaterial material){
-        for(int i = 0; i < this.materials.length; i++){
-            if(this.materials[i].x == material.x && this.materials[i].y == material.y){
-                return i;
+
+    public void handleLeftClick(){
+        RecipeSelector recipeSelector = this.getSelectedRecipeSelector();
+        if(recipeSelector != null){
+            CosmicEvolution.instance.save.activeWorld.setBlockWithNotify(this.x, this.y, this.z, Block.crafting3DItem.ID, true);
+            InWorldCraftingBlock craftingBlock = new InWorldCraftingBlock(Chunk.getBlockIndexFromCoordinates(this.x, this.y, this.z), Block.stone.ID, this.getInWorldCraftingRecipeName(recipeSelector.itemID), CosmicEvolution.instance.save.activeWorld.findChunkFromChunkCoordinates(this.x >> 5, this.y  >> 5, this.z >> 5));
+            craftingBlock.activateCraftingLayer(0);
+            CosmicEvolution.instance.save.activeWorld.addInWorldCraftingBlock(this.x, this.y, this.z, craftingBlock);
+            GLFW.glfwSetInputMode(CosmicEvolution.instance.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
+            CosmicEvolution.instance.setNewGui(new GuiInGame(CosmicEvolution.instance));
+        }
+    }
+
+    private InWorldCraftingRecipe getInWorldCraftingRecipeName(short itemID){
+        switch (itemID){
+            case 3 -> {
+                return InWorldCraftingRecipe.rockFragments;
+            }
+            case 4 -> {
+                return InWorldCraftingRecipe.axe;
+            }
+            case 9 -> {
+                return InWorldCraftingRecipe.knife;
+            }
+            case 10 -> {
+                return InWorldCraftingRecipe.shovel;
             }
         }
-        throw new RuntimeException("Unable to locate material index");
+
+        throw new IllegalArgumentException(itemID + " does not have a valid 3D crafting recipe template, was an invalid item added to the list?");
     }
 
 

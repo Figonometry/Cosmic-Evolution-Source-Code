@@ -8,7 +8,6 @@ import spacegame.item.Inventory;
 import spacegame.item.Item;
 import spacegame.world.ChestLocation;
 import spacegame.world.Chunk;
-import spacegame.world.Tech;
 import spacegame.world.World;
 
 public final class BlockPitKilnLit extends BlockPitKilnUnlit implements ITimeUpdate, ITickable, IParticleGenerator {
@@ -42,7 +41,6 @@ public final class BlockPitKilnLit extends BlockPitKilnUnlit implements ITimeUpd
         chestLocation.inventory.itemStacks[0].metadata = Item.NULL_ITEM_METADATA;
         chestLocation.inventory.itemStacks[0].durability = Item.NULL_ITEM_DURABILITY;
 
-        Tech.techUpdateEvent(Tech.UPDATE_EVENT_COOK_CLAY);
 
         world.removeChestLocation(x,y,z);
 

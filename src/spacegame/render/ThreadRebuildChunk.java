@@ -227,6 +227,7 @@ public final class ThreadRebuildChunk implements Runnable {
             case "BERRY_BUSH_GROWING" -> renderBlocks.renderBerryBushGrowing(this.workingChunk, this.parentWorld, block, index, face);
             case "REEDS_GROWTH" -> renderBlocks.renderReedGrowing(this.workingChunk, this.parentWorld, block, index, face);
             case "OAK_LOG" -> renderBlocks.renderStandardBlockWithoutAutoUV(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);
+            case "CRAFTING_ITEM" -> renderBlocks.render3DCraftingItem(this.workingChunk, this.parentWorld, block, index, face);
             case "LEAF" -> {
                 if(GameSettings.transparentLeaves){
                     renderBlocks.renderTransparentBlock(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);

@@ -15,6 +15,7 @@ public final class SoundPlayer {
 
 
     public static void checkAllSoundStates(){
+        if(!Sound.canPlaySound)return;
         for(int i = 0; i < sounds.size(); i++){
             checkSoundState(sounds.get(i));
         }
@@ -32,6 +33,7 @@ public final class SoundPlayer {
     }
 
     public void playSound(double x, double y, double z, Sound sound, float pitch) {
+        if(!Sound.canPlaySound)return;
         if (sound == null) {return;}
         //AL11.alSourcef(sound.sourceID, AL11.AL_GAIN, 3);
         AL11.alSourcef(sound.sourceID, AL11.AL_GAIN, calculateGain(distanceFromCameraToSound(x,y,z), sound.soundMultiplier));
@@ -52,6 +54,7 @@ public final class SoundPlayer {
     }
 
     public void stopSound(String soundString){
+        if(!Sound.canPlaySound)return;
         Sound sound;
         for(int i = 0; i < sounds.size(); i++){
             sound = sounds.get(i);

@@ -6,6 +6,7 @@ import spacegame.block.ITickable;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
 import spacegame.gui.GuiInGame;
+import spacegame.item.InWorldCraftingRecipe;
 import spacegame.util.MathUtil;
 import spacegame.entity.Entity;
 import spacegame.entity.EntityBlock;
@@ -663,6 +664,7 @@ public final class ChunkController {
                         NBTTagCompound chest = chunkData.getCompoundTag("Chest");
                         NBTTagCompound timeEvents = chunkData.getCompoundTag("TimeEvents");
                         NBTTagCompound heatableBlocks = chunkData.getCompoundTag("HeatableBlocks");
+                        NBTTagCompound craftingBlocks = chunkData.getCompoundTag("CraftingBlocks");
                         chunk = new Chunk(x, y, z, CosmicEvolution.instance.save.activeWorld);
 
                         chunk.containsWater = chunkData.getBoolean("containsWater");
@@ -764,6 +766,26 @@ public final class ChunkController {
                                 heatableBlockLocation.heatStartTime = heatStartTime;
 
                                 chunk.addHeatableBlock(heatableBlockLocation);
+                            }
+                        }
+
+                        if(craftingBlocks != null){
+                            int craftingBlockCount = craftingBlocks.getInteger("inWorldCraftingBlockCount");
+                            NBTTagCompound inWorldCraftingBlockLoadedTag;
+                            InWorldCraftingBlock inWorldCraftingBlock;
+                            for(int i = 0; i < craftingBlockCount; i++){
+                                inWorldCraftingBlockLoadedTag = craftingBlocks.getCompoundTag("inWorldCraftingBlock" + i);
+                                int index = inWorldCraftingBlockLoadedTag.getInteger("index");
+                                short materialBlockID = inWorldCraftingBlockLoadedTag.getShort("materialBlockID");
+
+                                inWorldCraftingBlock = new InWorldCraftingBlock(index, materialBlockID, InWorldCraftingRecipe.findInWorldCraftingRecipeFromName(inWorldCraftingBlockLoadedTag.getString("craftingRecipeName")), chunk);
+                                inWorldCraftingBlock.activeCraftingLayer = inWorldCraftingBlockLoadedTag.getInteger("activeCraftingLayer");
+
+                                for(int j = 0; j < 16; j++){
+                                    inWorldCraftingBlock.subVoxelIndices[j] = inWorldCraftingBlockLoadedTag.getIntArray("craftingLayer" + j);
+                                }
+
+                                chunk.craftingBlocks.add(inWorldCraftingBlock);
                             }
                         }
 

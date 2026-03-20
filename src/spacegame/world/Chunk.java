@@ -77,6 +77,7 @@ public final class Chunk implements Comparable<Chunk> {
     public ArrayList<ChestLocation> chestLocations = new ArrayList<>();
     public ArrayList<TimeUpdateEvent> updateEvents = new ArrayList<>();
     public ArrayList<HeatableBlockLocation> heatableBlocks = new ArrayList<>();
+    public ArrayList<InWorldCraftingBlock> craftingBlocks = new ArrayList<>();
     public int opaqueVBOID = -10;
     public int opaqueVAOID = -10;
     public int opaqueEBOID = -10;
@@ -1116,6 +1117,15 @@ public final class Chunk implements Comparable<Chunk> {
                     }
                 }
             }
+
+            InWorldCraftingBlock craftingBlock;
+            for(int i = 0; i < this.craftingBlocks.size(); i++){
+                craftingBlock = this.craftingBlocks.get(i);
+                if(craftingBlock.removeObject){
+                    this.craftingBlocks.remove(craftingBlock);
+                }
+            }
+            this.craftingBlocks.trimToSize();
         }
         if(CosmicEvolution.instance.save.time % 15 == 0){
             HeatableBlockLocation heatableBlockLocation;
@@ -1235,6 +1245,28 @@ public final class Chunk implements Comparable<Chunk> {
                 break;
             }
         }
+    }
+
+    public void addInWorldCraftingBlock(InWorldCraftingBlock craftingBlock){
+        this.craftingBlocks.add(craftingBlock);
+    }
+
+    public void removeInWorldCraftingBlock(int index){
+        for(int i = 0; i < this.craftingBlocks.size(); i++){
+            if(this.craftingBlocks.get(i).indexInChunk == index){
+                this.craftingBlocks.remove(i);
+                break;
+            }
+        }
+    }
+
+    public InWorldCraftingBlock getInWorldCraftingBlock(int index){
+        for(int i = 0; i < this.craftingBlocks.size(); i++){
+            if(this.craftingBlocks.get(i).indexInChunk == index){
+                return this.craftingBlocks.get(i);
+            }
+        }
+        return null;
     }
 
     public void addChestLocation(int x, int y, int z, Inventory inventory){

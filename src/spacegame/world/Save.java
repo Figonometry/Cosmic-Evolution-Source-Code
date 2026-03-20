@@ -88,7 +88,6 @@ public final class Save {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        Tech.loadSaveTechnologies(this.saveFolder);
     }
 
     public void saveDataToFile(){
@@ -114,7 +113,6 @@ public final class Save {
         }
         this.thePlayer.savePlayerToFile();
         this.activeWorld.saveWorld();
-        Tech.saveAllTechnologiesToFile(this.saveFolder);
     }
 
     public void saveDataToFileWithoutChunkUnload(){
@@ -140,7 +138,6 @@ public final class Save {
         }
         this.thePlayer.savePlayerToFile();
         this.activeWorld.saveWorldWithoutUnload();
-        Tech.saveAllTechnologiesToFile(this.saveFolder);
     }
 
     public void saveInitDataToFile(String saveName, double x, double z){
@@ -179,12 +176,12 @@ public final class Save {
     }
 
     public void handleLeftClick() {
-        this.activeWorld.handleLeftClick();
+        this.activeWorld.handleClick(true);
         this.thePlayer.isSwinging = this.ce.currentGui instanceof GuiInGame;
     }
 
     public void handleRightClick() {
-        this.activeWorld.handleRightClick();
+        this.activeWorld.handleClick(false);
     }
 
     public static int doesSaveSlotExist(int saveNumber){

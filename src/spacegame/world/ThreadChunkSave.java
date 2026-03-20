@@ -31,11 +31,13 @@ public final class ThreadChunkSave implements Runnable {
             NBTTagCompound chest = new NBTTagCompound();
             NBTTagCompound timeEvents = new NBTTagCompound();
             NBTTagCompound heatableBlocks = new NBTTagCompound();
+            NBTTagCompound craftingBlocks = new NBTTagCompound();
             chunkTag.setTag("Chunk", chunkData);
             chunkData.setTag("Entity", entity);
             chunkData.setTag("Chest", chest);
             chunkData.setTag("TimeEvents", timeEvents);
             chunkData.setTag("HeatableBlocks", heatableBlocks);
+            chunkData.setTag("CraftingBlocks", craftingBlocks);
 
             chunkData.setInteger("x", chunk.x);
             chunkData.setInteger("y", chunk.y);
@@ -154,6 +156,29 @@ public final class ThreadChunkSave implements Runnable {
                     heatableBlockCount++;
                 }
                 heatableBlocks.setInteger("heatableBlockCount", heatableBlockCount);
+            }
+
+            if(this.chunk.craftingBlocks.size() > 0){
+                InWorldCraftingBlock inWorldCraftingBlock;
+                int inWorldCraftingBlockCount = 0;
+                NBTTagCompound[] inWorldCraftingBlockTags = new NBTTagCompound[this.chunk.craftingBlocks.size()];
+                for(int i = 0; i < inWorldCraftingBlockTags.length; i++){
+
+                    inWorldCraftingBlock = this.chunk.craftingBlocks.get(i);
+                    inWorldCraftingBlockTags[i] = new NBTTagCompound();
+                    inWorldCraftingBlockTags[i].setInteger("index", inWorldCraftingBlock.indexInChunk);
+                    inWorldCraftingBlockTags[i].setShort("materialBlockID", inWorldCraftingBlock.materialBlockID);
+                    inWorldCraftingBlockTags[i].setInteger("activeCraftingLayer", inWorldCraftingBlock.activeCraftingLayer);
+                    inWorldCraftingBlockTags[i].setString("craftingRecipeName", inWorldCraftingBlock.craftingRecipe.recipeName);
+
+                    for(int j = 0; j < 16; j++){
+                        inWorldCraftingBlockTags[i].setIntArray("craftingLayer" + j, inWorldCraftingBlock.subVoxelIndices[j]);
+                    }
+
+                    craftingBlocks.setTag("inWorldCraftingBlock" + inWorldCraftingBlockCount, inWorldCraftingBlockTags[i]);
+                    inWorldCraftingBlockCount++;
+                }
+                craftingBlocks.setInteger("inWorldCraftingBlockCount", inWorldCraftingBlockCount);
             }
 
             NBTIO.writeCompressed(chunkTag, outputStream);

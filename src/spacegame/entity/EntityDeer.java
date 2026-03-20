@@ -7,7 +7,6 @@ import spacegame.item.Item;
 import spacegame.render.Model;
 import spacegame.render.ModelDeer;
 import spacegame.render.RenderEngine;
-import spacegame.world.Tech;
 
 import java.util.Random;
 
@@ -182,9 +181,6 @@ public final class EntityDeer extends EntityLiving {
     public void handleDeath() {
         this.despawn = true;
         CosmicEvolution.instance.save.activeWorld.addEntity(new EntityItem(this.x, this.y, this.z, Item.rawVenison.ID, Item.NULL_ITEM_METADATA, (byte) 1, Item.NULL_ITEM_DURABILITY));
-        if(this.lastEntityToHit instanceof EntityPlayer){
-            Tech.techUpdateEvent(Tech.UPDATE_EVENT_HUNT_ANIMAL);
-        }
     }
 
     @Override

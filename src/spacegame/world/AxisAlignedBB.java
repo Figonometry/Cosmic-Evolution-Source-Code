@@ -1,5 +1,7 @@
 package spacegame.world;
 
+import org.joml.Vector3d;
+import org.joml.Vector3f;
 import spacegame.block.Block;
 import spacegame.core.CosmicEvolution;
 import spacegame.entity.Entity;
@@ -24,12 +26,12 @@ public final class AxisAlignedBB {
         this.maxZ = maxZ;
     }
 
-    public AxisAlignedBB(){}
-
+    public AxisAlignedBB() {
+    }
 
 
     public void adjustBlockBoundingBox(int x, int y, int z, short blockID, double entityX, double entityZ) {
-        if(!Block.list[blockID].isSolid && Block.list[blockID].standardCollisionBoundingBox.equals(Block.standardBlock)){
+        if (!Block.list[blockID].isSolid && Block.list[blockID].standardCollisionBoundingBox.equals(Block.standardBlock)) {
             this.minX = x;
             this.maxX = x + 1;
             this.minY = y;
@@ -38,23 +40,23 @@ public final class AxisAlignedBB {
             this.maxZ = z + 1;
             this.air = true;
         } else {
-            if(blockID == Block.logPile.ID){
-                int logCount = CosmicEvolution.instance.save.activeWorld.getChestLocation(x,y,z).inventory.itemStacks[0].count / 2;
-                if(logCount <= 4){
+            if (blockID == Block.logPile.ID) {
+                int logCount = CosmicEvolution.instance.save.activeWorld.getChestLocation(x, y, z).inventory.itemStacks[0].count / 2;
+                if (logCount <= 4) {
                     this.minX = x + Block.quarterBlock.minX;
                     this.maxX = x + Block.quarterBlock.maxX;
                     this.minY = y + Block.quarterBlock.minY;
                     this.maxY = y + Block.quarterBlock.maxY;
                     this.minZ = z + Block.quarterBlock.minZ;
                     this.maxZ = z + Block.quarterBlock.maxZ;
-                } else if(logCount <= 8){
+                } else if (logCount <= 8) {
                     this.minX = x + Block.slab.minX;
                     this.maxX = x + Block.slab.maxX;
                     this.minY = y + Block.slab.minY;
                     this.maxY = y + Block.slab.maxY;
                     this.minZ = z + Block.slab.minZ;
                     this.maxZ = z + Block.slab.maxZ;
-                } else if(logCount <= 12){
+                } else if (logCount <= 12) {
                     this.minX = x + Block.threeQuartersBlock.minX;
                     this.maxX = x + Block.threeQuartersBlock.maxX;
                     this.minY = y + Block.threeQuartersBlock.minY;
@@ -69,23 +71,23 @@ public final class AxisAlignedBB {
                     this.minZ = z + Block.standardBlock.minZ;
                     this.maxZ = z + Block.standardBlock.maxZ;
                 }
-            } else if(blockID == Block.brickPile.ID){
-                int brickCount = CosmicEvolution.instance.save.activeWorld.getChestLocation(x,y,z).inventory.itemStacks[0].count;
-                if(brickCount <= 12){
+            } else if (blockID == Block.brickPile.ID) {
+                int brickCount = CosmicEvolution.instance.save.activeWorld.getChestLocation(x, y, z).inventory.itemStacks[0].count;
+                if (brickCount <= 12) {
                     this.minX = x + Block.quarterBlock.minX;
                     this.maxX = x + Block.quarterBlock.maxX;
                     this.minY = y + Block.quarterBlock.minY;
                     this.maxY = y + Block.quarterBlock.maxY;
                     this.minZ = z + Block.quarterBlock.minZ;
                     this.maxZ = z + Block.quarterBlock.maxZ;
-                } else if(brickCount <= 24){
+                } else if (brickCount <= 24) {
                     this.minX = x + Block.slab.minX;
                     this.maxX = x + Block.slab.maxX;
                     this.minY = y + Block.slab.minY;
                     this.maxY = y + Block.slab.maxY;
                     this.minZ = z + Block.slab.minZ;
                     this.maxZ = z + Block.slab.maxZ;
-                } else if(brickCount <= 36){
+                } else if (brickCount <= 36) {
                     this.minX = x + Block.threeQuartersBlock.minX;
                     this.maxX = x + Block.threeQuartersBlock.maxX;
                     this.minY = y + Block.threeQuartersBlock.minY;
@@ -113,8 +115,7 @@ public final class AxisAlignedBB {
     }
 
 
-
-    public void adjustEntityBoundingBox(double x, double y, double z, double width, double height, double depth){
+    public void adjustEntityBoundingBox(double x, double y, double z, double width, double height, double depth) {
         this.minX = x - (width / 2.0);
         this.maxX = x + (width / 2);
         this.minY = y - (height / 2.0);
@@ -123,7 +124,7 @@ public final class AxisAlignedBB {
         this.maxZ = z + (depth / 2.0);
     }
 
-    public void scale(double scaleFactor){
+    public void scale(double scaleFactor) {
         this.minX -= scaleFactor;
         this.minY -= scaleFactor;
         this.minZ -= scaleFactor;
@@ -133,24 +134,24 @@ public final class AxisAlignedBB {
     }
 
     public double clipXCollide(AxisAlignedBB entityBoundingBox, double deltaX, Entity entity) {
-        if(entityBoundingBox.maxY > this.minY && entityBoundingBox.minY < this.maxY) {
-            if(entityBoundingBox.maxZ > this.minZ && entityBoundingBox.minZ < this.maxZ) {
+        if (entityBoundingBox.maxY > this.minY && entityBoundingBox.minY < this.maxY) {
+            if (entityBoundingBox.maxZ > this.minZ && entityBoundingBox.minZ < this.maxZ) {
                 double max;
-                if(deltaX > 0.0 && entityBoundingBox.maxX <= this.minX) {
+                if (deltaX > 0.0 && entityBoundingBox.maxX <= this.minX) {
                     max = this.minX - entityBoundingBox.maxX;
-                    if(max < deltaX) {
+                    if (max < deltaX) {
                         deltaX = max;
-                        if(this.maxY - this.minY <= 0.5 && entity instanceof EntityLiving) {
+                        if (this.maxY - this.minY <= 0.5 && entity instanceof EntityLiving) {
                             entity.y += (this.maxY - this.minY);
                         }
                     }
                 }
 
-                if(deltaX < 0.0 && entityBoundingBox.minX >= this.maxX) {
+                if (deltaX < 0.0 && entityBoundingBox.minX >= this.maxX) {
                     max = this.maxX - entityBoundingBox.minX;
-                    if(max > deltaX) {
+                    if (max > deltaX) {
                         deltaX = max;
-                        if(this.maxY - this.minY <= 0.5 && entity instanceof EntityLiving) {
+                        if (this.maxY - this.minY <= 0.5 && entity instanceof EntityLiving) {
                             entity.y += (this.maxY - this.minY);
                         }
                     }
@@ -162,19 +163,19 @@ public final class AxisAlignedBB {
     }
 
     public double clipYCollide(AxisAlignedBB entityBoundingBox, double deltaY) {
-        if(entityBoundingBox.maxX > this.minX && entityBoundingBox.minX < this.maxX) {
-            if(entityBoundingBox.maxZ > this.minZ && entityBoundingBox.minZ < this.maxZ) {
+        if (entityBoundingBox.maxX > this.minX && entityBoundingBox.minX < this.maxX) {
+            if (entityBoundingBox.maxZ > this.minZ && entityBoundingBox.minZ < this.maxZ) {
                 double max;
-                if(deltaY > 0.0 && entityBoundingBox.maxY <= this.minY) {
+                if (deltaY > 0.0 && entityBoundingBox.maxY <= this.minY) {
                     max = this.minY - entityBoundingBox.maxY;
-                    if(max < deltaY) {
+                    if (max < deltaY) {
                         deltaY = max;
                     }
                 }
 
-                if(deltaY < 0.0 && entityBoundingBox.minY >= this.maxY) {
+                if (deltaY < 0.0 && entityBoundingBox.minY >= this.maxY) {
                     max = this.maxY - entityBoundingBox.minY;
-                    if(max > deltaY) {
+                    if (max > deltaY) {
                         deltaY = max;
                     }
                 }
@@ -185,24 +186,24 @@ public final class AxisAlignedBB {
     }
 
     public double clipZCollide(AxisAlignedBB entityBoundingBox, double deltaZ, Entity entity) {
-        if(entityBoundingBox.maxX > this.minX && entityBoundingBox.minX < this.maxX) {
-            if(entityBoundingBox.maxY > this.minY && entityBoundingBox.minY < this.maxY) {
+        if (entityBoundingBox.maxX > this.minX && entityBoundingBox.minX < this.maxX) {
+            if (entityBoundingBox.maxY > this.minY && entityBoundingBox.minY < this.maxY) {
                 double max;
-                if(deltaZ > 0.0 && entityBoundingBox.maxZ <= this.minZ) {
+                if (deltaZ > 0.0 && entityBoundingBox.maxZ <= this.minZ) {
                     max = this.minZ - entityBoundingBox.maxZ;
-                    if(max < deltaZ) {
+                    if (max < deltaZ) {
                         deltaZ = max;
-                        if(this.maxY - this.minY <= 0.5 && entity instanceof EntityLiving) {
+                        if (this.maxY - this.minY <= 0.5 && entity instanceof EntityLiving) {
                             entity.y += (this.maxY - this.minY);
                         }
                     }
                 }
 
-                if(deltaZ < 0.0 && entityBoundingBox.minZ >= this.maxZ) {
+                if (deltaZ < 0.0 && entityBoundingBox.minZ >= this.maxZ) {
                     max = this.maxZ - entityBoundingBox.minZ;
-                    if(max > deltaZ) {
+                    if (max > deltaZ) {
                         deltaZ = max;
-                        if(this.maxY - this.minY <= 0.5 && entity instanceof EntityLiving) {
+                        if (this.maxY - this.minY <= 0.5 && entity instanceof EntityLiving) {
                             entity.y += (this.maxY - this.minY);
                         }
                     }
@@ -212,7 +213,7 @@ public final class AxisAlignedBB {
         }
         return deltaZ;
     }
-    
+
     public boolean clip(AxisAlignedBB boundingBox) {
         return ((boundingBox.minX < this.maxX && boundingBox.maxX > this.minX) && (boundingBox.minY < this.maxY && boundingBox.maxY > this.minY) && (boundingBox.minZ < this.maxZ && boundingBox.maxZ > this.minZ));
     }
@@ -252,34 +253,34 @@ public final class AxisAlignedBB {
         double maxX = this.maxX;
         double maxY = this.maxY;
         double maxZ = this.maxZ;
-        if(deltaX < 0.0) {
+        if (deltaX < 0.0) {
             minX += deltaX;
         }
 
-        if(deltaX > 0.0) {
+        if (deltaX > 0.0) {
             maxX += deltaX;
         }
 
-        if(deltaY < 0.0) {
+        if (deltaY < 0.0) {
             minY += deltaY;
         }
 
-        if(deltaY > 0.0) {
+        if (deltaY > 0.0) {
             maxY += deltaY;
         }
 
-        if(deltaZ < 0.0) {
+        if (deltaZ < 0.0) {
             minZ += deltaZ;
         }
 
-        if(deltaZ > 0.0) {
+        if (deltaZ > 0.0) {
             maxZ += deltaZ;
         }
 
         return new AxisAlignedBB(minX, minY, minZ, maxX, maxY, maxZ);
     }
 
-    public void move(double deltaX, double deltaY, double deltaZ){
+    public void move(double deltaX, double deltaY, double deltaZ) {
         this.minX += deltaX;
         this.minY += deltaY;
         this.minZ += deltaZ;
@@ -287,4 +288,56 @@ public final class AxisAlignedBB {
         this.maxY += deltaY;
         this.maxZ += deltaZ;
     }
+
+    public static double[] intersectRayWithBlockAABB(double px, double py, double pz, Vector3d dir, int bx, int by, int bz) {
+        double minX = bx;
+        double minY = by;
+        double minZ = bz;
+        double maxX = bx + 1.0;
+        double maxY = by + 1.0;
+        double maxZ = bz + 1.0;
+
+        double tMin = 0.0;
+        double tMax = 99999.0;
+
+        // X slab
+        if (Math.abs(dir.x) > 1e-8) {
+            double tx1 = (minX - px) / dir.x;
+            double tx2 = (maxX - px) / dir.x;
+            double tminX = Math.min(tx1, tx2);
+            double tmaxX = Math.max(tx1, tx2);
+            tMin = Math.max(tMin, tminX);
+            tMax = Math.min(tMax, tmaxX);
+        }
+
+        // Y slab
+        if (Math.abs(dir.y) > 1e-8) {
+            double ty1 = (minY - py) / dir.y;
+            double ty2 = (maxY - py) / dir.y;
+            double tminY = Math.min(ty1, ty2);
+            double tmaxY = Math.max(ty1, ty2);
+            tMin = Math.max(tMin, tminY);
+            tMax = Math.min(tMax, tmaxY);
+        }
+
+        // Z slab
+        if (Math.abs(dir.z) > 1e-8) {
+            double tz1 = (minZ - pz) / dir.z;
+            double tz2 = (maxZ - pz) / dir.z;
+            double tminZ = Math.min(tz1, tz2);
+            double tmaxZ = Math.max(tz1, tz2);
+            tMin = Math.max(tMin, tminZ);
+            tMax = Math.min(tMax, tmaxZ);
+        }
+
+        if (tMax < tMin || tMax < 0)
+            return null;
+
+        double hitX = px + dir.x * tMin;
+        double hitY = py + dir.y * tMin;
+        double hitZ = pz + dir.z * tMin;
+
+        return new double[]{hitX, hitY, hitZ};
+    }
 }
+

@@ -1,22 +1,22 @@
 package spacegame.gui;
 
 
-import org.joml.Matrix3f;
-import org.joml.Matrix4d;
-import org.joml.Quaternionf;
-import org.joml.Vector3f;
+import org.joml.*;
 import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
 import spacegame.block.BlockTorch;
 import spacegame.block.ITimeUpdate;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
+import spacegame.core.MouseListener;
 import spacegame.util.MathUtil;
 import spacegame.core.Timer;
 import spacegame.entity.EntityPlayer;
 import spacegame.item.Item;
 import spacegame.render.*;
+import spacegame.world.AxisAlignedBB;
 import spacegame.world.Chunk;
+import spacegame.world.InWorldCraftingBlock;
 import spacegame.world.TimeUpdateEvent;
 
 import javax.imageio.ImageIO;
@@ -24,6 +24,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.lang.Math;
 import java.util.Random;
 
 public final class GuiInGame extends Gui {
@@ -31,6 +32,7 @@ public final class GuiInGame extends Gui {
     public static int water;
     public static int hotbar;
     public static int outline;
+    public static int subVoxelOutline;
     public static int blockBreaking;
     public static TextureAtlas blockBreakingAtlas;
     public static int transparentBackground;
@@ -52,6 +54,7 @@ public final class GuiInGame extends Gui {
             vignette = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/vignette.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
             water = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/waterOverlay.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
             outline = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInGame/outline.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
+            subVoxelOutline = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/outline.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
             blockBreaking = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInGame/blockBreaking.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
             blockBreakingAtlas = CosmicEvolution.instance.renderEngine.createTextureAtlas(96, 96, 32, 32, 7, 0);
             hotbar = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInGame/hotbarSlot.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
@@ -792,7 +795,7 @@ public final class GuiInGame extends Gui {
 
     public static void renderBlockBreakingOutline() {
         if (CosmicEvolution.instance.save.thePlayer.breakTimer != 0) {
-            RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
+            RenderEngine.WorldTessellator tessellator = RenderEngine.WorldTessellator.instance;
             int locationX = Integer.MIN_VALUE;
             int locationY = Integer.MIN_VALUE;
             int locationZ = Integer.MIN_VALUE;
@@ -814,6 +817,8 @@ public final class GuiInGame extends Gui {
                     blockZ = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z + zDif * multiplier * loopPass);
 
                     Block checkedBlock = Block.list[CosmicEvolution.instance.save.activeWorld.getBlockID(blockX, blockY, blockZ)];
+                    if(checkedBlock.ID == Block.crafting3DItem.ID)return;
+
                     if (isBlockVisible(blockX, blockY, blockZ)) {
                         if (checkedBlock.ID != Block.air.ID && checkedBlock.ID != Block.water.ID) {
                             locationX = blockX;
@@ -877,7 +882,7 @@ public final class GuiInGame extends Gui {
                             }
 
 
-                            renderSpecialFace(tessellator, 16777215, Chunk.getBlockIndexFromCoordinates(locationX, locationY, locationZ),textureID, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, chunk, blockBreakingAtlas.getTexture(textureID));
+                            renderSpecialFace(tessellator, 16777215, Chunk.getBlockIndexFromCoordinates(locationX, locationY, locationZ),textureID, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, chunk, blockBreakingAtlas.getTexture(textureID), 0, 0, 0, 0);
                             tessellator.addElements();
                         }
                         GL46.glEnable(GL46.GL_CULL_FACE);
@@ -900,7 +905,7 @@ public final class GuiInGame extends Gui {
     }
 
     public static void renderBlockOutline(){
-        RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
+        RenderEngine.WorldTessellator tessellator = RenderEngine.WorldTessellator.instance;
         int locationX = Integer.MIN_VALUE;
         int locationY = Integer.MIN_VALUE;
         int locationZ = Integer.MIN_VALUE;
@@ -981,8 +986,10 @@ public final class GuiInGame extends Gui {
 
 
 
-                        renderSpecialFace(tessellator, 16777215, Chunk.getBlockIndexFromCoordinates(locationX, locationY, locationZ), 0, modelFace, 0,0,0,0,0,0,0,0, 3,1,2,0, chunk,null);
-                        tessellator.addElements();
+                        renderSpecialFace(tessellator, 16777215, Chunk.getBlockIndexFromCoordinates(locationX, locationY, locationZ), 0, modelFace, 0,0,0,0,0,0,0,0, 3,1,2,0, chunk,null, modelFace.normal.x, modelFace.normal.y, modelFace.normal.z, chunk.getSkyLightValue(locationX, locationY, locationZ));
+                        if(Block.list[block].ID != Block.crafting3DItem.ID) {
+                            tessellator.addElements();
+                        }
                     }
 
                     GL46.glEnable(GL46.GL_CULL_FACE);
@@ -994,11 +1001,153 @@ public final class GuiInGame extends Gui {
                     GL46.glDisable(GL46.GL_CULL_FACE);
 
                     Shader.worldShader2DTexture.uploadBoolean("compressTest", false);
+
+                    if(Block.list[block].ID == Block.crafting3DItem.ID){
+                        renderCrafting3DItemGrid(locationX, locationY, locationZ, chunk);
+                    }
                 }
             }
 
         }
+    }
 
+    private static int getCraftingGridIndexPlayerIsLookingAt(int bx, int by, int bz, int layer){
+        double px = CosmicEvolution.instance.save.thePlayer.x;
+        double py = (CosmicEvolution.instance.save.thePlayer.y + CosmicEvolution.instance.save.thePlayer.height / 2) - (CosmicEvolution.instance.save.thePlayer.isShifting ? EntityPlayer.SHIFT_DISTANCE : 0);
+        double pz = CosmicEvolution.instance.save.thePlayer.z;
+
+        double[] ray = CosmicEvolution.camera.rayCast(3);
+        Vector3d dir = new Vector3d(
+                (ray[0] - CosmicEvolution.instance.save.thePlayer.x),
+                (ray[1] - (CosmicEvolution.instance.save.thePlayer.y + CosmicEvolution.instance.save.thePlayer.height / 2)
+                 - (CosmicEvolution.instance.save.thePlayer.isShifting ? EntityPlayer.SHIFT_DISTANCE : 0)),
+                (ray[2] - CosmicEvolution.instance.save.thePlayer.z)
+        );
+
+        dir.normalize();
+
+        double[] hit = AxisAlignedBB.intersectRayWithBlockAABB(px, py, pz, dir, bx, by, bz);
+
+        if(hit != null) {
+            return handleIntersectForInWorldCraftingBlock(hit[0], hit[1], hit[2], dir, bx, by, bz, layer);
+        } else {
+            return 256;
+        }
+
+    }
+
+    private static int handleIntersectForInWorldCraftingBlock(double worldX, double worldY, double worldZ, Vector3d dir, int bx, int by, int bz, int layer) {
+
+        // --- 2. Local coords ---
+        double lx = worldX - bx;
+        double ly = worldY - by;
+        double lz = worldZ - bz;
+
+        // --- 4. Ray stepping parameters ---
+        double step = 0.001;     // high precision
+        double maxDist = 2.5;    // enough to reach far side at shallow angles
+
+
+        double layerMinY = layer / 16.0;
+        double layerMaxY = (layer + 1) / 16.0;
+
+        double tol = 0.0;
+
+        int highlightedIndex = -1;
+        int highlightedX = -1;
+        int highlightedZ = -1;
+
+
+        // --- 5. Step along ray and find FIRST valid voxel ---
+        for (double t = 0.0; t <= maxDist; t += step) {
+
+            double x = lx + dir.x * t;
+            double y = ly + dir.y * t;
+            double z = lz + dir.z * t;
+
+            // Only break if we leave the block vertically
+            if (y < 0 || y > 1)
+                break;
+
+
+            // Ignore X/Z out of bounds — DO NOT break
+            if (x < 0 || x > 1 || z < 0 || z > 1)
+                continue;
+
+
+            // Must be within the active layer (with tolerance)
+            if (y < layerMinY - tol|| y > layerMaxY + tol)
+                continue;
+
+            // Must be inside crafting footprint
+
+            if (x < 0.125 || x > 0.875) continue;
+            if (z < 0.125 || z > 0.875) continue;
+
+            int xIndex = (int)((x - 0.125) / 0.0625);
+            int zIndex = (int)((z - 0.125) / 0.0625);
+
+            // Clamp to avoid out-of-bounds
+            xIndex = Math.max(0, Math.min(11, xIndex));
+            zIndex = Math.max(0, Math.min(11, zIndex));
+
+            int index = xIndex + zIndex * 12;
+
+            // FIRST valid voxel wins — stop immediately
+            highlightedIndex = index;
+            highlightedX = xIndex;
+            highlightedZ = zIndex;
+
+            // No voxel under cursor
+            if (highlightedIndex == -1) {
+                return 256;
+            } else {
+                return index;
+            }
+        }
+        return 256;
+    }
+
+    private static void renderCrafting3DItemGrid(int x, int y, int z, Chunk chunk) {
+        int red = 12529455;
+        int green = 5947183;
+        int blue = 52735;
+        int index = Chunk.getBlockIndexFromCoordinates(x,y,z);
+        InWorldCraftingBlock craftingBlock = chunk.getInWorldCraftingBlock(index);
+        RenderEngine.WorldTessellator tessellator = RenderEngine.WorldTessellator.instance;
+
+        Vector3f translationVector = new Vector3f();
+        translationVector.y = craftingBlock.activeCraftingLayer / 16f;
+
+        ModelLoader blockModel;
+        ModelFace modelFace;
+
+        int indexPlayerIsLookingAt = getCraftingGridIndexPlayerIsLookingAt(x,y,z, craftingBlock.activeCraftingLayer);
+        boolean isPlayerLookingAtIndex = false;
+
+        for (int i = 0; i < 144; i++) {
+            isPlayerLookingAtIndex = i == indexPlayerIsLookingAt;
+
+            if(craftingBlock.craftingRecipe.recipeIndices[craftingBlock.activeCraftingLayer][i] == craftingBlock.subVoxelIndices[craftingBlock.activeCraftingLayer][i] && !isPlayerLookingAtIndex)continue;
+
+            translationVector.x = ((i % 12) * 0.0625f) + 0.125f;
+            translationVector.z = ((i / 12) * 0.0625f) + 0.125f;
+            blockModel = Block.crafting3DItemVoxelModel.copyModel().translateModel(translationVector.x, translationVector.y, translationVector.z);
+            for(int face = 0; face < 6; face++) {
+                modelFace = blockModel.getModelFace(face);
+                renderSpecialFace(tessellator, isPlayerLookingAtIndex ? blue : craftingBlock.craftingRecipe.recipeIndices[craftingBlock.activeCraftingLayer][i] == 1 && craftingBlock.subVoxelIndices[craftingBlock.activeCraftingLayer][i] == 0 ? red : green, index, 0, modelFace, 0,0,0,0,0,0,0,0, 3,1,2,0, chunk,null, modelFace.normal.x, modelFace.normal.y, modelFace.normal.z, chunk.getSkyLightValue(x,y,z));
+                tessellator.addElements();
+            }
+
+        }
+        GL46.glEnable(GL46.GL_CULL_FACE);
+        GL46.glCullFace(GL46.GL_FRONT);
+        GL46.glEnable(GL46.GL_POLYGON_OFFSET_FILL);
+        GL46.glPolygonOffset(-1f, -1f);
+        Shader.worldShader2DTexture.uploadBoolean("performNormals", false);
+        tessellator.drawTexture2D(subVoxelOutline, Shader.worldShader2DTexture, CosmicEvolution.camera);
+        GL46.glDisable(GL46.GL_POLYGON_OFFSET_FILL);
+        GL46.glDisable(GL46.GL_CULL_FACE);
     }
 
     public static boolean isBlockVisible(int blockX, int blockY, int blockZ) {
@@ -1014,7 +1163,7 @@ public final class GuiInGame extends Gui {
         return exposed;
     }
 
-    private static void renderSpecialFace(RenderEngine.Tessellator tessellator, int colorValue, int index, int textureID, ModelFace blockFace, float xSample1, float ySample1, float xSample2, float ySample2, float xSample3, float ySample3, float xSample4, float ySample4, int corner1, int corner2, int corner3, int corner4, Chunk chunk, Texture texture) {
+    private static void renderSpecialFace(RenderEngine.WorldTessellator tessellator, int colorValue, int index, int textureID, ModelFace blockFace, float xSample1, float ySample1, float xSample2, float ySample2, float xSample3, float ySample3, float xSample4, float ySample4, int corner1, int corner2, int corner3, int corner4, Chunk chunk, Texture texture, float normalX, float normalY, float normalZ, float skylightValue) {
         int x = (index % 32);
         int y = (index >> 10);
         int z = ((index % 1024) >> 5);
@@ -1085,6 +1234,10 @@ public final class GuiInGame extends Gui {
             tessellator.vertexBuffer.put(texture.texCoords[corner1].x + xSample1);
             tessellator.vertexBuffer.put(texture.texCoords[corner1].y + ySample1);
             tessellator.vertexBuffer.put((float) textureID);
+            tessellator.vertexBuffer.put(normalX);
+            tessellator.vertexBuffer.put(normalY);
+            tessellator.vertexBuffer.put(normalZ);
+            tessellator.vertexBuffer.put(skylightValue);
 
             tessellator.vertexBuffer.put(vertex2.x);
             tessellator.vertexBuffer.put(vertex2.y);
@@ -1096,6 +1249,10 @@ public final class GuiInGame extends Gui {
             tessellator.vertexBuffer.put(texture.texCoords[corner2].x + xSample2);
             tessellator.vertexBuffer.put(texture.texCoords[corner2].y + ySample2);
             tessellator.vertexBuffer.put((float) textureID);
+            tessellator.vertexBuffer.put(normalX);
+            tessellator.vertexBuffer.put(normalY);
+            tessellator.vertexBuffer.put(normalZ);
+            tessellator.vertexBuffer.put(skylightValue);
 
             tessellator.vertexBuffer.put(vertex3.x);
             tessellator.vertexBuffer.put(vertex3.y);
@@ -1107,6 +1264,10 @@ public final class GuiInGame extends Gui {
             tessellator.vertexBuffer.put(texture.texCoords[corner3].x + xSample3);
             tessellator.vertexBuffer.put(texture.texCoords[corner3].y + ySample3);
             tessellator.vertexBuffer.put((float) textureID);
+            tessellator.vertexBuffer.put(normalX);
+            tessellator.vertexBuffer.put(normalY);
+            tessellator.vertexBuffer.put(normalZ);
+            tessellator.vertexBuffer.put(skylightValue);
 
             tessellator.vertexBuffer.put(vertex4.x);
             tessellator.vertexBuffer.put(vertex4.y);
@@ -1118,6 +1279,10 @@ public final class GuiInGame extends Gui {
             tessellator.vertexBuffer.put(texture.texCoords[corner4].x + xSample4);
             tessellator.vertexBuffer.put(texture.texCoords[corner4].y + ySample4);
             tessellator.vertexBuffer.put((float) textureID);
+            tessellator.vertexBuffer.put(normalX);
+            tessellator.vertexBuffer.put(normalY);
+            tessellator.vertexBuffer.put(normalZ);
+            tessellator.vertexBuffer.put(skylightValue);
         } else {
             tessellator.vertexBuffer.put(vertex1.x);
             tessellator.vertexBuffer.put(vertex1.y);
@@ -1128,6 +1293,10 @@ public final class GuiInGame extends Gui {
             tessellator.vertexBuffer.put(alpha);
             tessellator.vertexBuffer.put(0);
             tessellator.vertexBuffer.put(1);
+            tessellator.vertexBuffer.put(normalX);
+            tessellator.vertexBuffer.put(normalY);
+            tessellator.vertexBuffer.put(normalZ);
+            tessellator.vertexBuffer.put(skylightValue);
 
             tessellator.vertexBuffer.put(vertex2.x);
             tessellator.vertexBuffer.put(vertex2.y);
@@ -1138,6 +1307,10 @@ public final class GuiInGame extends Gui {
             tessellator.vertexBuffer.put(alpha);
             tessellator.vertexBuffer.put(1);
             tessellator.vertexBuffer.put(0);
+            tessellator.vertexBuffer.put(normalX);
+            tessellator.vertexBuffer.put(normalY);
+            tessellator.vertexBuffer.put(normalZ);
+            tessellator.vertexBuffer.put(skylightValue);
 
             tessellator.vertexBuffer.put(vertex3.x);
             tessellator.vertexBuffer.put(vertex3.y);
@@ -1148,6 +1321,10 @@ public final class GuiInGame extends Gui {
             tessellator.vertexBuffer.put(alpha);
             tessellator.vertexBuffer.put(1);
             tessellator.vertexBuffer.put(1);
+            tessellator.vertexBuffer.put(normalX);
+            tessellator.vertexBuffer.put(normalY);
+            tessellator.vertexBuffer.put(normalZ);
+            tessellator.vertexBuffer.put(skylightValue);
 
             tessellator.vertexBuffer.put(vertex4.x);
             tessellator.vertexBuffer.put(vertex4.y);
@@ -1158,6 +1335,10 @@ public final class GuiInGame extends Gui {
             tessellator.vertexBuffer.put(alpha);
             tessellator.vertexBuffer.put(0);
             tessellator.vertexBuffer.put(0);
+            tessellator.vertexBuffer.put(normalX);
+            tessellator.vertexBuffer.put(normalY);
+            tessellator.vertexBuffer.put(normalZ);
+            tessellator.vertexBuffer.put(skylightValue);
         }
     }
 

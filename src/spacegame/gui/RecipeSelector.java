@@ -62,6 +62,14 @@ public final class RecipeSelector {
         return true;
     }
 
+    public void removeRequiredItemsFromInventory(EntityPlayer player) {
+        for (int i = 0; i < this.requiredItemCount.length; i++) {
+            for (int j = 0; j < this.requiredItemCount[i]; j++) {
+                player.removeSpecificItemFromInventory(this.requiredItems[i]);
+            }
+        }
+    }
+
 
     public boolean isMaterialRequired(int index){
         return this.isIndexSupposedToBeFilled(index);

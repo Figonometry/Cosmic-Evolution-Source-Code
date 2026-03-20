@@ -29,6 +29,7 @@ public final class Sound {
     public static String rainOutside = "src/spacegame/assets/sound/rainOutside.ogg";
     public static String wind = "src/spacegame/assets/sound/wind.ogg";
     public static String extinguish = "src/spacegame/assets/sounds/extinguish.ogg";
+    public static boolean canPlaySound = true;
     public String filepath;
     public int bufferID;
     public int sourceID;
@@ -37,6 +38,7 @@ public final class Sound {
 
 
     public Sound(String filepath, boolean loops, float soundMultiplier) {
+        if(!canPlaySound)return;
         this.filepath = filepath;
         this.soundMultiplier = soundMultiplier;
         if (this.filepath == null) {

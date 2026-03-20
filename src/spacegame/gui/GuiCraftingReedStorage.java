@@ -5,9 +5,12 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
 import spacegame.core.CosmicEvolution;
+import spacegame.item.InWorldCraftingRecipe;
 import spacegame.util.MathUtil;
 import spacegame.item.Item;
 import spacegame.render.*;
+import spacegame.world.Chunk;
+import spacegame.world.InWorldCraftingBlock;
 
 public final class GuiCraftingReedStorage extends GuiCrafting {
     public RecipeSelector[] selectableRecipes;
@@ -229,24 +232,6 @@ public final class GuiCraftingReedStorage extends GuiCrafting {
         }
     }
 
-    public void setRecipeSelected(RecipeSelector selectedRecipe){
-        if(selectedRecipe.isBlock){
-            this.ce.save.activeWorld.setBlockWithNotify(x,y,z, Block.reedChestTier0.ID, false);
-            this.ce.save.activeWorld.clearChestLocation(x,y,z);
-            this.ce.save.activeWorld.removeChestLocation(x,y,z);
-        } else {
-            this.ce.save.activeWorld.setBlockWithNotify(x,y,z, Block.reedBasketTier0.ID, false);
-            this.ce.save.activeWorld.clearChestLocation(x,y,z);
-            this.ce.save.activeWorld.removeChestLocation(x,y,z);
-        }
-        for(int i = 0; i < selectedRecipe.requiredItemCount.length; i++){
-            for(int j = 0; j < selectedRecipe.requiredItemCount[i]; j++){
-                this.ce.save.thePlayer.removeSpecificItemFromInventory(selectedRecipe.requiredItems[i]);
-            }
-        }
-        GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
-        this.ce.setNewGui(new GuiInGame(this.ce));
-    }
 
     @Override
     public Button getActiveButton() {
@@ -256,10 +241,6 @@ public final class GuiCraftingReedStorage extends GuiCrafting {
         return null;
     }
 
-    @Override
-    public CraftingMaterial getHoveredCraftingMaterial() {
-        return null;
-    }
 
     @Override
     public RecipeSelector getSelectedRecipeSelector() {
@@ -269,5 +250,40 @@ public final class GuiCraftingReedStorage extends GuiCrafting {
             }
         }
         return null;
+    }
+
+    @Override
+    public void handleLeftClick(){
+        RecipeSelector recipeSelector = this.getSelectedRecipeSelector();
+
+        if(recipeSelector != null) {
+            if (recipeSelector.meetsCriteriaToMakeRecipe(CosmicEvolution.instance.save.thePlayer)) {
+                CosmicEvolution.instance.save.activeWorld.setBlockWithNotify(this.x, this.y, this.z, Block.crafting3DItem.ID, true);
+                InWorldCraftingBlock craftingBlock = new InWorldCraftingBlock(Chunk.getBlockIndexFromCoordinates(x, y, z), Block.reedChest.ID, this.getInWorldCraftingRecipeName(recipeSelector.itemID), CosmicEvolution.instance.save.activeWorld.findChunkFromChunkCoordinates(this.x >> 5, this.y >> 5, this.z >> 5));
+                craftingBlock.activateCraftingLayer(0);
+                craftingBlock.activeCraftingLayer++;
+                CosmicEvolution.instance.save.activeWorld.addInWorldCraftingBlock(this.x, this.y, this.z, craftingBlock);
+                GLFW.glfwSetInputMode(CosmicEvolution.instance.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
+                CosmicEvolution.instance.setNewGui(new GuiInGame(CosmicEvolution.instance));
+                recipeSelector.removeRequiredItemsFromInventory(CosmicEvolution.instance.save.thePlayer);
+            }
+        }
+    }
+
+    private InWorldCraftingRecipe getInWorldCraftingRecipeName(short itemID){
+        switch (itemID){
+            case 0 -> {
+                switch (this.getSelectedRecipeSelector().blockID){
+                    case 91 -> {
+                        return InWorldCraftingRecipe.reedChest;
+                    }
+                }
+            }
+
+            case 13 -> {
+                return InWorldCraftingRecipe.reedBasket;
+            }
+        }
+        throw new RuntimeException(itemID + " does not have a valid 3D crafting recipe template, was an invalid item added to the list?");
     }
 }

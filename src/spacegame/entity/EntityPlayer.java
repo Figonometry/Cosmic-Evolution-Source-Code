@@ -27,6 +27,7 @@ import java.util.Random;
 public final class EntityPlayer extends EntityLiving {
     private CosmicEvolution ce;
     public static int selectedInventorySlot = 1;
+    public static final float SHIFT_DISTANCE = 0.125f;
     public int chunkX;
     public int chunkY;
     public int chunkZ;
@@ -748,7 +749,7 @@ public final class EntityPlayer extends EntityLiving {
             CosmicEvolution.camera.viewMatrix.translateLocal(-xShift, -yShift, 0);
         }
         if(this.isShifting){
-            CosmicEvolution.camera.viewMatrix.translateLocal(0, 0.125f,0);
+            CosmicEvolution.camera.viewMatrix.translateLocal(0, SHIFT_DISTANCE,0);
         }
         this.setRotation();
     }

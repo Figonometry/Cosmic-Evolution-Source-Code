@@ -96,7 +96,7 @@ public final class CosmicEvolution implements Runnable {
     }
 
     private void startGame() {
-        this.title = "Cosmic Evolution Alpha v0.38.1";
+        this.title = "Cosmic Evolution Alpha v0.39";
         GameSettings.loadOptionsFromFile(this.launcherDirectory);
         this.clearLogFiles(new File(this.launcherDirectory + "/crashReports"));
         this.initLWJGL();
@@ -183,6 +183,8 @@ public final class CosmicEvolution implements Runnable {
                 ALC11.alcMakeContextCurrent(context);
                 AL.createCapabilities(ALC.createCapabilities(device));
             }
+        } else {
+            Sound.canPlaySound = false;
         }
 
         GLFW.glfwSetWindowSizeCallback(this.window, WindowResizeListener::resizeCallback);
@@ -215,7 +217,6 @@ public final class CosmicEvolution implements Runnable {
         GuiUniverseMap.universeCamera.setFarPlaneDistance(512);
         GuiUniverseMap.universeCamera.viewMatrix.translate(-0.000000000000000001, 0, 0);
         this.setNewGui(new GuiMainMenu(this));
-        Tech.loadEraBaseNodes();
     }
 
     private void mainLoop() {
@@ -401,20 +402,6 @@ public final class CosmicEvolution implements Runnable {
         }
 
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_GRAVE_ACCENT) && KeyListener.keyReleased[GLFW.GLFW_KEY_GRAVE_ACCENT]){
-            if(this.currentGui instanceof GuiInGame){
-                this.save.activeWorld.toggleWorldPause();
-                GLFW.glfwSetInputMode(this.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
-                this.setNewGui(new GuiTechTree(this));
-                ((GuiTechTree)this.currentGui).switchEraDisplayed(Tech.NEOLITHIC_ERA);
-            } else if(this.currentGui instanceof GuiTechTree){
-                this.save.activeWorld.toggleWorldPause();
-                GLFW.glfwSetInputMode(this.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
-                this.setNewGui(new GuiInGame(this));
-            }
-            KeyListener.setKeyReleased(GLFW.GLFW_KEY_GRAVE_ACCENT);
-        }
-
 
         if (MouseListener.mouseButtonDown(GLFW.GLFW_MOUSE_BUTTON_LEFT)) {
             this.leftClick();
@@ -464,13 +451,6 @@ public final class CosmicEvolution implements Runnable {
                 if (EntityPlayer.selectedInventorySlot < 0) {
                     EntityPlayer.selectedInventorySlot = 8;
                 }
-            }
-        }
-        if(this.currentGui instanceof GuiTechTree) {
-            if (MouseListener.getScrollY() == -1) {
-                ((GuiTechTree) this.currentGui).zoomTechBlocks(-1);
-            } else if (MouseListener.getScrollY() == 1) {
-                ((GuiTechTree) this.currentGui).zoomTechBlocks(1);
             }
         }
         MouseListener.instance.scrollY = 0;
@@ -653,62 +633,11 @@ public final class CosmicEvolution implements Runnable {
             }
         }
 
-        if(this.currentGui instanceof GuiCrafting) {
-            if(this.currentGui instanceof GuiCraftingStoneTools){
-                CraftingMaterial material = ((GuiCraftingStoneTools) this.currentGui).getHoveredCraftingMaterial();
-                RecipeSelector selector = ((GuiCraftingStoneTools) this.currentGui).activeRecipe;
-                if (material != null && selector != null) {
-                    if (material.active && !selector.isMaterialRequired(((GuiCraftingStoneTools) this.currentGui).getMaterialIndex(material))){
-                        material.deactivate();
-                        if (material.type.equals("stone")) {
-                            this.soundPlayer.playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound(Sound.leftClickStoneCraftingMaterial, false, 1f), globalRand.nextFloat(0.5f, 1));
-                        }
-                    }
-                }
-            } else {
-                CraftingMaterial material = ((GuiCrafting) this.currentGui).getHoveredCraftingMaterial();
-                if (material != null) {
-                    if (material.active) {
-                        material.deactivate();
-                        switch (material.type) {
-                            case "stone":
-                                this.soundPlayer.playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound(Sound.leftClickStoneCraftingMaterial, false, 1f), globalRand.nextFloat(0.5f, 1));
-                                break;
-                            case "clay":
-                                this.soundPlayer.playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound(Sound.clay, false, 1f), globalRand.nextFloat(0.5f, 1));
-                                break;
-                        }
-                    }
-                }
-            }
+
+        if(this.currentGui instanceof GuiCrafting){
+           ((GuiCrafting)this.currentGui).handleLeftClick();
         }
 
-        if(this.currentGui instanceof GuiCraftingStoneTools){
-            RecipeSelector recipeSelector = ((GuiCraftingStoneTools)this.currentGui).getSelectedRecipeSelector();
-            if(recipeSelector != null && recipeSelector.meetsCriteriaToMakeRecipe(CosmicEvolution.instance.save.thePlayer)){
-                ((GuiCraftingStoneTools)this.currentGui).selectedItemID = recipeSelector.itemID;
-                ((GuiCraftingStoneTools)this.currentGui).selectableRecipes = null;
-                ((GuiCraftingStoneTools)this.currentGui).activeRecipe = recipeSelector;
-                ((GuiCraftingStoneTools)this.currentGui).activateRecipeOverlay();
-            }
-        }
-
-        if(this.currentGui instanceof GuiCraftingPottery){
-            RecipeSelector recipeSelector = ((GuiCraftingPottery)this.currentGui).getSelectedRecipeSelector();
-            if(recipeSelector != null && recipeSelector.meetsCriteriaToMakeRecipe(CosmicEvolution.instance.save.thePlayer)){
-                ((GuiCraftingPottery)this.currentGui).selectedItemID = recipeSelector.itemID;
-                ((GuiCraftingPottery)this.currentGui).selectableRecipes = null;
-                ((GuiCraftingPottery)this.currentGui).activeRecipe = recipeSelector;
-                ((GuiCraftingPottery)this.currentGui).activateRecipeOverlay();
-            }
-        }
-
-        if(this.currentGui instanceof GuiCraftingReedStorage){
-            RecipeSelector recipeSelector = ((GuiCraftingReedStorage)this.currentGui).getSelectedRecipeSelector();
-            if(recipeSelector != null){
-                ((GuiCraftingReedStorage)this.currentGui).setRecipeSelected(recipeSelector);
-            }
-        }
 
         MouseListener.leftClickReleased = false;
     }
@@ -765,24 +694,6 @@ public final class CosmicEvolution implements Runnable {
                 }
             }
         }
-
-        if(this.currentGui instanceof GuiCrafting) {
-            CraftingMaterial material = ((GuiCrafting) this.currentGui).getHoveredCraftingMaterial();
-            if (material != null) {
-                if (!material.active && !(this.currentGui instanceof GuiCraftingStoneTools)) {
-                    material.active = true;
-                    if (material.type.equals("clay")) {
-                        this.soundPlayer.playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound(Sound.clay, false, 1f), globalRand.nextFloat(0.5f, 1));
-                    }
-                }
-            }
-        }
-
-            if(this.currentGui instanceof GuiTechTree){
-                float deltaX = MouseListener.getDeltaX();
-                float deltaY = -MouseListener.getDeltaY();
-                ((GuiTechTree) this.currentGui).moveTechBlocks(deltaX, deltaY);
-            }
 
         MouseListener.rightClickReleased = false;
     }
@@ -853,7 +764,7 @@ public final class CosmicEvolution implements Runnable {
     private void render() {
         GL46.glClear(GL46.GL_COLOR_BUFFER_BIT);
         GL46.glClear(GL46.GL_DEPTH_BUFFER_BIT);
-        if(this.save != null && !(this.currentGui instanceof GuiWorldLoadingScreen || this.currentGui instanceof GuiUniverseMap || this.currentGui instanceof GuiTechTree)) {
+        if(this.save != null && !(this.currentGui instanceof GuiWorldLoadingScreen || this.currentGui instanceof GuiUniverseMap)) {
             this.save.activeWorld.renderWorld();
             this.save.thePlayer.renderShadow();
         }

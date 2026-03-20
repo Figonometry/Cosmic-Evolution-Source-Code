@@ -7,6 +7,7 @@ import spacegame.util.MathUtil;
 import spacegame.item.Item;
 import spacegame.world.ChestLocation;
 import spacegame.world.Chunk;
+import spacegame.world.InWorldCraftingBlock;
 import spacegame.world.World;
 
 import javax.imageio.ImageIO;
@@ -32,6 +33,7 @@ public class RenderBlocks {
     private float highestChannel = 1.0f;
     public ArrayList<int[]> fireWoodPileLogCounts = new ArrayList<>(); //Index then log count, size 2
     public ArrayList<int[]> brickPileBrickCounts = new ArrayList<>();
+    public static final float[] craftingTextureOffset = new float[144];
     public static final int TOP_FACE = 0;
     public static final int BOTTOM_FACE = 1;
     public static final int NORTH_FACE = 2;
@@ -44,6 +46,13 @@ public class RenderBlocks {
     public static final int SOUTH_FACE_UNSORTED = 9;
     public static final int EAST_FACE_UNSORTED = 10;
     public static final int WEST_FACE_UNSORTED = 11;
+
+    static {
+        for(int i = 0; i < 144; i++){
+            Random rand = new Random();
+            craftingTextureOffset[i] =  rand.nextFloat(-0.43f, 0.43f);
+        }
+    }
 
 
     public void renderStandardBlock(Chunk chunk, World world, short block, int index, int face, int[] greedyMeshSize) {
@@ -962,6 +971,42 @@ public class RenderBlocks {
         this.handleWaterLoggedBlocks(chunk, world, block, index, face);
 
         renderOpaqueFace(chunk, world, block, index, face, modelFace, 0,0,0,0,0,0,0,0, 3,1,2, 0, new int[2]);
+    }
+
+
+    public void render3DCraftingItem(Chunk chunk, World world, short block, int index, int face){
+        float[] UVSamplesBase = face == TOP_FACE || face == BOTTOM_FACE ? autoUVTopBottom(2,2) : autoUVNSEW(2,2); //UV mapped to 1x1 instead of 1.5x1.5
+
+        float[] UVSamples = new float[8];
+
+        ModelLoader blockModel;
+        ModelFace modelFace;
+
+        InWorldCraftingBlock craftingBlock = world.getInWorldCraftingBlock(chunk.getBlockXFromIndex(index), chunk.getBlockYFromIndex(index), chunk.getBlockZFromIndex(index));
+
+        block = craftingBlock.materialBlockID;
+
+        Vector3f translationVector = new Vector3f();
+        for(int i = 0; i < 16; i++){
+
+            translationVector.y = i / 16f;
+
+            for(int j = 0; j < 144; j++){
+                if(craftingBlock.subVoxelIndices[i][j] == 0)continue;
+
+
+                for(int k = 0; k < 8; k++){
+                    UVSamples[k] = UVSamplesBase[k] + craftingTextureOffset[j];
+                }
+
+                translationVector.x = ((j % 12) * 0.0625f) + 0.125f;
+                translationVector.z = ((j / 12) * 0.0625f) + 0.125f; //0.046875 is the portion of the used block space divided by 16 for each voxel
+                blockModel = Block.crafting3DItemVoxelModel.copyModel().translateModel(translationVector.x, translationVector.y, translationVector.z);
+                modelFace = blockModel.getModelFace(face);
+                this.renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0],UVSamples[1],UVSamples[2],UVSamples[3],UVSamples[4],UVSamples[5],UVSamples[6],UVSamples[7], 3,1,2, 0, new int[2]);
+            }
+        }
+
     }
 
 

@@ -5,15 +5,17 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
 import spacegame.core.CosmicEvolution;
+import spacegame.item.InWorldCraftingRecipe;
 import spacegame.util.MathUtil;
 import spacegame.item.Item;
 import spacegame.item.ItemCraftingTemplates;
 import spacegame.render.*;
+import spacegame.world.Chunk;
+import spacegame.world.InWorldCraftingBlock;
 
 import java.util.Random;
 
 public final class GuiCraftingPottery extends GuiCrafting {
-    public Button craft;
     public Button close;
     public int backgroundTexture;
     public int recipeOverlay;
@@ -21,11 +23,9 @@ public final class GuiCraftingPottery extends GuiCrafting {
     public int fillableColor;
     public short outputBlockID;
     public int outline;
-    public CraftingMaterial[] materials;
     public short selectedItemID = -1;
     public short outputItemID;
     public RecipeSelector[] selectableRecipes;
-    public RecipeSelector activeRecipe;
     public int x;
     public int y;
     public int z;
@@ -36,29 +36,8 @@ public final class GuiCraftingPottery extends GuiCrafting {
         this.y = y;
         this.z = z;
         this.close = new Button(EnumButtonEffects.CLOSE.name(), 50, 50, 349, 190, this, this.ce);
-        this.craft = new Button(EnumButtonEffects.CRAFT.name(), 128,50, 0,-175, this, this.ce);
-        this.craft.active = false;
         this.selectableRecipes = new RecipeSelector[2];
         this.setSelectableItemIDs();
-        this.materials = new CraftingMaterial[64];
-        int xMat; //base -370
-        int yMat; //base -120
-        Random rand = new Random();
-        int color = 148 << 16 | 89 << 8 | 80;
-        int colorVariance;
-        int red;
-        int green;
-        int blue;
-        for(int i = 0 ; i < this.materials.length; i++){
-            colorVariance = rand.nextInt(-32, 32);
-            xMat = -112 + ((i % 8) * 32);
-            yMat = -112 + ((i / 8) * 32);
-            this.materials[i] = new CraftingMaterial(32, 32, xMat, yMat, "clay");
-            red = (color >> 16) & 255;
-            green = (color >> 8) & 255;
-            blue = color & 255;
-            this.materials[i].setColor((red + colorVariance) << 16 | (green + colorVariance) << 8 | blue + colorVariance);
-        }
     }
 
     private void setSelectableItemIDs(){
@@ -76,14 +55,6 @@ public final class GuiCraftingPottery extends GuiCrafting {
         }
     }
 
-    public void activateRecipeOverlay(){
-        switch (this.selectedItemID) {
-            case 0 ->
-                    this.recipeOverlay = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/item/recipeTemplates/cookingPot.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
-            case 15 ->
-                    this.recipeOverlay = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/item/recipeTemplates/brick.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
-        }
-    }
 
     @Override
     public void loadTextures() {
@@ -110,11 +81,6 @@ public final class GuiCraftingPottery extends GuiCrafting {
         GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
 
         this.close.renderButton();
-        if(this.selectedItemID != -1) {
-            this.renderCraftingMaterials();
-            this.craft.active = this.isOutputComplete();
-            this.craft.renderButton();
-        }
 
         RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         tessellator.toggleOrtho();
@@ -310,137 +276,59 @@ public final class GuiCraftingPottery extends GuiCrafting {
         }
     }
 
-    private void renderCraftingMaterials(){
-        RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
-        tessellator.toggleOrtho();
-        int color;
-        float x;
-        float y;
-        float height;
-        float width;
-        float z = -95;
-        for(int i = 0; i < this.materials.length; i++) {
-            if (this.materials[i].active) {
-                color = this.materials[i].getColor();
-                x = this.materials[i].x;
-                y = this.materials[i].y;
-                height = this.materials[i].height;
-                width = this.materials[i].width;
-                tessellator.addVertex2DTexture(color, x - width / 2, y - height / 2, z, 3);
-                tessellator.addVertex2DTexture(color, x + width / 2, y + height / 2, z, 1);
-                tessellator.addVertex2DTexture(color, x - width / 2, y + height / 2, z, 2);
-                tessellator.addVertex2DTexture(color, x + width / 2, y - height / 2, z, 0);
-                tessellator.addElements();
+    public void handleLeftClick(){
+        RecipeSelector recipeSelector = this.getSelectedRecipeSelector();
+
+
+        if(recipeSelector != null) {
+            if (recipeSelector.meetsCriteriaToMakeRecipe(CosmicEvolution.instance.save.thePlayer)) {
+                CosmicEvolution.instance.save.activeWorld.setBlockWithNotify(this.x, this.y, this.z, Block.crafting3DItem.ID, true);
+                InWorldCraftingBlock craftingBlock = new InWorldCraftingBlock(Chunk.getBlockIndexFromCoordinates(x, y, z), Block.clay.ID, this.getInWorldCraftingRecipeName(recipeSelector.itemID), CosmicEvolution.instance.save.activeWorld.findChunkFromChunkCoordinates(this.x >> 5, this.y >> 5, this.z >> 5));
+                if (recipeSelector.itemID != Item.block.ID) {
+                    craftingBlock.activateCraftingLayer(0);
+                } else if (recipeSelector.blockID == Block.rawRedClayCookingPot.ID) {
+                    craftingBlock.activateCraftingLayer(0);
+                    craftingBlock.activeCraftingLayer++;
+                }
+                CosmicEvolution.instance.save.activeWorld.addInWorldCraftingBlock(this.x, this.y, this.z, craftingBlock);
+                GLFW.glfwSetInputMode(CosmicEvolution.instance.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
+                CosmicEvolution.instance.setNewGui(new GuiInGame(CosmicEvolution.instance));
+                recipeSelector.removeRequiredItemsFromInventory(CosmicEvolution.instance.save.thePlayer);
             }
         }
-        tessellator.drawTexture2D(this.fillableColor, Shader.screen2DTexture, CosmicEvolution.camera);
-        tessellator.toggleOrtho();
     }
 
-    private boolean isOutputComplete(){
-        switch (this.selectedItemID) {
-            case 15 -> {
-                if (this.doesInputMatchBrickTemplate()) {
-                    this.setOutputItem(Item.rawClayAdobeBrick.ID);
-                    return true;
-                }
-            }
+    private InWorldCraftingRecipe getInWorldCraftingRecipeName(short itemID){
+        switch (itemID){
             case 0 -> {
-                if (this.doesInputMatchCookingPotTemplate()) {
-                    this.setOutputItem(Item.block.ID);
-                    this.setOutputBlockID(Block.rawRedClayCookingPot.ID);
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    private void setOutputItem(short itemID){
-        this.outputItemID = itemID;
-    }
-
-    private void setOutputBlockID(short blockID){
-        this.outputBlockID = blockID;
-    }
-
-    private boolean doesInputMatchBrickTemplate(){
-        short countCorrect = 0;
-        boolean squareActive;
-        for(int i = 0; i < ItemCraftingTemplates.brick.indices.length; i++) {
-            countCorrect = 0;
-            for (int j = 0; j < this.materials.length; j++) {
-                squareActive = this.materials[j].active;
-                if(squareActive){
-                    if(this.isIndexSupposedToBeFilled(j, ItemCraftingTemplates.brick.indices)){
-                        countCorrect++;
-                    }
-                } else {
-                    if(!this.isIndexSupposedToBeFilled(j, ItemCraftingTemplates.brick.indices)){
-                        countCorrect++;
+                switch (this.getSelectedRecipeSelector().blockID){
+                    case 73 -> {
+                        return InWorldCraftingRecipe.rawCookingPot;
                     }
                 }
             }
-            if(countCorrect / 64f == 1f){
-                return true;
+
+            case 15 -> {
+                return InWorldCraftingRecipe.rawBrick;
             }
         }
-        return false;
+        throw new RuntimeException(itemID + " does not have a valid 3D crafting recipe template, was an invalid item added to the list?");
     }
 
-    private boolean doesInputMatchCookingPotTemplate(){
-        short countCorrect = 0;
-        boolean squareActive;
-        for(int i = 0; i < ItemCraftingTemplates.cookingPot.indices.length; i++) {
-            countCorrect = 0;
-            for (int j = 0; j < this.materials.length; j++) {
-                squareActive = this.materials[j].active;
-                if(squareActive){
-                    if(this.isIndexSupposedToBeFilled(j, ItemCraftingTemplates.cookingPot.indices)){
-                        countCorrect++;
-                    }
-                } else {
-                    if(!this.isIndexSupposedToBeFilled(j, ItemCraftingTemplates.cookingPot.indices)){
-                        countCorrect++;
-                    }
-                }
-            }
-            if(countCorrect / 64f == 1f){
-                return true;
-            }
-        }
-        return false;
-    }
-    private boolean isIndexSupposedToBeFilled(int testedIndex, short[] indices){
-        for(int i = 0; i < indices.length; i++){
-            if(testedIndex == indices[i]){
-                return true;
-            }
-        }
-        return false;
-    }
+
+
 
 
     @Override
     public Button getActiveButton() {
-        if(this.craft.isMouseHoveredOver() && this.craft.active){
-            return this.craft;
-        }
         if(this.close.isMouseHoveredOver() && this.close.active){
             return this.close;
         }
         return null;
     }
 
-    @Override
-    public CraftingMaterial getHoveredCraftingMaterial() {
-        for(int i = 0; i < this.materials.length; i++){
-            if(this.materials[i].isMouseHoveredOver()){
-                return this.materials[i];
-            }
-        }
-        return null;
-    }
+
+
 
     @Override
     public RecipeSelector getSelectedRecipeSelector() {

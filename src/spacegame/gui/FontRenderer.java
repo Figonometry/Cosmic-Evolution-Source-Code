@@ -6,11 +6,14 @@ import spacegame.render.Assets;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public final class FontRenderer {
-    public int[] glyphMap = new int[256];
     public char[] glyphs = new char[256];
     public static final FontRenderer instance = new FontRenderer();
     private static final float spacingSizePerFont = 0.34f;
+    private final Map<Character, Integer> glyphLookup = new HashMap<>();
     public boolean italic = false;
 
 
@@ -30,7 +33,7 @@ public final class FontRenderer {
         glyphs[3] = 'ⁿ';
         glyphs[2] = '²';
         glyphs[1] = '■';
-        glyphs[0] = ' ';
+        glyphs[0] = ' ';
         glyphs[31] = 'α';
         glyphs[30] = 'ß';
         glyphs[29] = 'Γ';
@@ -274,49 +277,49 @@ public final class FontRenderer {
 
 
         for (int i = 0; i <= 255; i++) {
-            glyphMap[i] = i;
+            this.glyphLookup.put(this.glyphs[i], i);
         }
     }
 
 
     public void drawString(String string, float x, float y, float depth, int color, int font, int alpha) {
-        char[] stringChars = new char[string.length()];
-        int[] stringGlpyhIndex = new int[stringChars.length];
+        int[] stringGlyphIndex = new int[string.length()];
 
-        for (int i = 0; i <= string.length() - 1; i++) {
-            stringChars[i] = string.charAt(i);
-        }
 
-        for (int i = 0; i <= 255; i++) {
-            for (int j = 0; j <= stringChars.length - 1; j++) {
-                if (glyphs[i] == stringChars[j]) {
-                    stringGlpyhIndex[j] = i;
-                }
+        Integer glyphIndex;
+        for(int i = 0; i < string.length(); i++){
+            glyphIndex = this.glyphLookup.get(string.charAt(i));
+
+            if(glyphIndex == null){
+                glyphIndex = 233; //Fallback to blank space
             }
+
+            stringGlyphIndex[i] = glyphIndex;
         }
-        this.generateStringVertexData(stringGlpyhIndex, x, y, depth,color, font, alpha);
-        this.generateStringVertexData(stringGlpyhIndex, x+3, y-3, depth-1,4210752,font, alpha);
+
+        this.generateStringVertexData(stringGlyphIndex, x, y, depth,color, font, alpha);
+        this.generateStringVertexData(stringGlyphIndex, x+3, y-3, depth-1,4210752,font, alpha);
     }
 
     public void drawCenteredString(String string, float x, float y, float depth, int color, int font, int alpha) {
-        char[] stringChars = new char[string.length()];
-        int[] stringGlyphIndex = new int[stringChars.length];
+        int[] stringGlyphIndex = new int[string.length()];
 
         float glyphAdvance = font * spacingSizePerFont;
         float totalWidth = (stringGlyphIndex.length - 1) * glyphAdvance + font;
         float startX = x - (totalWidth / 2f);
 
-        for (int i = 0; i <= string.length() - 1; i++) {
-            stringChars[i] = string.charAt(i);
+        Integer glyphIndex;
+        for(int i = 0; i < string.length(); i++){
+            glyphIndex = this.glyphLookup.get(string.charAt(i));
+
+            if(glyphIndex == null){
+                glyphIndex = 233; //Fallback to blank space
+            }
+
+
+            stringGlyphIndex[i] = glyphIndex;
         }
 
-        for (int i = 0; i <= 255; i++) {
-            for (int j = 0; j <= stringChars.length - 1; j++) {
-                if (glyphs[i] == stringChars[j]) {
-                    stringGlyphIndex[j] = i;
-                }
-            }
-        }
         this.generateStringVertexDataCentered(stringGlyphIndex, startX, y, depth,color,font, alpha);
         this.generateStringVertexDataCentered(stringGlyphIndex, startX+3, y-3, depth-1,4210752,font, alpha);
     }

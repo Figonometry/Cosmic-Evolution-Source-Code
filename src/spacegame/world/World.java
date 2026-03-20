@@ -1,12 +1,10 @@
 package spacegame.world;
 
+import org.joml.Vector3d;
 import org.joml.Vector3f;
 import spacegame.block.*;
 import spacegame.core.*;
-import spacegame.entity.Entity;
-import spacegame.entity.EntityBlock;
-import spacegame.entity.EntityItem;
-import spacegame.entity.EntityParticle;
+import spacegame.entity.*;
 import spacegame.gui.*;
 import spacegame.item.Inventory;
 import spacegame.item.Item;
@@ -291,8 +289,7 @@ public abstract class World {
     }
 
     public synchronized void addEntity(Entity entity){
-        Chunk chunk = this.findChunkFromChunkCoordinates((int)entity.x >> 5, (int)entity.y >> 5, (int)entity.z >> 5);
-        chunk.addEntityToList(entity);
+        this.findChunkFromChunkCoordinates(MathUtil.floorDouble(entity.x) >> 5, MathUtil.floorDouble(entity.y) >> 5, MathUtil.floorDouble(entity.z) >> 5).addEntityToList(entity);
     }
 
     public synchronized void setBlock(int x, int y, int z, short blockID) {
@@ -1695,6 +1692,17 @@ public abstract class World {
         this.chunkController.renderWorld();
     }
 
+    public void addInWorldCraftingBlock(int x, int y, int z, InWorldCraftingBlock craftingBlock){
+        this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).addInWorldCraftingBlock(craftingBlock);
+    }
+
+    public void removeInWorldCraftingBlock(int x, int y, int z){
+        this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).removeInWorldCraftingBlock(Chunk.getBlockIndexFromCoordinates(x,y,z));
+    }
+
+    public InWorldCraftingBlock getInWorldCraftingBlock(int x, int y, int z){
+        return this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).getInWorldCraftingBlock(Chunk.getBlockIndexFromCoordinates(x,y,z));
+    }
 
     public void addTimeEvent(int x, int y, int z, long updateTime){
         this.findChunkFromChunkCoordinates(x >> 5, y >> 5,z >> 5).addTimeUpdateEvent(x,y,z, updateTime);
@@ -1832,7 +1840,9 @@ public abstract class World {
         ArrayList<Entity> entities = new ArrayList<>();
 
         for(int i = 0; i < chunks.length; i++){
-            entities.addAll(chunks[i].entities);
+            if(chunks[i] != null) {
+                entities.addAll(chunks[i].entities);
+            }
         }
 
         return entities;
@@ -1873,183 +1883,309 @@ public abstract class World {
     }
 
 
-    public void handleLeftClick() {
-        if (!this.paused && this.ce.currentGui instanceof GuiInGame && this.delayWhenExitingUI <= 0) {
-            double[] rayCast = CosmicEvolution.camera.rayCast(3);
-            final double multiplier = 0.05D;
-            final double xDif = (rayCast[0] - this.ce.save.thePlayer.x);
-            final double yDif = (rayCast[1] - (this.ce.save.thePlayer.y + this.ce.save.thePlayer.height/2));
-            final double zDif = (rayCast[2] - this.ce.save.thePlayer.z);
+    public void handleClick(boolean isLeftClick) {
 
+        if (this.paused || !(this.ce.currentGui instanceof GuiInGame) || this.delayWhenExitingUI > 0) {
+            return;
+        }
 
-            int blockX = 0;
-            int blockY = 0;
-            int blockZ = 0;
-            for (int loopPass = 0; loopPass < 30; loopPass++) {
-                if(this.hasHitEntity(this.ce.save.thePlayer.x + xDif * multiplier * loopPass, this.ce.save.thePlayer.y  + this.ce.save.thePlayer.height/2 + yDif * multiplier * loopPass, this.ce.save.thePlayer.z + zDif * multiplier * loopPass))return;
-                blockX = MathUtil.floorDouble(this.ce.save.thePlayer.x + xDif * multiplier * loopPass);
-                blockY = MathUtil.floorDouble(this.ce.save.thePlayer.y  + this.ce.save.thePlayer.height/2 + yDif * multiplier * loopPass);
-                blockZ = MathUtil.floorDouble(this.ce.save.thePlayer.z + zDif * multiplier * loopPass);
+        // 1. Compute ray direction
+        double[] ray = CosmicEvolution.camera.rayCast(3);
+        Vector3d dir = new Vector3d(
+                (float)(ray[0] - ce.save.thePlayer.x),
+                (float)(ray[1] - (ce.save.thePlayer.y + ce.save.thePlayer.height / 2)
+                        - (this.ce.save.thePlayer.isShifting ? EntityPlayer.SHIFT_DISTANCE : 0)),
+                (float)(ray[2] - ce.save.thePlayer.z)
+        );
 
+        double rayLength = dir.length();
+        dir.normalize();
 
-                Block checkedBlock = Block.list[this.getBlockID(blockX, blockY, blockZ)];
+        final double step = 0.05f * rayLength;
+        final int maxSteps = 30;
 
-                if(!this.intersectsBlockBoundingBox(checkedBlock,this.ce.save.thePlayer.x + xDif * multiplier * loopPass, this.ce.save.thePlayer.y  + this.ce.save.thePlayer.height/2 + yDif * multiplier * loopPass, this.ce.save.thePlayer.z + zDif * multiplier * loopPass))continue;
+        double px = ce.save.thePlayer.x;
+        double py = (ce.save.thePlayer.y + ce.save.thePlayer.height / 2) - (this.ce.save.thePlayer.isShifting ? EntityPlayer.SHIFT_DISTANCE : 0);
+        double pz = ce.save.thePlayer.z;
 
-                if (GuiInGame.isBlockVisible(blockX, blockY, blockZ) && (checkedBlock.ID != Block.air.ID && checkedBlock.ID != Block.water.ID)) {
-                    if(this.ce.save.thePlayer.blockLookingAt[0] == blockX && this.ce.save.thePlayer.blockLookingAt[1] == blockY && this.ce.save.thePlayer.blockLookingAt[2] == blockZ){
-                        short playerHeldItem = CosmicEvolution.instance.save.thePlayer.getHeldItem();
-                        if(playerHeldItem == Item.NULL_ITEM_REFERENCE){playerHeldItem = 0;}
-                        this.ce.save.thePlayer.breakTimer++;
-                        if(checkedBlock.hardness > (CosmicEvolution.instance.save.thePlayer.hardnessThreshold + Item.list[playerHeldItem].hardness)){
-                            this.ce.save.thePlayer.breakTimer = 1;
-                        }
-                        if(checkedBlock.requiresTool && !checkedBlock.toolType.equals(Item.list[playerHeldItem].toolType)){
-                            this.ce.save.thePlayer.breakTimer = 1;
-                        }
-                        if(this.ce.save.thePlayer.breakTimer >= checkedBlock.getDynamicBreakTimer() && checkedBlock.breakTimer >= 0){
-                            checkedBlock.onLeftClick(blockX, blockY, blockZ, this, this.ce.save.thePlayer);
-                            this.ce.save.thePlayer.breakTimer = 0;
-                        } else if(this.ce.save.time % 20 == 0) {
-                            CosmicEvolution.instance.soundPlayer.playSound(blockX, blockY, blockZ, new Sound(checkedBlock.stepSound, false, 1f),  new Random().nextFloat(0.4F, 0.7F));
-                        }
-                    } else {
-                        this.ce.save.thePlayer.breakTimer = 0;
-                    }
+        // 2. March along the ray
+        for (int i = 0; i < maxSteps; i++) {
+
+            double cx = px + dir.x * step * i;
+            double cy = py + dir.y * step * i;
+            double cz = pz + dir.z * step * i;
+
+            // ENTITY HIT CHECK
+            if (hasHitEntity(cx, cy, cz)) {
+                return;
+            }
+
+            // BLOCK COORDS
+            int bx = MathUtil.floorDouble(cx);
+            int by = MathUtil.floorDouble(cy);
+            int bz = MathUtil.floorDouble(cz);
+
+            Block block = Block.list[getBlockID(bx, by, bz)];
+
+            // BOUNDING BOX CHECK
+            if (!this.intersectsBlockBoundingBox(block, cx, cy, cz)) {
+                continue;
+            }
+
+            // --- SPECIAL CASE: 3D CRAFTING BLOCK ---
+            if (block.ID == Block.crafting3DItem.ID) {
+                double[] hit = AxisAlignedBB.intersectRayWithBlockAABB(px, py, pz, dir, bx, by, bz);
+
+                if(hit != null) {
+
+                    this.handleIntersectForInWorldCraftingBlock(
+                            hit[0], hit[1], hit[2],
+                            dir,
+                            getInWorldCraftingBlock(bx, by, bz),
+                            isLeftClick, bx, by, bz
+                    );
                 }
-                if (checkedBlock.canBeBroken) {
+                return;
+            }
+
+            // --- LEFT CLICK: BREAK BLOCK ---
+            if (isLeftClick) {
+
+                if (GuiInGame.isBlockVisible(bx, by, bz) &&
+                        block.ID != Block.air.ID &&
+                        block.ID != Block.water.ID) {
+
+                    this.handleBlockBreaking(block, bx, by, bz);
+                }
+
+                if (block.canBeBroken) {
                     break;
                 }
             }
+
+            // --- RIGHT CLICK: PLACE BLOCK  ---
+            else if(this.getBlockID(bx, by, bz) != Block.air.ID && this.getBlockID(bx,by,bz) != Block.water.ID) {
+                block.handleSpecialRightClickFunctions(bx, by, bz, this, CosmicEvolution.instance.save.thePlayer);
+                this.handleBlockPlacement(bx, by, bz, cx, cy, cz);
+                break;
+            }
         }
     }
 
-    public void handleRightClick() {
-        if (this.ce.save.thePlayer != null && !this.paused && (MouseListener.timeHeldRightClick == 0 || (((this.ce.save.time - MouseListener.timeHeldRightClick) % 15) == 0)) && this.ce.currentGui instanceof GuiInGame && this.delayWhenExitingUI <= 0) {
-            short item = CosmicEvolution.instance.save.thePlayer.getHeldItem();
-            if(item != Item.NULL_ITEM_REFERENCE) {
-                Item.list[item].onRightClick(MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x), MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.y),  MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z), this, CosmicEvolution.instance.save.thePlayer);
-            }
-            double[] rayCast = CosmicEvolution.camera.rayCast(3);
-            final double multiplier = 0.05D;
-            final double xDif = (rayCast[0] - this.ce.save.thePlayer.x);
-            final double yDif = (rayCast[1] - (this.ce.save.thePlayer.y + this.ce.save.thePlayer.height/2));
-            final double zDif = (rayCast[2] - this.ce.save.thePlayer.z);
-            int blockX = 0;
-            int blockY = 0;
-            int blockZ = 0;
+    private void handleBlockPlacement(int bx, int by, int bz, double hitX, double hitY, double hitZ) {
 
-            for (int loopPass = 0; loopPass < 30; loopPass++) {
-                blockX = MathUtil.floorDouble(this.ce.save.thePlayer.x + xDif * multiplier * loopPass);
-                blockY = MathUtil.floorDouble(this.ce.save.thePlayer.y  + this.ce.save.thePlayer.height/2 + yDif * multiplier * loopPass);
-                blockZ = MathUtil.floorDouble(this.ce.save.thePlayer.z + zDif * multiplier * loopPass);
-                Block checkedBlock = Block.list[this.getBlockID(blockX, blockY, blockZ)];
-                checkedBlock.handleSpecialRightClickFunctions(blockX, blockY, blockZ, this, CosmicEvolution.instance.save.thePlayer);
-                if (checkedBlock.isSolid) {
-                    if(checkedBlock.ID != Block.water.ID) {
-                        loopPass--;
-                        if(this.ce.save.thePlayer.getHeldItem() != Item.block.ID && (this.ce.save.thePlayer.getHeldItem() != Item.torch.ID && this.ce.save.thePlayer.getHeldItem() != Item.unlitTorch.ID)){
-                            blockX = MathUtil.floorDouble(this.ce.save.thePlayer.x + xDif * multiplier * loopPass);
-                            blockY = MathUtil.floorDouble(this.ce.save.thePlayer.y  + this.ce.save.thePlayer.height/2 + yDif * multiplier * loopPass);
-                            blockZ = MathUtil.floorDouble(this.ce.save.thePlayer.z + zDif * multiplier * loopPass);
-                            checkedBlock.onRightClick(blockX, blockY, blockZ, this, this.ce.save.thePlayer);
-                        }
-                    }
-                    if (Block.list[this.ce.save.thePlayer.getHeldBlock()].isSolid && this.ce.save.thePlayer.pitch > -90 && this.wouldBlockIntersectPlayer(blockX, blockY, blockZ)) {
-                        break;
-                    } else {
-                        if (this.ce.save.thePlayer.getHeldItem() == Item.torch.ID || this.ce.save.thePlayer.getHeldItem() == Item.unlitTorch.ID) {
-                            if (!Block.list[this.getBlockID((int) (this.ce.save.thePlayer.x + xDif * multiplier * loopPass), (int) (this.ce.save.thePlayer.y + yDif * multiplier * (loopPass + 1)), (int) (this.ce.save.thePlayer.z + zDif * multiplier * (loopPass + 1)))].isSolid) {
-                                if ((float) ((this.ce.save.thePlayer.x + xDif * multiplier * (loopPass + 1)) - (this.ce.save.thePlayer.x + xDif * multiplier * loopPass)) > 0) {
-                                    Block.facingDirection = 1;
-                                } else {
-                                    Block.facingDirection = 2;
-                                }
-                            } else if (!Block.list[this.getBlockID((int) (this.ce.save.thePlayer.x + xDif * multiplier * (loopPass + 1)), (int) (this.ce.save.thePlayer.y + yDif * multiplier * loopPass), (int) (this.ce.save.thePlayer.z + zDif * multiplier * (loopPass + 1)))].isSolid) {
-                                if (!((float) ((this.ce.save.thePlayer.y  + this.ce.save.thePlayer.height/2 + yDif * multiplier * (loopPass + 1)) - (this.ce.save.thePlayer.y  + this.ce.save.thePlayer.height/2 + yDif * multiplier * loopPass)) < 0)) {
-                                    break;
-                                }
-                            } else if (!Block.list[this.getBlockID((int) (this.ce.save.thePlayer.x + xDif * multiplier * (loopPass + 1)), (int) (this.ce.save.thePlayer.y + yDif * multiplier * (loopPass + 1)), (int) (this.ce.save.thePlayer.z + zDif * multiplier * loopPass))].isSolid) {
-                                if ((float) ((this.ce.save.thePlayer.z + zDif * multiplier * (loopPass + 1)) - (this.ce.save.thePlayer.z + zDif * multiplier * loopPass)) > 0) {
-                                    Block.facingDirection = 3;
-                                } else {
-                                    Block.facingDirection = 4;
-                                }
-                            }
-                        }
+        EntityPlayer player = ce.save.thePlayer;
+        int held = player.getHeldItem();
 
-                        final int origBlockX = blockX;
-                        final int origBlockY = blockY;
-                        final int origBlockZ = blockZ;
-                        int difCount = 0;
+        if (held == Item.NULL_ITEM_REFERENCE) return;
 
-                        blockX = MathUtil.floorDouble(this.ce.save.thePlayer.x + xDif * multiplier * loopPass);
-                        blockY = MathUtil.floorDouble(this.ce.save.thePlayer.y  + this.ce.save.thePlayer.height/2 + yDif * multiplier * loopPass);
-                        blockZ = MathUtil.floorDouble(this.ce.save.thePlayer.z + zDif * multiplier * loopPass);
+        // Determine which face was hit
+        int face = determineHitFace(bx, by, bz, hitX, hitY, hitZ);
 
-                        boolean xChangePos = false;
-                        boolean yChangePos = false;
-                        boolean zChangePos = false;
-                        boolean xChangeNeg = false;
-                        boolean yChangeNeg = false;
-                        boolean zChangeNeg = false;
-                        if(blockX > origBlockX) {
-                            difCount++;
-                            xChangePos = true;
-                        } else if(blockX < origBlockX){
-                            difCount++;
-                            xChangeNeg = true;
-                        }
+        // Adjacent block position
+        int px = bx + Block.faceOffsetX[face];
+        int py = by + Block.faceOffsetY[face];
+        int pz = bz + Block.faceOffsetZ[face];
 
-                        if(blockY > origBlockY) {
-                            difCount++;
-                            yChangePos = true;
-                        } else if(blockY < origBlockY){
-                            difCount++;
-                            yChangeNeg = true;
-                        }
+        // Prevent placing inside player
+        if (wouldBlockIntersectPlayer(px, py, pz)) return;
 
-                        if(blockZ > origBlockZ){
-                            difCount++;
-                            zChangePos = true;
-                        } else if(blockZ < origBlockZ){
-                            difCount++;
-                            zChangeNeg = true;
-                        }
+        // Place block
 
-                        if(difCount < 2) {
-                            checkedBlock.onRightClick(blockX, blockY, blockZ, this, this.ce.save.thePlayer);
-                            break;
-                        } else {
+        Block.list[held].onRightClick(px, py, pz, this, player);
+    }
 
-                            if(xChangePos){
-                                checkedBlock.onRightClick(blockX - 1, blockY, blockZ, this, this.ce.save.thePlayer);
-                                break;
-                            } else if(xChangeNeg){
-                                checkedBlock.onRightClick(blockX + 1, blockY, blockZ, this, this.ce.save.thePlayer);
-                                break;
-                            }
+    public int determineHitFace(int bx, int by, int bz, double hitX, double hitY, double hitZ) {
 
-                            if(yChangePos){
-                                checkedBlock.onRightClick(blockX, blockY - 1, blockZ, this, this.ce.save.thePlayer);
-                                break;
-                            } else if(yChangeNeg){
-                                checkedBlock.onRightClick(blockX, blockY + 1, blockZ, this, this.ce.save.thePlayer);
-                                break;
-                            }
+        double localX = hitX - bx;
+        double localY = hitY - by;
+        double localZ = hitZ - bz;
 
-                            if(zChangePos){
-                                checkedBlock.onRightClick(blockX, blockY, blockZ - 1, this, this.ce.save.thePlayer);
-                                break;
-                            } else if(zChangeNeg){
-                                checkedBlock.onRightClick(blockX, blockY, blockZ + 1, this, this.ce.save.thePlayer);
-                                break;
-                            }
-                        }
-                    }
+        // Clamp to [0,1]
+        localX = Math.max(0f, Math.min(1f, localX));
+        localY = Math.max(0f, Math.min(1f, localY));
+        localZ = Math.max(0f, Math.min(1f, localZ));
+
+        double distUp    = 1f - localY; // y = 1
+        double distDown  = localY;      // y = 0
+
+        double distNorth = localX;      // x = 0
+        double distSouth = 1f - localX; // x = 1
+
+        double distEast  = localZ;      // z = 0  (EAST = -Z)
+        double distWest  = 1f - localZ; // z = 1  (WEST = +Z)
+
+        double min = distUp;
+        int face = Block.FACE_UP;
+
+        if (distDown  < min) { min = distDown;  face = Block.FACE_DOWN;  }
+        if (distNorth < min) { min = distNorth; face = Block.FACE_NORTH; }
+        if (distSouth < min) { min = distSouth; face = Block.FACE_SOUTH; }
+        if (distEast  < min) { min = distEast;  face = Block.FACE_EAST;  }
+        if (distWest  < min) { min = distWest;  face = Block.FACE_WEST;  }
+
+        return face;
+    }
+
+
+
+    public void handleIntersectForInWorldCraftingBlock(double worldX, double worldY, double worldZ, Vector3d dir, InWorldCraftingBlock craftingBlock, boolean isLeftClick, int bx, int by, int bz) {
+
+        long now = System.currentTimeMillis();
+        if (now - MouseListener.lastTimeClicked < 250) {
+            return;
+        }
+        MouseListener.lastTimeClicked = now;
+
+
+        // --- 2. Local coords ---
+        double lx = worldX - bx;
+        double ly = worldY - by;
+        double lz = worldZ - bz;
+
+        // --- 4. Ray stepping parameters ---
+        double step = 0.001;     // high precision
+        double maxDist = 2.5;    // enough to reach far side at shallow angles
+
+        int layer = craftingBlock.activeCraftingLayer;
+
+        double layerMinY = layer / 16.0;
+        double layerMaxY = (layer + 1) / 16.0;
+
+        double tol = 0.0;
+
+        int highlightedIndex = -1;
+        int highlightedX = -1;
+        int highlightedZ = -1;
+
+
+        // --- 5. Step along ray and find FIRST valid voxel ---
+        for (double t = 0.0; t <= maxDist; t += step) {
+
+            double x = lx + dir.x * t;
+            double y = ly + dir.y * t;
+            double z = lz + dir.z * t;
+
+            // Only break if we leave the block vertically
+            if (y < 0 || y > 1)
+                break;
+
+
+            // Ignore X/Z out of bounds — DO NOT break
+            if (x < 0 || x > 1 || z < 0 || z > 1)
+                continue;
+
+
+            // Must be within the active layer (with tolerance)
+            if (y < layerMinY - tol|| y > layerMaxY + tol)
+                continue;
+
+            // Must be inside crafting footprint
+
+            if (x < 0.125 || x > 0.875) continue;
+            if (z < 0.125 || z > 0.875) continue;
+
+            int xIndex = (int)((x - 0.125) / 0.0625);
+            int zIndex = (int)((z - 0.125) / 0.0625);
+
+            // Clamp to avoid out-of-bounds
+            xIndex = Math.max(0, Math.min(11, xIndex));
+            zIndex = Math.max(0, Math.min(11, zIndex));
+
+            int index = xIndex + zIndex * 12;
+
+            // FIRST valid voxel wins — stop immediately
+            highlightedIndex = index;
+            highlightedX = xIndex;
+            highlightedZ = zIndex;
+
+            // No voxel under cursor
+            if (highlightedIndex == -1) return;
+
+            boolean filled = craftingBlock.subVoxelIndices[layer][highlightedIndex] != 0;
+
+            // --- 6. LEFT CLICK: remove highlighted voxel if filled ---
+            if (isLeftClick) {
+                if (filled) {
+                    craftingBlock.removeSubVoxel(highlightedIndex);
+                } else {
+                    continue;
                 }
+                return;
             }
+
+            // --- 7. RIGHT CLICK: placement rules ---
+            if (filled) return; // can't place on filled voxel
+
+            // A. Required voxel?
+            boolean required = craftingBlock.craftingRecipe.recipeIndices[layer][highlightedIndex] == 1;
+            if (required) {
+                craftingBlock.addSubVoxel(highlightedIndex);
+                return;
+            }
+
+            // B. Adjacent support?
+            boolean hasSupport = false;
+            int[] layerData = craftingBlock.subVoxelIndices[layer];
+
+            // left
+            if (highlightedX > 0 && layerData[highlightedIndex - 1] != 0) hasSupport = true;
+            // right
+            if (highlightedX < 11 && layerData[highlightedIndex + 1] != 0) hasSupport = true;
+            // up
+            if (highlightedZ > 0 && layerData[highlightedIndex - 12] != 0) hasSupport = true;
+            // down
+            if (highlightedZ < 11 && layerData[highlightedIndex + 12] != 0) hasSupport = true;
+
+            if (hasSupport) {
+                craftingBlock.addSubVoxel(highlightedIndex);
+            } else {
+                continue;
+            }
+
+            break;
         }
     }
+
+
+
+
+
+
+
+    private void handleBlockBreaking(Block block, int bx, int by, int bz) {
+        EntityPlayer p = ce.save.thePlayer;
+
+        if (p.blockLookingAt[0] == bx && p.blockLookingAt[1] == by && p.blockLookingAt[2] == bz) {
+
+            short held = p.getHeldItem();
+            if (held == Item.NULL_ITEM_REFERENCE) held = 0;
+
+            p.breakTimer++;
+
+            if (block.hardness > (p.hardnessThreshold + Item.list[held].hardness)) {
+                p.breakTimer = 1;
+            }
+
+            if (block.requiresTool && !block.toolType.equals(Item.list[held].toolType)) {
+                p.breakTimer = 1;
+            }
+
+            if (p.breakTimer >= block.getDynamicBreakTimer() && block.breakTimer >= 0) {
+                block.onLeftClick(bx, by, bz, this, p);
+                p.breakTimer = 0;
+            } else if (ce.save.time % 20 == 0) {
+                CosmicEvolution.instance.soundPlayer.playSound(
+                        bx, by, bz,
+                        new Sound(block.stepSound, false, 1f),
+                        new Random().nextFloat(0.4F, 0.7F)
+                );
+            }
+
+        } else {
+            p.breakTimer = 0;
+        }
+    }
+
 
 }

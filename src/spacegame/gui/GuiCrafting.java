@@ -7,8 +7,8 @@ public abstract class GuiCrafting extends Gui {
         super(cosmicEvolution);
     }
 
-    public abstract CraftingMaterial getHoveredCraftingMaterial();
-
     public abstract RecipeSelector getSelectedRecipeSelector();
+
+    public abstract void handleLeftClick();
 
 }

@@ -14,7 +14,6 @@ import spacegame.nbt.NBTTagCompound;
 import spacegame.render.*;
 import spacegame.world.weather.Cloud;
 import spacegame.world.Save;
-import spacegame.world.Tech;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -400,48 +399,6 @@ public class Button {
                 this.ce.save.activeWorld.paused = false;
                 this.ce.setNewGui(new GuiInGame(this.ce));
             }
-            case CRAFT -> {
-                GLFW.glfwSetInputMode(this.ce.window,GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
-                if(this.Gui instanceof GuiCraftingStoneTools) {
-                    int x = ((GuiCraftingStoneTools) this.Gui).x;
-                    int y = ((GuiCraftingStoneTools) this.Gui).y;
-                    int z = ((GuiCraftingStoneTools) this.Gui).z;
-                    short outputItem = ((GuiCraftingStoneTools) this.Gui).outputItemID;
-                    this.ce.save.activeWorld.setBlockWithNotify(x,y,z, Block.air.ID, false);
-                    this.ce.save.activeWorld.addEntity(new EntityItem(x + 0.5, y + 0.5, z + 0.5, outputItem, Item.NULL_ITEM_METADATA, (byte) 1, Item.list[outputItem].durability));
-
-                    for(int i = 0; i < ((GuiCraftingStoneTools) this.Gui).activeRecipe.requiredItemCount.length; i++){
-                        for(int j = 0; j <  ((GuiCraftingStoneTools) this.Gui).activeRecipe.requiredItemCount[i]; j++){
-                            this.ce.save.thePlayer.removeSpecificItemFromInventory(((GuiCraftingStoneTools) this.Gui).activeRecipe.requiredItems[i]);
-                        }
-                    }
-
-                    this.ce.save.activeWorld.delayWhenExitingUI = 60;
-                    Tech.techUpdateEvent(Tech.UPDATE_EVENT_CRAFT_STONE_HAND_TOOL);
-                }
-
-                if(this.Gui instanceof GuiCraftingPottery){
-                    int x = ((GuiCraftingPottery) this.Gui).x;
-                    int y = ((GuiCraftingPottery) this.Gui).y;
-                    int z = ((GuiCraftingPottery) this.Gui).z;
-                    short outputItem = ((GuiCraftingPottery) this.Gui).outputItemID;
-                    short outputBlockID = ((GuiCraftingPottery)this.Gui).outputBlockID;
-                    this.ce.save.activeWorld.setBlockWithNotify(x,y,z, Block.air.ID, false);
-                    if(outputItem == Item.block.ID){
-                        this.ce.save.activeWorld.addEntity(new EntityBlock(x + 0.5, y + 0.5, z + 0.5, outputBlockID, (byte)1));
-                    } else {
-                        this.ce.save.activeWorld.addEntity(new EntityItem(x + 0.5, y + 0.5, z + 0.5, outputItem, Item.NULL_ITEM_METADATA, (byte) 1, Item.list[outputItem].durability));
-                    }
-                    for(int i = 0; i < ((GuiCraftingPottery) this.Gui).activeRecipe.requiredItemCount.length; i++){
-                        for(int j = 0; j <  ((GuiCraftingPottery) this.Gui).activeRecipe.requiredItemCount[i]; j++){
-                            this.ce.save.thePlayer.removeSpecificItemFromInventory(((GuiCraftingPottery) this.Gui).activeRecipe.requiredItems[i]);
-                        }
-                    }
-                    this.ce.save.activeWorld.delayWhenExitingUI = 60;
-                }
-
-                this.ce.setNewGui(new GuiInGame(this.ce));
-            }
             case CLOSE -> {
                 GLFW.glfwSetInputMode(this.ce.window,GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
                 this.ce.setNewGui(new GuiInGame(this.ce));
@@ -771,9 +728,6 @@ public class Button {
             }
             case RESPAWN -> {
                 string = "Respawn";
-            }
-            case CRAFT -> {
-                string = "Craft";
             }
             case CLOSE -> {
                 string = "X";

@@ -12,6 +12,7 @@ public final class MouseListener {
     public static boolean rightClickReleased;
     public static long timeHeldRightClick;
     public static long timeHeldLeftClick;
+    public static long lastTimeClicked;
 
     public MouseListener() {
         this.scrollX = 0.0F;
