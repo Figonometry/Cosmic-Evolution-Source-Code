@@ -3,35 +3,27 @@ package spacegame.gui;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
 import spacegame.core.CosmicEvolution;
+import spacegame.core.Timer;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
+import spacegame.world.ThreadDeleteWorld;
 
-public final class GuiRenameWorld extends Gui {
-    private CosmicEvolution ce;
+public final class GuiDeletingWorld extends Gui {
     public int background;
     public int title;
     public int star;
     public int earth;
-    public TextField nameWorld;
-    public Button renameWorld;
-    public Button back;
-    public Button difficultyOptions;
-    public int saveSlot;
-    public GuiRenameWorld(CosmicEvolution cosmicEvolution, int saveSlot) {
+    public ThreadDeleteWorld associatedThread;
+    public GuiDeletingWorld(CosmicEvolution cosmicEvolution, ThreadDeleteWorld associatedThread) {
         super(cosmicEvolution);
-        this.ce = cosmicEvolution;
-        this.saveSlot = saveSlot;
-        this.renameWorld = new Button(EnumButtonEffects.RENAME_WORLD.name(), 512, 64, 0, -100, this, this.ce);
-        this.back = new Button(EnumButtonEffects.BACK.name(), 512, 64, 0, -200, this, this.ce);
-        this.difficultyOptions = new Button(EnumButtonEffects.DIFFICULTY_OPTIONS.name(), 512, 64, 0, -300, this, this.ce);
-        this.nameWorld = new TextField(512, 64, 0, 100);
+        this.associatedThread = associatedThread;
     }
 
     @Override
     public void loadTextures() {
         this.star = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/star.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
         this.earth = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/earth.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
-        this.title = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/renameWorld.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
+        this.title = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/deleteWorld.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
         this.background = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
     }
 
@@ -53,7 +45,7 @@ public final class GuiRenameWorld extends Gui {
         }
         tessellator.drawTexture2D(this.star, Shader.screen2DTexture, CosmicEvolution.camera);
 
-        int titleWidth = 1256;
+        int titleWidth = 1204;
         int titleHeight = 144;
         int titleX = 0;
         int titleY = 400;
@@ -93,52 +85,32 @@ public final class GuiRenameWorld extends Gui {
 
         tessellator.toggleOrtho();
 
-        if(this.nameWorld.text.length() == 0 || this.doesStringContainAllSpaces(this.nameWorld.text)){
-            this.renameWorld.active = false;
-        } else {
-            this.renameWorld.active = true;
-        }
-
-        this.renameWorld.renderButton();
-        this.back.renderButton();
-        this.difficultyOptions.renderButton();
-        this.nameWorld.renderTextFieldAndText();
         FontRenderer fontRenderer = FontRenderer.instance;
-        fontRenderer.drawCenteredString("Name World", -384, 75,-15, 16777215, 50, 255);
+
+
+        long second = Timer.elapsedTime / 60;
+        second %= 4;
+
+        String text = "";
+        switch ((int) second){
+            case 0 -> {
+                text = "Deleting World";
+            }
+            case 1 -> {
+                text = "Deleting World.";
+            }
+            case 2 -> {
+                text = "Deleting World..";
+            }
+            case 3 -> {
+                text = "Deleting World...";
+            }
+        }
+        fontRenderer.drawCenteredString(text, 0, 0,-15, 16777215, 50, 255);
     }
 
     @Override
     public Button getActiveButton() {
-        if(this.renameWorld.isMouseHoveredOver() && this.renameWorld.active){
-            return this.renameWorld;
-        }
-        if(this.back.isMouseHoveredOver() && this.back.active){
-            return this.back;
-        }
-        if(this.difficultyOptions.isMouseHoveredOver() && this.difficultyOptions.active){
-            return this.difficultyOptions;
-        }
-        return null;
-    }
-
-    public boolean doesStringContainAllSpaces(String string){
-        if(string.length() == 0){
-            return true;
-        } else {
-            for(int i = 0; i < string.length(); i++){
-                if(string.charAt(i) != ' '){
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    @Override
-    public TextField getTextField(){
-        if(this.nameWorld.isMouseHoveredOver()){
-            return this.nameWorld;
-        }
         return null;
     }
 }

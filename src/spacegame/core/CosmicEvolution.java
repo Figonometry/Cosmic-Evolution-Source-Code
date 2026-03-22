@@ -25,6 +25,7 @@ import spacegame.nbt.NBTTagCompound;
 import spacegame.render.*;
 import spacegame.util.Logger;
 import spacegame.util.MathUtil;
+import spacegame.util.ScreenshotHandler;
 import spacegame.world.*;
 
 import java.io.File;
@@ -96,7 +97,7 @@ public final class CosmicEvolution implements Runnable {
     }
 
     private void startGame() {
-        this.title = "Cosmic Evolution Alpha v0.39";
+        this.title = "Cosmic Evolution Alpha v0.40";
         GameSettings.loadOptionsFromFile(this.launcherDirectory);
         this.clearLogFiles(new File(this.launcherDirectory + "/crashReports"));
         this.initLWJGL();
@@ -241,14 +242,14 @@ public final class CosmicEvolution implements Runnable {
     }
 
 
-    public void startSave(int saveSlotNumber, String saveName, long seed) {
+    public void startSave(int saveSlotNumber, String saveName, long seed, SaveSettings saveSettings) {
         double x = -667829;
         double z = 0;
-        this.save = new Save(this, saveSlotNumber, saveName, seed, x, z);
+        this.save = new Save(this, saveSlotNumber, saveName, seed, x, z, saveSettings);
         this.everything = new Universe();
         this.save.thePlayer = new EntityPlayer(this, 0, 0, 0);
         this.save.thePlayer.setPlayerActualPos(x,2, z);
-        this.setNewGui(new GuiWorldLoadingScreen(this));
+        this.setNewGui(new GuiWorldLoading(this));
         this.save.setActiveWorld(new WorldEarth(this, 4006976));
         this.save.activeWorld.paused = true;
 
@@ -275,7 +276,7 @@ public final class CosmicEvolution implements Runnable {
             e.printStackTrace();
         }
         this.save.thePlayer.setPlayerActualPos(x, y, z); //This needs to read and set the position using the player's actual location read from file
-        this.setNewGui(new GuiWorldLoadingScreen(this));
+        this.setNewGui(new GuiWorldLoading(this));
         this.save.setActiveWorld(new WorldEarth(this, 4006976));
         this.save.activeWorld.paused = true;
 
@@ -364,6 +365,15 @@ public final class CosmicEvolution implements Runnable {
             }
         }
 
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_F2) && KeyListener.keyReleased[GLFW.GLFW_KEY_F2]) {
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_F2);
+            String message = ScreenshotHandler.takeScreenshot(this.launcherDirectory, width, height);
+            if(this.save != null){
+                if(this.save.activeWorld != null){
+                    GuiInGame.setMessageText(message, 16777215);
+                }
+            }
+        }
 
         if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_1) && this.currentGui instanceof GuiInGame){
             EntityPlayer.selectedInventorySlot = 0;
@@ -438,6 +448,12 @@ public final class CosmicEvolution implements Runnable {
 
         if(this.currentGui instanceof GuiUniverseMap){
             ((GuiUniverseMap)this.currentGui).updateCamera();
+        }
+
+        if(this.currentGui instanceof GuiDeletingWorld){
+            if(((GuiDeletingWorld)this.currentGui).associatedThread.completed){
+                this.setNewGui(new GuiWorldSelect(this));
+            }
         }
 
         if(this.currentGui instanceof GuiInGame) {
@@ -705,7 +721,7 @@ public final class CosmicEvolution implements Runnable {
             if(World.worldLoadPhase >= 2) {
                 this.save.activeWorld.chunkController.update();
             }
-            if(this.currentGui instanceof GuiWorldLoadingScreen){
+            if(this.currentGui instanceof GuiWorldLoading){
                 if(Thread.activeCount() < 5 && World.worldLoadPhase == 3 && this.save.activeWorld.chunkController.threadQueue.size() == 0){
                     GLFW.glfwSetInputMode(this.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
                     if(Assets.blockTextureArray == 0 || Assets.itemTextureArray == 0) {
@@ -764,7 +780,7 @@ public final class CosmicEvolution implements Runnable {
     private void render() {
         GL46.glClear(GL46.GL_COLOR_BUFFER_BIT);
         GL46.glClear(GL46.GL_DEPTH_BUFFER_BIT);
-        if(this.save != null && !(this.currentGui instanceof GuiWorldLoadingScreen || this.currentGui instanceof GuiUniverseMap)) {
+        if(this.save != null && !(this.currentGui instanceof GuiWorldLoading || this.currentGui instanceof GuiUniverseMap)) {
             this.save.activeWorld.renderWorld();
             this.save.thePlayer.renderShadow();
         }

@@ -9,13 +9,13 @@ import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
 import spacegame.world.World;
 
-public final class GuiWorldLoadingScreen extends Gui {
+public final class GuiWorldLoading extends Gui {
     private CosmicEvolution ce;
     public int transparentBackground;
     public int fillableColorWithShadedBottom;
     public int star;
 
-    public GuiWorldLoadingScreen(CosmicEvolution cosmicEvolution) {
+    public GuiWorldLoading(CosmicEvolution cosmicEvolution) {
         super(cosmicEvolution);
         this.ce = cosmicEvolution;
     }

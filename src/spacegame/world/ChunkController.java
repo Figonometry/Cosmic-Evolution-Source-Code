@@ -5,14 +5,13 @@ import spacegame.block.BlockContainer;
 import spacegame.block.ITickable;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
-import spacegame.gui.GuiInGame;
 import spacegame.item.InWorldCraftingRecipe;
 import spacegame.util.MathUtil;
 import spacegame.entity.Entity;
 import spacegame.entity.EntityBlock;
 import spacegame.entity.EntityDeer;
 import spacegame.entity.EntityItem;
-import spacegame.gui.GuiWorldLoadingScreen;
+import spacegame.gui.GuiWorldLoading;
 import spacegame.item.Inventory;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
@@ -827,7 +826,7 @@ public final class ChunkController {
     private void loadChunks() {
         if (this.generateChunksDistance > GameSettings.renderDistance) {
             this.loadChunks = false;
-            if(CosmicEvolution.instance.currentGui instanceof GuiWorldLoadingScreen){
+            if(CosmicEvolution.instance.currentGui instanceof GuiWorldLoading){
                 World.worldLoadPhase = 3;
             }
         } else {

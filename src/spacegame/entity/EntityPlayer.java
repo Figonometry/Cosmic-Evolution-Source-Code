@@ -909,8 +909,10 @@ public final class EntityPlayer extends EntityLiving {
 // Har + Jar #4evar #livingthelife #girlboss, girlfriend wrote this here. I'm not removing it
     @Override
     public void handleDeath() {
-        this.clearInventoryOnDeath();
-        this.inventoryUpgradeLevel = 1;
+        if(this.ce.save.saveSettings.dropInventoryOnDeath) {
+            this.clearInventoryOnDeath();
+            this.inventoryUpgradeLevel = 1;
+        }
         this.ce.setNewGui(new GuiDeathScreen(this.ce));
         this.ce.save.activeWorld.paused = true;
     }

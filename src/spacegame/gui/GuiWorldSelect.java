@@ -21,7 +21,6 @@ public final class GuiWorldSelect extends Gui {
     public Button delete;
     public Button back;
     public Button worldInfo;
-    public boolean deletingFile;
 
     public GuiWorldSelect(CosmicEvolution cosmicEvolution) {
         super(cosmicEvolution);
@@ -31,7 +30,7 @@ public final class GuiWorldSelect extends Gui {
         this.save3 = new Button(EnumButtonEffects.SAVE_3.name(), 512, 64, 0, 40, this, this.ce);
         this.save4 = new Button(EnumButtonEffects.SAVE_4.name(), 512, 64, 0, -40, this, this.ce);
         this.save5 = new Button(EnumButtonEffects.SAVE_5.name(), 512, 64, 0, -120, this, this.ce);
-        this.delete = new Button(EnumButtonEffects.DELETE.name(), 512, 64, 0, -300, this, this.ce);
+        this.delete = new Button(EnumButtonEffects.DELETE.name(), 128, 64, 352, 200, this, this.ce);
         this.back = new Button(EnumButtonEffects.BACK.name(), 512, 64, 0, -380, this, this.ce);
         this.worldInfo = new Button(EnumButtonEffects.WORLD_INFO.name(), 64,64, -320, 200, this, this.ce);
     }
@@ -107,23 +106,27 @@ public final class GuiWorldSelect extends Gui {
         this.save3.renderButton();
         this.save4.renderButton();
         this.save5.renderButton();
-        this.delete.renderButton();
         this.back.renderButton();
-        if(this.save1.clicked || this.save2.clicked || this.save3.clicked || this.save4.clicked || this.save5.clicked && !this.deletingFile) {
+        if(this.save1.clicked || this.save2.clicked || this.save3.clicked || this.save4.clicked || this.save5.clicked) {
             if(save1.clicked && Save.doesSaveSlotExist(1) == 2) {
                 this.worldInfo.renderButton();
+                this.delete.renderButton();
             }
             if(save2.clicked && Save.doesSaveSlotExist(2) == 2) {
                 this.worldInfo.renderButton();
+                this.delete.renderButton();
             }
             if(save3.clicked && Save.doesSaveSlotExist(3) == 2) {
                 this.worldInfo.renderButton();
+                this.delete.renderButton();
             }
             if(save4.clicked && Save.doesSaveSlotExist(4) == 2) {
                 this.worldInfo.renderButton();
+                this.delete.renderButton();
             }
             if(save5.clicked && Save.doesSaveSlotExist(5) == 2) {
                 this.worldInfo.renderButton();
+                this.delete.renderButton();
             }
         }
 

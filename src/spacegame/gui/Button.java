@@ -6,15 +6,15 @@ import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
 import spacegame.util.MathUtil;
 import spacegame.core.MouseListener;
-import spacegame.entity.EntityBlock;
-import spacegame.entity.EntityItem;
-import spacegame.item.Item;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.render.*;
+import spacegame.world.SaveSettings;
+import spacegame.world.ThreadDeleteWorld;
 import spacegame.world.weather.Cloud;
 import spacegame.world.Save;
 
+import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -103,6 +103,9 @@ public class Button {
                     this.ce.setNewGui(new GuiMainMenu(this.ce));
                 } else if(this.Gui instanceof GuiCreateNewWorld || this.Gui instanceof GuiRenameWorld){
                     this.ce.setNewGui(new GuiWorldSelect(this.ce));
+                } else if(this.Gui instanceof GuiDifficultySettings){
+                    SaveSettings saveSettings = ((GuiDifficultySettings) this.Gui).saveSettings;
+                    this.ce.setNewGui(((GuiDifficultySettings) this.Gui).fromWorldCreateScreen ? new GuiCreateNewWorld(this.ce, ((GuiDifficultySettings) this.Gui).saveSlot, saveSettings) : new GuiRenameWorld(this.ce, ((GuiDifficultySettings) this.Gui).saveSlot));
                 }
             }
             case FOV -> {
@@ -218,18 +221,18 @@ public class Button {
             case SAVE_1 -> {
                 if(this.clicked) {
                     if (this.Gui instanceof GuiWorldSelect) {
+
+                        if(Save.doesSaveSlotExist(1) == 1 || Save.isSaveFileCorrupted(1)){
+                            this.ce.setNewGui(new GuiDeleteWorld(this.ce, 1));
+                            return;
+                        }
+
                         File save = new File(this.ce.launcherDirectory + "/saves/save1");
-                        if (((GuiWorldSelect) this.Gui).deletingFile) {
-                            if (save.exists()) {
-                                this.deleteDirectory(save);
-                            }
+                        GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
+                        if (save.exists()) {
+                            this.ce.startSave(save);
                         } else {
-                            GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
-                            if (save.exists()) {
-                                this.ce.startSave(save);
-                            } else {
-                                this.ce.setNewGui(new GuiCreateNewWorld(this.ce, 1));
-                            }
+                            this.ce.setNewGui(new GuiCreateNewWorld(this.ce, 1, new SaveSettings()));
                         }
                     }
                 } else {
@@ -239,23 +242,24 @@ public class Button {
                     ((GuiWorldSelect)this.Gui).save4.clicked = false;
                     ((GuiWorldSelect)this.Gui).save5.clicked = false;
                     ((GuiWorldSelect)this.Gui).worldInfo.y = this.y;
+                    ((GuiWorldSelect)this.Gui).delete.y = this.y;
                 }
             }
             case SAVE_2 -> {
                 if(this.clicked) {
                     if (this.Gui instanceof GuiWorldSelect) {
+
+                        if(Save.doesSaveSlotExist(2) == 1 || Save.isSaveFileCorrupted(2)){
+                            this.ce.setNewGui(new GuiDeleteWorld(this.ce, 2));
+                            return;
+                        }
+
                         File save = new File(this.ce.launcherDirectory + "/saves/save2");
-                        if (((GuiWorldSelect) this.Gui).deletingFile) {
-                            if (save.exists()) {
-                                this.deleteDirectory(save);
-                            }
+                        GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
+                        if (save.exists()) {
+                            this.ce.startSave(save);
                         } else {
-                            GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
-                            if (save.exists()) {
-                                this.ce.startSave(save);
-                            } else {
-                                this.ce.setNewGui(new GuiCreateNewWorld(this.ce, 2));
-                            }
+                            this.ce.setNewGui(new GuiCreateNewWorld(this.ce, 2, new SaveSettings()));
                         }
                     }
                 } else {
@@ -265,23 +269,24 @@ public class Button {
                     ((GuiWorldSelect)this.Gui).save4.clicked = false;
                     ((GuiWorldSelect)this.Gui).save5.clicked = false;
                     ((GuiWorldSelect)this.Gui).worldInfo.y = this.y;
+                    ((GuiWorldSelect)this.Gui).delete.y = this.y;
                 }
             }
             case SAVE_3 -> {
                 if(this.clicked) {
                     if (this.Gui instanceof GuiWorldSelect) {
+
+                        if(Save.doesSaveSlotExist(3) == 1 || Save.isSaveFileCorrupted(3)){
+                            this.ce.setNewGui(new GuiDeleteWorld(this.ce, 3));
+                            return;
+                        }
+
                         File save = new File(this.ce.launcherDirectory + "/saves/save3");
-                        if (((GuiWorldSelect) this.Gui).deletingFile) {
-                            if (save.exists()) {
-                                this.deleteDirectory(save);
-                            }
+                        GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
+                        if (save.exists()) {
+                            this.ce.startSave(save);
                         } else {
-                            GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
-                            if (save.exists()) {
-                                this.ce.startSave(save);
-                            } else {
-                                this.ce.setNewGui(new GuiCreateNewWorld(this.ce, 3));
-                            }
+                            this.ce.setNewGui(new GuiCreateNewWorld(this.ce, 3, new SaveSettings()));
                         }
                     }
                 } else {
@@ -291,23 +296,24 @@ public class Button {
                     ((GuiWorldSelect)this.Gui).save4.clicked = false;
                     ((GuiWorldSelect)this.Gui).save5.clicked = false;
                     ((GuiWorldSelect)this.Gui).worldInfo.y = this.y;
+                    ((GuiWorldSelect)this.Gui).delete.y = this.y;
                 }
             }
             case SAVE_4 -> {
                 if(this.clicked) {
                     if (this.Gui instanceof GuiWorldSelect) {
+
+                        if(Save.doesSaveSlotExist(4) == 1 || Save.isSaveFileCorrupted(4)){
+                            this.ce.setNewGui(new GuiDeleteWorld(this.ce, 4));
+                            return;
+                        }
+
                         File save = new File(this.ce.launcherDirectory + "/saves/save4");
-                        if (((GuiWorldSelect) this.Gui).deletingFile) {
-                            if (save.exists()) {
-                                this.deleteDirectory(save);
-                            }
+                        GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
+                        if (save.exists()) {
+                            this.ce.startSave(save);
                         } else {
-                            GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
-                            if (save.exists()) {
-                                this.ce.startSave(save);
-                            } else {
-                                this.ce.setNewGui(new GuiCreateNewWorld(this.ce, 4));
-                            }
+                            this.ce.setNewGui(new GuiCreateNewWorld(this.ce, 4, new SaveSettings()));
                         }
                     }
                 } else {
@@ -317,23 +323,24 @@ public class Button {
                     ((GuiWorldSelect)this.Gui).save3.clicked = false;
                     ((GuiWorldSelect)this.Gui).save5.clicked = false;
                     ((GuiWorldSelect)this.Gui).worldInfo.y = this.y;
+                    ((GuiWorldSelect)this.Gui).delete.y = this.y;
                 }
             }
             case SAVE_5 -> {
                 if(this.clicked) {
                     if (this.Gui instanceof GuiWorldSelect) {
+
+                        if(Save.doesSaveSlotExist(5) == 1 || Save.isSaveFileCorrupted(5)){
+                            this.ce.setNewGui(new GuiDeleteWorld(this.ce, 5));
+                            return;
+                        }
+
                         File save = new File(this.ce.launcherDirectory + "/saves/save5");
-                        if (((GuiWorldSelect) this.Gui).deletingFile) {
-                            if (save.exists()) {
-                                this.deleteDirectory(save);
-                            }
+                        GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
+                        if (save.exists()) {
+                            this.ce.startSave(save);
                         } else {
-                            GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
-                            if (save.exists()) {
-                                this.ce.startSave(save);
-                            } else {
-                                this.ce.setNewGui(new GuiCreateNewWorld(this.ce, 5));
-                            }
+                            this.ce.setNewGui(new GuiCreateNewWorld(this.ce, 5, new SaveSettings()));
                         }
                     }
                 } else {
@@ -343,47 +350,40 @@ public class Button {
                     ((GuiWorldSelect)this.Gui).save3.clicked = false;
                     ((GuiWorldSelect)this.Gui).save4.clicked = false;
                     ((GuiWorldSelect)this.Gui).worldInfo.y = this.y;
+                    ((GuiWorldSelect)this.Gui).delete.y = this.y;
                 }
             }
             case DELETE -> {
-                if(this.Gui instanceof GuiWorldSelect) {
-                    if(!((GuiWorldSelect) this.Gui).deletingFile) {
-                        ((GuiWorldSelect) this.Gui).deletingFile = true;
-                        this.clicked = true;
-                    } else {
-                        ((GuiWorldSelect) this.Gui).deletingFile = false;
-                        this.clicked = false;
-                    }
+                int saveSlot = 0;
+                if(((GuiWorldSelect)this.Gui).save1.clicked){
+                    saveSlot = 1;
                 }
+                if(((GuiWorldSelect)this.Gui).save2.clicked){
+                    saveSlot = 2;
+                }
+                if(((GuiWorldSelect)this.Gui).save3.clicked){
+                    saveSlot = 3;
+                }
+                if(((GuiWorldSelect)this.Gui).save4.clicked){
+                    saveSlot = 4;
+                }
+                if(((GuiWorldSelect)this.Gui).save5.clicked){
+                    saveSlot = 5;
+                }
+                this.ce.setNewGui(new GuiDeleteWorld(this.ce, saveSlot));
             }
             case CREATE_NEW_WORLD -> {
                 ((GuiCreateNewWorld)this.Gui).nameWorld.typing = false;
                 ((GuiCreateNewWorld)this.Gui).setSeed.typing = false;
-                this.ce.startSave(((GuiCreateNewWorld)this.Gui).saveSlot, ((GuiCreateNewWorld)this.Gui).nameWorld.text, ((GuiCreateNewWorld)this.Gui).getSeed());
+                this.ce.startSave(((GuiCreateNewWorld)this.Gui).saveSlot, ((GuiCreateNewWorld)this.Gui).nameWorld.text, ((GuiCreateNewWorld)this.Gui).getSeed(), ((GuiCreateNewWorld)this.Gui).saveSettings);
             }
             case RENAME_WORLD -> {
-                File file = new File(this.ce.launcherDirectory + "/saves/save" + ((GuiRenameWorld)this.Gui).saveSlot + "/save.dat");
-                try {
-                    FileInputStream inputStream = new FileInputStream(file);
-                    NBTTagCompound compoundTag = NBTIO.readCompressed(inputStream);
-                    long time = compoundTag.getCompoundTag("Save").getLong("time");
-                    String dateCreated = compoundTag.getCompoundTag("Save").getString("dateCreated");
-                    long seed = compoundTag.getCompoundTag("Save").getLong("seed");
-                    inputStream.close();
+                File saveFolder = new File(this.ce.launcherDirectory + "/saves/save" + ((GuiRenameWorld)this.Gui).saveSlot);
+                Save save = new Save(this.ce, saveFolder);
+                save.saveName = ((GuiRenameWorld)this.Gui).nameWorld.text;
 
-                    FileOutputStream outputStream = new FileOutputStream(file);
-                    NBTTagCompound save = new NBTTagCompound();
-                    NBTTagCompound saveData = new NBTTagCompound();
-                    save.setTag("Save", saveData);
-                    saveData.setString("saveName", ((GuiRenameWorld)this.Gui).nameWorld.text);
-                    saveData.setString("dateCreated", dateCreated);
-                    saveData.setLong("time", time);
-                    saveData.setLong("seed", seed);
-                    NBTIO.writeCompressed(save, outputStream);
-                    outputStream.close();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+                save.saveDataToFile();
+
                 ((GuiRenameWorld)this.Gui).nameWorld.typing = false;
                 this.ce.setNewGui(new GuiWorldSelect(this.ce));
             }
@@ -434,21 +434,68 @@ public class Button {
                 GameSettings.transparentLeaves = !GameSettings.transparentLeaves;
                 this.ce.save.activeWorld.chunkController.updateChunksWithLeaves();
             }
+            case SCREENSHOT_FOLDER -> {
+                try {
+                    File folder = new File(this.ce.launcherDirectory, "screenshots");
+
+                    if (!folder.exists()) {
+                        folder.mkdirs();
+                    }
+
+                    Desktop.getDesktop().open(folder);
+                } catch (IOException e){
+                    e.printStackTrace();
+                }
+            }
+            case CONFIRM -> {
+                if(this.Gui instanceof GuiDeleteWorld){
+                    File save = new File(this.ce.launcherDirectory + "/saves/save" + ((GuiDeleteWorld)this.Gui).saveSlot);
+                    ThreadDeleteWorld deleteWorld = new ThreadDeleteWorld(save);
+                    Thread thread = new Thread(deleteWorld);
+                    this.ce.setNewGui(new GuiDeletingWorld(this.ce, deleteWorld));
+                    thread.start();
+                }
+            }
+            case DECLINE -> {
+                if(this.Gui instanceof GuiDeleteWorld){
+                    this.ce.setNewGui(new GuiWorldSelect(this.ce));
+                }
+            }
+            case DIFFICULTY_OPTIONS -> {
+                if(this.Gui instanceof GuiCreateNewWorld) {
+                    this.ce.setNewGui(new GuiDifficultySettings(this.ce, true, ((GuiCreateNewWorld) this.Gui).saveSlot, ((GuiCreateNewWorld) this.Gui).saveSettings));
+                } else if(this.Gui instanceof GuiRenameWorld) {
+                    this.ce.setNewGui(new GuiDifficultySettings(this.ce, false, ((GuiRenameWorld) this.Gui).saveSlot, SaveSettings.loadSaveSettingsFromSaveFile(new File(this.ce.launcherDirectory + "/saves/save" + ((GuiRenameWorld)this.Gui).saveSlot))));
+                }
+            }
+            case SAVE_OPTIONS -> {
+                if(this.Gui instanceof GuiDifficultySettings) {
+                   if(((GuiDifficultySettings) this.Gui).fromWorldCreateScreen){
+
+                       SaveSettings saveSettings = ((GuiDifficultySettings) this.Gui).saveSettings;
+
+                       this.ce.setNewGui(new GuiCreateNewWorld(this.ce, ((GuiDifficultySettings) this.Gui).saveSlot, saveSettings));
+                   } else {
+                       SaveSettings settings = ((GuiDifficultySettings)this.Gui).saveSettings;
+                       File saveFolder = new File(this.ce.launcherDirectory + "/saves/save" + ((GuiDifficultySettings)this.Gui).saveSlot);
+                       Save save = new Save(this.ce, saveFolder);
+                       save.saveSettings = settings;
+                       save.saveDataToFile();
+
+                       this.ce.setNewGui(new GuiRenameWorld(this.ce, ((GuiDifficultySettings) this.Gui).saveSlot));
+                   }
+                }
+            }
+            case DROP_INVENTORY_ON_DEATH -> {
+                if(this.Gui instanceof GuiDifficultySettings){
+                    SaveSettings saveSettings = ((GuiDifficultySettings) this.Gui).saveSettings;
+                    saveSettings.changeDropInventoryOnDeath(!saveSettings.dropInventoryOnDeath);
+                }
+            }
         }
         GameSettings.saveOptions();
     }
 
-    private void deleteDirectory(File directoryToBeDeleted){
-        File[] allContents = directoryToBeDeleted.listFiles();
-        File file;
-        if(allContents != null){
-            for(int i = 0; i < allContents.length; i++){
-                file = allContents[i];
-                this.deleteDirectory(file);
-            }
-        }
-        directoryToBeDeleted.delete();
-    }
 
     public void renderButton(){
         RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
@@ -639,7 +686,8 @@ public class Button {
                         try {
                             FileInputStream inputStream = new FileInputStream(file);
                             NBTTagCompound compoundTag = NBTIO.readCompressed(inputStream);
-                            string = compoundTag.getCompoundTag("Save").getString("saveName");
+                            NBTTagCompound save = compoundTag.getCompoundTag("Save");
+                            string = save != null ? save.getString("saveName") : " - MISSING FILES";
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -656,7 +704,8 @@ public class Button {
                         try {
                             FileInputStream inputStream = new FileInputStream(file);
                             NBTTagCompound compoundTag = NBTIO.readCompressed(inputStream);
-                            string = compoundTag.getCompoundTag("Save").getString("saveName");
+                            NBTTagCompound save = compoundTag.getCompoundTag("Save");
+                            string = save != null ? save.getString("saveName") : " - MISSING FILES";
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -673,7 +722,8 @@ public class Button {
                         try {
                             FileInputStream inputStream = new FileInputStream(file);
                             NBTTagCompound compoundTag = NBTIO.readCompressed(inputStream);
-                            string = compoundTag.getCompoundTag("Save").getString("saveName");
+                            NBTTagCompound save = compoundTag.getCompoundTag("Save");
+                            string = save != null ? save.getString("saveName") : " - MISSING FILES";
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -690,7 +740,8 @@ public class Button {
                         try {
                             FileInputStream inputStream = new FileInputStream(file);
                             NBTTagCompound compoundTag = NBTIO.readCompressed(inputStream);
-                            string = compoundTag.getCompoundTag("Save").getString("saveName");
+                            NBTTagCompound save = compoundTag.getCompoundTag("Save");
+                            string = save != null ? save.getString("saveName") : " - MISSING FILES";
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -707,7 +758,8 @@ public class Button {
                         try {
                             FileInputStream inputStream = new FileInputStream(file);
                             NBTTagCompound compoundTag = NBTIO.readCompressed(inputStream);
-                            string = compoundTag.getCompoundTag("Save").getString("saveName");
+                            NBTTagCompound save = compoundTag.getCompoundTag("Save");
+                            string = save != null ? save.getString("saveName") : " - MISSING FILES";
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -715,7 +767,7 @@ public class Button {
                 }
             }
             case DELETE -> {
-                string = "Delete Save Slot";
+                string = "Delete";
             }
             case WORLD_INFO -> {
                 string = "i";
@@ -746,6 +798,27 @@ public class Button {
             }
             case TRANSPARENT_LEAVES -> {
                 string = "Transparent Leaves: " + GameSettings.transparentLeaves;
+            }
+            case SCREENSHOT_FOLDER -> {
+                string = "Screenshots";
+            }
+            case CONFIRM -> {
+                string = "Yes";
+            }
+            case DECLINE -> {
+                string = "No";
+            }
+            case SAVE_OPTIONS -> {
+                string = "Save Settings";
+            }
+            case DIFFICULTY_OPTIONS -> {
+                string = "Difficulty Settings";
+            }
+            case DROP_INVENTORY_ON_DEATH -> {
+                if(this.Gui instanceof GuiDifficultySettings) {
+                    SaveSettings saveSettings = ((GuiDifficultySettings) this.Gui).saveSettings;
+                    string = "Drop Inventory On Death: " + saveSettings.dropInventoryOnDeath;
+                }
             }
 
             default -> string = "";

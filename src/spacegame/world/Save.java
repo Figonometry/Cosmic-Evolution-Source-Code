@@ -1,26 +1,17 @@
 package spacegame.world;
 
-import org.joml.SimplexNoise;
-import org.joml.Vector3f;
-import spacegame.celestial.Universe;
 import spacegame.core.CosmicEvolution;
 import spacegame.gui.GuiInGame;
-import spacegame.util.MathUtil;
 import spacegame.entity.EntityPlayer;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
-import spacegame.render.PlanetaryBiomeColorizer;
-import spacegame.render.RenderEngine;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.Random;
 
 public final class Save {
     private CosmicEvolution ce;
@@ -37,9 +28,11 @@ public final class Save {
     public double spawnZ;
     public byte savedSkyLightLevel = 0;
     public boolean loadedFromFile;
+    public SaveSettings saveSettings;
 
-    public Save(CosmicEvolution cosmicEvolution, int saveSlotNumber, String saveName, long seed, double x, double z) {
+    public Save(CosmicEvolution cosmicEvolution, int saveSlotNumber, String saveName, long seed, double x, double z, SaveSettings saveSettings) {
         this.ce = cosmicEvolution;
+        this.saveSettings = saveSettings;
         this.saveFolder = new File(this.ce.launcherDirectory + "/saves/save" + saveSlotNumber);
         this.saveFile = new File(this.saveFolder + "/save.dat");
         this.saveFolder.mkdirs();
@@ -84,6 +77,7 @@ public final class Save {
             this.spawnX = compoundTag.getCompoundTag("Save").getDouble("spawnX");
             this.spawnY = compoundTag.getCompoundTag("Save").getDouble("spawnY");
             this.spawnZ = compoundTag.getCompoundTag("Save").getDouble("spawnZ");
+            this.saveSettings = new SaveSettings(compoundTag.getCompoundTag("SaveSettings"));
             inputStream.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -95,24 +89,29 @@ public final class Save {
             FileOutputStream outputStream = new FileOutputStream(this.saveFile);
             NBTTagCompound save = new NBTTagCompound();
             NBTTagCompound saveData = new NBTTagCompound();
+            NBTTagCompound saveSettings = new NBTTagCompound();
             save.setTag("Save", saveData);
+            save.setTag("SaveSettings", saveSettings);
             saveData.setLong("time", this.time);
             Calendar calendar = new GregorianCalendar();
             saveData.setString("dateLastModified", calendar.get(Calendar.MONTH) + 1 + "/" + calendar.get(Calendar.DAY_OF_MONTH) + "/" + calendar.get(Calendar.YEAR));
             saveData.setString("dateCreated", this.dateCreated);
             saveData.setLong("seed", this.seed);
             saveData.setString("saveName", this.saveName);
-            saveData.setByte("skyLightLevel", this.activeWorld.skyLightLevel);
+            saveData.setByte("skyLightLevel", this.activeWorld != null ? this.activeWorld.skyLightLevel : this.savedSkyLightLevel);
             saveData.setDouble("spawnX", this.spawnX);
             saveData.setDouble("spawnY", this.spawnY);
             saveData.setDouble("spawnZ", this.spawnZ);
+            this.saveSettings.saveSettingsToFile(saveSettings);
             NBTIO.writeCompressed(save, outputStream);
             outputStream.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        this.thePlayer.savePlayerToFile();
-        this.activeWorld.saveWorld();
+        if(this.activeWorld != null && this.thePlayer != null) {
+            this.thePlayer.savePlayerToFile();
+            this.activeWorld.saveWorld();
+        }
     }
 
     public void saveDataToFileWithoutChunkUnload(){
@@ -120,7 +119,9 @@ public final class Save {
             FileOutputStream outputStream = new FileOutputStream(this.saveFile);
             NBTTagCompound save = new NBTTagCompound();
             NBTTagCompound saveData = new NBTTagCompound();
+            NBTTagCompound saveSettings = new NBTTagCompound();
             save.setTag("Save", saveData);
+            save.setTag("SaveSettings", saveSettings);
             saveData.setLong("time", this.time);
             Calendar calendar = new GregorianCalendar();
             saveData.setString("dateLastModified", calendar.get(Calendar.MONTH) + 1 + "/" + calendar.get(Calendar.DAY_OF_MONTH) + "/" + calendar.get(Calendar.YEAR));
@@ -131,13 +132,16 @@ public final class Save {
             saveData.setDouble("spawnX", this.spawnX);
             saveData.setDouble("spawnY", this.spawnY);
             saveData.setDouble("spawnZ", this.spawnZ);
+            this.saveSettings.saveSettingsToFile(saveSettings);
             NBTIO.writeCompressed(save, outputStream);
             outputStream.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        this.thePlayer.savePlayerToFile();
-        this.activeWorld.saveWorldWithoutUnload();
+        if(this.activeWorld != null && this.thePlayer != null) {
+            this.thePlayer.savePlayerToFile();
+            this.activeWorld.saveWorldWithoutUnload();
+        }
     }
 
     public void saveInitDataToFile(String saveName, double x, double z){
@@ -145,7 +149,9 @@ public final class Save {
             FileOutputStream outputStream = new FileOutputStream(this.saveFile);
             NBTTagCompound save = new NBTTagCompound();
             NBTTagCompound saveData = new NBTTagCompound();
+            NBTTagCompound saveSettings = new NBTTagCompound();
             save.setTag("Save", saveData);
+            save.setTag("SaveSettings", saveSettings);
             saveData.setLong("time", this.time);
             saveData.setString("saveName", saveName);
             Calendar calendar = new GregorianCalendar();
@@ -154,6 +160,7 @@ public final class Save {
             saveData.setLong("seed", this.seed);
             saveData.setDouble("spawnX", x);
             saveData.setDouble("spawnZ", z);
+            this.saveSettings.saveSettingsToFile(saveSettings);
             NBTIO.writeCompressed(save, outputStream);
             outputStream.close();
         } catch (IOException e) {
@@ -196,6 +203,29 @@ public final class Save {
         } else {
             return 0;
         }
+    }
+
+    public static boolean isSaveFileCorrupted(int saveSlot){
+        switch (doesSaveSlotExist(saveSlot)) {
+            case 0 -> {
+                return false;
+            }
+            case 1 -> {
+                return true;
+            }
+            case 2 -> {
+                File file = new File(CosmicEvolution.instance.launcherDirectory + "/saves/save" + saveSlot + "/save.dat");
+                try {
+                    FileInputStream inputStream = new FileInputStream(file);
+                    NBTTagCompound compoundTag = NBTIO.readCompressed(inputStream);
+                    NBTTagCompound save = compoundTag.getCompoundTag("Save");
+                    return save == null;
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+        return false;
     }
 
 

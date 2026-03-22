@@ -11,6 +11,7 @@ public final class GuiSettingsInGame extends Gui {
     public Button volumeSounds;
     public Button volumeMusic;
     public Button videoSettings;
+    public Button screenshotFolder;
     public Button keyBinds;
     public Button back;
     public int title;
@@ -22,6 +23,7 @@ public final class GuiSettingsInGame extends Gui {
         this.volumeSounds = new Button(EnumButtonEffects.VOLUME_SOUNDS.name(), 512, 64, -300,150, this, this.ce);
         this.volumeMusic = new Button(EnumButtonEffects.VOLUME_MUSIC.name(), 512, 64, 300, 150, this, this.ce);
         this.videoSettings = new Button(EnumButtonEffects.VIDEO_SETTINGS.name(), 512, 64, 0, -150, this, this.ce);
+        this.screenshotFolder = new Button(EnumButtonEffects.SCREENSHOT_FOLDER.name(), 512, 64, 0, -250, this, this.ce);
         this.keyBinds = new Button(EnumButtonEffects.KEYBINDS.name(), 512, 64, 0, -50, this, this.ce);
         this.back = new Button(EnumButtonEffects.BACK.name(), 512, 64, 0, -400, this, this.ce);
     }
@@ -77,6 +79,7 @@ public final class GuiSettingsInGame extends Gui {
         this.volumeMusic.renderButton();
         this.keyBinds.renderButton();
         this.videoSettings.renderButton();
+        this.screenshotFolder.renderButton();
         this.back.renderButton();
     }
 
@@ -96,6 +99,9 @@ public final class GuiSettingsInGame extends Gui {
         }
         if(this.volumeMusic.isMouseHoveredOver() && this.volumeMusic.active){
             return this.volumeMusic;
+        }
+        if(this.screenshotFolder.isMouseHoveredOver() && this.screenshotFolder.active){
+            return this.screenshotFolder;
         }
         return null;
     }

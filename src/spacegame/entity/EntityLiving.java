@@ -5,7 +5,7 @@ import spacegame.core.CosmicEvolution;
 import spacegame.util.MathUtil;
 import spacegame.core.Sound;
 import spacegame.entity.ai.AIPassive;
-import spacegame.gui.GuiWorldLoadingScreen;
+import spacegame.gui.GuiWorldLoading;
 import spacegame.world.AxisAlignedBB;
 
 import java.util.Random;
@@ -62,7 +62,7 @@ public abstract class EntityLiving extends Entity {
 
 
     protected void performStepSound(){
-        if((CosmicEvolution.instance.currentGui instanceof GuiWorldLoadingScreen))return;
+        if((CosmicEvolution.instance.currentGui instanceof GuiWorldLoading))return;
             int x = MathUtil.floorDouble(this.x);
             int z = MathUtil.floorDouble(this.z);
             int prevX = MathUtil.floorDouble(this.prevX);
