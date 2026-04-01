@@ -5,7 +5,10 @@ import spacegame.block.BlockContainer;
 import spacegame.block.ITickable;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
-import spacegame.item.InWorldCraftingRecipe;
+import spacegame.item.crafting.CraftingBlockRecipes;
+import spacegame.item.crafting.InWorld3DCraftingItem;
+import spacegame.item.crafting.InWorldCraftingItem;
+import spacegame.item.crafting.InWorldCraftingRecipe;
 import spacegame.util.MathUtil;
 import spacegame.entity.Entity;
 import spacegame.entity.EntityBlock;
@@ -663,7 +666,9 @@ public final class ChunkController {
                         NBTTagCompound chest = chunkData.getCompoundTag("Chest");
                         NBTTagCompound timeEvents = chunkData.getCompoundTag("TimeEvents");
                         NBTTagCompound heatableBlocks = chunkData.getCompoundTag("HeatableBlocks");
-                        NBTTagCompound craftingBlocks = chunkData.getCompoundTag("CraftingBlocks");
+                        NBTTagCompound crafting3DItems = chunkData.getCompoundTag("Crafting3DItems");
+                        NBTTagCompound craftingItems = chunkData.getCompoundTag("CraftingItems");
+
                         chunk = new Chunk(x, y, z, CosmicEvolution.instance.save.activeWorld);
 
                         chunk.containsWater = chunkData.getBoolean("containsWater");
@@ -768,23 +773,48 @@ public final class ChunkController {
                             }
                         }
 
-                        if(craftingBlocks != null){
-                            int craftingBlockCount = craftingBlocks.getInteger("inWorldCraftingBlockCount");
-                            NBTTagCompound inWorldCraftingBlockLoadedTag;
-                            InWorldCraftingBlock inWorldCraftingBlock;
+                        if(crafting3DItems != null){
+                            int craftingBlockCount = crafting3DItems.getInteger("inWorldCrafting3DItemCount");
+                            NBTTagCompound inWorldCrafting3DItemLoadedTag;
+                            InWorld3DCraftingItem inWorld3DCraftingItem;
                             for(int i = 0; i < craftingBlockCount; i++){
-                                inWorldCraftingBlockLoadedTag = craftingBlocks.getCompoundTag("inWorldCraftingBlock" + i);
-                                int index = inWorldCraftingBlockLoadedTag.getInteger("index");
-                                short materialBlockID = inWorldCraftingBlockLoadedTag.getShort("materialBlockID");
+                                inWorldCrafting3DItemLoadedTag = crafting3DItems.getCompoundTag("inWorldCrafting3DItem" + i);
+                                int index = inWorldCrafting3DItemLoadedTag.getInteger("index");
+                                short materialBlockID = inWorldCrafting3DItemLoadedTag.getShort("materialBlockID");
 
-                                inWorldCraftingBlock = new InWorldCraftingBlock(index, materialBlockID, InWorldCraftingRecipe.findInWorldCraftingRecipeFromName(inWorldCraftingBlockLoadedTag.getString("craftingRecipeName")), chunk);
-                                inWorldCraftingBlock.activeCraftingLayer = inWorldCraftingBlockLoadedTag.getInteger("activeCraftingLayer");
+                                inWorld3DCraftingItem = new InWorld3DCraftingItem(index, materialBlockID, InWorldCraftingRecipe.findInWorldCraftingRecipeFromName(inWorldCrafting3DItemLoadedTag.getString("craftingRecipeName")), chunk);
+                                inWorld3DCraftingItem.activeCraftingLayer = inWorldCrafting3DItemLoadedTag.getInteger("activeCraftingLayer");
 
                                 for(int j = 0; j < 16; j++){
-                                    inWorldCraftingBlock.subVoxelIndices[j] = inWorldCraftingBlockLoadedTag.getIntArray("craftingLayer" + j);
+                                    inWorld3DCraftingItem.subVoxelIndices[j] = inWorldCrafting3DItemLoadedTag.getIntArray("craftingLayer" + j);
                                 }
 
-                                chunk.craftingBlocks.add(inWorldCraftingBlock);
+                                chunk.crafting3DItems.add(inWorld3DCraftingItem);
+                            }
+                        }
+
+                        if(craftingItems != null){
+                            int craftingItemCount = craftingItems.getInteger("inWorldCraftingItemCount");
+                            NBTTagCompound inWorldCraftingItemLoadedTag;
+                            InWorldCraftingItem inWorldCraftingItem;
+                            for(int i = 0; i < craftingItemCount; i++){
+                                inWorldCraftingItemLoadedTag = craftingItems.getCompoundTag("inWorldCraftingItem" + i);
+
+                                int index =  inWorldCraftingItemLoadedTag.getInteger("index");
+                                int recipeID = inWorldCraftingItemLoadedTag.getInteger("outputRecipeID");
+                                boolean hasBeenBound = inWorldCraftingItemLoadedTag.getBoolean("hasBeenBound");
+
+                                inWorldCraftingItem = new InWorldCraftingItem(CraftingBlockRecipes.list[recipeID], index, chunk);
+                                inWorldCraftingItem.hasBeenBound = hasBeenBound;
+
+                                int filledItemIndex = inWorldCraftingItemLoadedTag.getInteger("filledItemIndex");
+
+                                for(int j = 0; j < filledItemIndex; j++){
+                                    inWorldCraftingItem.itemsFilled[j] = inWorldCraftingItemLoadedTag.getBoolean("item" + j + "Filled");
+                                }
+
+
+                                chunk.craftingItems.add(inWorldCraftingItem);
                             }
                         }
 

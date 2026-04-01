@@ -8,7 +8,8 @@ import spacegame.block.BlockTorch;
 import spacegame.block.ITimeUpdate;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
-import spacegame.core.MouseListener;
+import spacegame.item.crafting.InWorldCraftingItem;
+import spacegame.util.GeneralUtil;
 import spacegame.util.MathUtil;
 import spacegame.core.Timer;
 import spacegame.entity.EntityPlayer;
@@ -16,7 +17,7 @@ import spacegame.item.Item;
 import spacegame.render.*;
 import spacegame.world.AxisAlignedBB;
 import spacegame.world.Chunk;
-import spacegame.world.InWorldCraftingBlock;
+import spacegame.item.crafting.InWorld3DCraftingItem;
 import spacegame.world.TimeUpdateEvent;
 
 import javax.imageio.ImageIO;
@@ -174,6 +175,10 @@ public final class GuiInGame extends Gui {
     public static void renderBlockLookingAtName(){
         short blockID = CosmicEvolution.instance.save.thePlayer.getPlayerLookingAtBlockID();
         if(blockID == Block.air.ID || blockID == Block.water.ID)return;
+        if(blockID == Block.craftingItem.ID){
+            int[] coords = CosmicEvolution.instance.save.thePlayer.getPlayerLookingAtBlockCoords();
+            renderCraftingItemInfoOverlay(coords[0], coords[1], coords[2]);
+        }
         RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         FontRenderer fontRenderer = FontRenderer.instance;
 
@@ -234,6 +239,65 @@ public final class GuiInGame extends Gui {
             tessellator.toggleOrtho();
             fontRenderer.drawCenteredString(Block.list[blockID].getDisplayName(blockCoordinates[0], blockCoordinates[1], blockCoordinates[2]), 0, 425, -14, 16777215, 50, 255);
         }
+        GL46.glDisable(GL46.GL_BLEND);
+    }
+
+    private static void renderCraftingItemInfoOverlay(int bx, int by, int bz){
+        RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
+        FontRenderer fontRenderer = FontRenderer.instance;
+
+        GL46.glEnable(GL46.GL_BLEND);
+        GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
+
+        InWorldCraftingItem craftingItem = CosmicEvolution.instance.save.activeWorld.getInWorldCraftingItem(bx, by, bz);
+        if(craftingItem == null)return;
+
+        tessellator.toggleOrtho();
+        int x = 640;
+        int y = 0;
+        float width = 512;
+        float height = 512;
+
+        tessellator.addVertex2DTexture(0, x - width / 2f, y - height / 2f, -90, 3);
+        tessellator.addVertex2DTexture(0, x + width / 2f, y + height / 2f, -90, 1);
+        tessellator.addVertex2DTexture(0, x - width / 2f, y + height / 2f, -90, 2);
+        tessellator.addVertex2DTexture(0, x + width / 2f, y - height / 2f, -90, 0);
+        tessellator.addElements();
+        tessellator.drawTexture2D(transparentBackground, Shader.screen2DTexture, CosmicEvolution.camera);
+        tessellator.toggleOrtho();
+        y = 200;
+        fontRenderer.drawCenteredString(Item.list[craftingItem.outputRecipe.itemID].getDisplayName(craftingItem.outputRecipe.blockID), x, y, -14, 16777215, 50, 255);
+        y -= 120;
+        for(int i = 0; i < craftingItem.itemsFilled.length; i++){
+            fontRenderer.drawCenteredString((craftingItem.itemsFilled[i] ? "COMPLETED: " : "MISSING: ")  + Item.list[craftingItem.outputRecipe.requiredItems[i]].getDisplayName(craftingItem.outputRecipe.requiredItems[i]), x, y, -14, craftingItem.itemsFilled[i] ? 255 << 8 : 255 << 16, 50, 255);
+
+            if(!craftingItem.itemsFilled[i]) {
+                y -= 30;
+                tessellator.toggleOrtho();
+                tessellator.addVertexTextureArray(16777215, x - 30, y - 30, -85, 3, craftingItem.outputRecipe.requiredItems[i], RenderBlocks.WEST_FACE);
+                tessellator.addVertexTextureArray(16777215, x + 30, y + 30, -85, 1, craftingItem.outputRecipe.requiredItems[i], RenderBlocks.WEST_FACE);
+                tessellator.addVertexTextureArray(16777215, x - 30, y + 30, -85, 2, craftingItem.outputRecipe.requiredItems[i], RenderBlocks.WEST_FACE);
+                tessellator.addVertexTextureArray(16777215, x + 30, y - 30, -85, 0, craftingItem.outputRecipe.requiredItems[i], RenderBlocks.WEST_FACE);
+                tessellator.addElements();
+                tessellator.drawVertexArray(Assets.itemTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
+                tessellator.toggleOrtho();
+            }
+            y -= !craftingItem.itemsFilled[i] ? 75 : 30;
+        }
+
+        if(craftingItem.outputRecipe.requiresBinding && !craftingItem.hasBeenBound && craftingItem.areAllItemsFilled()) {
+            y -= 30;
+            fontRenderer.drawCenteredString("MISSING: " + Item.reedTwine.getDisplayName(Item.NULL_ITEM_REFERENCE), x, y, -14, 255 << 16, 50, 255);
+            tessellator.toggleOrtho();
+            tessellator.addVertexTextureArray(16777215, x - 30, y - 30, -85, 3, Item.reedTwine.getTextureID(Item.reedTwine.ID, Item.NULL_ITEM_METADATA, RenderBlocks.WEST_FACE), RenderBlocks.WEST_FACE);
+            tessellator.addVertexTextureArray(16777215, x + 30, y + 30, -85, 1, Item.reedTwine.getTextureID(Item.reedTwine.ID, Item.NULL_ITEM_METADATA, RenderBlocks.WEST_FACE), RenderBlocks.WEST_FACE);
+            tessellator.addVertexTextureArray(16777215, x - 30, y + 30, -85, 2, Item.reedTwine.getTextureID(Item.reedTwine.ID, Item.NULL_ITEM_METADATA, RenderBlocks.WEST_FACE), RenderBlocks.WEST_FACE);
+            tessellator.addVertexTextureArray(16777215, x + 30, y - 30, -85, 0, Item.reedTwine.getTextureID(Item.reedTwine.ID, Item.NULL_ITEM_METADATA, RenderBlocks.WEST_FACE), RenderBlocks.WEST_FACE);
+            tessellator.addElements();
+            tessellator.drawVertexArray(Assets.itemTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
+            tessellator.toggleOrtho();
+        }
+
         GL46.glDisable(GL46.GL_BLEND);
     }
 
@@ -635,7 +699,7 @@ public final class GuiInGame extends Gui {
                         }
 
                         //north
-                        if(i < pixelColors.length) {
+                        if(i < pixelColors.length && i != 1023) {
                             neighborColor = pixelColors[i + 1];
                             if (neighborColor.getAlpha() != 255) {
                                 x += pixelWidth;
@@ -818,6 +882,7 @@ public final class GuiInGame extends Gui {
 
                     Block checkedBlock = Block.list[CosmicEvolution.instance.save.activeWorld.getBlockID(blockX, blockY, blockZ)];
                     if(checkedBlock.ID == Block.crafting3DItem.ID)return;
+                    if(checkedBlock.ID == Block.craftingItem.ID)return;
 
                     if (isBlockVisible(blockX, blockY, blockZ)) {
                         if (checkedBlock.ID != Block.air.ID && checkedBlock.ID != Block.water.ID) {
@@ -843,8 +908,8 @@ public final class GuiInGame extends Gui {
                         Shader.worldShader2DTextureWithAtlas.uploadVec3f("chunkOffset", chunkOffset);
                         Shader.worldShader2DTextureWithAtlas.uploadBoolean("useFog", true);
                         int textureID = (int) (((double) CosmicEvolution.instance.save.thePlayer.breakTimer/(double)Block.list[block].getDynamicBreakTimer()) * 7);
-                        if(textureID > 8){
-                            textureID = 8;
+                        if(textureID > 7){
+                            textureID = 7;
                         }
                         modelLoader = Block.list[block].blockModel;
                         Random rand = new Random(Chunk.getBlockIndexFromCoordinates(locationX, locationY, locationZ));
@@ -927,6 +992,12 @@ public final class GuiInGame extends Gui {
                 blockZ = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z + zDif * multiplier * loopPass);
 
                 Block checkedBlock = Block.list[CosmicEvolution.instance.save.activeWorld.getBlockID(blockX, blockY, blockZ)];
+
+                if(checkedBlock.ID == Block.craftingItem.ID){
+                    renderCraftingItemOutlines(blockX,blockY,blockZ);
+                    return;
+                }
+
                 if (isBlockVisible(blockX, blockY, blockZ)) {
                     if(checkedBlock.ID != Block.air.ID && checkedBlock.ID != Block.water.ID){
                             locationX = blockX;
@@ -1009,6 +1080,136 @@ public final class GuiInGame extends Gui {
             }
 
         }
+    }
+
+    private static void renderCraftingItemOutlines(int x, int y, int z){
+        InWorldCraftingItem craftingItem = CosmicEvolution.instance.save.activeWorld.getInWorldCraftingItem(x,y,z);
+
+        if(craftingItem == null)return;
+
+        RenderEngine.WorldTessellator tessellator = RenderEngine.WorldTessellator.instance;
+
+        int index = Chunk.getBlockIndexFromCoordinates(x,y,z);
+        Chunk chunk = CosmicEvolution.instance.save.activeWorld.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
+        double rotation;
+        double[] position; //local coordinates
+        double translateX;
+        double translateY;
+        double translateZ;
+        double voxelShift = 0.015625; // 1/32 then scaled by 1/2, any smaller is not viable due to float to half conversion
+        long time = CosmicEvolution.instance.save.time % 120;
+        if (time > 60) {
+            time = 120 - time;
+        }
+        int r;
+        int g;
+        int b;
+        int rDif;
+        int gDif;
+        int bDif;
+        boolean sameItem;
+        int color;
+        ModelLoader baseModel;
+        ModelFace modelFace;
+
+        //Model can only be so small before issues arise
+        for(int i = 0; i < craftingItem.itemsFilled.length; i++){
+            if(craftingItem.itemsFilled[i])continue;
+
+            rotation = craftingItem.outputRecipe.requiredItemAngles[i];
+            position = craftingItem.outputRecipe.requiredItemPositions[i];
+
+            int[] itemPixels = GeneralUtil.getFilePixelsARGB("src/spacegame/assets/textures/item/" +
+                    RenderEngine.getBlockName(Item.list[craftingItem.outputRecipe.requiredItems[i]].textureID, "src/spacegame/assets/textures/item/") + ".png", 32, 32);
+
+            if(itemPixels == null){
+                System.out.println("Failed to get item pixels");
+                continue;
+            }
+
+            itemPixels = GeneralUtil.rotateImagePixels(itemPixels, rotation, 32, 32);
+
+            sameItem = craftingItem.outputRecipe.requiredItems[i] == CosmicEvolution.instance.save.thePlayer.getHeldItem();
+
+            for(int j = 0; j < itemPixels.length; j++){
+                if(((itemPixels[j] >> 24) & 255) != 255)continue;
+
+                baseModel = Block.centeredVoxel.copyModel();
+
+                translateX = (voxelShift * (j % 32)) + position[0];
+                translateY = position[1];
+                translateZ = (voxelShift * (j >> 5)) + position[2];
+
+                baseModel = baseModel.translateModel((float) translateX, (float)translateY, (float) translateZ);
+
+                r = (itemPixels[j] >> 16) & 255;
+                g = (itemPixels[j] >> 8) & 255;
+                b = itemPixels[j] & 255;
+
+                if(sameItem){
+                    rDif = 255 - r;
+                    gDif = 255 - g;
+                    bDif = 255 - b;
+                    r += rDif * (time / 60f);
+                    g += gDif * (time / 60f);
+                    b += bDif * (time / 60f);
+
+                    color = r << 16 | g << 8 | b;
+                } else {
+                    color = 0;
+                }
+
+
+                for(int face = 0; face < 6; face++){
+                    if(face == 1)continue;
+                    if(face == 2 || face == 3 || face == 4 || face == 5){
+                        if(!shouldCraftingItemGridFaceRender(face, j, itemPixels)){
+                            continue;
+                        }
+                    }
+
+
+                    modelFace = baseModel.getModelFace(face);
+                    renderSpecialFace(tessellator, color, index, 0, modelFace, 0,0,0,0,0,0,0,0, 3,1,2,0, chunk, null, modelFace.normal.x, modelFace.normal.y, modelFace.normal.z, 15);
+                    tessellator.addElements();
+                }
+            }
+
+            GL46.glEnable(GL46.GL_CULL_FACE);
+            GL46.glCullFace(GL46.GL_FRONT);
+            GL46.glEnable(GL46.GL_POLYGON_OFFSET_FILL);
+            GL46.glPolygonOffset(-1f, -1f);
+            Shader.worldShader2DTexture.uploadBoolean("performNormals", false);
+            tessellator.drawTexture2D(fillableColor, Shader.worldShader2DTexture, CosmicEvolution.camera);
+            Shader.worldShader2DTexture.uploadBoolean("performNormals", true);
+            GL46.glDisable(GL46.GL_POLYGON_OFFSET_FILL);
+            GL46.glDisable(GL46.GL_CULL_FACE);
+        }
+    }
+
+    private static boolean shouldCraftingItemGridFaceRender(int face, int index, int[] pixels){
+        int x = index % 32;
+        int y = 31 - (index / 32);
+        switch (face){
+            case 2 -> { //North
+                return x - 1 >= 0 && (pixels[index - 1] >> 24 & 255) != 255;
+            }
+            case 3 -> { //South
+                return x + 1 <= 31 && (pixels[index + 1] >> 24 & 255) != 255;
+            }
+            case 4 -> { //East
+                return y - 1 >= 0 && (pixels[index - 32] >> 24 & 255) != 255;
+            }
+
+            case 5 -> { //West
+                return y + 1 <= 31 && (pixels[index + 32] >> 24 & 255) != 255;
+            }
+
+            default -> {
+                return  true;
+            }
+        }
+
     }
 
     private static int getCraftingGridIndexPlayerIsLookingAt(int bx, int by, int bz, int layer){
@@ -1113,7 +1314,7 @@ public final class GuiInGame extends Gui {
         int green = 5947183;
         int blue = 52735;
         int index = Chunk.getBlockIndexFromCoordinates(x,y,z);
-        InWorldCraftingBlock craftingBlock = chunk.getInWorldCraftingBlock(index);
+        InWorld3DCraftingItem craftingBlock = chunk.getInWorldCrafting3DItem(index);
         RenderEngine.WorldTessellator tessellator = RenderEngine.WorldTessellator.instance;
 
         Vector3f translationVector = new Vector3f();

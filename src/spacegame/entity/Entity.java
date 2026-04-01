@@ -142,15 +142,6 @@ public abstract class Entity {
         }
     }
 
- //  protected void setBoundingBoxSizeFromYaw(){
- //      if((this.yaw  <= 45 || this.yaw >= 315) || (this.yaw >= 135 && this.yaw <= 225)){
- //          this.width = 0.5;
- //          this.depth = 1.5;
- //      } else {
- //          this.width = 1.5;
- //          this.depth = 0.5;
- //      }
- //  }
 
     protected void updateGroundPosition(float rawDeltaX, float rawDeltaY, float rawDeltaZ){
         this.deltaZ = 0.0F;

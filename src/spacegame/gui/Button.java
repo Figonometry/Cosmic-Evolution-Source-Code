@@ -455,6 +455,7 @@ public class Button {
                     this.ce.setNewGui(new GuiDeletingWorld(this.ce, deleteWorld));
                     thread.start();
                 }
+
             }
             case DECLINE -> {
                 if(this.Gui instanceof GuiDeleteWorld){

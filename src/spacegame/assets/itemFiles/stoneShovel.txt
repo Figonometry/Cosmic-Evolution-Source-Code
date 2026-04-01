@@ -1,0 +1,6 @@
+itemName:STONE_SHOVEL
+attackDamage:1
+toolType:shovel
+stackLimit:1
+displayName:Stone Shovel
+canPlaceAsItemBlock:true

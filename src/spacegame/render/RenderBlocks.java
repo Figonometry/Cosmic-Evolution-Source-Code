@@ -3,11 +3,13 @@ package spacegame.render;
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 import spacegame.block.*;
+import spacegame.item.crafting.InWorldCraftingItem;
+import spacegame.util.GeneralUtil;
 import spacegame.util.MathUtil;
 import spacegame.item.Item;
 import spacegame.world.ChestLocation;
 import spacegame.world.Chunk;
-import spacegame.world.InWorldCraftingBlock;
+import spacegame.item.crafting.InWorld3DCraftingItem;
 import spacegame.world.World;
 
 import javax.imageio.ImageIO;
@@ -271,6 +273,7 @@ public class RenderBlocks {
         this.redReset = 1f;
         this.greenReset = 1f;
         this.blueReset = 1f;
+        this.skyLightReset = 1f;
 
         ModelFace[] modelFaces = Block.list[block].blockModel.getModelFaceOfType(face);
         float[] UVSamples;
@@ -888,6 +891,11 @@ public class RenderBlocks {
     }
 
     public void renderItemBlock(Chunk chunk, World world, short block, int index, int face){
+        this.redReset = 1f;
+        this.greenReset = 1f;
+        this.blueReset = 1f;
+        this.skyLightReset = 1f;
+
         if(face == BOTTOM_FACE)return;
         int[] pixels = new int[1024];
         String filepath = "src/spacegame/assets/textures/item/" +
@@ -945,6 +953,11 @@ public class RenderBlocks {
 
 
     public void renderBerryBushGrowing(Chunk chunk, World world, short block, int index, int face){
+        this.redReset = 1f;
+        this.greenReset = 1f;
+        this.blueReset = 1f;
+        this.skyLightReset = 1f;
+
 
         ModelLoader baseModel = Block.list[block].blockModel.copyModel();
 
@@ -959,6 +972,10 @@ public class RenderBlocks {
     }
 
     public void renderReedGrowing(Chunk chunk, World world, short block, int index, int face){
+        this.redReset = 1f;
+        this.greenReset = 1f;
+        this.blueReset = 1f;
+        this.skyLightReset = 1f;
 
         ModelLoader baseModel = Block.list[block].blockModel.copyModel();
 
@@ -975,6 +992,11 @@ public class RenderBlocks {
 
 
     public void render3DCraftingItem(Chunk chunk, World world, short block, int index, int face){
+        this.redReset = 1f;
+        this.greenReset = 1f;
+        this.blueReset = 1f;
+        this.skyLightReset = 1f;
+
         float[] UVSamplesBase = face == TOP_FACE || face == BOTTOM_FACE ? autoUVTopBottom(2,2) : autoUVNSEW(2,2); //UV mapped to 1x1 instead of 1.5x1.5
 
         float[] UVSamples = new float[8];
@@ -982,7 +1004,7 @@ public class RenderBlocks {
         ModelLoader blockModel;
         ModelFace modelFace;
 
-        InWorldCraftingBlock craftingBlock = world.getInWorldCraftingBlock(chunk.getBlockXFromIndex(index), chunk.getBlockYFromIndex(index), chunk.getBlockZFromIndex(index));
+        InWorld3DCraftingItem craftingBlock = world.getInWorldCrafting3DItem(chunk.getBlockXFromIndex(index), chunk.getBlockYFromIndex(index), chunk.getBlockZFromIndex(index));
 
         block = craftingBlock.materialBlockID;
 
@@ -1006,6 +1028,74 @@ public class RenderBlocks {
                 this.renderOpaqueFace(chunk, world, block, index, face, modelFace, UVSamples[0],UVSamples[1],UVSamples[2],UVSamples[3],UVSamples[4],UVSamples[5],UVSamples[6],UVSamples[7], 3,1,2, 0, new int[2]);
             }
         }
+
+    }
+
+    public void renderCraftingItem(Chunk chunk, World world, short block, int index, int face){
+        this.redReset = 1f;
+        this.greenReset = 1f;
+        this.blueReset = 1f;
+        this.skyLightReset = 1f;
+
+        if(face == BOTTOM_FACE)return;
+
+        block = Block.itemBlock.ID; //Color using  the fillable color
+
+        InWorldCraftingItem craftingItem = world.getInWorldCraftingItem(chunk.getBlockXFromIndex(index), chunk.getBlockYFromIndex(index), chunk.getBlockZFromIndex(index));
+
+        if(craftingItem == null)return;
+
+        double rotation;
+        double[] position; //local coordinates
+        double translateX;
+        double translateY;
+        double translateZ;
+        double voxelShift = 0.015625; // 1/32 then scaled by 1/2, any smaller is not viable due to float to half conversion
+        ModelLoader baseModel;
+        ModelFace modelFace;
+
+        //Model can only be so small before issues arise
+        for(int i = 0; i < craftingItem.itemsFilled.length; i++){
+            if(!craftingItem.itemsFilled[i])continue;
+
+            rotation = craftingItem.outputRecipe.requiredItemAngles[i];
+            position = craftingItem.outputRecipe.requiredItemPositions[i];
+
+            int[] itemPixels = GeneralUtil.getFilePixelsARGB("src/spacegame/assets/textures/item/" +
+                    RenderEngine.getBlockName(Item.list[craftingItem.outputRecipe.requiredItems[i]].textureID, "src/spacegame/assets/textures/item/") + ".png", 32, 32);
+
+            if(itemPixels == null){
+                System.out.println("Failed to get item pixels");
+                continue;
+            }
+
+            itemPixels = GeneralUtil.rotateImagePixels(itemPixels, rotation, 32, 32);
+
+
+            for(int j = 0; j < itemPixels.length; j++){
+                if(((itemPixels[j] >> 24) & 255) != 255)continue;
+
+                baseModel = Block.centeredVoxel.copyModel();
+
+                translateX = (voxelShift * (j % 32)) + position[0];
+                translateY = position[1];
+                translateZ = (voxelShift * (j >> 5)) + position[2];
+
+                baseModel = baseModel.translateModel((float) translateX, (float)translateY, (float) translateZ);
+                modelFace = baseModel.getModelFace(face);
+
+
+                this.redReset = MathUtil.intToFloatRGBA(itemPixels[j] >> 16 & 255);
+                this.greenReset = MathUtil.intToFloatRGBA(itemPixels[j] >> 8 & 255);
+                this.blueReset = MathUtil.intToFloatRGBA(itemPixels[j] & 255);
+                this.skyLightReset = Math.max(Math.max(this.redReset, this.greenReset), this.blueReset);
+
+                this.renderOpaqueFace(chunk, world, block, index, face, modelFace, 0,0,0,0,0,0,0,0, 3,1,2,0, new int[2]);
+            }
+
+
+        }
+
 
     }
 
@@ -2959,47 +3049,47 @@ public class RenderBlocks {
     }
 
     public void addVertexFloatOpaque(Chunk chunk, float value){
-        if(chunk.vertexBufferOpaque.position() == chunk.vertexBufferOpaque.limit()){
-            FloatBuffer oldBuffer = chunk.vertexBufferOpaque;
+        if(chunk.tempVertexBufferOpaque.position() == chunk.tempVertexBufferOpaque.limit()){
+            FloatBuffer oldBuffer = chunk.tempVertexBufferOpaque;
             FloatBuffer newBuffer = BufferUtils.createFloatBuffer(oldBuffer.capacity() * 2);
             oldBuffer.flip(); // prepare for reading
             newBuffer.put(oldBuffer);
-            chunk.vertexBufferOpaque = newBuffer;
+            chunk.tempVertexBufferOpaque = newBuffer;
         }
-        chunk.vertexBufferOpaque.put(value);
+        chunk.tempVertexBufferOpaque.put(value);
     }
 
     public void addVertexFloatTransparent(Chunk chunk, float value){
-        if(chunk.vertexBufferTransparent.position() == chunk.vertexBufferTransparent.limit()){
-            FloatBuffer oldBuffer = chunk.vertexBufferTransparent;
+        if(chunk.tempVertexBufferTransparent.position() == chunk.tempVertexBufferTransparent.limit()){
+            FloatBuffer oldBuffer = chunk.tempVertexBufferTransparent;
             FloatBuffer newBuffer = BufferUtils.createFloatBuffer(oldBuffer.capacity() * 2);
             oldBuffer.flip(); // prepare for reading
             newBuffer.put(oldBuffer);
-            chunk.vertexBufferTransparent = newBuffer;
+            chunk.tempVertexBufferTransparent = newBuffer;
         }
-        chunk.vertexBufferTransparent.put(value);
+        chunk.tempVertexBufferTransparent.put(value);
     }
 
     public void addElementOpaque(Chunk chunk, int value){
-        if(chunk.elementBufferOpaque.position() == chunk.elementBufferOpaque.limit()){
-            IntBuffer oldBuffer = chunk.elementBufferOpaque;
+        if(chunk.tempElementBufferOpaque.position() == chunk.tempElementBufferOpaque.limit()){
+            IntBuffer oldBuffer = chunk.tempElementBufferOpaque;
             IntBuffer newBuffer = BufferUtils.createIntBuffer(oldBuffer.capacity() * 2);
             oldBuffer.flip(); // prepare for reading
             newBuffer.put(oldBuffer);
-            chunk.elementBufferOpaque = newBuffer;
+            chunk.tempElementBufferOpaque = newBuffer;
         }
-        chunk.elementBufferOpaque.put(value);
+        chunk.tempElementBufferOpaque.put(value);
     }
 
     public void addElementTransparent(Chunk chunk, int value){
-        if(chunk.elementBufferTransparent.position() == chunk.elementBufferTransparent.limit()){
-            IntBuffer oldBuffer = chunk.elementBufferTransparent;
+        if(chunk.tempElementBufferTransparent.position() == chunk.tempElementBufferTransparent.limit()){
+            IntBuffer oldBuffer = chunk.tempElementBufferTransparent;
             IntBuffer newBuffer = BufferUtils.createIntBuffer(oldBuffer.capacity() * 2);
             oldBuffer.flip(); // prepare for reading
             newBuffer.put(oldBuffer);
-            chunk.elementBufferTransparent = newBuffer;
+            chunk.tempElementBufferTransparent = newBuffer;
         }
-        chunk.elementBufferTransparent.put(value);
+        chunk.tempElementBufferTransparent.put(value);
     }
 
 

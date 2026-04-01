@@ -32,6 +32,11 @@ public class Item {
     public static final Item reedSeed = new Item((short)20, 19, "src/spacegame/assets/itemFiles/reedSeed.txt");
     public static final Item treeSeed = new Item((short)21, 19, "src/spacegame/assets/itemFiles/treeSeed.txt");
     public static final Item cookedVenison = new ItemFood((short)22, 20, "src/spacegame/assets/itemFiles/cookedVenison.txt", 300f);
+    public static final Item reedTwine = new Item((short)23, 21, "src/spacegame/assets/itemFiles/reedTwine.txt");
+    public static final Item reedCraftingGridTop = new Item((short)24, 22, "src/spacegame/assets/itemFiles/reedCraftingGridTop.txt");
+    public static final Item stoneAxe = new ItemAxe((short)25, 23, "src/spacegame/assets/itemFiles/stoneAxe.txt", Material.STONE);
+    public static final Item stoneShovel = new ItemShovel((short)26, 24, "src/spacegame/assets/itemFiles/stoneShovel.txt", Material.STONE);
+    public static final Item stoneKnife = new ItemKnife((short)27, 25, "src/spacegame/assets/itemFiles/stoneKnife.txt", Material.STONE);
     public final short ID;
     public final int textureID;
     public float hardness = 0;

@@ -45,6 +45,7 @@ public class Block {
     public static final ModelLoader quarterBlockModel = new ModelLoader(modelFolderPath + "quarterBlock.obj");
     public static final ModelLoader itemVoxelModel = new ModelLoader(modelFolderPath + "itemVoxel.obj");
     public static final ModelLoader crafting3DItemVoxelModel = new ModelLoader(modelFolderPath + "crafting3DVoxel.obj");
+    public static final ModelLoader centeredVoxel = new ModelLoader(modelFolderPath + "centeredVoxel.obj").getScaledModel(0.5f);
     public static final ModelLoader size15NormalModel = standardBlockModel.alterStandardBlockModel(1,0,1);
     public static final ModelLoader size14NormalModel = standardBlockModel.alterStandardBlockModel(2,0,2);
     public static final ModelLoader size13NormalModel = standardBlockModel.alterStandardBlockModel(3,0,3);
@@ -228,37 +229,15 @@ public class Block {
     public static final Block torchSouthBurnedOut = new Block((short)128, 39, blockFolderPath + "torchSouthBurnedOut.txt");
     public static final Block torchEastBurnedOut = new Block((short)129, 39, blockFolderPath + "torchEastBurnedOut.txt");
     public static final Block torchWestBurnedOut = new Block((short)130, 39, blockFolderPath + "torchWestBurnedOut.txt");
-    public static final Block crafting3DItem = new BlockCrafting((short)131, -1, blockFolderPath + "crafting3DItem.txt");
+    public static final Block crafting3DItem = new BlockCrafting3D((short)131, -1, blockFolderPath + "crafting3DItem.txt");
+    public static final Block primitiveCraftingTable = new BlockCraftingTable((short)132, 40, blockFolderPath + "primitiveCraftingTable.txt");
+    public static final Block craftingItem = new BlockCrafting((short)133, -1, blockFolderPath + "craftingItem.txt");
     public final short ID;
     public final int textureID;
     public static int facingDirection;
-    public static final int[] faceOffsetX = {
-            0,  // UP
-            0,  // DOWN
-            -1,  // NORTH  (–X)
-            1,  // SOUTH  (+X)
-            0,  // EAST   (–Z axis, so X unchanged)
-            0   // WEST   (+Z axis, so X unchanged)
-    };
-
-    public static final int[] faceOffsetY = {
-            1,  // UP
-            -1,  // DOWN
-            0,  // NORTH
-            0,  // SOUTH
-            0,  // EAST
-            0   // WEST
-    };
-
-    public static final int[] faceOffsetZ = {
-            0,  // UP
-            0,  // DOWN
-            0,  // NORTH
-            0,  // SOUTH
-            -1,  // EAST  (–Z)
-            1   // WEST  (+Z)
-    };
-
+    public static final int[] faceOffsetX = {0, 0, -1, 1, 0, 0};
+    public static final int[] faceOffsetY = {1, -1, 0, 0, 0, 0};
+    public static final int[] faceOffsetZ = {0, 0, 0, 0, -1, 1};
     public static final int FACE_UP    = 0;
     public static final int FACE_DOWN  = 1;
     public static final int FACE_NORTH = 2;

@@ -8,6 +8,8 @@ import spacegame.entity.*;
 import spacegame.gui.*;
 import spacegame.item.Inventory;
 import spacegame.item.Item;
+import spacegame.item.crafting.InWorld3DCraftingItem;
+import spacegame.item.crafting.InWorldCraftingItem;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.render.RenderEngine;
@@ -1692,16 +1694,28 @@ public abstract class World {
         this.chunkController.renderWorld();
     }
 
-    public void addInWorldCraftingBlock(int x, int y, int z, InWorldCraftingBlock craftingBlock){
-        this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).addInWorldCraftingBlock(craftingBlock);
+    public void addInWorldCraftingItem(int x, int y, int z, InWorldCraftingItem craftingItem){
+        this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).addCraftingItem(craftingItem);
     }
 
-    public void removeInWorldCraftingBlock(int x, int y, int z){
-        this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).removeInWorldCraftingBlock(Chunk.getBlockIndexFromCoordinates(x,y,z));
+    public void removeInWorldCraftingItem(int x, int y, int z){
+        this.findChunkFromChunkCoordinates( x >> 5, y >> 5, z >> 5).removeCraftingItem(x,y,z);
     }
 
-    public InWorldCraftingBlock getInWorldCraftingBlock(int x, int y, int z){
-        return this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).getInWorldCraftingBlock(Chunk.getBlockIndexFromCoordinates(x,y,z));
+    public InWorldCraftingItem getInWorldCraftingItem(int x, int y, int z){
+        return this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).getInWorldCraftingItem(x,y,z);
+    }
+
+    public void addInWorldCrafting3DItem(int x, int y, int z, InWorld3DCraftingItem craftingItem){
+        this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).addInWorldCrafting3DItem(craftingItem);
+    }
+
+    public void removeInWorldCrafting3DItem(int x, int y, int z){
+        this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).removeInWorldCrafting3DItem(Chunk.getBlockIndexFromCoordinates(x,y,z));
+    }
+
+    public InWorld3DCraftingItem getInWorldCrafting3DItem(int x, int y, int z){
+        return this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).getInWorldCrafting3DItem(Chunk.getBlockIndexFromCoordinates(x,y,z));
     }
 
     public void addTimeEvent(int x, int y, int z, long updateTime){
@@ -1938,14 +1952,25 @@ public abstract class World {
 
                 if(hit != null) {
 
-                    this.handleIntersectForInWorldCraftingBlock(
+                    this.handleIntersectForInWorldCrafting3DItem(
                             hit[0], hit[1], hit[2],
                             dir,
-                            getInWorldCraftingBlock(bx, by, bz),
+                            getInWorldCrafting3DItem(bx, by, bz),
                             isLeftClick, bx, by, bz
                     );
                 }
                 return;
+            }
+
+
+            if(block.ID == Block.craftingItem.ID && !isLeftClick){
+                double[] hit = AxisAlignedBB.intersectRayWithBlockAABB(px, py, pz, dir, bx, by, bz);
+
+                if(hit != null){
+                    this.handleIntersectForInWorldCraftingItem(hit[0], hit[1], hit[2],
+                            dir,
+                            this.getInWorldCraftingItem(bx, by, bz), bx, by, bz);
+                }
             }
 
             // --- LEFT CLICK: BREAK BLOCK ---
@@ -2029,7 +2054,7 @@ public abstract class World {
 
 
 
-    public void handleIntersectForInWorldCraftingBlock(double worldX, double worldY, double worldZ, Vector3d dir, InWorldCraftingBlock craftingBlock, boolean isLeftClick, int bx, int by, int bz) {
+    public void handleIntersectForInWorldCrafting3DItem(double worldX, double worldY, double worldZ, Vector3d dir, InWorld3DCraftingItem craftingBlock, boolean isLeftClick, int bx, int by, int bz) {
 
         long now = System.currentTimeMillis();
         if (now - MouseListener.lastTimeClicked < 250) {
@@ -2147,6 +2172,56 @@ public abstract class World {
         }
     }
 
+    public void handleIntersectForInWorldCraftingItem(double worldX, double worldY, double worldZ, Vector3d dir, InWorldCraftingItem craftingItem, int bx, int by, int bz) {
+
+        long now = System.currentTimeMillis();
+        if (now - MouseListener.lastTimeClicked < 250) {
+            return;
+        }
+        MouseListener.lastTimeClicked = now;
+
+
+        // --- 2. Local coords ---
+        double lx = worldX - bx;
+        double ly = worldY - by;
+        double lz = worldZ - bz;
+
+        // --- 4. Ray stepping parameters ---
+        double step = 0.001;     // high precision
+        double maxDist = 2.5;    // enough to reach far side at shallow angles
+
+        double targetY = 0.03125;
+
+        double tol = 0.0;
+
+
+        // --- 5. Step along ray and find FIRST valid voxel ---
+        for (double t = 0.0; t <= maxDist; t += step) {
+
+            double x = lx + dir.x * t;
+            double y = ly + dir.y * t;
+            double z = lz + dir.z * t;
+
+            // Only break if we leave the block vertically
+            if (y < 0 || y > 1) break;
+
+
+            // Ignore X/Z out of bounds — DO NOT break
+            if (x < 0 || x > 1 || z < 0 || z > 1 || y >= targetY) continue;
+
+
+            short playerHeldItem = this.ce.save.thePlayer.getHeldItem();
+
+            if(playerHeldItem == Item.NULL_ITEM_REFERENCE)break;
+
+            if(craftingItem.canItemBePlaced(x,y,z, playerHeldItem)){
+                craftingItem.checkOutputComplete();
+                this.findChunkFromChunkCoordinates(bx >> 5, by >> 5, bz >> 5).markDirty();
+                break;
+            }
+        }
+    }
+
 
 
 
@@ -2155,6 +2230,8 @@ public abstract class World {
 
     private void handleBlockBreaking(Block block, int bx, int by, int bz) {
         EntityPlayer p = ce.save.thePlayer;
+
+        if(Block.list[this.getBlockID(bx, by, bz)] instanceof BlockCraftingTable && this.getBlockID(bx, by + 1, bz) == Block.craftingItem.ID)return;
 
         if (p.blockLookingAt[0] == bx && p.blockLookingAt[1] == by && p.blockLookingAt[2] == bz) {
 

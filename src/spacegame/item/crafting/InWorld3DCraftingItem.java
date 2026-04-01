@@ -1,17 +1,16 @@
-package spacegame.world;
+package spacegame.item.crafting;
 
 import spacegame.block.Block;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.Sound;
 import spacegame.entity.EntityItem;
-import spacegame.item.InWorldCraftingRecipe;
 import spacegame.item.Item;
+import spacegame.world.Chunk;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Random;
 
-public final class InWorldCraftingBlock {
+public final class InWorld3DCraftingItem {
     public int[][] subVoxelIndices = new int[16][144];
     public int indexInChunk;
     public short materialBlockID; //Used for texture lookup
@@ -20,7 +19,7 @@ public final class InWorldCraftingBlock {
     public Chunk chunk;
     public boolean removeObject;
 
-    public InWorldCraftingBlock(int index, short materialBlockID, InWorldCraftingRecipe craftingRecipe, Chunk chunk){
+    public InWorld3DCraftingItem(int index, short materialBlockID, InWorldCraftingRecipe craftingRecipe, Chunk chunk){
         this.indexInChunk = index;
         this.materialBlockID = materialBlockID;
         this.craftingRecipe = craftingRecipe;
@@ -44,8 +43,8 @@ public final class InWorldCraftingBlock {
             if(this.craftingRecipe.outputBlockID != Block.NULL_BLOCK_REFERENCE){
                 this.chunk.setBlockWithNotify(this.chunk.getBlockXFromIndex(this.indexInChunk), this.chunk.getBlockYFromIndex(this.indexInChunk), this.chunk.getBlockZFromIndex(this.indexInChunk), this.craftingRecipe.outputBlockID);
             } else {
-                if (!CosmicEvolution.instance.save.thePlayer.addItemToInventory(this.craftingRecipe.outputItemID, Item.list[this.craftingRecipe.outputItemID].metadata, (byte) 1, Item.list[this.craftingRecipe.outputItemID].durability)) {
-                    CosmicEvolution.instance.save.activeWorld.addEntity(new EntityItem(this.chunk.getBlockXFromIndex(this.indexInChunk) + 0.5, this.chunk.getBlockYFromIndex(this.indexInChunk) + 0.25, this.chunk.getBlockZFromIndex(this.indexInChunk) + 0.5, this.craftingRecipe.outputItemID, Item.list[this.craftingRecipe.outputItemID].metadata, (byte) 1, Item.list[this.craftingRecipe.outputItemID].durability));
+                if (!CosmicEvolution.instance.save.thePlayer.addItemToInventory(this.craftingRecipe.outputItemID, Item.list[this.craftingRecipe.outputItemID].metadata, (byte) this.craftingRecipe.outputCount, Item.list[this.craftingRecipe.outputItemID].durability)) {
+                    CosmicEvolution.instance.save.activeWorld.addEntity(new EntityItem(this.chunk.getBlockXFromIndex(this.indexInChunk) + 0.5, this.chunk.getBlockYFromIndex(this.indexInChunk) + 0.25, this.chunk.getBlockZFromIndex(this.indexInChunk) + 0.5, this.craftingRecipe.outputItemID, Item.list[this.craftingRecipe.outputItemID].metadata, (byte) this.craftingRecipe.outputCount, Item.list[this.craftingRecipe.outputItemID].durability));
                 }
 
                 this.chunk.blocks[this.indexInChunk] = Block.air.ID;

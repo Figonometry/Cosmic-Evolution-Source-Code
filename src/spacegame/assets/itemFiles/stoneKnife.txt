@@ -1,0 +1,6 @@
+itemName:STONE_KNIFE
+attackDamage:5
+toolType:knife
+stackLimit:1
+displayName:Stone Knife
+canPlaceAsItemBlock:true

@@ -387,6 +387,8 @@ public final class RenderEngine {
                 case 37 -> "sapling";
                 case 38 -> "torchUnlit";
                 case 39 -> "torchBurnedOut";
+                case 40 -> "primitiveCraftingTableSide";
+                case 41 -> "primitiveCraftingTableTop";
                 default -> "missing";
             };
         } else if(textureFolderpath.contains("item")){
@@ -411,6 +413,11 @@ public final class RenderEngine {
                 case 18 -> "reeds";
                 case 19 -> "berrySeed";
                 case 20 -> "cookedVenison";
+                case 21 -> "reedTwine";
+                case 22 -> "reedCraftingGrid";
+                case 23 -> "stoneAxe";
+                case 24 -> "stoneShovel";
+                case 25 -> "stoneKnife";
                 default -> "missing";
             };
         }
@@ -696,6 +703,25 @@ public final class RenderEngine {
             this.vertexBuffer.flip();
             this.elementBuffer.flip();
 
+            int indexCount  = this.elementBuffer.limit();
+            int vertexCount = this.vertexBuffer.limit();
+
+            if (indexCount == 0 || vertexCount == 0) {
+                this.reset();
+                return;
+            }
+
+
+            int maxIndex = -1;
+            for (int i = this.elementBuffer.position(); i < this.elementBuffer.limit(); i++) {
+                int idx = this.elementBuffer.get(i);
+                if (idx > maxIndex) maxIndex = idx;
+            }
+            if (maxIndex >= vertexCount) {
+                this.reset();
+                return;
+            }
+
             GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, vboID);
             GL46.glBufferData(GL46.GL_ARRAY_BUFFER, this.vertexBuffer, GL46.GL_STATIC_DRAW);
 
@@ -735,6 +761,25 @@ public final class RenderEngine {
             this.vertexBuffer.flip();
             this.elementBuffer.flip();
 
+            int indexCount  = this.elementBuffer.limit();
+            int vertexCount = this.vertexBuffer.limit();
+
+            if (indexCount == 0 || vertexCount == 0) {
+                this.reset();
+                return;
+            }
+
+
+            int maxIndex = -1;
+            for (int i = this.elementBuffer.position(); i < this.elementBuffer.limit(); i++) {
+                int idx = this.elementBuffer.get(i);
+                if (idx > maxIndex) maxIndex = idx;
+            }
+            if (maxIndex >= vertexCount) {
+                this.reset();
+                return;
+            }
+
             GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, vboID);
             GL46.glBufferData(GL46.GL_ARRAY_BUFFER, this.vertexBuffer, GL46.GL_STATIC_DRAW);
 
@@ -773,6 +818,25 @@ public final class RenderEngine {
 
             this.vertexBuffer.flip();
             this.elementBuffer.flip();
+
+            int indexCount  = this.elementBuffer.limit();
+            int vertexCount = this.vertexBuffer.limit();
+
+            if (indexCount == 0 || vertexCount == 0) {
+                this.reset();
+                return;
+            }
+
+
+            int maxIndex = -1;
+            for (int i = this.elementBuffer.position(); i < this.elementBuffer.limit(); i++) {
+                int idx = this.elementBuffer.get(i);
+                if (idx > maxIndex) maxIndex = idx;
+            }
+            if (maxIndex >= vertexCount) {
+                this.reset();
+                return;
+            }
 
             GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, vboID);
             GL46.glBufferData(GL46.GL_ARRAY_BUFFER, this.vertexBuffer, GL46.GL_STATIC_DRAW);
@@ -818,6 +882,25 @@ public final class RenderEngine {
             this.vertexBuffer.flip();
             this.elementBuffer.flip();
 
+            int indexCount  = this.elementBuffer.limit();
+            int vertexCount = this.vertexBuffer.limit();
+
+            if (indexCount == 0 || vertexCount == 0) {
+                this.reset();
+                return;
+            }
+
+
+            int maxIndex = -1;
+            for (int i = this.elementBuffer.position(); i < this.elementBuffer.limit(); i++) {
+                int idx = this.elementBuffer.get(i);
+                if (idx > maxIndex) maxIndex = idx;
+            }
+            if (maxIndex >= vertexCount) {
+                this.reset();
+                return;
+            }
+
             GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, vboID);
             GL46.glBufferData(GL46.GL_ARRAY_BUFFER, this.vertexBuffer, GL46.GL_STATIC_DRAW);
 
@@ -851,6 +934,25 @@ public final class RenderEngine {
 
             this.vertexBuffer.flip();
             this.elementBuffer.flip();
+
+            int indexCount  = this.elementBuffer.limit();
+            int vertexCount = this.vertexBuffer.limit();
+
+            if (indexCount == 0 || vertexCount == 0) {
+                this.reset();
+                return;
+            }
+
+
+            int maxIndex = -1;
+            for (int i = this.elementBuffer.position(); i < this.elementBuffer.limit(); i++) {
+                int idx = this.elementBuffer.get(i);
+                if (idx > maxIndex) maxIndex = idx;
+            }
+            if (maxIndex >= vertexCount) {
+                this.reset();
+                return;
+            }
 
             GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, vboID);
             GL46.glBufferData(GL46.GL_ARRAY_BUFFER, this.vertexBuffer, GL46.GL_STATIC_DRAW);
@@ -1211,6 +1313,25 @@ public final class RenderEngine {
             this.vertexBuffer.flip();
             this.elementBuffer.flip();
 
+            int indexCount  = this.elementBuffer.limit();
+            int vertexCount = this.vertexBuffer.limit();
+
+            if (indexCount == 0 || vertexCount == 0) {
+                this.reset();
+                return;
+            }
+
+
+            int maxIndex = -1;
+            for (int i = this.elementBuffer.position(); i < this.elementBuffer.limit(); i++) {
+                int idx = this.elementBuffer.get(i);
+                if (idx > maxIndex) maxIndex = idx;
+            }
+            if (maxIndex >= vertexCount) {
+                this.reset();
+                return;
+            }
+
             GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, vboID);
             GL46.glBufferData(GL46.GL_ARRAY_BUFFER, this.vertexBuffer, GL46.GL_STATIC_DRAW);
 
@@ -1249,6 +1370,25 @@ public final class RenderEngine {
 
             this.vertexBuffer.flip();
             this.elementBuffer.flip();
+
+            int indexCount  = this.elementBuffer.limit();
+            int vertexCount = this.vertexBuffer.limit();
+
+            if (indexCount == 0 || vertexCount == 0) {
+                this.reset();
+                return;
+            }
+
+
+            int maxIndex = -1;
+            for (int i = this.elementBuffer.position(); i < this.elementBuffer.limit(); i++) {
+                int idx = this.elementBuffer.get(i);
+                if (idx > maxIndex) maxIndex = idx;
+            }
+            if (maxIndex >= vertexCount) {
+                this.reset();
+                return;
+            }
 
             GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, vboID);
             GL46.glBufferData(GL46.GL_ARRAY_BUFFER, this.vertexBuffer, GL46.GL_STATIC_DRAW);
@@ -1299,6 +1439,25 @@ public final class RenderEngine {
 
             this.vertexBuffer.flip();
             this.elementBuffer.flip();
+
+            int indexCount  = this.elementBuffer.limit();
+            int vertexCount = this.vertexBuffer.limit();
+
+            if (indexCount == 0 || vertexCount == 0) {
+                this.reset();
+                return;
+            }
+
+
+            int maxIndex = -1;
+            for (int i = this.elementBuffer.position(); i < this.elementBuffer.limit(); i++) {
+                int idx = this.elementBuffer.get(i);
+                if (idx > maxIndex) maxIndex = idx;
+            }
+            if (maxIndex >= vertexCount) {
+                this.reset();
+                return;
+            }
 
             GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, vboID);
             GL46.glBufferData(GL46.GL_ARRAY_BUFFER, this.vertexBuffer, GL46.GL_STATIC_DRAW);

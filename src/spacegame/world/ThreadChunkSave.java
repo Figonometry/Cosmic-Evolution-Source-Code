@@ -1,6 +1,8 @@
 package spacegame.world;
 
 import spacegame.core.CosmicEvolution;
+import spacegame.item.crafting.InWorld3DCraftingItem;
+import spacegame.item.crafting.InWorldCraftingItem;
 import spacegame.util.Logger;
 import spacegame.entity.Entity;
 import spacegame.entity.EntityBlock;
@@ -31,13 +33,16 @@ public final class ThreadChunkSave implements Runnable {
             NBTTagCompound chest = new NBTTagCompound();
             NBTTagCompound timeEvents = new NBTTagCompound();
             NBTTagCompound heatableBlocks = new NBTTagCompound();
-            NBTTagCompound craftingBlocks = new NBTTagCompound();
+            NBTTagCompound crafting3DItems = new NBTTagCompound();
+            NBTTagCompound craftingItems = new NBTTagCompound();
+
             chunkTag.setTag("Chunk", chunkData);
             chunkData.setTag("Entity", entity);
             chunkData.setTag("Chest", chest);
             chunkData.setTag("TimeEvents", timeEvents);
             chunkData.setTag("HeatableBlocks", heatableBlocks);
-            chunkData.setTag("CraftingBlocks", craftingBlocks);
+            chunkData.setTag("Crafting3DItems", crafting3DItems);
+            chunkData.setTag("CraftingItems", craftingItems);
 
             chunkData.setInteger("x", chunk.x);
             chunkData.setInteger("y", chunk.y);
@@ -76,6 +81,7 @@ public final class ThreadChunkSave implements Runnable {
                         entities[i].setString("entityType", "EntityItem");
                         entities[i].setShort("itemType", ((EntityItem) savingEntity).item);
                         entities[i].setByte("count", ((EntityItem)savingEntity).count);
+                        entities[i].setShort("durability", ((EntityItem)savingEntity).itemDurability);
                     } else if(savingEntity instanceof EntityDeer){
                         entities[i].setString("entityType", "EntityDeer");
                         entities[i].setLong("despawnTime", savingEntity.despawnTime);
@@ -158,27 +164,53 @@ public final class ThreadChunkSave implements Runnable {
                 heatableBlocks.setInteger("heatableBlockCount", heatableBlockCount);
             }
 
-            if(this.chunk.craftingBlocks.size() > 0){
-                InWorldCraftingBlock inWorldCraftingBlock;
-                int inWorldCraftingBlockCount = 0;
-                NBTTagCompound[] inWorldCraftingBlockTags = new NBTTagCompound[this.chunk.craftingBlocks.size()];
-                for(int i = 0; i < inWorldCraftingBlockTags.length; i++){
+            if(this.chunk.crafting3DItems.size() > 0){
+                InWorld3DCraftingItem inWorld3DCraftingItem;
+                int inWorldCrafting3DItemCount = 0;
+                NBTTagCompound[] inWorldCrafting3DItemTags = new NBTTagCompound[this.chunk.crafting3DItems.size()];
+                for(int i = 0; i < inWorldCrafting3DItemTags.length; i++){
 
-                    inWorldCraftingBlock = this.chunk.craftingBlocks.get(i);
-                    inWorldCraftingBlockTags[i] = new NBTTagCompound();
-                    inWorldCraftingBlockTags[i].setInteger("index", inWorldCraftingBlock.indexInChunk);
-                    inWorldCraftingBlockTags[i].setShort("materialBlockID", inWorldCraftingBlock.materialBlockID);
-                    inWorldCraftingBlockTags[i].setInteger("activeCraftingLayer", inWorldCraftingBlock.activeCraftingLayer);
-                    inWorldCraftingBlockTags[i].setString("craftingRecipeName", inWorldCraftingBlock.craftingRecipe.recipeName);
+                    inWorld3DCraftingItem = this.chunk.crafting3DItems.get(i);
+                    inWorldCrafting3DItemTags[i] = new NBTTagCompound();
+                    inWorldCrafting3DItemTags[i].setInteger("index", inWorld3DCraftingItem.indexInChunk);
+                    inWorldCrafting3DItemTags[i].setShort("materialBlockID", inWorld3DCraftingItem.materialBlockID);
+                    inWorldCrafting3DItemTags[i].setInteger("activeCraftingLayer", inWorld3DCraftingItem.activeCraftingLayer);
+                    inWorldCrafting3DItemTags[i].setString("craftingRecipeName", inWorld3DCraftingItem.craftingRecipe.recipeName);
 
                     for(int j = 0; j < 16; j++){
-                        inWorldCraftingBlockTags[i].setIntArray("craftingLayer" + j, inWorldCraftingBlock.subVoxelIndices[j]);
+                        inWorldCrafting3DItemTags[i].setIntArray("craftingLayer" + j, inWorld3DCraftingItem.subVoxelIndices[j]);
                     }
 
-                    craftingBlocks.setTag("inWorldCraftingBlock" + inWorldCraftingBlockCount, inWorldCraftingBlockTags[i]);
-                    inWorldCraftingBlockCount++;
+                    crafting3DItems.setTag("inWorldCrafting3DItem" + inWorldCrafting3DItemCount, inWorldCrafting3DItemTags[i]);
+                    inWorldCrafting3DItemCount++;
                 }
-                craftingBlocks.setInteger("inWorldCraftingBlockCount", inWorldCraftingBlockCount);
+                crafting3DItems.setInteger("inWorldCrafting3DItemCount", inWorldCrafting3DItemCount);
+            }
+
+            if(this.chunk.craftingItems.size() > 0){
+                InWorldCraftingItem inWorldCraftingItem;
+                int inWorldCraftingItemCount = 0;
+                NBTTagCompound[] inWorldCraftingItemTags = new NBTTagCompound[this.chunk.craftingItems.size()];
+                for(int i = 0; i < inWorldCraftingItemTags.length; i++){
+
+                    inWorldCraftingItem = this.chunk.craftingItems.get(i);
+                    inWorldCraftingItemTags[i] = new NBTTagCompound();
+                    inWorldCraftingItemTags[i].setInteger("index", inWorldCraftingItem.indexInChunk);
+                    inWorldCraftingItemTags[i].setInteger("outputRecipeID", inWorldCraftingItem.outputRecipe.ID);
+                    inWorldCraftingItemTags[i].setBoolean("hasBeenBound", inWorldCraftingItem.hasBeenBound);
+
+                    int filledItemIndex = 0;
+                    for(int j = 0; j < inWorldCraftingItem.itemsFilled.length; j++){
+                        inWorldCraftingItemTags[i].setBoolean("item" + j + "Filled", inWorldCraftingItem.itemsFilled[j]);
+                        filledItemIndex++;
+                    }
+
+                    inWorldCraftingItemTags[i].setInteger("filledItemIndex", filledItemIndex);
+
+                    craftingItems.setTag("inWorldCraftingItem" + inWorldCraftingItemCount, inWorldCraftingItemTags[i]);
+                    inWorldCraftingItemCount++;
+                }
+                craftingItems.setInteger("inWorldCraftingItemCount", inWorldCraftingItemCount);
             }
 
             NBTIO.writeCompressed(chunkTag, outputStream);

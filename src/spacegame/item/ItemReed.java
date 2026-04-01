@@ -7,7 +7,7 @@ import spacegame.core.KeyListener;
 import spacegame.core.MouseListener;
 import spacegame.entity.EntityItem;
 import spacegame.entity.EntityPlayer;
-import spacegame.gui.GuiCraftingReedStorage;
+import spacegame.gui.GuiCraftingReeds;
 import spacegame.world.World;
 
 public final class ItemReed extends Item {
@@ -23,7 +23,7 @@ public final class ItemReed extends Item {
         short playerHeldItem = player.getHeldItem();
         if (playerHeldItem != Item.NULL_ITEM_REFERENCE) {
             if (Item.list[playerHeldItem].toolType.equals(Item.ITEM_TOOL_TYPE_KNIFE)) {
-                CosmicEvolution.instance.setNewGui(new GuiCraftingReedStorage(CosmicEvolution.instance, x, y, z));
+                CosmicEvolution.instance.setNewGui(new GuiCraftingReeds(CosmicEvolution.instance, x, y, z));
                 MouseListener.rightClickReleased = false;
             }
         }

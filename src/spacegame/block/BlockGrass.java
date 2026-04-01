@@ -1,6 +1,10 @@
 package spacegame.block;
 
+import org.lwjgl.glfw.GLFW;
 import spacegame.core.CosmicEvolution;
+import spacegame.core.KeyListener;
+import spacegame.entity.EntityPlayer;
+import spacegame.item.Item;
 import spacegame.world.World;
 
 public final class BlockGrass extends Block implements ITickable {
@@ -15,6 +19,16 @@ public final class BlockGrass extends Block implements ITickable {
             case 1 -> this.textureID - 1;
             default -> this.textureID;
         };
+    }
+
+    @Override
+    public void handleSpecialRightClickFunctions(int x, int y, int z, World world, EntityPlayer player){
+        super.onRightClick(x,y,z, world, player);
+        short playerHeldItem = player.getHeldItem();
+        if(playerHeldItem == Item.reedCraftingGridTop.ID && (KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT))){
+            world.setBlockWithNotify(x,y,z, Block.primitiveCraftingTable.ID, false);
+            player.removeItemFromInventory();
+        }
     }
 
     @Override

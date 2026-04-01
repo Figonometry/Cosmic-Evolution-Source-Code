@@ -1,13 +1,15 @@
 package spacegame.world;
 
 import org.joml.Vector3f;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
 import spacegame.block.BlockLeaf;
 import spacegame.block.ITickable;
 import spacegame.block.ITimeUpdate;
 import spacegame.core.CosmicEvolution;
-import spacegame.render.RenderEngine;
+import spacegame.item.crafting.InWorld3DCraftingItem;
+import spacegame.item.crafting.InWorldCraftingItem;
 import spacegame.util.MathUtil;
 import spacegame.entity.Entity;
 import spacegame.entity.EntityBlock;
@@ -74,10 +76,15 @@ public final class Chunk implements Comparable<Chunk> {
     public IntBuffer elementBufferOpaque;
     public FloatBuffer vertexBufferTransparent;
     public IntBuffer elementBufferTransparent;
+    public FloatBuffer tempVertexBufferOpaque;
+    public IntBuffer tempElementBufferOpaque;
+    public FloatBuffer tempVertexBufferTransparent;
+    public IntBuffer tempElementBufferTransparent;
     public ArrayList<ChestLocation> chestLocations = new ArrayList<>();
     public ArrayList<TimeUpdateEvent> updateEvents = new ArrayList<>();
     public ArrayList<HeatableBlockLocation> heatableBlocks = new ArrayList<>();
-    public ArrayList<InWorldCraftingBlock> craftingBlocks = new ArrayList<>();
+    public ArrayList<InWorld3DCraftingItem> crafting3DItems = new ArrayList<>();
+    public ArrayList<InWorldCraftingItem> craftingItems = new ArrayList<>();
     public int opaqueVBOID = -10;
     public int opaqueVAOID = -10;
     public int opaqueEBOID = -10;
@@ -878,6 +885,32 @@ public final class Chunk implements Comparable<Chunk> {
             GL46.glBindBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, this.transparentEBOID);
         }
 
+        this.vertexBufferOpaque = BufferUtils.createFloatBuffer(this.tempVertexBufferOpaque.capacity());
+        this.elementBufferOpaque = BufferUtils.createIntBuffer(this.tempElementBufferOpaque.capacity());
+        this.vertexBufferTransparent = BufferUtils.createFloatBuffer(this.tempVertexBufferTransparent.capacity());
+        this.elementBufferTransparent = BufferUtils.createIntBuffer(this.tempElementBufferTransparent.capacity());
+
+        this.tempVertexBufferOpaque.flip();
+        this.tempElementBufferOpaque.flip();
+        this.tempVertexBufferTransparent.flip();
+        this.tempElementBufferTransparent.flip();
+
+        this.vertexBufferOpaque.put(this.tempVertexBufferOpaque);
+        this.elementBufferOpaque.put(this.tempElementBufferOpaque);
+        this.vertexBufferTransparent.put(this.tempVertexBufferTransparent);
+        this.elementBufferTransparent.put(this.tempElementBufferTransparent);
+
+        this.vertexBufferOpaque.flip();
+        this.elementBufferOpaque.flip();
+        this.vertexBufferTransparent.flip();
+        this.elementBufferTransparent.flip();
+
+        this.tempVertexBufferOpaque = null;
+        this.tempElementBufferOpaque = null;
+        this.tempVertexBufferTransparent = null;
+        this.tempElementBufferTransparent = null;
+
+
 
         GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, this.opaqueVBOID);
         GL46.glBufferData(GL46.GL_ARRAY_BUFFER, this.vertexBufferOpaque, GL46.GL_STATIC_DRAW);
@@ -894,7 +927,7 @@ public final class Chunk implements Comparable<Chunk> {
 
 
     public void renderOpaque(int xOffset, int yOffset, int zOffset, int sunX, int sunY, int sunZ) {
-        if(this.elementBufferOpaque == null)return;
+        if(this.elementBufferOpaque == null || this.opaqueVAOID == -10 || this.opaqueVBOID == -10 || this.opaqueEBOID == -10 || this.opaqueVAOID == 0 || this.opaqueVBOID == 0 || this.opaqueEBOID == 0)return;
         this.chunkOffset.x = xOffset;
         this.chunkOffset.y = yOffset;
         this.chunkOffset.z = zOffset;
@@ -907,7 +940,7 @@ public final class Chunk implements Comparable<Chunk> {
     }
 
     public void renderTransparent(int sunX, int sunY, int sunZ) {
-        if(this.elementBufferTransparent == null)return;
+        if(this.elementBufferTransparent == null || this.transparentVAOID == -10 || this.transparentVBOID == -10 || this.transparentEBOID == -10 || this.transparentVAOID == 0 || this.transparentVBOID == 0 || this.transparentEBOID == 0)return;
         Shader.terrainShader.uploadVec3f("chunkOffset", chunkOffset);
         Shader.terrainShader.uploadVec3f("sunChunkOffset", new Vector3f((this.x - sunX) << 5, (this.y - sunY) << 5, (this.z - sunZ) << 5));
         GL46.glBindVertexArray(this.transparentVAOID);
@@ -917,7 +950,7 @@ public final class Chunk implements Comparable<Chunk> {
     }
 
     public void renderShadowMap(int sunX, int sunY, int sunZ) {
-        if (this.elementBufferOpaque == null) return;
+        if (this.elementBufferOpaque == null || this.opaqueVAOID == -10 || this.opaqueVBOID == -10 || this.opaqueEBOID == -10 || this.opaqueVAOID == 0 || this.opaqueVBOID == 0 || this.opaqueEBOID == 0) return;
         if (this.elementBufferOpaque.limit() == 0) return;
 
         Shader.shadowMapShader.uploadVec3f("chunkOffset", new Vector3f((this.x - sunX) << 5, (this.y - sunY) << 5, (this.z - sunZ) << 5));
@@ -1118,15 +1151,26 @@ public final class Chunk implements Comparable<Chunk> {
                 }
             }
 
-            InWorldCraftingBlock craftingBlock;
-            for(int i = 0; i < this.craftingBlocks.size(); i++){
-                craftingBlock = this.craftingBlocks.get(i);
+            InWorld3DCraftingItem craftingBlock;
+            for(int i = 0; i < this.crafting3DItems.size(); i++){
+                craftingBlock = this.crafting3DItems.get(i);
                 if(craftingBlock.removeObject){
-                    this.craftingBlocks.remove(craftingBlock);
+                    this.crafting3DItems.remove(craftingBlock);
                 }
             }
-            this.craftingBlocks.trimToSize();
+            this.crafting3DItems.trimToSize();
+
+            InWorldCraftingItem craftingItem;
+            for(int i = 0; i < this.craftingItems.size(); i++){
+                craftingItem = this.craftingItems.get(i);
+                if(craftingItem.remove){
+                    this.craftingItems.remove(craftingItem);
+                }
+            }
+            this.craftingItems.trimToSize();
         }
+
+
         if(CosmicEvolution.instance.save.time % 15 == 0){
             HeatableBlockLocation heatableBlockLocation;
             for(int i = 0; i < this.heatableBlocks.size(); i++){
@@ -1197,6 +1241,30 @@ public final class Chunk implements Comparable<Chunk> {
         this.decayableLeaves = newArray;
     }
 
+    public void addCraftingItem(InWorldCraftingItem craftingItem){
+        this.craftingItems.add(craftingItem);
+    }
+
+    public void removeCraftingItem(int x, int y, int z){
+        int index = getBlockIndexFromCoordinates(x,y,z);
+        for(int i = 0; i < this.craftingItems.size(); i++){
+            if(this.craftingItems.get(i).indexInChunk == index){
+                this.craftingItems.remove(i);
+                break;
+            }
+        }
+    }
+
+    public InWorldCraftingItem getInWorldCraftingItem(int x, int y, int z){
+        int index = getBlockIndexFromCoordinates(x,y,z);
+        for(int i = 0; i < this.craftingItems.size(); i++){
+            if(this.craftingItems.get(i).indexInChunk == index){
+                return this.craftingItems.get(i);
+            }
+        }
+        return  null;
+    }
+
     public void addHeatableBlock(HeatableBlockLocation heatableBlockLocation){
         this.heatableBlocks.add(heatableBlockLocation);
     }
@@ -1247,23 +1315,23 @@ public final class Chunk implements Comparable<Chunk> {
         }
     }
 
-    public void addInWorldCraftingBlock(InWorldCraftingBlock craftingBlock){
-        this.craftingBlocks.add(craftingBlock);
+    public void addInWorldCrafting3DItem(InWorld3DCraftingItem craftingBlock){
+        this.crafting3DItems.add(craftingBlock);
     }
 
-    public void removeInWorldCraftingBlock(int index){
-        for(int i = 0; i < this.craftingBlocks.size(); i++){
-            if(this.craftingBlocks.get(i).indexInChunk == index){
-                this.craftingBlocks.remove(i);
+    public void removeInWorldCrafting3DItem(int index){
+        for(int i = 0; i < this.crafting3DItems.size(); i++){
+            if(this.crafting3DItems.get(i).indexInChunk == index){
+                this.crafting3DItems.remove(i);
                 break;
             }
         }
     }
 
-    public InWorldCraftingBlock getInWorldCraftingBlock(int index){
-        for(int i = 0; i < this.craftingBlocks.size(); i++){
-            if(this.craftingBlocks.get(i).indexInChunk == index){
-                return this.craftingBlocks.get(i);
+    public InWorld3DCraftingItem getInWorldCrafting3DItem(int index){
+        for(int i = 0; i < this.crafting3DItems.size(); i++){
+            if(this.crafting3DItems.get(i).indexInChunk == index){
+                return this.crafting3DItems.get(i);
             }
         }
         return null;

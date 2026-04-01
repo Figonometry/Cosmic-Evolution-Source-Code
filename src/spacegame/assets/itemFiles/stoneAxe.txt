@@ -1,0 +1,6 @@
+itemName:STONE_AXE
+attackDamage:3
+toolType:axe
+stackLimit:1
+displayName:Stone Axe
+canPlaceAsItemBlock:true

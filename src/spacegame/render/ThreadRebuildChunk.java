@@ -43,10 +43,10 @@ public final class ThreadRebuildChunk implements Runnable {
             //  this.parentWorld.updateSkyLightMapChunks(this.x, this.y, this.z);
         }
         int faceNumber = this.workingChunk.calculateFaceNumber();
-        this.workingChunk.vertexBufferOpaque = BufferUtils.createFloatBuffer(faceNumber * 24);
-        this.workingChunk.elementBufferOpaque = BufferUtils.createIntBuffer(faceNumber * 6);
-        this.workingChunk.vertexBufferTransparent = BufferUtils.createFloatBuffer(faceNumber * 24);
-        this.workingChunk.elementBufferTransparent = BufferUtils.createIntBuffer(faceNumber * 6);
+        this.workingChunk.tempVertexBufferOpaque = BufferUtils.createFloatBuffer(faceNumber * 24);
+        this.workingChunk.tempElementBufferOpaque = BufferUtils.createIntBuffer(faceNumber * 6);
+        this.workingChunk.tempVertexBufferTransparent = BufferUtils.createFloatBuffer(faceNumber * 24);
+        this.workingChunk.tempElementBufferTransparent = BufferUtils.createIntBuffer(faceNumber * 6);
         this.workingChunk.excludeTopFace = new int[1024];
         this.workingChunk.excludeBottomFace = new int[1024];
         this.workingChunk.excludeNorthFace = new int[1024];
@@ -177,12 +177,6 @@ public final class ThreadRebuildChunk implements Runnable {
             }
         }
 
-        this.workingChunk.vertexBufferOpaque.flip();
-        this.workingChunk.elementBufferOpaque.flip();
-
-        this.workingChunk.vertexBufferTransparent.flip();
-        this.workingChunk.elementBufferTransparent.flip();
-
 
         this.workingChunk.excludeTopFace = null;
         this.workingChunk.excludeBottomFace = null;
@@ -227,7 +221,8 @@ public final class ThreadRebuildChunk implements Runnable {
             case "BERRY_BUSH_GROWING" -> renderBlocks.renderBerryBushGrowing(this.workingChunk, this.parentWorld, block, index, face);
             case "REEDS_GROWTH" -> renderBlocks.renderReedGrowing(this.workingChunk, this.parentWorld, block, index, face);
             case "OAK_LOG" -> renderBlocks.renderStandardBlockWithoutAutoUV(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);
-            case "CRAFTING_ITEM" -> renderBlocks.render3DCraftingItem(this.workingChunk, this.parentWorld, block, index, face);
+            case "CRAFTING_ITEM_3D" -> renderBlocks.render3DCraftingItem(this.workingChunk, this.parentWorld, block, index, face);
+            case "CRAFTING_ITEM" -> renderBlocks.renderCraftingItem(this.workingChunk, this.parentWorld, block, index, face);
             case "LEAF" -> {
                 if(GameSettings.transparentLeaves){
                     renderBlocks.renderTransparentBlock(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);

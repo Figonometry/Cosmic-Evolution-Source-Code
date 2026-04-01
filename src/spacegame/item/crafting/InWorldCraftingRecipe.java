@@ -1,6 +1,7 @@
-package spacegame.item;
+package spacegame.item.crafting;
 
 import spacegame.block.Block;
+import spacegame.item.Item;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -12,12 +13,14 @@ public final class InWorldCraftingRecipe {
     public static final InWorldCraftingRecipe[] list = new InWorldCraftingRecipe[128];
     public static final InWorldCraftingRecipe knife = new InWorldCraftingRecipe(recipePath + "stone/knife/", 1, "stoneKnife", Item.stoneHandKnifeBlade.ID, 1, 0);
     public static final InWorldCraftingRecipe axe = new InWorldCraftingRecipe(recipePath + "stone/axe/", 1, "stoneAxe", Item.stoneHandAxe.ID, 1, 1);
-    public static final InWorldCraftingRecipe shovel = new InWorldCraftingRecipe(recipePath + "stone/shovel/", 1, "stoneShovel", Item.stoneHandShovel.ID, 1, 2);
+    public static final InWorldCraftingRecipe shovel = new InWorldCraftingRecipe(recipePath + "stone/shovel/", 1, "stoneShovel.txt", Item.stoneHandShovel.ID, 1, 2);
     public static final InWorldCraftingRecipe rockFragments = new InWorldCraftingRecipe(recipePath + "stone/rockFragments/", 1, "stoneFragments", Item.stoneFragments.ID, 1, 3);
     public static final InWorldCraftingRecipe rawBrick = new InWorldCraftingRecipe(recipePath + "clay/brick/", 4, "rawRedBrick", Item.rawClayAdobeBrick.ID, 2, 4);
     public static final InWorldCraftingRecipe rawCookingPot = new InWorldCraftingRecipe(recipePath + "clay/cookingPot/", 10, "rawRedCookingPot", Item.block.ID,  Block.rawRedClayCookingPot.ID,  1, 5);
     public static final InWorldCraftingRecipe reedChest = new InWorldCraftingRecipe(recipePath + "/reed/chest/", 10, "reedChest", Item.block.ID, Block.reedChest.ID, 1, 6);
     public static final InWorldCraftingRecipe reedBasket = new InWorldCraftingRecipe(recipePath + "/reed/basket/", 13, "reedBasket", Item.reedBasket.ID, 1,7);
+    public static final InWorldCraftingRecipe reedTwine = new InWorldCraftingRecipe(recipePath + "/reed/twine/", 1, "reedTwine", Item.reedTwine.ID, 2, 8);
+    public static final InWorldCraftingRecipe reedCraftingGridTop = new InWorldCraftingRecipe(recipePath + "/reed/craftingGrid/", 1, "reedCraftingGridTop", Item.reedCraftingGridTop.ID, 1, 9);
     public int[][] recipeIndices;
     public String recipeName;
     public short outputItemID;
