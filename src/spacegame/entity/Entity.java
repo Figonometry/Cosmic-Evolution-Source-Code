@@ -90,6 +90,12 @@ public abstract class Entity {
         this.z += this.deltaZ;
     }
 
+    public void setPos(int x, int y, int z){
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+
     protected void moveWithVector(){
         this.deltaX = this.movementVector.x * this.speed;
         this.deltaY = this.movementVector.y * this.speed;

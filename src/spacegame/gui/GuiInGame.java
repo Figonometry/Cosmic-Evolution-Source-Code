@@ -2,6 +2,7 @@ package spacegame.gui;
 
 
 import org.joml.*;
+import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
 import spacegame.block.BlockTorch;
@@ -82,7 +83,7 @@ public final class GuiInGame extends Gui {
         int playerY = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.y);
         int playerZ = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z);
 
-        if (CosmicEvolution.DEBUG_MODE) {
+        if (CosmicEvolution.instance.save.saveSettings.testingMode) {
             fontRenderer.drawString("X: " + CosmicEvolution.instance.save.thePlayer.x, leftSide, 430,-15, 16777215, 50, 255);
             fontRenderer.drawString("Y: " + (CosmicEvolution.instance.save.thePlayer.y), leftSide, 400,-15, 16777215, 50, 255);
             fontRenderer.drawString("Z: " + CosmicEvolution.instance.save.thePlayer.z, leftSide, 370,-15, 16777215, 50, 255);
@@ -108,6 +109,7 @@ public final class GuiInGame extends Gui {
 
     @Override
     public void drawGui() {
+        GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
         renderText();
         this.renderCursor();
         renderVignette();
@@ -131,30 +133,32 @@ public final class GuiInGame extends Gui {
     public static void renderVignette(){
         RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
 
-        short blockPlayerHeadIsIn = CosmicEvolution.instance.save.activeWorld.getBlockID(MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x), MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.y+  CosmicEvolution.instance.save.thePlayer.height/2), MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z));
-        if(blockPlayerHeadIsIn == Block.water.ID){
-            GL46.glEnable(GL46.GL_BLEND);
-            GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-            tessellator.toggleOrtho();
-            tessellator.addVertex2DTexture(8355711, (float) -CosmicEvolution.width /2, (float) -CosmicEvolution.height /2, -900, 3);
-            tessellator.addVertex2DTexture(8355711, (float) CosmicEvolution.width /2, (float) CosmicEvolution.height /2, -900, 1);
-            tessellator.addVertex2DTexture(8355711, (float) -CosmicEvolution.width /2, (float) CosmicEvolution.height /2, -900, 2);
-            tessellator.addVertex2DTexture(8355711, (float) CosmicEvolution.width /2, (float) -CosmicEvolution.height /2, -900, 0);
-            tessellator.addElements();
-            tessellator.drawTexture2D(water, Shader.screen2DTexture, CosmicEvolution.camera);
-            tessellator.toggleOrtho();
-            GL46.glDisable(GL46.GL_BLEND);
-            renderAirBar();
-        } else if (blockPlayerHeadIsIn != Block.air.ID && Block.list[blockPlayerHeadIsIn].isSolid && blockPlayerHeadIsIn != Block.leaf.ID) {
-            int textureID = Block.list[blockPlayerHeadIsIn].textureID;
-            tessellator.toggleOrtho();
-            tessellator.addVertexTextureArray(4144959, (float) -CosmicEvolution.width /2, (float) -CosmicEvolution.height /2, -900, 3, textureID, 2);
-            tessellator.addVertexTextureArray(4144959, (float) CosmicEvolution.width /2, (float) CosmicEvolution.height /2, -900, 1, textureID, 2);
-            tessellator.addVertexTextureArray(4144959, (float) -CosmicEvolution.width /2, (float) CosmicEvolution.height /2, -900, 2,textureID, 2);
-            tessellator.addVertexTextureArray(4144959, (float) CosmicEvolution.width /2, (float) -CosmicEvolution.height /2, -900, 0,textureID, 2);
-            tessellator.addElements();
-            tessellator.drawVertexArray(Assets.blockTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
-            tessellator.toggleOrtho();
+        if(!CosmicEvolution.instance.save.thePlayer.freeMove) {
+            short blockPlayerHeadIsIn = CosmicEvolution.instance.save.activeWorld.getBlockID(MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x), MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.y + CosmicEvolution.instance.save.thePlayer.height / 2), MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z));
+            if (blockPlayerHeadIsIn == Block.water.ID) {
+                GL46.glEnable(GL46.GL_BLEND);
+                GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
+                tessellator.toggleOrtho();
+                tessellator.addVertex2DTexture(8355711, (float) -CosmicEvolution.width / 2, (float) -CosmicEvolution.height / 2, -900, 3);
+                tessellator.addVertex2DTexture(8355711, (float) CosmicEvolution.width / 2, (float) CosmicEvolution.height / 2, -900, 1);
+                tessellator.addVertex2DTexture(8355711, (float) -CosmicEvolution.width / 2, (float) CosmicEvolution.height / 2, -900, 2);
+                tessellator.addVertex2DTexture(8355711, (float) CosmicEvolution.width / 2, (float) -CosmicEvolution.height / 2, -900, 0);
+                tessellator.addElements();
+                tessellator.drawTexture2D(water, Shader.screen2DTexture, CosmicEvolution.camera);
+                tessellator.toggleOrtho();
+                GL46.glDisable(GL46.GL_BLEND);
+                renderAirBar();
+            } else if (blockPlayerHeadIsIn != Block.air.ID && Block.list[blockPlayerHeadIsIn].isSolid && blockPlayerHeadIsIn != Block.leaf.ID) {
+                int textureID = Block.list[blockPlayerHeadIsIn].textureID;
+                tessellator.toggleOrtho();
+                tessellator.addVertexTextureArray(4144959, (float) -CosmicEvolution.width / 2, (float) -CosmicEvolution.height / 2, -900, 3, textureID, 2);
+                tessellator.addVertexTextureArray(4144959, (float) CosmicEvolution.width / 2, (float) CosmicEvolution.height / 2, -900, 1, textureID, 2);
+                tessellator.addVertexTextureArray(4144959, (float) -CosmicEvolution.width / 2, (float) CosmicEvolution.height / 2, -900, 2, textureID, 2);
+                tessellator.addVertexTextureArray(4144959, (float) CosmicEvolution.width / 2, (float) -CosmicEvolution.height / 2, -900, 0, textureID, 2);
+                tessellator.addElements();
+                tessellator.drawVertexArray(Assets.blockTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
+                tessellator.toggleOrtho();
+            }
         }
 
         GL46.glEnable(GL46.GL_BLEND);

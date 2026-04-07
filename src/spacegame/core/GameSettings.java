@@ -4,6 +4,7 @@ import org.lwjgl.glfw.GLFW;
 import spacegame.block.Block;
 
 import java.io.*;
+import java.util.regex.Pattern;
 
 public abstract class GameSettings {
     public static int renderDistance = 8;
@@ -22,6 +23,8 @@ public abstract class GameSettings {
     public static boolean wavyLeaves = true;
     public static boolean wavyWater = true;
     public static boolean transparentLeaves;
+    public static String assetPackPath;
+    public static boolean usingDefaultAssets;
     public static KeyBinding keyBeingModified;
     public static KeyBinding forwardKey = new KeyBinding("Forward", "W", GLFW.GLFW_KEY_W);
     public static KeyBinding backwardKey = new KeyBinding("Backward", "S", GLFW.GLFW_KEY_S);
@@ -100,6 +103,13 @@ public abstract class GameSettings {
                     if(options[0].equals("transparentLeaves")){
                         transparentLeaves = options[1].equals("true");
                     }
+                    if(options[0].equals("assetPackPath")){
+                        assetPackPath =  "C:" + options[2];
+                        String[] pathContents = assetPackPath.split(Pattern.quote(File.separator));
+                        String title = pathContents[pathContents.length - 1];
+
+                        usingDefaultAssets = title.equals("Default");
+                    }
                     if(options[0].equals("forwardKey")){
                         forwardKey.key = options[1];
                         forwardKey.keyCode = KeyMappings.getKeyCodeFromMap(forwardKey.key, forwardKey.keyCode);
@@ -157,6 +167,7 @@ public abstract class GameSettings {
             writer.println("wavyWater:" + wavyWater);
             writer.println("wavyLeaves:" + wavyLeaves);
             writer.println("transparentLeaves:" + transparentLeaves);
+            writer.println("assetPackPath:" + assetPackPath);
             writer.println("forwardKey:" + forwardKey.key);
             writer.println("backwardKey:" + backwardKey.key);
             writer.println("leftKey:" + leftKey.key);
@@ -297,6 +308,14 @@ public abstract class GameSettings {
                 saveOptions();
             }
         }
+    }
+
+    public static void setAssetPackPath(String assetPackPath1){
+        assetPackPath = assetPackPath1;
+        String[] pathContents = assetPackPath.split(Pattern.quote(File.separator));
+        String title = pathContents[pathContents.length - 1];
+
+        usingDefaultAssets = title.equals("Default");
     }
 }
 

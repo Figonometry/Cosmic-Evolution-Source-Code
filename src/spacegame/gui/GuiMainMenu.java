@@ -23,6 +23,7 @@ public final class GuiMainMenu extends Gui {
     private Button quitGame;
     private Button bugReport;
     private Button information;
+    private Button assetPack;
     public int star;
     public int earth;
     public int title;
@@ -62,8 +63,9 @@ public final class GuiMainMenu extends Gui {
         this.multiPlayer.active = false;
         this.settings = new Button(EnumButtonEffects.SETTINGS.name(), 512, 64, 0, -200, this, this.ce);
         this.quitGame = new Button(EnumButtonEffects.QUIT_GAME.name(), 512, 64, 0, - 300, this, this.ce);
-        this.bugReport = new Button(EnumButtonEffects.BUG_REPORT.name(), 64,64, 910, -458, this, this.ce);
-        this.information = new Button(EnumButtonEffects.INFORMATION.name(), 64,64, -910, -458, this, this.ce);
+        this.bugReport = new Button(EnumButtonEffects.BUG_REPORT.name(), 64,64, 910, -458, this, this.ce, this.ce.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/wrench.png", RenderEngine.TEXTURE_TYPE_2D, 0, true));
+        this.information = new Button(EnumButtonEffects.INFORMATION.name(), 64,64, -910, -458, this, this.ce, this.ce.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/info.png", RenderEngine.TEXTURE_TYPE_2D, 0, true));
+        this.assetPack = new Button(EnumButtonEffects.ASSET_PACK.name(), 64,64, -910, -378, this, this.ce, this.ce.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/assetPack.png", RenderEngine.TEXTURE_TYPE_2D, 0, true));
     }
 
     @Override
@@ -80,6 +82,10 @@ public final class GuiMainMenu extends Gui {
         CosmicEvolution.instance.renderEngine.deleteTexture(this.earth);
         CosmicEvolution.instance.renderEngine.deleteTexture(this.title);
         CosmicEvolution.instance.renderEngine.deleteTexture(this.background);
+
+        this.bugReport.deleteTexture();
+        this.information.deleteTexture();
+        this.assetPack.deleteTexture();
     }
 
     @Override
@@ -133,9 +139,9 @@ public final class GuiMainMenu extends Gui {
             int green = Color.magenta.getRGB() * -1;
             int red = 16711680;
             int yellow = Color.blue.getRGB() * -1;
-            fontRenderer.drawString("This game is in early Alpha, expect there to be bugs, crashes and general instability", x, y, depth, red, 50, 255);
-            y -= 60;
-            fontRenderer.drawString(this.ce.title, x, y, depth, 16711875, 50, 255);
+            fontRenderer.drawString("This game is in Alpha and I am not that good of a programmer,", x, y, depth, red, 50, 255);
+            y -= 30;
+            fontRenderer.drawString("expect there to be bugs, crashes and general instability", x, y, depth, red, 50, 255);
             y -= 60;
 
 
@@ -161,6 +167,7 @@ public final class GuiMainMenu extends Gui {
         }
         this.bugReport.renderButton();
         this.information.renderButton();
+        this.assetPack.renderButton();
 
 
         if(this.subMenu2){
@@ -217,6 +224,9 @@ public final class GuiMainMenu extends Gui {
         }
         if(this.information.isMouseHoveredOver() && this.information.active){
             return this.information;
+        }
+        if(this.assetPack.isMouseHoveredOver() && this.assetPack.active){
+            return this.assetPack;
         }
         return null;
     }

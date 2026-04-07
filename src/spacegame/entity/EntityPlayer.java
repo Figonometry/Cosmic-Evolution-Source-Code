@@ -28,6 +28,8 @@ public final class EntityPlayer extends EntityLiving {
     private CosmicEvolution ce;
     public static int selectedInventorySlot = 1;
     public static final float SHIFT_DISTANCE = 0.125f;
+    public boolean freeMove;
+    public boolean speedOverride;
     public int chunkX;
     public int chunkY;
     public int chunkZ;
@@ -395,7 +397,9 @@ public final class EntityPlayer extends EntityLiving {
                 this.updateYawAndPitch();
             }
             this.setMovementAmountAndKeyControls();
-            this.doGravity();
+            if(!this.freeMove) {
+                this.doGravity();
+            }
             if(!(this.ce.currentGui instanceof GuiInGame || this.ce.currentGui instanceof GuiInventory || this.ce.currentGui instanceof GuiAction || this.ce.currentGui instanceof GuiCrafting)){
                 this.deltaX = 0;
                 this.deltaY = 0;
@@ -411,7 +415,13 @@ public final class EntityPlayer extends EntityLiving {
             this.prevZ = this.z;
 
             this.setEntityState();
-            this.moveAndHandleCollision();
+            if(!this.freeMove) {
+                this.moveAndHandleCollision();
+            } else {
+                this.x += this.deltaX;
+                this.y += this.deltaY;
+                this.z += this.deltaZ;
+            }
             this.performStepSound();
             this.updateAxisAlignedBB();
             this.moveCamera();
@@ -491,7 +501,9 @@ public final class EntityPlayer extends EntityLiving {
         }
 
         if(((KeyListener.isKeyPressed(GameSettings.backwardKey.keyCode) || KeyListener.isKeyPressed(GameSettings.leftKey.keyCode) || KeyListener.isKeyPressed(GameSettings.rightKey.keyCode)) && (!KeyListener.isKeyPressed(GameSettings.forwardKey.keyCode))) || this.inWater){
-            this.speed = 0.05D;
+            if(!this.speedOverride) {
+                this.speed = 0.05D;
+            }
         }
 
         if(KeyListener.isKeyPressed(GameSettings.dropKey.keyCode) && KeyListener.keyReleased[GameSettings.dropKey.keyCode]){
@@ -501,9 +513,11 @@ public final class EntityPlayer extends EntityLiving {
 
         this.isShifting = KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT);
 
-        this.speed = this.isShifting || this.inWater || (this.moveEntityUp && !this.isJumping) ? 0.05 : 0.1;
+        this.speed = this.speedOverride ? this.speed : this.isShifting || this.inWater || (this.moveEntityUp && !this.isJumping) ? 0.05 : 0.1;
 
-        //this.developerDebugMovement();
+        if(this.freeMove) {
+            this.developerDebugMovement();
+        }
 
         if ((KeyListener.isKeyPressed(GameSettings.jumpKey.keyCode) && this.isOnGround && !this.inWater)) {
             this.moveEntityUp = true;
@@ -577,14 +591,16 @@ public final class EntityPlayer extends EntityLiving {
             this.isOnGround = false;
         }
 
-        if(this.inWater){
-            if(!this.isOnGround && !this.moveEntityUp) {
-                this.deltaY = -0.05D;
-                this.timeFalling = 0;
+        if(!this.speedOverride) {
+            if (this.inWater) {
+                if (!this.isOnGround && !this.moveEntityUp) {
+                    this.deltaY = -0.05D;
+                    this.timeFalling = 0;
+                }
+                this.speed = 0.05D;
+            } else {
+                this.speed = 0.1D;
             }
-            this.speed = 0.05D;
-        } else {
-            this.speed = 0.1D;
         }
 
 
@@ -604,19 +620,21 @@ public final class EntityPlayer extends EntityLiving {
             this.isJumping = false;
         }
 
-        if (this.moveEntityUp) {
-            if(!this.isJumping) {
-                this.speed = 0.05D;
-            }
-            if (this.moveEntityUpDistance <= 0D) {
-                this.moveEntityUp = false;
-                this.moveEntityUpDistance = 0;
-                this.speed = 0.1D;
-                this.isJumping = false;
-            } else {
-                this.deltaY = 0.05D;
-                CosmicEvolution.camera.viewMatrix.translate(0, -0.05D, 0);
-                this.moveEntityUpDistance -= 0.05D;
+        if(!this.speedOverride) {
+            if (this.moveEntityUp) {
+                if (!this.isJumping) {
+                    this.speed = 0.05D;
+                }
+                if (this.moveEntityUpDistance <= 0D) {
+                    this.moveEntityUp = false;
+                    this.moveEntityUpDistance = 0;
+                    this.speed = 0.1D;
+                    this.isJumping = false;
+                } else {
+                    this.deltaY = 0.05D;
+                    CosmicEvolution.camera.viewMatrix.translate(0, -0.05D, 0);
+                    this.moveEntityUpDistance -= 0.05D;
+                }
             }
         }
 

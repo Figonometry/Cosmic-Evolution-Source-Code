@@ -17,7 +17,6 @@ import spacegame.world.Save;
 import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 
 public class Button {
@@ -28,6 +27,7 @@ public class Button {
     public int height;
     public int x;
     public int y;
+    public int image = -1;
     public String name;
     private Gui Gui;
     private CosmicEvolution ce;
@@ -43,6 +43,17 @@ public class Button {
         this.x = x;
         this.y = y;
         this.Gui = Gui;
+    }
+
+    public Button(String name, int width, int height, int x, int y, Gui Gui, CosmicEvolution cosmicEvolution, int image){
+        this.ce = cosmicEvolution;
+        this.name = name;
+        this.width = width;
+        this.height = height;
+        this.x = x;
+        this.y = y;
+        this.Gui = Gui;
+        this.image = image;
     }
 
     public void onLeftClick(){
@@ -73,6 +84,12 @@ public class Button {
                 this.Gui.subMenu = !this.Gui.subMenu;
                 this.clicked = !this.clicked;
             }
+            case ASSET_PACK -> {
+                this.ce.setNewGui(new GuiSelectAssetPackMainMenu(this.ce));
+            }
+            case ASSET_PACK_IN_GAME -> {
+                this.ce.setNewGui(new GuiSelectAssetPackInGame(this.ce));
+            }
             case VIDEO_SETTINGS -> {
                 if(this.ce.currentGui instanceof GuiSettingsMainMenu) {
                     this.ce.setNewGui(new GuiVideoSettingsMainMenu(this.ce));
@@ -95,11 +112,11 @@ public class Button {
             case BACK -> {
                 if(this.Gui instanceof GuiVideoSettingsMainMenu || this.Gui instanceof GuiControlsMainMenu){
                     this.ce.setNewGui(new GuiSettingsMainMenu(this.ce));
-                } else if(this.Gui instanceof GuiSettingsInGame){
+                } else if(this.Gui instanceof GuiSettingsInGame || this.Gui instanceof GuiSelectAssetPackInGame){
                     this.ce.setNewGui(new GuiPauseInGame(this.ce));
                 } else if(this.Gui instanceof GuiVideoSettingsInGame || this.Gui instanceof GuiControlsInGame){
                     this.ce.setNewGui(new GuiSettingsInGame(this.ce));
-                } else if(this.Gui instanceof GuiWorldSelect){
+                } else if(this.Gui instanceof GuiWorldSelect || this.Gui instanceof GuiSelectAssetPackMainMenu){
                     this.ce.setNewGui(new GuiMainMenu(this.ce));
                 } else if(this.Gui instanceof GuiCreateNewWorld || this.Gui instanceof GuiRenameWorld){
                     this.ce.setNewGui(new GuiWorldSelect(this.ce));
@@ -432,7 +449,9 @@ public class Button {
             }
             case TRANSPARENT_LEAVES -> {
                 GameSettings.transparentLeaves = !GameSettings.transparentLeaves;
-                this.ce.save.activeWorld.chunkController.updateChunksWithLeaves();
+                if(this.ce.save != null) {
+                    this.ce.save.activeWorld.chunkController.updateChunksWithLeaves();
+                }
             }
             case SCREENSHOT_FOLDER -> {
                 try {
@@ -493,6 +512,12 @@ public class Button {
                     saveSettings.changeDropInventoryOnDeath(!saveSettings.dropInventoryOnDeath);
                 }
             }
+            case TESTING_MODE -> {
+                if(this.Gui instanceof GuiDifficultySettings){
+                    SaveSettings saveSettings = ((GuiDifficultySettings) this.Gui).saveSettings;
+                    saveSettings.changeTestingMode(!saveSettings.testingMode);
+                }
+            }
         }
         GameSettings.saveOptions();
     }
@@ -528,6 +553,7 @@ public class Button {
         tessellator.toggleOrtho();
         this.drawCenteredString();
 
+        //This isnt terribly efficient however the main menu has almost nothing going on so this is fine
         if((this.name.equals(EnumButtonEffects.SINGLE_PLAYER.name()) || this.name.equals(EnumButtonEffects.QUIT_GAME.name())) && this.active && this.isMouseHoveredOver() || this.name.equals(EnumButtonEffects.SETTINGS.name()) && this.active && this.isMouseHoveredOver() && this.Gui instanceof GuiMainMenu){
             int texture = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/star.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
             tessellator.toggleOrtho();
@@ -541,31 +567,20 @@ public class Button {
             CosmicEvolution.instance.renderEngine.deleteTexture(texture);
         }
 
-        if(this.name.equals(EnumButtonEffects.BUG_REPORT.name())){
-            int wrench = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/wrench.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
+        if(this.image != -1){
             tessellator.toggleOrtho();
             tessellator.addVertex2DTexture(16777215,this.x - 30, this.y - 30, -9,3);
             tessellator.addVertex2DTexture(16777215,this.x + 30, this.y + 30, -9,1);
             tessellator.addVertex2DTexture(16777215,this.x - 30, this.y + 30, -9,2);
             tessellator.addVertex2DTexture(16777215,this.x + 30, this.y - 30, -9,0);
             tessellator.addElements();
-            tessellator.drawTexture2D(wrench, Shader.screen2DTexture, CosmicEvolution.camera);
+            tessellator.drawTexture2D(this.image, Shader.screen2DTexture, CosmicEvolution.camera);
             tessellator.toggleOrtho();
-            CosmicEvolution.instance.renderEngine.deleteTexture(wrench);
         }
+    }
 
-        if(this.name.equals(EnumButtonEffects.INFORMATION.name())){
-            int info = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/info.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
-            tessellator.toggleOrtho();
-            tessellator.addVertex2DTexture(16711680,this.x - 30, this.y - 30, -9,3);
-            tessellator.addVertex2DTexture(16711680,this.x + 30, this.y + 30, -9,1);
-            tessellator.addVertex2DTexture(16711680,this.x - 30, this.y + 30, -9,2);
-            tessellator.addVertex2DTexture(16711680,this.x + 30, this.y - 30, -9,0);
-            tessellator.addElements();
-            tessellator.drawTexture2D(info, Shader.screen2DTexture, CosmicEvolution.camera);
-            tessellator.toggleOrtho();
-            CosmicEvolution.instance.renderEngine.deleteTexture(info);
-        }
+    public void deleteTexture(){
+        this.ce.renderEngine.deleteTexture(this.image);
     }
 
     public boolean isMouseHoveredOver(){
@@ -820,6 +835,15 @@ public class Button {
                     SaveSettings saveSettings = ((GuiDifficultySettings) this.Gui).saveSettings;
                     string = "Drop Inventory On Death: " + saveSettings.dropInventoryOnDeath;
                 }
+            }
+            case TESTING_MODE -> {
+                if(this.Gui instanceof GuiDifficultySettings) {
+                    SaveSettings saveSettings = ((GuiDifficultySettings) this.Gui).saveSettings;
+                    string = "Testing Mode: " + saveSettings.testingMode;
+                }
+            }
+            case ASSET_PACK_IN_GAME -> {
+                string = "Asset Packs";
             }
 
             default -> string = "";

@@ -38,7 +38,6 @@ import java.util.Random;
 public final class CosmicEvolution implements Runnable {
     public static CosmicEvolution instance;
     public final File launcherDirectory;
-    public static final boolean DEBUG_MODE = false;
     public static final Random globalRand = new Random();
     public volatile boolean running;
     public String title;
@@ -97,7 +96,7 @@ public final class CosmicEvolution implements Runnable {
     }
 
     private void startGame() {
-        this.title = "Cosmic Evolution Alpha v0.41";
+        this.title = "Cosmic Evolution Alpha v0.42";
         GameSettings.loadOptionsFromFile(this.launcherDirectory);
         this.clearLogFiles(new File(this.launcherDirectory + "/crashReports"));
         this.initLWJGL();
@@ -324,6 +323,25 @@ public final class CosmicEvolution implements Runnable {
                 this.currentlySelectedField.scanForInputText();
             }
         }
+        if(this.currentGui instanceof GuiSelectAssetPackMainMenu){
+            File[] folderContents = ((GuiSelectAssetPackMainMenu) this.currentGui).assetPackFolder.listFiles();
+            if(folderContents == null){
+                ((GuiSelectAssetPackMainMenu) this.currentGui).folderCount = 0;
+                ((GuiSelectAssetPackMainMenu) this.currentGui).rebuildAssetPackArray(null);
+            } else {
+                int folderCount = 0;
+                for (int i = 0; i < folderContents.length; i++) {
+                    if (folderContents[i].isDirectory()) {
+                        folderCount++;
+                    }
+                }
+
+                if(((GuiSelectAssetPackMainMenu) this.currentGui).folderCount != folderCount) {
+                    ((GuiSelectAssetPackMainMenu) this.currentGui).folderCount = folderCount;
+                    ((GuiSelectAssetPackMainMenu) this.currentGui).rebuildAssetPackArray(folderContents);
+                }
+            }
+        }
         camera.setFrustum();
         GuiUniverseMap.universeCamera.setFrustum();
         this.incrementPlayerDamageTilt();
@@ -346,22 +364,33 @@ public final class CosmicEvolution implements Runnable {
             KeyListener.setKeyReleased(GLFW.GLFW_KEY_CAPS_LOCK);
         }
 
-        if(DEBUG_MODE) {
-            if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_MINUS)) {
-                this.save.time -= 216000;
-                KeyListener.setKeyReleased(GLFW.GLFW_KEY_MINUS);
+        if(this.save != null) {
+            if(this.save.saveSettings.testingMode) {
+                if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_MINUS)) {
+                    this.save.time -= 216000;
+                    KeyListener.setKeyReleased(GLFW.GLFW_KEY_MINUS);
+                }
+                if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_EQUAL)) {
+                    this.save.time += 216000;
+                    KeyListener.setKeyReleased(GLFW.GLFW_KEY_EQUAL);
+                }
+                if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_COMMA)) {
+                    this.save.time -= 1000;
+                    KeyListener.setKeyReleased(GLFW.GLFW_KEY_COMMA);
+                }
+                if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_PERIOD)) {
+                    this.save.time += 1000;
+                    KeyListener.setKeyReleased(GLFW.GLFW_KEY_PERIOD);
+                }
             }
-            if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_EQUAL)) {
-                this.save.time += 216000;
-                KeyListener.setKeyReleased(GLFW.GLFW_KEY_EQUAL);
-            }
-            if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_COMMA)) {
-                this.save.time -= 1000;
-                KeyListener.setKeyReleased(GLFW.GLFW_KEY_COMMA);
-            }
-            if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_PERIOD)) {
-                this.save.time += 1000;
-                KeyListener.setKeyReleased(GLFW.GLFW_KEY_PERIOD);
+
+
+            if(this.save.saveSettings.testingMode && this.currentGui instanceof GuiInGame || this.currentGui instanceof GuiCommandEntry){
+                if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_BACKSLASH) && KeyListener.keyReleased[GLFW.GLFW_KEY_BACKSLASH]){
+                    this.setNewGui(this.currentGui instanceof GuiInGame ? new GuiCommandEntry(this) : new GuiInGame(this));
+                    this.save.activeWorld.toggleWorldPause();
+                    KeyListener.setKeyReleased(GLFW.GLFW_KEY_BACKSLASH);
+                }
             }
         }
 
@@ -466,6 +495,17 @@ public final class CosmicEvolution implements Runnable {
                 EntityPlayer.selectedInventorySlot--;
                 if (EntityPlayer.selectedInventorySlot < 0) {
                     EntityPlayer.selectedInventorySlot = 8;
+                }
+            }
+        }
+        if(this.currentGui instanceof GuiSelectAssetPackMainMenu) {
+            if (((GuiSelectAssetPackMainMenu) this.currentGui).scrollbar != null) {
+                if (MouseListener.getScrollY() == -1) {
+                    //Up
+                    ((GuiSelectAssetPackMainMenu) this.currentGui).scrollbar.move((true));
+                } else if (MouseListener.getScrollY() == 1) {
+                    //Down
+                    ((GuiSelectAssetPackMainMenu) this.currentGui).scrollbar.move((false));
                 }
             }
         }
@@ -654,6 +694,26 @@ public final class CosmicEvolution implements Runnable {
            ((GuiCrafting)this.currentGui).handleLeftClick();
         }
 
+        if(this.currentGui instanceof GuiSelectAssetPackMainMenu){
+          AssetPack assetPack = ((GuiSelectAssetPackMainMenu) this.currentGui).getHoveredAssetPack();
+          if(assetPack != null){
+              if(!assetPack.filepath.equals(GameSettings.assetPackPath)){
+                  GameSettings.setAssetPackPath(assetPack.filepath);
+                  this.reloadAllTextures();
+              }
+          }
+        }
+
+        if(this.currentGui instanceof GuiSelectAssetPackInGame){
+            AssetPack assetPack = ((GuiSelectAssetPackInGame) this.currentGui).getHoveredAssetPack();
+            if(assetPack != null){
+                if(!assetPack.filepath.equals(GameSettings.assetPackPath)){
+                    GameSettings.setAssetPackPath(assetPack.filepath);
+                    this.reloadAllTextures();
+                }
+            }
+        }
+
 
         MouseListener.leftClickReleased = false;
     }
@@ -834,6 +894,27 @@ public final class CosmicEvolution implements Runnable {
         Sun.initSunFlare();
         GuiUniverseMap.initSkyboxTexture();
         EntityDeer.loadTexture();
+    }
+
+    public void reloadAllTextures(){
+        this.renderEngine.deleteTexture(Entity.shadow);
+        this.renderEngine.deleteTexture(Sun.sunFlare);
+        this.renderEngine.deleteTexture(GuiUniverseMap.skybox);
+        this.renderEngine.deleteTexture(EntityDeer.texture);
+
+        Assets.disableItemTextureArray();
+        Assets.disableBlockTextureArray();
+        Assets.disableFontTextureAtlas();
+
+        this.currentGui.deleteTextures();
+
+        this.initAllBufferObjects();
+
+        Assets.enableFontTextureAtlas();
+        Assets.enableItemTextureArray();
+        Assets.enableBlockTextureArray();
+
+        this.currentGui.loadTextures();
     }
 
     private void initAllGlobalAssets(){

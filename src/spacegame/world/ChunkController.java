@@ -83,7 +83,8 @@ public final class ChunkController {
             if(!CosmicEvolution.instance.save.thePlayer.loadedFromFile) {
                 int count = 0;
                 WorldEarth earth = (WorldEarth) this.parentWorld;
-                while (earth.globalElevationMap.elevation[earth.convertBlockZToGlobalMap(MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z))][earth.convertBlockXToGlobalMap(MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x))] < 0) {
+                while (earth.globalElevationMap.elevation[earth.convertBlockZToGlobalMap(MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z))][earth.convertBlockXToGlobalMap(MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x))] < 0
+                || this.isDesert(MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x), 0, MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z))) {
                     if ((count & 1) == 0) {
                         CosmicEvolution.instance.save.thePlayer.z = -489.1328125 * count * 10;
                     } else {
@@ -91,6 +92,18 @@ public final class ChunkController {
                     }
                     count++;
                 }
+
+                //After putting the player in the right Z position we need to adjust the time forward
+
+                long playerZ = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z);
+                if(CosmicEvolution.instance.save.thePlayer.z < 0.0){
+                    playerZ += this.parentWorld.size; //half the world size
+                }
+
+                double ratio = (double) playerZ / this.parentWorld.size;
+
+
+                CosmicEvolution.instance.save.time = (long) (CosmicEvolution.instance.everything.getObjectAssociatedWithWorld(this.parentWorld).rotationPeriod *  ratio);
 
                 this.playerChunkX = MathUtil.floorDouble(this.parentWorld.ce.save.thePlayer.x) >> 5;
                 this.playerChunkZ = MathUtil.floorDouble(this.parentWorld.ce.save.thePlayer.z) >> 5;
@@ -597,6 +610,11 @@ public final class ChunkController {
     public boolean doesChunkExitAtPos(int x, int y, int z) {
         return this.findChunkFromChunkCoordinates(x, y, z) != null;
     }
+    public boolean isDesert(int x, int y, int z){
+        double rainfall = this.parentWorld.getAverageRainfall(x,z);
+        return rainfall < 0.3;
+    }
+
 
     private boolean shouldChunkUnload(Chunk chunk) {
         int dx = Math.abs(chunk.x - this.playerChunkX);
@@ -842,7 +860,7 @@ public final class ChunkController {
     }
 
     public void loadOrUnloadChunks() {
-        if (this.playerChunkX != prevPlayerChunkX || this.playerChunkY != this.prevPlayerChunkY || this.playerChunkZ != this.prevPlayerChunkZ) {
+        if (this.playerChunkX != this.prevPlayerChunkX || this.playerChunkY != this.prevPlayerChunkY || this.playerChunkZ != this.prevPlayerChunkZ) {
             this.resetChunkLoading();
         }
         if (this.loadChunks) {

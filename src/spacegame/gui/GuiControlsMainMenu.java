@@ -16,6 +16,7 @@ public final class GuiControlsMainMenu extends Gui {
     private Button inventoryKey;
     private Button back;
     private Button dropKey;
+    private Button mouseSensitivity;
     public int star;
     public int title;
     public int earth;
@@ -24,14 +25,15 @@ public final class GuiControlsMainMenu extends Gui {
     public GuiControlsMainMenu(CosmicEvolution cosmicEvolution) {
         super(cosmicEvolution);
         this.ce = cosmicEvolution;
-        this.forwardKey = new Button(EnumButtonEffects.KEY_FORWARD.name(), 250, 50, -150, 200, this, this.ce);
-        this.backwardKey = new Button(EnumButtonEffects.KEY_BACKWARD.name(), 250, 50, 150, 200, this, this.ce);
-        this.leftKey = new Button(EnumButtonEffects.KEY_LEFT.name(), 250, 50, -150, 100, this, this.ce);
-        this.rightKey = new Button(EnumButtonEffects.KEY_RIGHT.name(), 250, 50, 150, 100, this, this.ce);
-        this.jumpKey = new Button(EnumButtonEffects.KEY_JUMP.name(), 250, 50, -150, 0, this, this.ce);
-        this.inventoryKey = new Button(EnumButtonEffects.KEY_INVENTORY.name(), 250, 50, 150, 0, this, this.ce);
-        this.dropKey = new Button(EnumButtonEffects.KEY_DROP.name(), 550, 50, 0, -100, this, this.ce);
-        this.back = new Button(EnumButtonEffects.BACK.name(), 550, 50, 0, -200, this, this.ce);
+        this.forwardKey = new Button(EnumButtonEffects.KEY_FORWARD.name(), 250, 64, -150, 100, this, this.ce);
+        this.backwardKey = new Button(EnumButtonEffects.KEY_BACKWARD.name(), 250, 64, 150, 100, this, this.ce);
+        this.leftKey = new Button(EnumButtonEffects.KEY_LEFT.name(), 250, 64, -150, 0, this, this.ce);
+        this.rightKey = new Button(EnumButtonEffects.KEY_RIGHT.name(), 250, 64, 150, 0, this, this.ce);
+        this.jumpKey = new Button(EnumButtonEffects.KEY_JUMP.name(), 250, 64, -150, -100, this, this.ce);
+        this.inventoryKey = new Button(EnumButtonEffects.KEY_INVENTORY.name(), 250, 64, 150, -100, this, this.ce);
+        this.dropKey = new Button(EnumButtonEffects.KEY_DROP.name(), 550, 64, 0, -200, this, this.ce);
+        this.mouseSensitivity = new Button(EnumButtonEffects.MOUSE_SENSITIVITY.name(), 550, 64, 0, 200, this, this.ce);
+        this.back = new Button(EnumButtonEffects.BACK.name(), 550, 64, 0, -300, this, this.ce);
     }
 
     @Override
@@ -107,6 +109,7 @@ public final class GuiControlsMainMenu extends Gui {
         this.inventoryKey.renderButton();
         this.jumpKey.renderButton();
         this.dropKey.renderButton();
+        this.mouseSensitivity.renderButton();
         this.back.renderButton();
     }
 
@@ -126,6 +129,8 @@ public final class GuiControlsMainMenu extends Gui {
             return this.inventoryKey;
         } else if(this.dropKey.isMouseHoveredOver() && this.dropKey.active){
             return this.dropKey;
+        } else if(this.mouseSensitivity.isMouseHoveredOver() && this.mouseSensitivity.active){
+            return this.mouseSensitivity;
         } else if(this.back.isMouseHoveredOver() && this.back.active){
             return this.back;
         }

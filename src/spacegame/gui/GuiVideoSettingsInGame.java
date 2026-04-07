@@ -13,7 +13,6 @@ public final class GuiVideoSettingsInGame extends Gui {
     public Button showFPS;
     public Button fullscreen;
     public Button fov;
-    public Button mouseSensitivity;
     public Button viewBobbing;
     public Button shadowMap;
     public Button chunkViewDistanceVertical;
@@ -33,7 +32,7 @@ public final class GuiVideoSettingsInGame extends Gui {
         //Page 1
         this.viewBobbing = new Button(EnumButtonEffects.VIEW_BOB.name(), 512, 64, -587,150, this, this.ce);
         this.shadowMap = new Button(EnumButtonEffects.SHADOW_MAP.name(), 512, 64, 0, 150, this, this.ce);
-        this.mouseSensitivity = new Button(EnumButtonEffects.MOUSE_SENSITIVITY.name(), 512, 64, 587, 150, this, this.ce);
+        this.transparentLeaves = new Button(EnumButtonEffects.TRANSPARENT_LEAVES.name(), 512, 64, 587, 150, this, this.ce);
         this.showFPS = new Button(EnumButtonEffects.SHOW_FPS.name(), 512, 64, -587, 0, this, this.ce);
         this.fullscreen = new Button(EnumButtonEffects.FULLSCREEN.name(), 512, 64, 0,0, this, this.ce);
         this.fov = new Button(EnumButtonEffects.FOV.name(), 512, 64, 587, 0, this, this.ce);
@@ -44,7 +43,6 @@ public final class GuiVideoSettingsInGame extends Gui {
         //Page 2
         this.wavyWater = new Button(EnumButtonEffects.WAVY_WATER.name(), 512, 64, -587,150, this, this.ce);
         this.wavyLeaves = new Button(EnumButtonEffects.WAVY_LEAVES.name(), 512, 64, 0, 150, this, this.ce);
-        this.transparentLeaves = new Button(EnumButtonEffects.TRANSPARENT_LEAVES.name(), 512, 64, 587, 150, this, this.ce);
 
 
         this.back = new Button(EnumButtonEffects.BACK.name(), 512, 64, 0, -400, this, this.ce);
@@ -107,7 +105,7 @@ public final class GuiVideoSettingsInGame extends Gui {
             case 1 -> {
                 this.viewBobbing.renderButton();
                 this.shadowMap.renderButton();
-                this.mouseSensitivity.renderButton();
+                this.transparentLeaves.renderButton();
                 this.fov.renderButton();
                 this.vsync.renderButton();
                 this.showFPS.renderButton();
@@ -119,7 +117,6 @@ public final class GuiVideoSettingsInGame extends Gui {
             case 2 -> {
                 this.wavyWater.renderButton();
                 this.wavyLeaves.renderButton();
-                this.transparentLeaves.renderButton();
                 this.pageLeft.renderButton();
             }
         }
@@ -140,8 +137,8 @@ public final class GuiVideoSettingsInGame extends Gui {
                     return this.fov;
                 } else if (this.vsync.isMouseHoveredOver() && this.vsync.active) {
                     return this.vsync;
-                } else if (this.mouseSensitivity.isMouseHoveredOver() && this.mouseSensitivity.active) {
-                    return this.mouseSensitivity;
+                } else if (this.transparentLeaves.isMouseHoveredOver() && this.transparentLeaves.active) {
+                    return this.transparentLeaves;
                 } else if (this.showFPS.isMouseHoveredOver() && this.showFPS.active) {
                     return this.showFPS;
                 } else if (this.fullscreen.isMouseHoveredOver() && this.fullscreen.active) {
@@ -161,8 +158,6 @@ public final class GuiVideoSettingsInGame extends Gui {
                     return this.wavyWater;
                 } else if (this.wavyLeaves.isMouseHoveredOver() && this.wavyLeaves.active) {
                     return this.wavyLeaves;
-                } else if (this.transparentLeaves.isMouseHoveredOver() && this.transparentLeaves.active) {
-                    return this.transparentLeaves;
                 } else if (this.pageLeft.isMouseHoveredOver() && this.pageLeft.active) {
                     return this.pageLeft;
                 }

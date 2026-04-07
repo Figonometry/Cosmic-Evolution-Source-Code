@@ -40,6 +40,10 @@ public abstract class MathUtil {
         return a > a1 ? a1 + 1: a1;
     }
 
+    public static boolean pointInsideBox(float x, float y, float boxX, float boxY, float width, float height){
+        return x < boxX + width / 2 && x > boxX - width / 2 && y < boxY + height / 2 && y > boxY - height / 2;
+    }
+
     public static int floatToIntRGBA(float comp){
         return (int) (comp * 255);
     }

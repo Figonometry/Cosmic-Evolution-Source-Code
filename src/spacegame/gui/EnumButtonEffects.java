@@ -7,6 +7,8 @@ public enum EnumButtonEffects {
     QUIT_GAME,
     BUG_REPORT,
     INFORMATION,
+    ASSET_PACK,
+    ASSET_PACK_IN_GAME,
     VIDEO_SETTINGS,
     KEYBINDS,
     BACK_TO_MAIN_MENU,
@@ -53,5 +55,6 @@ public enum EnumButtonEffects {
     DECLINE,
     DIFFICULTY_OPTIONS,
     SAVE_OPTIONS,
-    DROP_INVENTORY_ON_DEATH;
+    DROP_INVENTORY_ON_DEATH,
+    TESTING_MODE;
 }

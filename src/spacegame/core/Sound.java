@@ -4,6 +4,7 @@ import org.lwjgl.openal.AL11;
 import org.lwjgl.stb.STBVorbis;
 import org.lwjgl.system.MemoryStack;
 
+import java.io.File;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 
@@ -39,6 +40,37 @@ public final class Sound {
 
     public Sound(String filepath, boolean loops, float soundMultiplier) {
         if(!canPlaySound)return;
+
+        if(!GameSettings.usingDefaultAssets) {
+            String[] pathContents = filepath.split("/");
+
+
+            StringBuilder stringBuilder = new StringBuilder();
+            boolean buildString = false;
+            for(int i = 0; i < pathContents.length; i++){
+                if(buildString){
+                    stringBuilder.append("/");
+                    stringBuilder.append(pathContents[i]);
+                }
+
+
+                if(pathContents[i].equals("assets")){
+                    buildString = true;
+                }
+            }
+            String newFilepath = GameSettings.assetPackPath + (buildString ? stringBuilder : pathContents[pathContents.length - 1]);
+
+
+            String normalized = newFilepath.replace("\\", "/");
+
+            if(new File(normalized).exists()){
+                filepath = normalized;
+            }
+
+        }
+
+
+
         this.filepath = filepath;
         this.soundMultiplier = soundMultiplier;
         if (this.filepath == null) {

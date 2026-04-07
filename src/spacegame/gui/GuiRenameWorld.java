@@ -24,7 +24,9 @@ public final class GuiRenameWorld extends Gui {
         this.renameWorld = new Button(EnumButtonEffects.RENAME_WORLD.name(), 512, 64, 0, -100, this, this.ce);
         this.back = new Button(EnumButtonEffects.BACK.name(), 512, 64, 0, -200, this, this.ce);
         this.difficultyOptions = new Button(EnumButtonEffects.DIFFICULTY_OPTIONS.name(), 512, 64, 0, -300, this, this.ce);
-        this.nameWorld = new TextField(512, 64, 0, 100);
+        this.nameWorld = new TextField(512, 64, 0, 100, 28, false);
+        this.nameWorld.typing = true;
+        this.ce.currentlySelectedField = this.nameWorld;
     }
 
     @Override

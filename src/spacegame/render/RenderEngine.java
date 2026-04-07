@@ -6,6 +6,7 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL46;
 import org.lwjgl.stb.STBImage;
 import spacegame.core.CosmicEvolution;
+import spacegame.core.GameSettings;
 import spacegame.util.MathUtil;
 
 import java.io.File;
@@ -13,6 +14,7 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
+import java.util.regex.Pattern;
 
 public final class RenderEngine {
     public static final int TEXTURE_TYPE_2D = 1;
@@ -72,6 +74,39 @@ public final class RenderEngine {
     }
 
     public int createTexture(String filepath, int textureType, int arraySize, boolean clampTextureToEdge){
+        if(!GameSettings.usingDefaultAssets) {
+            String[] pathContents = filepath.split("/");
+
+
+            StringBuilder stringBuilder = new StringBuilder();
+            boolean buildString = false;
+            for(int i = 0; i < pathContents.length; i++){
+                if(buildString){
+                    stringBuilder.append("/");
+                    stringBuilder.append(pathContents[i]);
+                }
+
+
+                if(pathContents[i].equals("assets")){
+                    buildString = true;
+                }
+            }
+            String newFilepath = GameSettings.assetPackPath + (buildString ? stringBuilder : pathContents[pathContents.length - 1]);
+
+            if(textureType == TEXTURE_TYPE_2D_ARRAY || textureType == TEXTURE_TYPE_CUBEMAP){
+                newFilepath = newFilepath + "/";
+            }
+
+
+            String normalized = newFilepath.replace("\\", "/");
+
+            if(new File(normalized).exists()){
+                filepath = normalized;
+            }
+
+        }
+
+
         switch (textureType){
             case TEXTURE_TYPE_2D -> {
 
@@ -320,7 +355,15 @@ public final class RenderEngine {
     private void loadTextures(int textureNumber, String filepath) {
         String imageName = getBlockName(textureNumber, filepath);
         String imageFilepath = filepath + imageName + ".png";
-        if (!new File(imageFilepath).exists()) {
+
+
+
+        if (!new File(imageFilepath).exists() && !GameSettings.usingDefaultAssets) {
+            String[] pathContents = imageFilepath.split("/");
+            imageFilepath = CosmicEvolution.imageFallbackPath;
+        }
+
+        if(!new File(imageFilepath).exists()){
             imageFilepath = CosmicEvolution.imageFallbackPath;
         }
 

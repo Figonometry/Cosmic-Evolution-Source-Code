@@ -1,6 +1,7 @@
 package spacegame.core;
 
 import org.lwjgl.glfw.GLFW;
+import spacegame.gui.TextField;
 
 public abstract class KeyMappings {
 
@@ -787,54 +788,78 @@ public abstract class KeyMappings {
         return currentKeyCode;
     }
 
-    public static String getKeyNameFromMapForTextFields(){
+    public static String getKeyNameFromMapForTextFields(TextField textField){
 
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_SPACE) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_SPACE)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_SPACE)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_SPACE;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_SPACE);
             return " ";
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_0) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_0)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_0)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_0;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_0);
             return "0";
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_1) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_1)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_1)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_1;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_1);
             return "1";
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_2) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_2)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_2)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_2;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_2);
             return "2";
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_3) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_3)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_3)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_3;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_3);
             return "3";
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_4) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_4)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_4)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_4;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_4);
             return "4";
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_5) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_5)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_5)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_5;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_5);
             return "5";
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_6) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_6)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_6)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_6;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_6);
             return "6";
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_7) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_7)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_7)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_7;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_7);
             return "7";
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_8) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_8)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_8)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_8;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_8);
             return "8";
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_9) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_9)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_9)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_9;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_9);
             return "9";
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_A) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_A)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_A)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_A;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_A);
             if(KeyListener.capsLockEnabled) {
                 return "A";
             } else {
@@ -842,7 +867,9 @@ public abstract class KeyMappings {
             }
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_B) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_B)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_B)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_B;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_B);
             if(KeyListener.capsLockEnabled) {
                 return "B";
             } else {
@@ -850,7 +877,9 @@ public abstract class KeyMappings {
             }
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_C) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_C)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_C)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_C;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_C);
             if(KeyListener.capsLockEnabled) {
                 return "C";
             } else {
@@ -858,7 +887,9 @@ public abstract class KeyMappings {
             }
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_D) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_D)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_D)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_D;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_D);
             if(KeyListener.capsLockEnabled) {
                 return "D";
             } else {
@@ -866,7 +897,9 @@ public abstract class KeyMappings {
             }
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_E) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_E)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_E)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_E;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_E);
             if(KeyListener.capsLockEnabled) {
                 return "E";
             } else {
@@ -874,7 +907,9 @@ public abstract class KeyMappings {
             }
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_F) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_F)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_F)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_F;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_F);
             if(KeyListener.capsLockEnabled) {
                 return "F";
             } else {
@@ -882,7 +917,9 @@ public abstract class KeyMappings {
             }
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_G) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_G)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_G)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_G;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_G);
             if(KeyListener.capsLockEnabled) {
                 return "G";
             } else {
@@ -890,7 +927,9 @@ public abstract class KeyMappings {
             }
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_H) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_H)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_H)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_H;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_H);
             if(KeyListener.capsLockEnabled) {
                 return "H";
             } else {
@@ -898,7 +937,9 @@ public abstract class KeyMappings {
             }
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_I) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_I)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_I)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_I;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_I);
             if(KeyListener.capsLockEnabled) {
                 return "I";
             } else {
@@ -906,7 +947,9 @@ public abstract class KeyMappings {
             }
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_J) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_J)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_J)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_J;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_J);
             if(KeyListener.capsLockEnabled) {
                 return "J";
             } else {
@@ -914,7 +957,9 @@ public abstract class KeyMappings {
             }
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_K) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_K)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_K)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_K;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_K);
             if(KeyListener.capsLockEnabled) {
                 return "K";
             } else {
@@ -922,7 +967,9 @@ public abstract class KeyMappings {
             }
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_L) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_L)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_L)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_L;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_L);
             if(KeyListener.capsLockEnabled) {
                 return "L";
             } else {
@@ -930,7 +977,9 @@ public abstract class KeyMappings {
             }
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_M) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_M)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_M)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_M;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_M);
             if(KeyListener.capsLockEnabled) {
                 return "M";
             } else {
@@ -938,7 +987,9 @@ public abstract class KeyMappings {
             }
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_N) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_N)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_N)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_N;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_N);
             if(KeyListener.capsLockEnabled) {
                 return "N";
             } else {
@@ -946,7 +997,9 @@ public abstract class KeyMappings {
             }
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_O) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_O)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_O)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_0;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_0);
             if(KeyListener.capsLockEnabled) {
                 return "O";
             } else {
@@ -954,7 +1007,9 @@ public abstract class KeyMappings {
             }
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_P) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_P)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_P)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_P;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_P);
             if(KeyListener.capsLockEnabled) {
                 return "P";
             } else {
@@ -962,7 +1017,9 @@ public abstract class KeyMappings {
             }
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_Q) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_Q)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_Q)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_Q;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_Q);
             if(KeyListener.capsLockEnabled) {
                 return "Q";
             } else {
@@ -970,7 +1027,9 @@ public abstract class KeyMappings {
             }
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_R) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_R)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_R)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_R;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_R);
             if(KeyListener.capsLockEnabled) {
                 return "R";
             } else {
@@ -978,7 +1037,9 @@ public abstract class KeyMappings {
             }
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_S) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_S)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_S)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_S;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_S);
             if(KeyListener.capsLockEnabled) {
                 return "S";
             } else {
@@ -986,7 +1047,9 @@ public abstract class KeyMappings {
             }
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_T) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_T)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_T)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_T;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_T);
             if(KeyListener.capsLockEnabled) {
                 return "T";
             } else {
@@ -994,7 +1057,9 @@ public abstract class KeyMappings {
             }
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_U) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_U)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_U)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_U;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_U);
             if(KeyListener.capsLockEnabled) {
                 return "U";
             } else {
@@ -1002,7 +1067,9 @@ public abstract class KeyMappings {
             }
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_V) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_V)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_V)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_V;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_V);
             if(KeyListener.capsLockEnabled) {
                 return "V";
             } else {
@@ -1010,7 +1077,9 @@ public abstract class KeyMappings {
             }
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_W) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_W)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_W)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_W;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_W);
             if(KeyListener.capsLockEnabled) {
                 return "W";
             } else {
@@ -1018,7 +1087,9 @@ public abstract class KeyMappings {
             }
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_X) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_X)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_X)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_X;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_X);
             if(KeyListener.capsLockEnabled) {
                 return "X";
             } else {
@@ -1026,7 +1097,9 @@ public abstract class KeyMappings {
             }
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_Y) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_Y)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_Y)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_Y;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_Y);
             if(KeyListener.capsLockEnabled) {
                 return "Y";
             } else {
@@ -1034,7 +1107,9 @@ public abstract class KeyMappings {
             }
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_Z) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_Z)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_Z)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_Z;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_Z);
             if(KeyListener.capsLockEnabled) {
                 return "Z";
             } else {
@@ -1043,44 +1118,78 @@ public abstract class KeyMappings {
         }
 
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_KP_0) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_KP_0)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_KP_0)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_KP_0;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_KP_0);
             return "0";
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_KP_1) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_KP_1)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_KP_1)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_KP_1;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_KP_1);
             return "1";
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_KP_2) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_KP_2)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_KP_2)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_KP_2;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_KP_2);
             return "2";
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_KP_3) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_KP_3)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_KP_3)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_KP_3;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_KP_3);
             return "3";
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_KP_4) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_KP_4)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_KP_4)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_KP_4;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_KP_4);
             return "4";
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_KP_5) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_KP_5)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_KP_5)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_KP_5;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_KP_5);
             return "5";
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_KP_6) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_KP_6)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_KP_6)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_KP_6;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_KP_6);
             return "6";
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_KP_7) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_KP_7)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_KP_7)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_KP_7;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_KP_7);
             return "7";
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_KP_8) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_KP_8)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_KP_8)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_KP_8;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_KP_8);
             return "8";
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_KP_9) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_KP_9)){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_KP_9)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_KP_9;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_KP_9);
             return "9";
+        }
+
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_SLASH)){
+            if(textField.canUseSlash) {
+                textField.keyBeingPressed = GLFW.GLFW_KEY_SLASH;
+                KeyListener.setKeyReleased(GLFW.GLFW_KEY_SLASH);
+                return "/";
+            }
+        }
+
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_MINUS)){
+            textField.keyBeingPressed = GLFW.GLFW_KEY_MINUS;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_MINUS);
+            return "-";
         }
 
         return null;

@@ -32,6 +32,7 @@ public abstract class GuiInventory extends Gui {
     public void renderHoveredItemStackName(ItemStack stack){
         if(stack == null)return;
         if(stack.item == null)return;
+        if(ItemStack.itemStackOnMouse.item != null && stack != ItemStack.itemStackOnMouse)return;
 
         RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         FontRenderer fontRenderer = FontRenderer.instance;

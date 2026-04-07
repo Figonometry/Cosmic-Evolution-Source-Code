@@ -10,6 +10,7 @@ public final class GuiPauseInGame extends Gui {
     public CosmicEvolution ce;
     public Button back;
     public Button settings;
+    public Button assetPacks;
     public Button quit;
     public int title;
     public int background;
@@ -19,7 +20,8 @@ public final class GuiPauseInGame extends Gui {
         this.ce = cosmicEvolution;
         this.back = new Button(EnumButtonEffects.BACK_TO_GAME.name(), 512, 64, 0, 150, this, this.ce);
         this.settings = new Button(EnumButtonEffects.SETTINGS.name(), 512, 64, 0, 0, this, this.ce);
-        this.quit = new Button(EnumButtonEffects.QUIT_TO_MAIN_MENU.name(), 512, 64, 0, -150, this, this.ce);
+        this.assetPacks = new Button(EnumButtonEffects.ASSET_PACK_IN_GAME.name(), 512, 64, 0, -150, this, this.ce);
+        this.quit = new Button(EnumButtonEffects.QUIT_TO_MAIN_MENU.name(), 512, 64, 0, -300, this, this.ce);
     }
 
     @Override
@@ -72,6 +74,7 @@ public final class GuiPauseInGame extends Gui {
         this.back.renderButton();
         this.quit.renderButton();
         this.settings.renderButton();
+        this.assetPacks.renderButton();
     }
 
     @Override
@@ -82,7 +85,9 @@ public final class GuiPauseInGame extends Gui {
             return this.quit;
         } else if(this.settings.isMouseHoveredOver() && this.settings.active){
             return this.settings;
-        } else
+        } else if(this.assetPacks.isMouseHoveredOver() && this.assetPacks.active){
+            return this.assetPacks;
+        }
         return null;
     }
 }

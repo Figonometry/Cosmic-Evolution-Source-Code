@@ -9,20 +9,27 @@ import java.io.IOException;
 
 public final class SaveSettings {
     public boolean dropInventoryOnDeath = true;
+    public boolean testingMode = false;
 
 
     public SaveSettings(NBTTagCompound saveOptions){
         this.dropInventoryOnDeath = saveOptions.getBoolean("dropInventoryOnDeath");
+        this.testingMode = saveOptions.getBoolean("testingMode");
     }
 
     public SaveSettings(){}
 
     public void saveSettingsToFile(NBTTagCompound saveOptions){
         saveOptions.setBoolean("dropInventoryOnDeath", this.dropInventoryOnDeath);
+        saveOptions.setBoolean("testingMode", this.testingMode);
     }
 
     public void changeDropInventoryOnDeath(boolean value){
         this.dropInventoryOnDeath = value;
+    }
+
+    public void changeTestingMode(boolean value){
+        this.testingMode = value;
     }
 
     public static SaveSettings loadSaveSettingsFromSaveFile(File saveFolder){

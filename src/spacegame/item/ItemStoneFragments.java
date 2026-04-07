@@ -6,15 +6,11 @@ import spacegame.entity.EntityPlayer;
 import spacegame.gui.GuiLightFire;
 import spacegame.world.World;
 
-public final class ItemStoneFragments extends Item {
+@Deprecated
+public final class ItemStoneFragments extends Item { //This likely doesnt need to exist, will deprecate in the future
     public ItemStoneFragments(short ID, int textureID, String filepath) {
         super(ID, textureID, filepath);
     }
 
-    @Override
-    public void onRightClick(int x, int y, int z, World world, EntityPlayer player){
-        if(world.getBlockID(x,y,z) == Block.campFireNoFirewood.ID){
-            CosmicEvolution.instance.setNewGui(new GuiLightFire(CosmicEvolution.instance, x, y, z));
-        }
-    }
+
 }

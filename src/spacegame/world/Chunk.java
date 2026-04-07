@@ -885,25 +885,34 @@ public final class Chunk implements Comparable<Chunk> {
             GL46.glBindBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, this.transparentEBOID);
         }
 
-        this.vertexBufferOpaque = BufferUtils.createFloatBuffer(this.tempVertexBufferOpaque.capacity());
-        this.elementBufferOpaque = BufferUtils.createIntBuffer(this.tempElementBufferOpaque.capacity());
-        this.vertexBufferTransparent = BufferUtils.createFloatBuffer(this.tempVertexBufferTransparent.capacity());
-        this.elementBufferTransparent = BufferUtils.createIntBuffer(this.tempElementBufferTransparent.capacity());
+        this.vertexBufferOpaque = this.tempVertexBufferOpaque != null ? BufferUtils.createFloatBuffer(this.tempVertexBufferOpaque.capacity()) : null;
+        this.elementBufferOpaque = this.tempElementBufferOpaque != null ? BufferUtils.createIntBuffer(this.tempElementBufferOpaque.capacity()) : null;
+        this.vertexBufferTransparent = this.tempVertexBufferTransparent != null ? BufferUtils.createFloatBuffer(this.tempVertexBufferTransparent.capacity()) : null;
+        this.elementBufferTransparent = this.tempElementBufferTransparent != null ? BufferUtils.createIntBuffer(this.tempElementBufferTransparent.capacity()) : null;
 
-        this.tempVertexBufferOpaque.flip();
-        this.tempElementBufferOpaque.flip();
-        this.tempVertexBufferTransparent.flip();
-        this.tempElementBufferTransparent.flip();
+        if(this.tempVertexBufferOpaque != null){
+            this.tempVertexBufferOpaque.flip();
+            this.vertexBufferOpaque.put(this.tempVertexBufferOpaque);
+            this.vertexBufferOpaque.flip();
+        }
 
-        this.vertexBufferOpaque.put(this.tempVertexBufferOpaque);
-        this.elementBufferOpaque.put(this.tempElementBufferOpaque);
-        this.vertexBufferTransparent.put(this.tempVertexBufferTransparent);
-        this.elementBufferTransparent.put(this.tempElementBufferTransparent);
+        if(this.tempElementBufferOpaque != null){
+            this.tempElementBufferOpaque.flip();
+            this.elementBufferOpaque.put(this.tempElementBufferOpaque);
+            this.elementBufferOpaque.flip();
+        }
 
-        this.vertexBufferOpaque.flip();
-        this.elementBufferOpaque.flip();
-        this.vertexBufferTransparent.flip();
-        this.elementBufferTransparent.flip();
+        if(this.tempVertexBufferTransparent != null){
+            this.tempVertexBufferTransparent.flip();
+            this.vertexBufferTransparent.put(this.tempVertexBufferTransparent);
+            this.vertexBufferTransparent.flip();
+        }
+
+        if(this.tempVertexBufferTransparent != null) {
+            this.tempElementBufferTransparent.flip();
+            this.elementBufferTransparent.put(this.tempElementBufferTransparent);
+            this.elementBufferTransparent.flip();
+        }
 
         this.tempVertexBufferOpaque = null;
         this.tempElementBufferOpaque = null;
@@ -911,23 +920,46 @@ public final class Chunk implements Comparable<Chunk> {
         this.tempElementBufferTransparent = null;
 
 
+        if(this.vertexBufferOpaque != null) {
+            GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, this.opaqueVBOID);
+            GL46.glBufferData(GL46.GL_ARRAY_BUFFER, this.vertexBufferOpaque, GL46.GL_STATIC_DRAW);
+        }
 
-        GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, this.opaqueVBOID);
-        GL46.glBufferData(GL46.GL_ARRAY_BUFFER, this.vertexBufferOpaque, GL46.GL_STATIC_DRAW);
+        if(this.elementBufferOpaque != null) {
+            GL46.glBindBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, this.opaqueEBOID);
+            GL46.glBufferData(GL46.GL_ELEMENT_ARRAY_BUFFER, this.elementBufferOpaque, GL46.GL_STATIC_DRAW);
+        }
 
-        GL46.glBindBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, this.opaqueEBOID);
-        GL46.glBufferData(GL46.GL_ELEMENT_ARRAY_BUFFER, this.elementBufferOpaque, GL46.GL_STATIC_DRAW);
+        if(this.vertexBufferTransparent != null) {
+            GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, this.transparentVBOID);
+            GL46.glBufferData(GL46.GL_ARRAY_BUFFER, this.vertexBufferTransparent, GL46.GL_STATIC_DRAW);
+        }
 
-        GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, this.transparentVBOID);
-        GL46.glBufferData(GL46.GL_ARRAY_BUFFER, this.vertexBufferTransparent, GL46.GL_STATIC_DRAW);
-
-        GL46.glBindBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, this.transparentEBOID);
-        GL46.glBufferData(GL46.GL_ELEMENT_ARRAY_BUFFER, this.elementBufferTransparent, GL46.GL_STATIC_DRAW);
+        if(this.elementBufferTransparent != null) {
+            GL46.glBindBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, this.transparentEBOID);
+            GL46.glBufferData(GL46.GL_ELEMENT_ARRAY_BUFFER, this.elementBufferTransparent, GL46.GL_STATIC_DRAW);
+        }
     }
 
 
     public void renderOpaque(int xOffset, int yOffset, int zOffset, int sunX, int sunY, int sunZ) {
-        if(this.elementBufferOpaque == null || this.opaqueVAOID == -10 || this.opaqueVBOID == -10 || this.opaqueEBOID == -10 || this.opaqueVAOID == 0 || this.opaqueVBOID == 0 || this.opaqueEBOID == 0)return;
+        if(this.elementBufferOpaque == null || this.vertexBufferOpaque == null || this.opaqueVAOID == -10 || this.opaqueVBOID == -10 || this.opaqueEBOID == -10 || this.opaqueVAOID == 0 || this.opaqueVBOID == 0 || this.opaqueEBOID == 0)return;
+
+        int indexCount  = this.elementBufferOpaque.limit();
+        int vertexCount = this.vertexBufferOpaque.limit();
+
+        if (indexCount == 0 || vertexCount == 0)return;
+
+
+        int maxIndex = -1;
+        for (int i = this.elementBufferOpaque.position(); i < this.elementBufferOpaque.limit(); i++) {
+            int idx = this.elementBufferOpaque.get(i);
+            if (idx > maxIndex) maxIndex = idx;
+        }
+
+        if (maxIndex >= vertexCount)return;
+
+
         this.chunkOffset.x = xOffset;
         this.chunkOffset.y = yOffset;
         this.chunkOffset.z = zOffset;
@@ -940,7 +972,22 @@ public final class Chunk implements Comparable<Chunk> {
     }
 
     public void renderTransparent(int sunX, int sunY, int sunZ) {
-        if(this.elementBufferTransparent == null || this.transparentVAOID == -10 || this.transparentVBOID == -10 || this.transparentEBOID == -10 || this.transparentVAOID == 0 || this.transparentVBOID == 0 || this.transparentEBOID == 0)return;
+        if(this.elementBufferTransparent == null || this.vertexBufferTransparent == null || this.transparentVAOID == -10 || this.transparentVBOID == -10 || this.transparentEBOID == -10 || this.transparentVAOID == 0 || this.transparentVBOID == 0 || this.transparentEBOID == 0)return;
+
+        int indexCount  = this.elementBufferTransparent.limit();
+        int vertexCount = this.vertexBufferTransparent.limit();
+
+        if (indexCount == 0 || vertexCount == 0)return;
+
+
+        int maxIndex = -1;
+        for (int i = this.elementBufferTransparent.position(); i < this.elementBufferTransparent.limit(); i++) {
+            int idx = this.elementBufferTransparent.get(i);
+            if (idx > maxIndex) maxIndex = idx;
+        }
+
+        if (maxIndex >= vertexCount)return;
+
         Shader.terrainShader.uploadVec3f("chunkOffset", chunkOffset);
         Shader.terrainShader.uploadVec3f("sunChunkOffset", new Vector3f((this.x - sunX) << 5, (this.y - sunY) << 5, (this.z - sunZ) << 5));
         GL46.glBindVertexArray(this.transparentVAOID);
@@ -952,6 +999,36 @@ public final class Chunk implements Comparable<Chunk> {
     public void renderShadowMap(int sunX, int sunY, int sunZ) {
         if (this.elementBufferOpaque == null || this.opaqueVAOID == -10 || this.opaqueVBOID == -10 || this.opaqueEBOID == -10 || this.opaqueVAOID == 0 || this.opaqueVBOID == 0 || this.opaqueEBOID == 0) return;
         if (this.elementBufferOpaque.limit() == 0) return;
+
+        int indexCount  = this.elementBufferTransparent.limit();
+        int vertexCount = this.vertexBufferTransparent.limit();
+
+        if (indexCount == 0 || vertexCount == 0)return;
+
+
+        int maxIndex = -1;
+        for (int i = this.elementBufferTransparent.position(); i < this.elementBufferTransparent.limit(); i++) {
+            int idx = this.elementBufferTransparent.get(i);
+            if (idx > maxIndex) maxIndex = idx;
+        }
+
+        if (maxIndex >= vertexCount)return;
+
+        indexCount  = this.elementBufferOpaque.limit();
+        vertexCount = this.vertexBufferOpaque.limit();
+
+        if (indexCount == 0 || vertexCount == 0)return;
+
+
+        maxIndex = -1;
+        for (int i = this.elementBufferOpaque.position(); i < this.elementBufferOpaque.limit(); i++) {
+            int idx = this.elementBufferOpaque.get(i);
+            if (idx > maxIndex) maxIndex = idx;
+        }
+
+        if (maxIndex >= vertexCount)return;
+
+
 
         Shader.shadowMapShader.uploadVec3f("chunkOffset", new Vector3f((this.x - sunX) << 5, (this.y - sunY) << 5, (this.z - sunZ) << 5));
 

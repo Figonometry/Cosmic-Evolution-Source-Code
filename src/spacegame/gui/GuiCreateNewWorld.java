@@ -31,9 +31,11 @@ public final class GuiCreateNewWorld extends Gui {
         this.createWorld = new Button(EnumButtonEffects.CREATE_NEW_WORLD.name(), 512, 64, -320, -400, this, this.ce);
         this.back = new Button(EnumButtonEffects.BACK.name(), 512, 64, 320, -400, this, this.ce);
         this.difficultyOptions = new Button(EnumButtonEffects.DIFFICULTY_OPTIONS.name(), 512, 64, 0, -200, this, this.ce);
-        this.nameWorld = new TextField(512, 64, 0, 100);
-        this.setSeed = new TextField(512, 64, 0, 0);
+        this.nameWorld = new TextField(512, 64, 0, 100, 28, false);
+        this.setSeed = new TextField(512, 64, 0, 0, 28, false);
         this.saveSettings = saveSettings;
+        this.nameWorld.typing = true;
+        this.ce.currentlySelectedField = this.nameWorld;
     }
 
 

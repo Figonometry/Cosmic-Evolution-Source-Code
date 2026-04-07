@@ -12,14 +12,18 @@ public final class TextField {
    public int y;
    public String text = "";
    public String next = null;
+   public int keyBeingPressed;
+   public boolean canUseSlash;
+   public int lineCharLimit;
    public boolean typing;
 
 
-    public TextField(int width, int height, int x, int y){
+    public TextField(int width, int height, int x, int y, int lineCharLimit, boolean canUseSlash){
         this.width = width;
         this.height = height;
         this.x = x;
         this.y = y;
+        this.lineCharLimit = lineCharLimit;
     }
 
     public void renderTextFieldAndText(){
@@ -37,7 +41,7 @@ public final class TextField {
         tessellator.addElements();
         tessellator.drawTexture2D(textFieldOutline, Shader.screen2DTexture, CosmicEvolution.camera);
 
-        if(this.typing && this.text.length() < 28) {
+        if(this.typing && this.text.length() < this.lineCharLimit) {
             if(Timer.elapsedTime % 60 <= 30) {
                 int cursorZ = -48;
                 tessellator.addVertex2DTexture(16777215, this.x - this.width / 2 + ((this.text.length() + 1.2F) * 17), this.y - this.height / 2 + 5, cursorZ, 3);
@@ -59,13 +63,13 @@ public final class TextField {
     }
 
     public void scanForInputText() {
-        if (this.text.length() != 28) {
-            if (!KeyListener.isKeyPressed(KeyMappings.getKeyCodeFromMap(next, 599))) {
+        if (this.text.length() != this.lineCharLimit) {
+            if (KeyListener.keyReleased[this.keyBeingPressed]) {
                 boolean capsOriginalValue = KeyListener.capsLockEnabled;
                 if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT)) {
                     KeyListener.capsLockEnabled = !KeyListener.capsLockEnabled;
                 }
-                this.next = KeyMappings.getKeyNameFromMapForTextFields();
+                this.next = KeyMappings.getKeyNameFromMapForTextFields(this);
                 KeyListener.capsLockEnabled = capsOriginalValue;
                 if (this.next != null) {
                     this.text = this.text + this.next;
@@ -79,6 +83,13 @@ public final class TextField {
             }
             this.text = new String(newTextCharacters);
             KeyListener.setKeyReleased(GLFW.GLFW_KEY_BACKSPACE);
+        }
+
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_ENTER) && CosmicEvolution.instance.currentGui instanceof GuiCommandEntry && KeyListener.keyReleased[GLFW.GLFW_KEY_ENTER]){
+            new CommandParser().parseCommand(this.text);
+            this.text = "";
+            this.next = null;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_ENTER);
         }
     }
 

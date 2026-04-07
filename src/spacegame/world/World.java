@@ -1995,6 +1995,14 @@ public abstract class World {
                 break;
             }
         }
+
+        if(!isLeftClick){
+            short playerHeldItem = CosmicEvolution.instance.save.thePlayer.getHeldItem();
+
+            if(playerHeldItem != Item.NULL_ITEM_REFERENCE && playerHeldItem != Item.block.ID){
+                Item.list[playerHeldItem].onRightClick(MathUtil.floorDouble(px),MathUtil.floorDouble(py),MathUtil.floorDouble(pz), this, CosmicEvolution.instance.save.thePlayer);
+            }
+        }
     }
 
     private void handleBlockPlacement(int bx, int by, int bz, double hitX, double hitY, double hitZ) {

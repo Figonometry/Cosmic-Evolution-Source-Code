@@ -18,7 +18,7 @@ public final class GuiDifficultySettings extends Gui {
     public Button button6;
     public Button button7;
     public Button button8;
-    public Button button9;
+    public Button testingMode;
     public SaveSettings saveSettings;
     public int background;
     public int title;
@@ -32,6 +32,7 @@ public final class GuiDifficultySettings extends Gui {
         this.saveOptions = new Button(EnumButtonEffects.SAVE_OPTIONS.name(), 512, 64, -320, -400, this, this.ce);
         this.back = new Button(EnumButtonEffects.BACK.name(), 512, 64, 320, -400, this, this.ce);
         this.dropInventoryOnDeath = new Button(EnumButtonEffects.DROP_INVENTORY_ON_DEATH.name(), 512, 64, 0, 150, this, this.ce);
+        this.testingMode = new Button(EnumButtonEffects.TESTING_MODE.name(), 512, 64, 0, 0, this, this.ce);
         this.saveSlot = currentSaveSlot;
         this.saveSettings = saveSettings;
     }
@@ -106,6 +107,7 @@ public final class GuiDifficultySettings extends Gui {
         this.saveOptions.renderButton();
         this.back.renderButton();
         this.dropInventoryOnDeath.renderButton();
+        this.testingMode.renderButton();
     }
 
     @Override
@@ -118,6 +120,9 @@ public final class GuiDifficultySettings extends Gui {
         }
         if(this.dropInventoryOnDeath.isMouseHoveredOver() && this.dropInventoryOnDeath.active){
             return this.dropInventoryOnDeath;
+        }
+        if(this.testingMode.isMouseHoveredOver() && this.testingMode.active){
+            return this.testingMode;
         }
         return null;
     }
