@@ -24,6 +24,7 @@ public final class TextField {
         this.x = x;
         this.y = y;
         this.lineCharLimit = lineCharLimit;
+        this.canUseSlash = canUseSlash;
     }
 
     public void renderTextFieldAndText(){

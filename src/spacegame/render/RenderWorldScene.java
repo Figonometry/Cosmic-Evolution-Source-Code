@@ -163,7 +163,10 @@ public final class RenderWorldScene {
                 chunk.queryID = GL46.glGenQueries();
 
                 GL46.glBeginQuery(GL46.GL_ANY_SAMPLES_PASSED, chunk.queryID);
-                chunk.renderOpaque(xOffset, yOffset, zOffset,this.sunX,this.sunY,this.sunZ);
+                chunk.chunkOffset.x = xOffset;
+                chunk.chunkOffset.y = yOffset;
+                chunk.chunkOffset.z = zOffset;
+                chunk.renderOpaque(this.sunX,this.sunY,this.sunZ);
                 GL46.glEndQuery(GL46.GL_ANY_SAMPLES_PASSED);
             }
 

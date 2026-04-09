@@ -5,6 +5,7 @@ import spacegame.gui.GuiInGame;
 import spacegame.entity.EntityPlayer;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
+import spacegame.util.MathUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -23,9 +24,9 @@ public final class Save {
     public long seed;
     public String dateCreated;
     public String saveName;
-    public double spawnX;
-    public double spawnY = Double.NEGATIVE_INFINITY;
-    public double spawnZ;
+    public int spawnX;
+    public int spawnY = Integer.MIN_VALUE;
+    public int spawnZ;
     public byte savedSkyLightLevel = 0;
     public boolean loadedFromFile;
     public SaveSettings saveSettings;
@@ -46,8 +47,8 @@ public final class Save {
         this.seed = seed;
         this.saveName = saveName;
         this.savedSkyLightLevel = 15;
-        this.spawnX = x;
-        this.spawnZ = z;
+        this.spawnX = MathUtil.floorDouble(x);
+        this.spawnZ = MathUtil.floorDouble(z);
         this.saveInitDataToFile(saveName, x, z);
     }
 
@@ -74,9 +75,9 @@ public final class Save {
             this.seed = compoundTag.getCompoundTag("Save").getLong("seed");
             this.saveName = compoundTag.getCompoundTag("Save").getString("saveName");
             this.savedSkyLightLevel = compoundTag.getCompoundTag("Save").getByte("skyLightLevel");
-            this.spawnX = compoundTag.getCompoundTag("Save").getDouble("spawnX");
-            this.spawnY = compoundTag.getCompoundTag("Save").getDouble("spawnY");
-            this.spawnZ = compoundTag.getCompoundTag("Save").getDouble("spawnZ");
+            this.spawnX = compoundTag.getCompoundTag("Save").getInteger("spawnX");
+            this.spawnY = compoundTag.getCompoundTag("Save").getInteger("spawnY");
+            this.spawnZ = compoundTag.getCompoundTag("Save").getInteger("spawnZ");
             this.saveSettings = new SaveSettings(compoundTag.getCompoundTag("SaveSettings"));
             inputStream.close();
         } catch (IOException e) {
@@ -99,9 +100,9 @@ public final class Save {
             saveData.setLong("seed", this.seed);
             saveData.setString("saveName", this.saveName);
             saveData.setByte("skyLightLevel", this.activeWorld != null ? this.activeWorld.skyLightLevel : this.savedSkyLightLevel);
-            saveData.setDouble("spawnX", this.spawnX);
-            saveData.setDouble("spawnY", this.spawnY);
-            saveData.setDouble("spawnZ", this.spawnZ);
+            saveData.setInteger("spawnX", this.spawnX);
+            saveData.setInteger("spawnY", this.spawnY);
+            saveData.setInteger("spawnZ", this.spawnZ);
             this.saveSettings.saveSettingsToFile(saveSettings);
             NBTIO.writeCompressed(save, outputStream);
             outputStream.close();
@@ -129,9 +130,9 @@ public final class Save {
             saveData.setLong("seed", this.seed);
             saveData.setString("saveName", this.saveName);
             saveData.setByte("skyLightLevel", this.activeWorld.skyLightLevel);
-            saveData.setDouble("spawnX", this.spawnX);
-            saveData.setDouble("spawnY", this.spawnY);
-            saveData.setDouble("spawnZ", this.spawnZ);
+            saveData.setInteger("spawnX", this.spawnX);
+            saveData.setInteger("spawnY", this.spawnY);
+            saveData.setInteger("spawnZ", this.spawnZ);
             this.saveSettings.saveSettingsToFile(saveSettings);
             NBTIO.writeCompressed(save, outputStream);
             outputStream.close();
@@ -158,8 +159,8 @@ public final class Save {
             saveData.setString("dateLastModified", calendar.get(Calendar.MONTH) + 1 + "/" + calendar.get(Calendar.DAY_OF_MONTH) + "/" + calendar.get(Calendar.YEAR));
             saveData.setString("dateCreated", this.dateCreated);
             saveData.setLong("seed", this.seed);
-            saveData.setDouble("spawnX", x);
-            saveData.setDouble("spawnZ", z);
+            saveData.setInteger("spawnX", MathUtil.floorDouble(x));
+            saveData.setInteger("spawnZ", MathUtil.floorDouble(z));
             this.saveSettings.saveSettingsToFile(saveSettings);
             NBTIO.writeCompressed(save, outputStream);
             outputStream.close();

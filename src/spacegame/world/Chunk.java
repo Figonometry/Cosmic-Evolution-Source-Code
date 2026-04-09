@@ -942,7 +942,7 @@ public final class Chunk implements Comparable<Chunk> {
     }
 
 
-    public void renderOpaque(int xOffset, int yOffset, int zOffset, int sunX, int sunY, int sunZ) {
+    public void renderOpaque(int sunX, int sunY, int sunZ) {
         if(this.elementBufferOpaque == null || this.vertexBufferOpaque == null || this.opaqueVAOID == -10 || this.opaqueVBOID == -10 || this.opaqueEBOID == -10 || this.opaqueVAOID == 0 || this.opaqueVBOID == 0 || this.opaqueEBOID == 0)return;
 
         int indexCount  = this.elementBufferOpaque.limit();
@@ -960,9 +960,6 @@ public final class Chunk implements Comparable<Chunk> {
         if (maxIndex >= vertexCount)return;
 
 
-        this.chunkOffset.x = xOffset;
-        this.chunkOffset.y = yOffset;
-        this.chunkOffset.z = zOffset;
         Shader.terrainShader.uploadVec3f("chunkOffset", this.chunkOffset);
         Shader.terrainShader.uploadVec3f("sunChunkOffset", new Vector3f((this.x - sunX) << 5, (this.y - sunY) << 5, (this.z - sunZ) << 5));
         GL46.glBindVertexArray(this.opaqueVAOID);
@@ -988,7 +985,7 @@ public final class Chunk implements Comparable<Chunk> {
 
         if (maxIndex >= vertexCount)return;
 
-        Shader.terrainShader.uploadVec3f("chunkOffset", chunkOffset);
+        Shader.terrainShader.uploadVec3f("chunkOffset", this.chunkOffset);
         Shader.terrainShader.uploadVec3f("sunChunkOffset", new Vector3f((this.x - sunX) << 5, (this.y - sunY) << 5, (this.z - sunZ) << 5));
         GL46.glBindVertexArray(this.transparentVAOID);
         GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, this.transparentVBOID);

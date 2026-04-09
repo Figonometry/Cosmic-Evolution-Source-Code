@@ -998,8 +998,8 @@ public abstract class KeyMappings {
         }
 
         if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_O)){
-            textField.keyBeingPressed = GLFW.GLFW_KEY_0;
-            KeyListener.setKeyReleased(GLFW.GLFW_KEY_0);
+            textField.keyBeingPressed = GLFW.GLFW_KEY_O;
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_O);
             if(KeyListener.capsLockEnabled) {
                 return "O";
             } else {

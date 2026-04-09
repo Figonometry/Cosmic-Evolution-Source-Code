@@ -93,6 +93,9 @@ public final class ChunkController {
                     count++;
                 }
 
+                CosmicEvolution.instance.save.spawnZ = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z);
+                CosmicEvolution.instance.save.thePlayer.spawnZ = CosmicEvolution.instance.save.spawnZ;
+
                 //After putting the player in the right Z position we need to adjust the time forward
 
                 long playerZ = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z);
@@ -116,8 +119,9 @@ public final class ChunkController {
                     CosmicEvolution.instance.save.thePlayer.y++;
                 }
                 CosmicEvolution.instance.save.thePlayer.y += 3;
-                if(CosmicEvolution.instance.save.spawnY == Double.NEGATIVE_INFINITY){
-                    CosmicEvolution.instance.save.spawnY = CosmicEvolution.instance.save.thePlayer.y;
+                if(CosmicEvolution.instance.save.spawnY == Integer.MIN_VALUE){
+                    CosmicEvolution.instance.save.spawnY = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.y);
+                    CosmicEvolution.instance.save.thePlayer.spawnY = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.y);
                     CosmicEvolution.instance.save.saveDataToFileWithoutChunkUnload();
                 }
             }

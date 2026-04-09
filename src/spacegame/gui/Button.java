@@ -408,10 +408,18 @@ public class Button {
                 this.ce.setNewGui(new GuiRenameWorld(this.ce, ((GuiWorldSelect)this.Gui).saveSelected()));
             }
             case RESPAWN -> {
-                this.ce.save.thePlayer.x = this.ce.save.thePlayer.spawnX + 1.5;
+                this.ce.save.thePlayer.x = this.ce.save.thePlayer.spawnX;
                 this.ce.save.thePlayer.y = this.ce.save.thePlayer.spawnY + 1.5;
                 this.ce.save.thePlayer.z = this.ce.save.thePlayer.spawnZ;
                 this.ce.save.thePlayer.health = this.ce.save.thePlayer.maxHealth;
+
+
+                CosmicEvolution.instance.save.activeWorld.chunkController.playerChunkX = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x) >> 5;
+                CosmicEvolution.instance.save.activeWorld.chunkController.playerChunkY = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.y) >> 5;
+                CosmicEvolution.instance.save.activeWorld.chunkController.playerChunkZ = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z) >> 5;
+
+                CosmicEvolution.instance.save.activeWorld.chunkController.loadChunkColumn(MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x) >> 5, MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z) >> 5);
+
                 GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
                 this.ce.save.activeWorld.paused = false;
                 this.ce.setNewGui(new GuiInGame(this.ce));

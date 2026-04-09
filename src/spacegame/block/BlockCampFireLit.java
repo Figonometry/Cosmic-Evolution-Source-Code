@@ -25,9 +25,9 @@ public final class BlockCampFireLit extends BlockCampFire implements ITickable, 
     public void onLeftClick(int x, int y, int z, World world, EntityPlayer player){
         super.onLeftClick(x,y,z,world,player);
         if(player.isBlockSpawnPoint(x,y,z)){
-            player.spawnX = (int) CosmicEvolution.instance.save.spawnX;
-            player.spawnY = (int) CosmicEvolution.instance.save.spawnY;
-            player.spawnZ = (int) CosmicEvolution.instance.save.spawnZ;
+            player.spawnX = CosmicEvolution.instance.save.spawnX;
+            player.spawnY = CosmicEvolution.instance.save.spawnY;
+            player.spawnZ = CosmicEvolution.instance.save.spawnZ;
             GuiInGame.setMessageText("Spawn Point Destroyed", 16777215);
         }
     }

@@ -81,9 +81,9 @@ public final class EntityPlayer extends EntityLiving {
         this.health = 100;
         this.maxHealth = 100;
         this.saturation = 1000f;
-        this.spawnX = (int) this.ce.save.spawnX;
-        this.spawnY = (int) this.ce.save.spawnY;
-        this.spawnZ = (int) this.ce.save.spawnZ;
+        this.spawnX = this.ce.save.spawnX;
+        this.spawnY = this.ce.save.spawnY;
+        this.spawnZ = this.ce.save.spawnZ;
         this.playerFile = new File(this.ce.save.saveFolder + "/player.dat");
         this.inventory = new Inventory(9,1, 10);
     }

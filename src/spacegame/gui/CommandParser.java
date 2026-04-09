@@ -22,6 +22,8 @@ public final class CommandParser {
         this.commands.add("/freeMove");
         this.commands.add("/speed");
         this.commands.add("/heal");
+        this.commands.add("/the");
+        this.commands.add("/kill");
     }
 
     public void parseCommand(String inputString){
@@ -57,6 +59,12 @@ public final class CommandParser {
                 CosmicEvolution.instance.save.thePlayer.health = CosmicEvolution.instance.save.thePlayer.maxHealth;
                 CosmicEvolution.instance.save.thePlayer.saturation = CosmicEvolution.instance.save.thePlayer.maxSaturation;
                 GuiInGame.setMessageText("Fully healed hunger and health", 16777215);
+            }
+            case "/the" -> {
+                GuiInGame.setMessageText("game", 16777215);
+            }
+            case "/kill" -> {
+                CosmicEvolution.instance.save.thePlayer.damage(100000f);
             }
 
         }
