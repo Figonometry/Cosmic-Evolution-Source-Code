@@ -1,5 +1,6 @@
 blockName:CRAFTING_ITEM
 blockModel:standardBlockModel
+boundingBox:oneVoxelHighBlock
 isSolid:false
 stepSound:wood
 breakTimer:60

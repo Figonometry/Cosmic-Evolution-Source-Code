@@ -168,6 +168,76 @@ public final class RenderEntityItem {
     }
 
 
+    public void renderItemForShadowMap(int sunX, int sunY, int sunZ){
+        RenderEngine.WorldTessellator worldTessellator = RenderEngine.WorldTessellator.instance;
+        this.chunkX = MathUtil.floorDouble(this.x) >> 5;
+        this.chunkY = MathUtil.floorDouble(this.y) >> 5;
+        this.chunkZ = MathUtil.floorDouble(this.z) >> 5;
+
+        Shader.shadowMapShaderTextureArray.uploadVec3f("chunkOffset", new Vector3f((chunkX - sunX) << 5, (chunkY - sunY) << 5, (chunkZ - sunZ) << 5));
+        this.currentTime = CosmicEvolution.instance.save.time;
+        float x = MathUtil.positiveMod(this.x, 32);
+        float y = (float) (MathUtil.positiveMod(this.y, 32) + 0.05F + (0.05F * ((MathUtil.sin((((double) this.currentTime / 120) * Math.PI * 2) - (0.5 * Math.PI)) * 0.5) + 0.5f)));
+        float z = MathUtil.positiveMod(this.z,32);
+
+        if(x < 0){
+            x += 32;
+        }
+
+        if(y < 0){
+            y += 32;
+        }
+
+        if(z < 0){
+            z += 32;
+        }
+
+        float blockID = getItemTextureID(this.itemID, this.blockID, RenderBlocks.WEST_FACE);
+
+        Vector3d blockPosition = new Vector3d(x, (float) (y + this.entityHeight/2) + 0.125, z);
+        Vector3d vertex1 = new Vector3d(0,  -0.125, -0.125).rotateY(-Math.toRadians(CosmicEvolution.instance.save.thePlayer.yaw)).add(blockPosition);
+        Vector3d vertex2 = new Vector3d(0, 0.125, 0.125).rotateY(-Math.toRadians(CosmicEvolution.instance.save.thePlayer.yaw)).add(blockPosition);
+        Vector3d vertex3 = new Vector3d(0, 0.125, -0.125).rotateY(-Math.toRadians(CosmicEvolution.instance.save.thePlayer.yaw)).add(blockPosition);
+        Vector3d vertex4 = new Vector3d(0, -0.125, 0.125).rotateY(-Math.toRadians(CosmicEvolution.instance.save.thePlayer.yaw)).add(blockPosition);
+
+
+        worldTessellator.addVertexTextureArray(0, (float) vertex1.x, (float) vertex1.y, (float) vertex1.z, 3, blockID, RenderBlocks.WEST_FACE, 0, 0, 0, 0);
+        worldTessellator.addVertexTextureArray(0, (float) vertex2.x, (float) vertex2.y, (float) vertex2.z, 1, blockID, RenderBlocks.WEST_FACE, 0, 0, 0, 0);
+        worldTessellator.addVertexTextureArray(0, (float) vertex3.x, (float) vertex3.y, (float) vertex3.z, 2, blockID, RenderBlocks.WEST_FACE, 0, 0, 0, 0);
+        worldTessellator.addVertexTextureArray(0, (float) vertex4.x, (float) vertex4.y, (float) vertex4.z, 0, blockID, RenderBlocks.WEST_FACE, 0, 0, 0, 0);
+        worldTessellator.addElements();
+        GL46.glDisable(GL46.GL_CULL_FACE);
+        worldTessellator.drawTextureArray(Assets.itemTextureArray, Shader.shadowMapShaderTextureArray, CosmicEvolution.camera);
+        GL46.glEnable(GL46.GL_CULL_FACE);
+    }
+
+    public void renderBlockForShadowMap(int sunX, int sunY, int sunZ){
+        RenderEngine.WorldTessellator worldTessellator = RenderEngine.WorldTessellator.instance;
+        ModelFace modelFace;
+        this.currentTime = CosmicEvolution.instance.save.time;
+        this.chunkX = MathUtil.floorDouble(this.x) >> 5;
+        this.chunkY = MathUtil.floorDouble(this.y) >> 5;
+        this.chunkZ = MathUtil.floorDouble(this.z) >> 5;
+
+        ModelLoader model = Block.list[this.blockID].blockModel.copyModel().translateModel( -0.5f, 0, -0.5f).getScaledModel(0.125f);
+        ModelFace[] faces;
+        for(int face = 0; face < 6; face++){
+            faces = model.getModelFaceOfType(face);
+            for(int i = 0; i < faces.length; i++){
+                if(faces[i] == null)continue;
+
+                this.renderOpaqueFace(worldTessellator, (WorldEarth) CosmicEvolution.instance.save.activeWorld, this.blockID, faces[i].faceType, faces[i], 0,0,0,0,0,0,0,0,0,0,0,0);
+                worldTessellator.addElements();
+
+            }
+        }
+
+
+        Shader.shadowMapShaderTextureArray.uploadVec3f("chunkOffset", new Vector3f((chunkX - sunX) << 5, (chunkY - sunY) << 5, (chunkZ - sunZ) << 5));
+        worldTessellator.drawTextureArray(Assets.blockTextureArray, Shader.shadowMapShaderTextureArray, CosmicEvolution.camera);
+    }
+
+
     private float getLightValueFromMap(byte lightValue) {
         return switch (lightValue) {
             case 0, 1 -> 0.1F;

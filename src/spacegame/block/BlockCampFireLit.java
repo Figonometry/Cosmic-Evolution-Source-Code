@@ -66,7 +66,7 @@ public final class BlockCampFireLit extends BlockCampFire implements ITickable, 
         EntityParticle particle;
         Chunk chunk = CosmicEvolution.instance.save.activeWorld.chunkController.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
         for(int i = 0; i < particleCount; i++){
-            particle = new EntityParticle(xPos + CosmicEvolution.globalRand.nextDouble(-0.125, 0.125), yPos + CosmicEvolution.globalRand.nextDouble(0.125), zPos + CosmicEvolution.globalRand.nextDouble(-0.125, 0.125), false, CosmicEvolution.globalRand.nextInt(30, 180), this.ID, false, false);
+            particle = new EntityParticle(xPos + CosmicEvolution.globalRand.nextDouble(-0.125, 0.125), yPos + CosmicEvolution.globalRand.nextDouble(0.125), zPos + CosmicEvolution.globalRand.nextDouble(-0.125, 0.125), false, CosmicEvolution.globalRand.nextInt(30, 180), this.ID, false, false, false, false, 0, 0);
             chunk.addEntityToList(particle);
         }
     }

@@ -1,17 +1,21 @@
 package spacegame.gui;
 
+import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
 import spacegame.core.CosmicEvolution;
 import spacegame.item.Inventory;
 import spacegame.item.ItemStack;
+import spacegame.render.ModelPlayer;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
+import spacegame.util.MathUtil;
 
 public final class GuiInventoryPlayer extends GuiInventory {
     public int inventoryUI;
     public static int fillableColorWithShadedBottom;
     public static int flllableColor;
+    public int playerTexture;
 
     public GuiInventoryPlayer(CosmicEvolution cosmicEvolution, Inventory associatedInventory) {
         super(cosmicEvolution);
@@ -20,6 +24,7 @@ public final class GuiInventoryPlayer extends GuiInventory {
 
     @Override
     public void loadTextures() {
+        this.playerTexture = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/entity/player.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
         this.inventoryUI = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInventory/playerInventory.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
         fillableColorWithShadedBottom = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColorWithShadedBottom.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
         fillableColor = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColor.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
@@ -28,6 +33,7 @@ public final class GuiInventoryPlayer extends GuiInventory {
 
     @Override
     public void deleteTextures() {
+        CosmicEvolution.instance.renderEngine.deleteTexture(this.playerTexture);
         CosmicEvolution.instance.renderEngine.deleteTexture(this.inventoryUI);
         CosmicEvolution.instance.renderEngine.deleteTexture(fillableColorWithShadedBottom);
         CosmicEvolution.instance.renderEngine.deleteTexture(fillableColor);
@@ -44,7 +50,7 @@ public final class GuiInventoryPlayer extends GuiInventory {
         int backgroundHeight = 1017;
         int backgroundX = 0;
         int backgroundY = 0;
-        int backgroundZ = -100;
+        int backgroundZ = -1000;
         tessellator.addVertex2DTexture(0, backgroundX - backgroundWidth/2, backgroundY - backgroundHeight/2, backgroundZ, 3);
         tessellator.addVertex2DTexture(0, backgroundX + backgroundWidth/2, backgroundY + backgroundHeight/2, backgroundZ, 1);
         tessellator.addVertex2DTexture(0, backgroundX - backgroundWidth/2, backgroundY + backgroundHeight/2, backgroundZ, 2);
@@ -59,7 +65,7 @@ public final class GuiInventoryPlayer extends GuiInventory {
         int inventoryUIHeight = 608;
         int inventoryUIX = 5;
         int inventoryUIY = 0;
-        int inventoryUIZ = -90;
+        int inventoryUIZ = -900;
         tessellator.addVertex2DTexture(16777215, inventoryUIX - inventoryUIWidth/2, inventoryUIY - inventoryUIHeight/2, inventoryUIZ, 3);
         tessellator.addVertex2DTexture(16777215, inventoryUIX + inventoryUIWidth/2, inventoryUIY + inventoryUIHeight/2, inventoryUIZ, 1);
         tessellator.addVertex2DTexture(16777215, inventoryUIX - inventoryUIWidth/2, inventoryUIY + inventoryUIHeight/2, inventoryUIZ, 2);
@@ -67,6 +73,49 @@ public final class GuiInventoryPlayer extends GuiInventory {
         tessellator.addElements();
         tessellator.drawTexture2D(this.inventoryUI, Shader.screen2DTexture, CosmicEvolution.camera);
         tessellator.toggleOrtho();
+
+
+        ModelPlayer modelPlayer = ModelPlayer.getBaseModel();
+        modelPlayer.scale(150);
+        modelPlayer.animate(CosmicEvolution.instance.save.thePlayer.animationTimer, CosmicEvolution.instance.save.thePlayer.animate, CosmicEvolution.instance.save.thePlayer);
+        modelPlayer.segments[ModelPlayer.BODY].rotateModelSegmentY(-90f);
+
+        float xCenter = -390;
+        float yCenter = 64;
+
+        float x = MathUtil.getOpenGLMouseX();
+        float y = MathUtil.getOpenGLMouseY();
+
+        float xDif = x - xCenter;
+        float yDif = y - yCenter;
+
+        float angle = 10f;
+
+        float xRatio = xDif / 100f;
+        float yRatio = yDif / 100f;
+
+        if(xRatio < -1){
+            xRatio = -1.0f;
+        }
+
+        if(xRatio > 1){
+            xRatio = 1.0f;
+        }
+
+        if(yRatio < -1){
+            yRatio = -1.0f;
+        }
+
+        if(yRatio > 1){
+            yRatio = 1.0f;
+        }
+
+        modelPlayer.segments[ModelPlayer.BODY].rotateModelSegmentY(angle * xRatio);
+        modelPlayer.segments[ModelPlayer.BODY].rotateModelSegmentX(angle * -yRatio);
+
+
+        modelPlayer.renderModelFromInventory(CosmicEvolution.instance.save.thePlayer, xCenter, yCenter, -180, this.playerTexture);
+
 
         this.associatedInventory.renderInventory();
         this.renderHoveredItemStackName(this.getHoveredItemStack());

@@ -18,6 +18,8 @@ uniform vec4 lightColor;
 uniform bool performNormals;
 uniform vec3 normalizedLightVector;
 uniform vec3 playerPositionInChunk;
+uniform bool isColorCorrected;
+uniform float colorMultiplier;
 
 out vec4 fColor;
 out vec2 fTexCoords;
@@ -63,6 +65,14 @@ vec4 performLightingNormals(vec4 skyLightColor, vec3 vertexNormal){
 
 vec4 setFinalColor(vec4 skyLightColor, vec4 vertexColor){
     vec4 finalColor = vec4(1.0, 1.0, 1.0, 1.0);
+
+
+    if(isColorCorrected){
+        vec4 grassColor = vec4(vertexColor.x * colorMultiplier, vertexColor.y * colorMultiplier, vertexColor.z * colorMultiplier, 1.0);
+        skyLightColor *= grassColor;
+    }
+
+
     if(skyLightColor.x > vertexColor.x){
         finalColor.x = skyLightColor.x;
     } else {

@@ -14,9 +14,9 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
-import java.util.regex.Pattern;
 
 public final class RenderEngine {
+    public static final int NULL_TEXTURE = -1;
     public static final int TEXTURE_TYPE_2D = 1;
     public static final int TEXTURE_TYPE_2D_ARRAY = 2;
     public static final int TEXTURE_TYPE_CUBEMAP = 3;
@@ -56,14 +56,15 @@ public final class RenderEngine {
         GL46.glDeleteBuffers(bufferID);
     }
 
-    public void reloadShader(Shader shader){
+    public Shader reloadShader(Shader shader){
         String filepath = shader.filepath;
 
         GL46.glDeleteShader(shader.vertexID);
         GL46.glDeleteShader(shader.fragmentID);
         GL46.glDeleteProgram(shader.shaderProgramID);
 
-        shader = new Shader(filepath);
+
+        return new Shader(filepath);
     }
 
     public void setVertexAttribute(int vaoID, int index, int size, int vertexSizeBytes, int pointer, int vboID){
@@ -854,7 +855,7 @@ public final class RenderEngine {
             this.reset();
         }
 
-        public void drawVertexArray(int texID, Shader shader, Camera camera){
+        public void drawTextureArray(int texID, Shader shader, Camera camera){
             this.boundTexture = texID;
 
             GL46.glBindVertexArray(this.texture2DAtlasVAO);

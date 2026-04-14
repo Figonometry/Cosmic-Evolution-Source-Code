@@ -14,6 +14,8 @@ import spacegame.item.Item;
 import spacegame.item.ItemStack;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
+import spacegame.render.Model;
+import spacegame.render.ModelPlayer;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
 import spacegame.util.MathUtil;
@@ -50,6 +52,7 @@ public final class EntityPlayer extends EntityLiving {
     public boolean runDamageTilt;
     public boolean isShifting;
     public byte swingTimer;
+    public byte maxSwingTimer = 16;
     public boolean isSwinging;
     public boolean startViewBob;
     public int viewBobTimer;
@@ -65,6 +68,14 @@ public final class EntityPlayer extends EntityLiving {
     public float maxSaturation = 1000f;
     public boolean isHealing;
     public boolean isStarving;
+    public boolean stopLeftArm;
+    public boolean stopRightArm;
+    public boolean stopLeftLeg;
+    public boolean stopRightLeg;
+    public int animationTimer = 0;
+    public int texture = RenderEngine.NULL_TEXTURE;
+    public boolean animate;
+    public Model model;
 
     public EntityPlayer(CosmicEvolution cosmicEvolution, double x, double y, double z) {
         super(Integer.MAX_VALUE);
@@ -429,6 +440,10 @@ public final class EntityPlayer extends EntityLiving {
             this.checkHealth();
             this.updateSwingTimer();
             this.checkItemDurability();
+            this.animationTimer++;
+            if(!this.stopLeftArm && !this.stopRightArm && !this.stopLeftLeg && !this.stopRightLeg && !this.animate){
+                this.animationTimer = 0;
+            }
         }
     }
 
@@ -531,6 +546,15 @@ public final class EntityPlayer extends EntityLiving {
             this.isOnGround = false;
         } else {
             this.swimming = false;
+        }
+
+        this.animate = rawDeltaX != 0.0f || rawDeltaZ != 0.0f;
+
+        if(this.animate){
+            this.stopLeftArm = false;
+            this.stopLeftLeg = false;
+            this.stopRightArm = false;
+            this.stopRightLeg = false;
         }
 
 
@@ -894,6 +918,7 @@ public final class EntityPlayer extends EntityLiving {
 
     @Override
     public void renderShadow(){
+        if(GameSettings.shadowMap)return;
         int x = MathUtil.floorDouble(this.x);
         int y = MathUtil.floorDouble(this.y - (this.height/2) - 0.1);
         int z = MathUtil.floorDouble(this.z);
@@ -1003,9 +1028,38 @@ public final class EntityPlayer extends EntityLiving {
         if(this.isSwinging){
             this.swingTimer++;
         }
-        if(this.swingTimer >= 15){
+        if(this.swingTimer >= maxSwingTimer - 1){
             this.swingTimer = 0;
             this.isSwinging = false;
         }
     }
+
+    @Override
+    public void renderForShadowMap(int sunX, int sunY, int sunZ){
+        this.model = ModelPlayer.getBaseModel();
+        this.model.animate(this.animationTimer, this.animate, this);
+        this.model.renderModelForShadowMap(this, sunX, sunY, sunZ);
+    }
+
+    @Override
+    public void render(){
+       if(texture == RenderEngine.NULL_TEXTURE){
+           this.loadTexture();
+       }
+       this.model = ModelPlayer.getBaseModel();
+       this.model.animate(this.animationTimer, this.animate, this);
+       this.model.renderModel(this);
+       this.renderShadow();
+    }
+    public void loadTexture(){
+        texture = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/entity/player.png", RenderEngine.TEXTURE_TYPE_2D, 0 , true);
+    }
+
+    public int getTexture(){
+        if (this.texture == RenderEngine.NULL_TEXTURE) {
+            this.loadTexture();
+        }
+        return this.texture;
+    }
+
 }

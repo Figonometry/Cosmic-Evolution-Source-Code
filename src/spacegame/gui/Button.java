@@ -452,7 +452,7 @@ public class Button {
             case WAVY_LEAVES -> {
                 GameSettings.wavyLeaves = !GameSettings.wavyLeaves;
                 Block.leaf.canGreedyMesh = !GameSettings.wavyLeaves;
-                Shader.shadowMapShader.uploadBoolean("wavyLeaves", GameSettings.wavyLeaves);
+                Shader.shadowMapShaderTerrain.uploadBoolean("wavyLeaves", GameSettings.wavyLeaves);
                 Shader.terrainShader.uploadBoolean("wavyLeaves", GameSettings.wavyLeaves);
             }
             case TRANSPARENT_LEAVES -> {

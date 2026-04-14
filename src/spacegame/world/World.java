@@ -12,9 +12,7 @@ import spacegame.item.crafting.InWorld3DCraftingItem;
 import spacegame.item.crafting.InWorldCraftingItem;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
-import spacegame.render.RenderEngine;
-import spacegame.render.RenderWorldScene;
-import spacegame.render.Shader;
+import spacegame.render.*;
 import spacegame.util.MathUtil;
 import spacegame.world.weather.Cloud;
 import spacegame.world.weather.CloudFormation;
@@ -71,6 +69,7 @@ public abstract class World {
     public float targetWindDirection;
     public float targetWindIntensity;
     public boolean windy;
+    public boolean timeStopped = false;
 
 
     public World(CosmicEvolution cosmicEvolution, int size) {
@@ -220,9 +219,9 @@ public abstract class World {
                 this.chunkController.renderWorldScene.rainQuads[i] = null;
 
                 if(MathUtil.distance3D(x,y,z, this.ce.save.thePlayer.x, this.ce.save.thePlayer.y, this.ce.save.thePlayer.z) <= 5) {
-                    EntityParticle particle1 = new EntityParticle(x, y, z, true, 120, Block.water.ID, true, true);
-                    EntityParticle particle2 = new EntityParticle(x, y, z, true, 120, Block.water.ID, true, true);
-                    EntityParticle particle3 = new EntityParticle(x, y, z, true, 120, Block.water.ID, true, true);
+                    EntityParticle particle1 = new EntityParticle(x, y, z, true, 120, Block.water.ID, true, true, false, false, 0, 0);
+                    EntityParticle particle2 = new EntityParticle(x, y, z, true, 120, Block.water.ID, true, true, false, false, 0, 0);
+                    EntityParticle particle3 = new EntityParticle(x, y, z, true, 120, Block.water.ID, true, true, false, false, 0, 0);
 
                     float xMove = CosmicEvolution.globalRand.nextFloat(0.5f, 1);
                     xMove = CosmicEvolution.globalRand.nextBoolean() ? xMove : -xMove;
@@ -1980,7 +1979,8 @@ public abstract class World {
                         block.ID != Block.air.ID &&
                         block.ID != Block.water.ID) {
 
-                    this.handleBlockBreaking(block, bx, by, bz);
+                    double[] hit = AxisAlignedBB.intersectRayWithBlockAABB(px, py, pz, dir, bx, by, bz);
+                    this.handleBlockBreaking(block, bx, by, bz, hit[0], hit[1], hit[2]);
                 }
 
                 if (block.canBeBroken) {
@@ -2236,7 +2236,7 @@ public abstract class World {
 
 
 
-    private void handleBlockBreaking(Block block, int bx, int by, int bz) {
+    private void handleBlockBreaking(Block block, int bx, int by, int bz, double hitX, double hitY, double hitZ) {
         EntityPlayer p = ce.save.thePlayer;
 
         if(Block.list[this.getBlockID(bx, by, bz)] instanceof BlockCraftingTable && this.getBlockID(bx, by + 1, bz) == Block.craftingItem.ID)return;
@@ -2247,6 +2247,11 @@ public abstract class World {
             if (held == Item.NULL_ITEM_REFERENCE) held = 0;
 
             p.breakTimer++;
+
+            if(p.breakTimer % 15 == 0){
+                this.generateParticlesOnBlockBreakingAnimation(block.ID, bx, by, bz,  this.determineHitFace(bx, by, bz, hitX, hitY, hitZ));
+            }
+
 
             if (block.hardness > (p.hardnessThreshold + Item.list[held].hardness)) {
                 p.breakTimer = 1;
@@ -2272,5 +2277,79 @@ public abstract class World {
         }
     }
 
+    public void generateParticlesOnBlockBreak(short blockID, int x, int y, int z){
+            EntityParticle[] particles = new EntityParticle[8];
+
+
+            for(int i = 0; i < particles.length; i++){
+                float xMove = CosmicEvolution.globalRand.nextFloat(0.5f, 1);
+                xMove = CosmicEvolution.globalRand.nextBoolean() ? xMove : -xMove;
+                float zMove = CosmicEvolution.globalRand.nextFloat(0.5f, 1);
+                zMove = CosmicEvolution.globalRand.nextBoolean() ? zMove : -zMove;
+
+                particles[i] = new EntityParticle(x + 0.5, y + 0.5, z + 0.5, true, 240, blockID, true, false, true, true, CosmicEvolution.globalRand.nextFloat(0.96875f), CosmicEvolution.globalRand.nextFloat(0.96875f));
+
+                particles[i].setMovementVector(new Vector3f(xMove, 0, zMove));
+
+                particles[i].size = CosmicEvolution.globalRand.nextFloat(0.03125f, 0.125f);
+
+                this.addEntity(particles[i]);
+            }
+        }
+
+
+    public void generateParticlesOnBlockBreakingAnimation(short blockID, int x, int y, int z, int hitFace) {
+
+
+        double moveX = hitFace == Block.FACE_NORTH ? -0.5 : hitFace == Block.FACE_SOUTH ? 0.5 : 0;
+        double moveY = hitFace == Block.FACE_UP ? 0.5 : hitFace == Block.FACE_DOWN ? -0.5 : 0;
+        double moveZ = hitFace == Block.FACE_EAST ? -0.5 : hitFace == Block.FACE_WEST ? 0.5 : 0;
+
+        double spawnX = x + 0.5 + moveX;
+        double spawnY = y + 0.5 + moveY;
+        double spawnZ = z + 0.5 + moveZ;
+
+        EntityParticle particle = new EntityParticle(spawnX, spawnY, spawnZ, true, 240, blockID, true, false, true, true, CosmicEvolution.globalRand.nextFloat(0.96875f), CosmicEvolution.globalRand.nextFloat(0.96875f));
+
+        float xMove = CosmicEvolution.globalRand.nextFloat(0.5f, 1);
+        xMove = CosmicEvolution.globalRand.nextBoolean() ? xMove : -xMove;
+        float yMove = CosmicEvolution.globalRand.nextFloat(0.5f, 1);
+        yMove = CosmicEvolution.globalRand.nextBoolean() ? yMove : -yMove;
+        float zMove = CosmicEvolution.globalRand.nextFloat(0.5f, 1);
+        zMove = CosmicEvolution.globalRand.nextBoolean() ? zMove : -zMove;
+
+        if(hitFace == Block.FACE_NORTH){
+            xMove = -0.5f;
+        }
+
+        if(hitFace == Block.FACE_SOUTH){
+            xMove = 0.5f;
+        }
+
+        if(hitFace == Block.FACE_UP){
+            yMove = 0.5F;
+        }
+
+        if(hitFace == Block.FACE_DOWN){
+            yMove = -0.5F;
+        }
+
+        if(hitFace == Block.FACE_EAST){
+            zMove = -0.5f;
+        }
+
+        if(hitFace == Block.FACE_WEST){
+            zMove = 0.5f;
+        }
+
+
+        particle.setMovementVector(new Vector3f(xMove, yMove, zMove));
+
+        particle.size = CosmicEvolution.globalRand.nextFloat(0.03125f, 0.125f);
+
+        this.addEntity(particle);
+    }
 
 }
+
+

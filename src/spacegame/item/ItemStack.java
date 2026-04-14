@@ -125,7 +125,7 @@ public final class ItemStack {
                         blue -= 10;
                     }
                 }
-                tessellator.drawVertexArray(Assets.blockTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
+                tessellator.drawTextureArray(Assets.blockTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
             } else {
                 int z = -70;
                 GL46.glEnable(GL46.GL_BLEND);
@@ -136,7 +136,7 @@ public final class ItemStack {
                 tessellator.addVertexTextureArray(16777215, this.x + (float) this.width / 2, this.y - (float) this.height / 2, z, 0, this.item.getTextureID(this.item.ID, (byte)1, RenderBlocks.WEST_FACE), RenderBlocks.WEST_FACE);
                 tessellator.addElements();
                 Shader.screenTextureArray.uploadInt("textureArray", 0);
-                tessellator.drawVertexArray(Assets.itemTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
+                tessellator.drawTextureArray(Assets.itemTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
                 GL46.glDisable(GL46.GL_BLEND);
             }
             tessellator.toggleOrtho();
@@ -189,7 +189,7 @@ public final class ItemStack {
                         blue -= 10;
                     }
                 }
-                tessellator.drawVertexArray(Assets.blockTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
+                tessellator.drawTextureArray(Assets.blockTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
             } else {
                 int z = -70;
                 GL46.glEnable(GL46.GL_BLEND);
@@ -200,7 +200,7 @@ public final class ItemStack {
                 tessellator.addVertexTextureArray(16777215, this.x + (float) this.width / 2 + 5, this.y - (float) this.height / 2 - 2, z, 0, this.item.getTextureID(this.item.ID, (byte)1, RenderBlocks.WEST_FACE), RenderBlocks.WEST_FACE);
                 tessellator.addElements();
                 Shader.screenTextureArray.uploadInt("textureArray", 0);
-                tessellator.drawVertexArray(Assets.itemTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
+                tessellator.drawTextureArray(Assets.itemTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
                 GL46.glDisable(GL46.GL_BLEND);
             }
             tessellator.toggleOrtho();

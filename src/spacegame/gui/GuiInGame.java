@@ -9,6 +9,7 @@ import spacegame.block.BlockTorch;
 import spacegame.block.ITimeUpdate;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
+import spacegame.entity.Entity;
 import spacegame.item.crafting.InWorldCraftingItem;
 import spacegame.util.GeneralUtil;
 import spacegame.util.MathUtil;
@@ -44,6 +45,10 @@ public final class GuiInGame extends Gui {
     public static int messageTextAlpha;
     public static int messageTextColor;
     public static long timeMessageStarted;
+    public static float red;
+    public static float green;
+    public static float blue;
+    public static float skyLightValue;
 
     public GuiInGame(CosmicEvolution ce) {
         super(ce);
@@ -156,7 +161,7 @@ public final class GuiInGame extends Gui {
                 tessellator.addVertexTextureArray(4144959, (float) -CosmicEvolution.width / 2, (float) CosmicEvolution.height / 2, -900, 2, textureID, 2);
                 tessellator.addVertexTextureArray(4144959, (float) CosmicEvolution.width / 2, (float) -CosmicEvolution.height / 2, -900, 0, textureID, 2);
                 tessellator.addElements();
-                tessellator.drawVertexArray(Assets.blockTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
+                tessellator.drawTextureArray(Assets.blockTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
                 tessellator.toggleOrtho();
             }
         }
@@ -179,7 +184,7 @@ public final class GuiInGame extends Gui {
     public static void renderBlockLookingAtName(){
         short blockID = CosmicEvolution.instance.save.thePlayer.getPlayerLookingAtBlockID();
         if(blockID == Block.air.ID || blockID == Block.water.ID)return;
-        if(blockID == Block.craftingItem.ID){
+        if(blockID == Block.craftingItem.ID) {
             int[] coords = CosmicEvolution.instance.save.thePlayer.getPlayerLookingAtBlockCoords();
             renderCraftingItemInfoOverlay(coords[0], coords[1], coords[2]);
         }
@@ -283,7 +288,7 @@ public final class GuiInGame extends Gui {
                 tessellator.addVertexTextureArray(16777215, x - 30, y + 30, -85, 2, craftingItem.outputRecipe.requiredItems[i], RenderBlocks.WEST_FACE);
                 tessellator.addVertexTextureArray(16777215, x + 30, y - 30, -85, 0, craftingItem.outputRecipe.requiredItems[i], RenderBlocks.WEST_FACE);
                 tessellator.addElements();
-                tessellator.drawVertexArray(Assets.itemTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
+                tessellator.drawTextureArray(Assets.itemTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
                 tessellator.toggleOrtho();
             }
             y -= !craftingItem.itemsFilled[i] ? 75 : 30;
@@ -298,7 +303,7 @@ public final class GuiInGame extends Gui {
             tessellator.addVertexTextureArray(16777215, x - 30, y + 30, -85, 2, Item.reedTwine.getTextureID(Item.reedTwine.ID, Item.NULL_ITEM_METADATA, RenderBlocks.WEST_FACE), RenderBlocks.WEST_FACE);
             tessellator.addVertexTextureArray(16777215, x + 30, y - 30, -85, 0, Item.reedTwine.getTextureID(Item.reedTwine.ID, Item.NULL_ITEM_METADATA, RenderBlocks.WEST_FACE), RenderBlocks.WEST_FACE);
             tessellator.addElements();
-            tessellator.drawVertexArray(Assets.itemTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
+            tessellator.drawTextureArray(Assets.itemTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
             tessellator.toggleOrtho();
         }
 
@@ -537,11 +542,11 @@ public final class GuiInGame extends Gui {
                     x -= 0.5f * ((MathUtil.sin((float) (((CosmicEvolution.instance.save.thePlayer.viewBobTimer / 60f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
                     y -= 0.25f * ((MathUtil.sin((float) (((CosmicEvolution.instance.save.thePlayer.viewBobTimer / 60f) - 0.125f) * (Math.PI * 4f))) * 0.5) + 0.5f);
                 }
-                z -= 1f * ((MathUtil.sin((float) (((CosmicEvolution.instance.save.thePlayer.swingTimer / 15f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
+                z -= 1f * ((MathUtil.sin((float) (((CosmicEvolution.instance.save.thePlayer.swingTimer / CosmicEvolution.instance.save.thePlayer.maxSwingTimer) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
                 Vector3f position = new Vector3f(x,y,z);
                 Matrix3f rotationMatrix = new Matrix3f();
                 rotationMatrix.rotateY((float) (0.25 * Math.PI));
-                double sine = (MathUtil.sin((float) ((((double) CosmicEvolution.instance.save.thePlayer.swingTimer / 15) * Math.PI * 2) - (0.5 * Math.PI))) * 0.5) + 0.5f;
+                double sine = (MathUtil.sin((float) ((((double) CosmicEvolution.instance.save.thePlayer.swingTimer / CosmicEvolution.instance.save.thePlayer.maxSwingTimer) * Math.PI * 2) - (0.5 * Math.PI))) * 0.5) + 0.5f;
                 rotationMatrix.rotateLocalX((float) ((float) -(0.25 * Math.PI) * sine));
                 Quaternionf rotation = rotationMatrix.getUnnormalizedRotation(new Quaternionf());
                 int playerX = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x);
@@ -554,8 +559,8 @@ public final class GuiInGame extends Gui {
                 if(lightLevelFloat < 0.1){
                     lightLevelFloat = 0.1f;
                 }
-                Color color = new Color(lightLevelFloat, lightLevelFloat, lightLevelFloat, 0);
-                int colorRGB = color.getRGB();
+                int channelVal = MathUtil.floatToIntRGBA(lightLevelFloat);
+                int colorRGB = channelVal << 16 | channelVal << 8 | channelVal;
 
                 RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
                 ModelLoader model = Block.list[heldBlock].blockModel.copyModel();
@@ -594,14 +599,125 @@ public final class GuiInGame extends Gui {
                 CosmicEvolution.camera.viewMatrix = new Matrix4d();
                 GL46.glEnable(GL46.GL_CULL_FACE);
                 GL46.glCullFace(GL46.GL_FRONT);
-                tessellator.drawVertexArray(Assets.blockTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
+                tessellator.drawTextureArray(Assets.blockTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
                 GL46.glDisable(GL46.GL_CULL_FACE);
                 CosmicEvolution.camera.viewMatrix = preservedViewMatrix;
             }
         } else {
             short itemID = CosmicEvolution.instance.save.thePlayer.getHeldItem();
-            if(itemID == -1){return;}
-            if(itemID != Item.block.ID){
+            if(itemID == Item.NULL_ITEM_REFERENCE){
+                RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
+                ModelSegment arm = ModelPlayer.getBaseModel().segments[ModelPlayer.LEFT_ARM];
+                arm.scale(1.5f);
+                float translateX = 1.5f;
+                float translateY = -1.25f;
+                float translateZ = -2f;
+                if(GameSettings.viewBob) {
+                    translateX -= 0.125f * ((MathUtil.sin((float) (((CosmicEvolution.instance.save.thePlayer.viewBobTimer / 60f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
+                    translateY -= 0.0625f * ((MathUtil.sin((float) (((CosmicEvolution.instance.save.thePlayer.viewBobTimer / 60f) - 0.125f) * (Math.PI * 4f))) * 0.5) + 0.5f);
+                }
+                translateZ -= 0.5f * ((MathUtil.sin((float) (((CosmicEvolution.instance.save.thePlayer.swingTimer / 15f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
+
+                Vector3f translation = new Vector3f(translateX, translateY, translateZ);
+                Matrix3f rotationMatrix = new Matrix3f();
+                rotationMatrix.rotateY((float) -(0.35 * Math.PI));
+                double sine = (MathUtil.sin((float) ((((double) CosmicEvolution.instance.save.thePlayer.swingTimer / 15f) * Math.PI * 2) - (0.5 * Math.PI))) * 0.5) + 0.5f;
+                rotationMatrix.rotateLocalX((float) ((float) -(0.25 * Math.PI) * sine));
+                int playerX = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x);
+                int playerY = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.y);
+                int playerZ = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z);
+                float blockLight = getLightValueFromMap(CosmicEvolution.instance.save.activeWorld.getBlockLightValue(playerX, playerY, playerZ));
+                float lightLevelFloat = CosmicEvolution.instance.save.activeWorld.chunkController.renderWorldScene.baseLight > blockLight ? CosmicEvolution.instance.save.activeWorld.chunkController.renderWorldScene.baseLight : blockLight;
+                lightLevelFloat -=  0.1 * (MathUtil.sin(CosmicEvolution.instance.save.thePlayer.yaw / 45) + 1);
+                lightLevelFloat -=  0.1 * (MathUtil.sin(CosmicEvolution.instance.save.thePlayer.pitch / 45) + 1);
+                if(lightLevelFloat < 0.1f){
+                    lightLevelFloat = 0.1f;
+                }
+                int channelVal = MathUtil.floatToIntRGBA(lightLevelFloat);
+                int colorRGB = channelVal << 16 | channelVal << 8 | channelVal;
+
+                arm.rotateModelSegmentX(-45);
+                arm.rotateModelSegmentY((float) -(0.35 * Math.PI));
+                arm.translateModelSegment(translation.x, translation.y, translation.z);
+
+
+                int colorVal;
+                float[] UVSamples;
+                Vector3f[] topFace = arm.topFace;
+                Vector3f[] bottomFace = arm.bottomFace;
+                Vector3f[] northFace = arm.northFace;
+                Vector3f[] southFace = arm.southFace;
+                Vector3f[] eastFace = arm.eastFace;
+                Vector3f[] westFace = arm.westFace;
+
+                    UVSamples = MathUtil.mapUVCoordinatesTopBottom(88, 96, 32, 24, 40, 24, 32, 16, 40, 16);
+                    tessellator.addVertex2DTextureWithSampling(colorRGB, topFace[0].x, topFace[0].y, topFace[0].z, 2, UVSamples[0], UVSamples[1]);
+                    tessellator.addVertex2DTextureWithSampling(colorRGB, topFace[1].x, topFace[1].y, topFace[1].z, 0, UVSamples[2], UVSamples[3]);
+                    tessellator.addVertex2DTextureWithSampling(colorRGB, topFace[2].x, topFace[2].y, topFace[2].z, 1, UVSamples[4], UVSamples[5]);
+                    tessellator.addVertex2DTextureWithSampling(colorRGB, topFace[3].x, topFace[3].y, topFace[3].z, 3, UVSamples[6], UVSamples[7]);
+                    tessellator.addElements();
+
+                colorVal = colorRGB & 255;
+                colorVal -= 10;
+                colorRGB = (colorVal << 16) | (colorVal << 8) | colorVal;
+                    UVSamples = MathUtil.mapUVCoordinatesTopBottom(88, 96, 32, 16, 40, 16, 32, 8, 40, 8);
+                    tessellator.addVertex2DTextureWithSampling(colorRGB, bottomFace[0].x, bottomFace[0].y, bottomFace[0].z, 2, UVSamples[0], UVSamples[1]);
+                    tessellator.addVertex2DTextureWithSampling(colorRGB, bottomFace[1].x, bottomFace[1].y, bottomFace[1].z, 0, UVSamples[2], UVSamples[3]);
+                    tessellator.addVertex2DTextureWithSampling(colorRGB, bottomFace[2].x, bottomFace[2].y, bottomFace[2].z, 1, UVSamples[4], UVSamples[5]);
+                    tessellator.addVertex2DTextureWithSampling(colorRGB, bottomFace[3].x, bottomFace[3].y, bottomFace[3].z, 3, UVSamples[6], UVSamples[7]);
+                    tessellator.addElements();
+
+                colorVal = colorRGB & 255;
+                colorVal -= 10;
+                colorRGB = (colorVal << 16) | (colorVal << 8) | colorVal;
+                    UVSamples = MathUtil.mapUVCoordinatesNSEW(88, 96, 0, 24, 8, 24, 0, 0, 8, 0);
+                    tessellator.addVertex2DTextureWithSampling(colorRGB, northFace[0].x, northFace[0].y, northFace[0].z, 3, UVSamples[0], UVSamples[1]);
+                    tessellator.addVertex2DTextureWithSampling(colorRGB, northFace[1].x, northFace[1].y, northFace[1].z, 1, UVSamples[2], UVSamples[3]);
+                    tessellator.addVertex2DTextureWithSampling(colorRGB, northFace[2].x, northFace[2].y, northFace[2].z, 2, UVSamples[4], UVSamples[5]);
+                    tessellator.addVertex2DTextureWithSampling(colorRGB, northFace[3].x, northFace[3].y, northFace[3].z, 0, UVSamples[6], UVSamples[7]);
+                    tessellator.addElements();
+
+                colorVal = colorRGB & 255;
+                colorVal -= 10;
+                colorRGB = (colorVal << 16) | (colorVal << 8) | colorVal;
+                    UVSamples = MathUtil.mapUVCoordinatesNSEW(88, 96, 8, 24, 16, 24, 8, 0, 16, 0);
+                    tessellator.addVertex2DTextureWithSampling(colorRGB, southFace[0].x, southFace[0].y, southFace[0].z, 3, UVSamples[0], UVSamples[1]);
+                    tessellator.addVertex2DTextureWithSampling(colorRGB, southFace[1].x, southFace[1].y, southFace[1].z, 1, UVSamples[2], UVSamples[3]);
+                    tessellator.addVertex2DTextureWithSampling(colorRGB, southFace[2].x, southFace[2].y, southFace[2].z, 2, UVSamples[4], UVSamples[5]);
+                    tessellator.addVertex2DTextureWithSampling(colorRGB, southFace[3].x, southFace[3].y, southFace[3].z, 0, UVSamples[6], UVSamples[7]);
+                    tessellator.addElements();
+
+                colorVal = colorRGB & 255;
+                colorVal -= 10;
+                colorRGB = (colorVal << 16) | (colorVal << 8) | colorVal;
+                    UVSamples = MathUtil.mapUVCoordinatesNSEW(88, 96, 16, 24, 24, 24, 16, 0, 24, 0);
+                    tessellator.addVertex2DTextureWithSampling(colorRGB, eastFace[0].x, eastFace[0].y, eastFace[0].z, 3, UVSamples[0], UVSamples[1]);
+                    tessellator.addVertex2DTextureWithSampling(colorRGB, eastFace[1].x, eastFace[1].y, eastFace[1].z, 1, UVSamples[2], UVSamples[3]);
+                    tessellator.addVertex2DTextureWithSampling(colorRGB, eastFace[2].x, eastFace[2].y, eastFace[2].z, 2, UVSamples[4], UVSamples[5]);
+                    tessellator.addVertex2DTextureWithSampling(colorRGB, eastFace[3].x, eastFace[3].y, eastFace[3].z, 0, UVSamples[6], UVSamples[7]);
+                    tessellator.addElements();
+
+                colorVal = colorRGB & 255;
+                colorVal -= 10;
+                colorRGB = (colorVal << 16) | (colorVal << 8) | colorVal;
+                    UVSamples = MathUtil.mapUVCoordinatesNSEW(88, 96, 24, 24, 32, 24, 24, 0, 32, 0);
+                    tessellator.addVertex2DTextureWithSampling(colorRGB, westFace[0].x, westFace[0].y, westFace[0].z, 3, UVSamples[0], UVSamples[1]);
+                    tessellator.addVertex2DTextureWithSampling(colorRGB, westFace[1].x, westFace[1].y, westFace[1].z, 1, UVSamples[2], UVSamples[3]);
+                    tessellator.addVertex2DTextureWithSampling(colorRGB, westFace[2].x, westFace[2].y, westFace[2].z, 2, UVSamples[4], UVSamples[5]);
+                    tessellator.addVertex2DTextureWithSampling(colorRGB, westFace[3].x, westFace[3].y, westFace[3].z, 0, UVSamples[6], UVSamples[7]);
+                    tessellator.addElements();
+
+                Matrix4d preservedViewMatrix = CosmicEvolution.camera.viewMatrix.get(new Matrix4d());
+                CosmicEvolution.camera.viewMatrix = new Matrix4d();
+                GL46.glEnable(GL46.GL_CULL_FACE);
+                GL46.glCullFace(GL46.GL_FRONT);
+                tessellator.drawTexture2D(CosmicEvolution.instance.save.thePlayer.getTexture(), Shader.screen2DTexture, CosmicEvolution.camera);
+                GL46.glDisable(GL46.GL_CULL_FACE);
+                CosmicEvolution.camera.viewMatrix = preservedViewMatrix;
+
+
+
+            } else if(itemID != Item.block.ID){
                 RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
                 float x = 2f;
                 float y = -1f;
@@ -610,11 +726,11 @@ public final class GuiInGame extends Gui {
                     x -= 0.125f * ((MathUtil.sin((float) (((CosmicEvolution.instance.save.thePlayer.viewBobTimer / 60f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
                     y -= 0.0625f * ((MathUtil.sin((float) (((CosmicEvolution.instance.save.thePlayer.viewBobTimer / 60f) - 0.125f) * (Math.PI * 4f))) * 0.5) + 0.5f);
                 }
-                z -= 1f * ((MathUtil.sin((float) (((CosmicEvolution.instance.save.thePlayer.swingTimer / 15f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
+                z -= 1f * ((MathUtil.sin((float) (((CosmicEvolution.instance.save.thePlayer.swingTimer / CosmicEvolution.instance.save.thePlayer.maxSwingTimer) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
                 Vector3f position = new Vector3f(x,y,z);
                 Matrix3f rotationMatrix = new Matrix3f();
                 rotationMatrix.rotateY((float) -(0.35 * Math.PI));
-                double sine = (MathUtil.sin((float) ((((double) CosmicEvolution.instance.save.thePlayer.swingTimer / 15) * Math.PI * 2) - (0.5 * Math.PI))) * 0.5) + 0.5f;
+                double sine = (MathUtil.sin((float) ((((double) CosmicEvolution.instance.save.thePlayer.swingTimer / CosmicEvolution.instance.save.thePlayer.maxSwingTimer) * Math.PI * 2) - (0.5 * Math.PI))) * 0.5) + 0.5f;
                 rotationMatrix.rotateLocalX((float) ((float) -(0.25 * Math.PI) * sine));
                 Quaternionf rotation = rotationMatrix.getUnnormalizedRotation(new Quaternionf());
                 int playerX = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x);
@@ -1551,5 +1667,42 @@ public final class GuiInGame extends Gui {
     @Override
     public Button getActiveButton() {
         return null;
+    }
+
+    public static void resetLight() {
+        red = 1F;
+        green = 1F;
+        blue = 1F;
+    }
+
+    public static void setVertexLight1Arg(byte light, float x, float y, float z, float[] lightColor) {
+        float finalLight = getLightValueFromMap(light);
+
+        red = lightColor[0];
+        green = lightColor[1];
+        blue = lightColor[2];
+
+        red *= finalLight;
+        green *= finalLight;
+        blue *= finalLight;
+    }
+
+    protected static int calculateVertexLightColor(Vector3f vertex, Entity associatedEntity){
+        resetLight();
+        float x = (float) (Math.abs(MathUtil.positiveMod(associatedEntity.x,32f) - vertex.x) + associatedEntity.x);
+        float y = (float) (Math.abs(MathUtil.positiveMod(associatedEntity.y,32f) - vertex.y) + associatedEntity.y);
+        float z = (float) (Math.abs(MathUtil.positiveMod(associatedEntity.z,32f) - vertex.z) + associatedEntity.z);
+        int xInt = MathUtil.floorDouble(x);
+        int yInt = MathUtil.floorDouble(y);
+        int zInt = MathUtil.floorDouble(z);
+        float[] lightColor =  !associatedEntity.canDamage ? new float[]{1,0.65f,0.65f}  : CosmicEvolution.instance.save.activeWorld.getBlockLightColor(xInt, yInt, zInt);
+
+        byte lightVal = CosmicEvolution.instance.save.activeWorld.getBlockLightValue(xInt, yInt, zInt);
+        byte skyLightVal = CosmicEvolution.instance.save.activeWorld.getBlockSkyLightValue(xInt, yInt, zInt);
+
+        setVertexLight1Arg(lightVal > skyLightVal ? lightVal : skyLightVal, x, y, z, lightColor);
+        skyLightValue = GuiInGame.getLightValueFromMap(CosmicEvolution.instance.save.activeWorld.getBlockSkyLightValue(xInt, yInt, zInt));
+
+        return MathUtil.floatToIntRGBA(red) << 16 | MathUtil.floatToIntRGBA(green) << 8 | MathUtil.floatToIntRGBA(blue);
     }
 }

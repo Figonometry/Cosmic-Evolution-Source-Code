@@ -134,5 +134,50 @@ public abstract class MathUtil {
         }
     }
 
+    //Negative x shifts to the left, positive x shifts to the right, negative y shifts up, positive y shifts down
+    public static float[] mapUVCoordinatesNSEW(float imageWidth, float imageHeight, float topLeftX, float topLeftY, float topRightX, float topRightY, float bottomLeftX, float bottomLeftY, float bottomRightX, float bottomRightY){
+        float[] output = new float[8];
+
+        final float incrementPerPixelWidth = 1f / imageWidth;
+        final float incrementPerPixelHeight = 1f / imageHeight;
+
+        output[0] = bottomLeftX * incrementPerPixelWidth;
+        output[1] = bottomLeftY * -incrementPerPixelHeight; //1
+
+        output[2] = (imageWidth - topRightX) * -incrementPerPixelWidth;
+        output[3] = (imageHeight - topRightY) * incrementPerPixelHeight; //2
+
+        output[4] = topLeftX * incrementPerPixelWidth;
+        output[5] = (imageHeight - topLeftY) * incrementPerPixelHeight; //3
+
+        output[6] = (imageWidth - bottomRightX) * -incrementPerPixelWidth; //4
+        output[7] = bottomRightY * -incrementPerPixelHeight;
+
+        return output;
+    }
+
+    public static float[] mapUVCoordinatesTopBottom(float imageWidth, float imageHeight, float topLeftX, float topLeftY, float topRightX, float topRightY, float bottomLeftX, float bottomLeftY, float bottomRightX, float bottomRightY){
+        float[] output = new float[8];
+
+        final float incrementPerPixelWidth = 1f / imageWidth;
+        final float incrementPerPixelHeight = 1f / imageHeight;
+
+        output[0] = topLeftX * incrementPerPixelWidth;
+        output[1] = (imageHeight - topLeftY) * incrementPerPixelHeight;
+
+        output[2] = (imageWidth - bottomRightX) * -incrementPerPixelWidth;
+        output[3] = bottomRightY * -incrementPerPixelHeight;
+
+        output[4] = (imageWidth - topRightX) * -incrementPerPixelWidth;
+        output[5] = (imageHeight - topRightY) * incrementPerPixelHeight;
+
+        output[6] = bottomLeftX * incrementPerPixelWidth;
+        output[7] = bottomLeftY * -incrementPerPixelHeight;
+
+
+
+        return output;
+    }
+
 
 }

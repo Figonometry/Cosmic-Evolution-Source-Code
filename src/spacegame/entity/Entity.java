@@ -44,7 +44,7 @@ public abstract class Entity {
     public double height;
     public double depth;
     public boolean canDamage;
-    public double acceleration = 0.005D;
+    public double acceleration = 0.01D;
     public double speed = 0.1D;
     public boolean inWater;
     public boolean prevInWater;
@@ -64,6 +64,8 @@ public abstract class Entity {
     public void render() {
         return;
     }
+
+    public void renderForShadowMap(int sunX, int sunY, int sunZ){}
 
     protected void checkToDespawn(){
         if(CosmicEvolution.instance.save.time >= this.despawnTime){
@@ -113,6 +115,8 @@ public abstract class Entity {
     }
 
     protected void renderShadow(){
+        if(GameSettings.shadowMap)return;
+
         int x = MathUtil.floorDouble(this.x);
         int y = MathUtil.floorDouble(this.y - (this.height/2) - 0.1);
         int z = MathUtil.floorDouble(this.z);

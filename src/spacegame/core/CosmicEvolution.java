@@ -55,6 +55,7 @@ public final class CosmicEvolution implements Runnable {
     public Universe everything;
     public RenderEngine renderEngine = new RenderEngine();
     public SoundPlayer soundPlayer = new SoundPlayer(this);
+    private EntityModelTest entityModelTest;
 
 
     public static void main(String[] args) {
@@ -96,7 +97,7 @@ public final class CosmicEvolution implements Runnable {
     }
 
     private void startGame() {
-        this.title = "Cosmic Evolution Alpha v0.42.1";
+        this.title = "Cosmic Evolution Alpha v0.43";
         GameSettings.loadOptionsFromFile(this.launcherDirectory);
         this.clearLogFiles(new File(this.launcherDirectory + "/crashReports"));
         this.initLWJGL();
@@ -289,6 +290,7 @@ public final class CosmicEvolution implements Runnable {
         if(this.save != null) {
             this.save.tick();
             this.renderEngine.loadTexturesFromList();
+            this.incrementTextureTimers();
             GuiInGame.fadeMessageText();
             if(this.save.time % 18000 == 0 && this.currentGui instanceof GuiInGame){
                 this.save.saveDataToFileWithoutChunkUnload();
@@ -381,6 +383,17 @@ public final class CosmicEvolution implements Runnable {
                 if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_PERIOD)) {
                     this.save.time += 1000;
                     KeyListener.setKeyReleased(GLFW.GLFW_KEY_PERIOD);
+                }
+
+                if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_G) && KeyListener.keyReleased[GLFW.GLFW_KEY_G]){
+                  // if(this.entityModelTest == null){
+                  //     this.entityModelTest = new EntityModelTest(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z);
+                  //     this.save.activeWorld.addEntity(this.entityModelTest);
+                  // } else {
+                  //     this.save.activeWorld.findChunkFromChunkCoordinates(MathUtil.floorDouble(this.entityModelTest.x) >> 5, MathUtil.floorDouble(this.entityModelTest.y) >> 5, MathUtil.floorDouble(this.entityModelTest.z) >> 5).removeEntity(this.entityModelTest);
+                  //     this.entityModelTest = null;
+                  // }
+                    KeyListener.setKeyReleased(GLFW.GLFW_KEY_G);
                 }
             }
 
@@ -893,14 +906,25 @@ public final class CosmicEvolution implements Runnable {
         Entity.initShadow();
         Sun.initSunFlare();
         GuiUniverseMap.initSkyboxTexture();
-        EntityDeer.loadTexture();
+    }
+
+    private void incrementTextureTimers(){
+        EntityDeer.ticksSinceLastRender++;
+        if(EntityDeer.ticksSinceLastRender >= 600 && EntityDeer.texture != RenderEngine.NULL_TEXTURE){
+            this.renderEngine.deleteTexture(EntityDeer.texture);
+            EntityDeer.texture = RenderEngine.NULL_TEXTURE;
+        }
+        EntityModelTest.ticksSinceLastRender++;
+        if(EntityModelTest.ticksSinceLastRender >= 60 && EntityModelTest.texture != RenderEngine.NULL_TEXTURE){
+            this.renderEngine.deleteTexture(EntityModelTest.texture);
+            EntityModelTest.texture = RenderEngine.NULL_TEXTURE;
+        }
     }
 
     public void reloadAllTextures(){
         this.renderEngine.deleteTexture(Entity.shadow);
         this.renderEngine.deleteTexture(Sun.sunFlare);
         this.renderEngine.deleteTexture(GuiUniverseMap.skybox);
-        this.renderEngine.deleteTexture(EntityDeer.texture);
 
         Assets.disableItemTextureArray();
         Assets.disableBlockTextureArray();

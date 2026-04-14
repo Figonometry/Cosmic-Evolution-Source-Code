@@ -1027,7 +1027,7 @@ public final class Chunk implements Comparable<Chunk> {
 
 
 
-        Shader.shadowMapShader.uploadVec3f("chunkOffset", new Vector3f((this.x - sunX) << 5, (this.y - sunY) << 5, (this.z - sunZ) << 5));
+        Shader.shadowMapShaderTerrain.uploadVec3f("chunkOffset", new Vector3f((this.x - sunX) << 5, (this.y - sunY) << 5, (this.z - sunZ) << 5));
 
         GL46.glBindVertexArray(this.opaqueVAOID);
         GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, this.opaqueVBOID);
@@ -1041,6 +1041,21 @@ public final class Chunk implements Comparable<Chunk> {
         GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, this.transparentVBOID);
         GL46.glBindBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, this.transparentEBOID);
         GL46.glDrawElements(GL46.GL_TRIANGLES, this.elementBufferTransparent.limit(), GL46.GL_UNSIGNED_INT, 0);
+
+
+        Entity entity;
+        for(int i = 0; i < this.entities.size(); i++){
+            entity = this.entities.get(i);
+            if(entity instanceof EntityParticle){
+                if(MathUtil.distance3D(entity.x, entity.y, entity.z, CosmicEvolution.instance.save.thePlayer.x, CosmicEvolution.instance.save.thePlayer.y, CosmicEvolution.instance.save.thePlayer.z) <= 32){
+                    entity.renderForShadowMap(sunX, sunY, sunZ);
+                }
+            } else {
+                if(MathUtil.distance3D(entity.x, entity.y, entity.z, CosmicEvolution.instance.save.thePlayer.x, CosmicEvolution.instance.save.thePlayer.y, CosmicEvolution.instance.save.thePlayer.z) <= 128){
+                    entity.renderForShadowMap(sunX, sunY, sunZ);
+                }
+            }
+        }
     }
 
 

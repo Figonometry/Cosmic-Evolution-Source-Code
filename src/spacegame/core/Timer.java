@@ -43,7 +43,7 @@ public final class Timer {
         this.ticks = (int) this.passedTime;
         elapsedTime += this.ticks;
         if(CosmicEvolution.instance.save != null){
-            if(!CosmicEvolution.instance.save.activeWorld.paused){
+            if(!CosmicEvolution.instance.save.activeWorld.paused && !CosmicEvolution.instance.save.activeWorld.timeStopped){
                 CosmicEvolution.instance.save.time += this.ticks;
             }
         }

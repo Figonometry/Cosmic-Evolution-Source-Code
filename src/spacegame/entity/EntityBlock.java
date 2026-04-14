@@ -67,4 +67,9 @@ public final class EntityBlock extends EntityNonLiving {
         }
     }
 
+    @Override
+    public void renderForShadowMap(int sunX, int sunY, int sunZ){
+        new RenderEntityItem(this.x, this.y, this.z, this.entityModel, true, true, Item.block.ID, this.block, this.height, this.width).renderBlockForShadowMap(sunX,sunY,sunZ);
+    }
+
 }

@@ -6,11 +6,13 @@ import spacegame.entity.ai.AIPassive;
 import spacegame.item.Item;
 import spacegame.render.Model;
 import spacegame.render.ModelDeer;
+import spacegame.render.ModelPlayer;
 import spacegame.render.RenderEngine;
 
 import java.util.Random;
 
 public final class EntityDeer extends EntityLiving {
+    public static int ticksSinceLastRender = 0;
     public static int texture;
     public int animationTimer = 0;
     public boolean animate = true;
@@ -21,7 +23,7 @@ public final class EntityDeer extends EntityLiving {
     public boolean stopBackLeftLeg;
     public boolean stopBackRightLeg;
     public int growthTimer;
-    public Model model = new ModelDeer();
+    public Model model;
 
     public EntityDeer(double x, double y, double z, boolean isChild, boolean isMale){
         super(54000);
@@ -39,7 +41,7 @@ public final class EntityDeer extends EntityLiving {
     }
 
 
-    public static void loadTexture(){
+    public void loadTexture(){
         texture = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/entity/deer.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
     }
 
@@ -195,9 +197,20 @@ public final class EntityDeer extends EntityLiving {
 
     @Override
     public void render(){
+        if(texture == RenderEngine.NULL_TEXTURE){
+            this.loadTexture();
+        }
         this.model = ModelDeer.getBaseModel();
         this.model.animate(this.animationTimer, this.animate, this);
         this.model.renderModel(this);
+        ticksSinceLastRender = 0;
         this.renderShadow();
     }
+    @Override
+    public void renderForShadowMap(int sunX, int sunY, int sunZ){
+        this.model = ModelDeer.getBaseModel();
+        this.model.animate(this.animationTimer, this.animate, this);
+        this.model.renderModelForShadowMap(this, sunX, sunY, sunZ);
+    }
+
 }

@@ -128,7 +128,7 @@ public final class GuiCraftingReeds extends GuiCrafting {
             tessellator.addElements();
         }
 
-        tessellator.drawVertexArray(Assets.itemTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
+        tessellator.drawTextureArray(Assets.itemTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
 
         for (int i = 0; i < this.selectableRecipes.length; i++) {
             if (!this.selectableRecipes[i].isBlock) continue;
@@ -166,7 +166,7 @@ public final class GuiCraftingReeds extends GuiCrafting {
                     blue -= 10;
                 }
             }
-            tessellator.drawVertexArray(Assets.blockTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
+            tessellator.drawTextureArray(Assets.blockTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
         }
 
         selectableZ = -87;
@@ -227,7 +227,7 @@ public final class GuiCraftingReeds extends GuiCrafting {
                     tessellator.addElements();
                     GL46.glEnable(GL46.GL_BLEND);
                     GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-                    tessellator.drawVertexArray(Assets.itemTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
+                    tessellator.drawTextureArray(Assets.itemTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
                     GL46.glDisable(GL46.GL_BLEND);
                     tessellator.toggleOrtho();
                     y += 8;

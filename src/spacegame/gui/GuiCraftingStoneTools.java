@@ -138,7 +138,7 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
             }
 
 
-            tessellator.drawVertexArray(Assets.itemTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
+            tessellator.drawTextureArray(Assets.itemTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
 
             selectableZ = -87;
             for(int i = 0; i < this.selectableRecipes.length; i++){
@@ -201,7 +201,7 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
                 tessellator.addElements();
                 GL46.glEnable(GL46.GL_BLEND);
                 GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-                tessellator.drawVertexArray(Assets.itemTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
+                tessellator.drawTextureArray(Assets.itemTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
                 GL46.glDisable(GL46.GL_BLEND);
                 tessellator.toggleOrtho();
                 y += 8;

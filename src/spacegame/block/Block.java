@@ -97,6 +97,7 @@ public class Block {
     public static final AxisAlignedBB quarterBlock = new AxisAlignedBB(0, 0, 0, 1, 0.25f, 1);
     public static final AxisAlignedBB slab = new AxisAlignedBB(0, 0, 0, 1, 0.5, 1);
     public static final AxisAlignedBB threeQuartersBlock = new AxisAlignedBB(0, 0, 0, 1, 0.75f, 1);
+    public static final AxisAlignedBB oneVoxelHighBlock = new AxisAlignedBB(0, 0, 0, 1, 0.03125f, 1);
     public static final Block[] list = new Block[Short.MAX_VALUE];
     public static final Block air = new Block((short) 0, -1, blockFolderPath + "air.txt");
     public static final Block grass = new BlockGrass((short) 1, 2, blockFolderPath + "grass.txt");
@@ -358,6 +359,7 @@ public class Block {
                     case "quarterBlock" -> this.standardCollisionBoundingBox = quarterBlock;
                     case "threeQuartersBlock" -> this.standardCollisionBoundingBox = threeQuartersBlock;
                     case "fullBlock" -> this.standardCollisionBoundingBox = fullBlock;
+                    case "oneVoxelHighBlock" ->  this.standardCollisionBoundingBox = oneVoxelHighBlock;
                 }
             }
 
@@ -628,6 +630,8 @@ public class Block {
         if(this instanceof ITickable){
             world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).removeTickableBlockFromArray((short) Chunk.getBlockIndexFromCoordinates(x,y,z));
         }
+
+        world.generateParticlesOnBlockBreak(blockID, x, y, z);
 
         CosmicEvolution.instance.soundPlayer.playSound(x, y, z, new Sound(this.getStepSound(x,y,z), false, 1f), new Random().nextFloat(0.6F, 1));
         player.reduceHeldItemDurability();

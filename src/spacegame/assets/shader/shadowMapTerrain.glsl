@@ -7,7 +7,6 @@ layout (location=3) in float aTexId; //Unused, the terrain has this assigned in 
 
 uniform mat4 combinedViewProjectionMatrix;
 uniform vec3 chunkOffset;
-uniform vec3 sunPosition;
 uniform double time;
 uniform bool wavyLeaves;
 

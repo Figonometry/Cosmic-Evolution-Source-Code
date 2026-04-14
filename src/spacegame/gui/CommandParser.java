@@ -24,6 +24,7 @@ public final class CommandParser {
         this.commands.add("/heal");
         this.commands.add("/the");
         this.commands.add("/kill");
+        this.commands.add("/toggleTime");
     }
 
     public void parseCommand(String inputString){
@@ -65,6 +66,13 @@ public final class CommandParser {
             }
             case "/kill" -> {
                 CosmicEvolution.instance.save.thePlayer.damage(100000f);
+                GuiInGame.setMessageText("Killed the player", 16777215);
+            }
+            case "/toggleTime" -> {
+                CosmicEvolution.instance.save.activeWorld.timeStopped = !CosmicEvolution.instance.save.activeWorld.timeStopped;
+                String status = CosmicEvolution.instance.save.activeWorld.timeStopped ? "stopped" : "resumed";
+                GuiInGame.setMessageText("Time " + status, 16777215);
+
             }
 
         }

@@ -10,7 +10,7 @@ public final class AssetPack {
     public String filepath;
     public String title;
     public String description;
-    public int icon = -1; //Icon cannot be allocated here as there would be too many allocated images in OpenGL,
+    public int icon = RenderEngine.NULL_TEXTURE; //Icon cannot be allocated here as there would be too many allocated images in OpenGL,
     // allocate dynamically if they intersect the frustum and deallocate as they exit
 
 

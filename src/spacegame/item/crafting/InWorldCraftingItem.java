@@ -31,15 +31,15 @@ public final class InWorldCraftingItem {
             return this.bind();
         }
 
-        for(int i = 0; i < this.itemsFilled.length; i++){
-            if(this.itemsFilled[i])continue;
-            if(this.outputRecipe.requiredItems[i] != inputItem)continue;
-            // the 0.25f centers the position to the midle of the grid of voxels
-            if(MathUtil.distance2D(x,z, this.outputRecipe.requiredItemPositions[i][0] + 0.25f, this.outputRecipe.requiredItemPositions[i][1] + 0.25f) <= this.outputRecipe.requiredItemRadius[i]){
-                this.itemsFilled[i] = true;
-                CosmicEvolution.instance.save.thePlayer.removeItemFromInventory();
-                return true;
-            }
+        for(int i = 0; i < this.itemsFilled.length; i++) {
+            if (this.itemsFilled[i]) continue;
+            if (this.outputRecipe.requiredItems[i] != inputItem) continue;
+
+
+            this.itemsFilled[i] = true;
+            CosmicEvolution.instance.save.thePlayer.removeItemFromInventory();
+            return true;
+
         }
 
         return false;

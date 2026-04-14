@@ -363,18 +363,19 @@ public final class RenderWorldScene {
                 this.sunY = sunY;
                 this.sunZ = sunZ;
 
-                Shader.shadowMapShader.uploadDouble("time", (double) Timer.elapsedTime % 8388608);
+                Shader.shadowMapShaderTerrain.uploadDouble("time", (double) Timer.elapsedTime % 8388608);
                 GL46.glBindFramebuffer(GL46.GL_FRAMEBUFFER, sun.shadowMap.fboID);
                 GL46.glViewport(0, 0, sun.shadowMap.width, sun.shadowMap.height);
                 GL46.glClear(GL46.GL_DEPTH_BUFFER_BIT);
-                Shader.shadowMapShader.uploadMat4f("combinedViewProjectionMatrix", lightViewProjectionMatrix);
-                GL46.glUseProgram(Shader.shadowMapShader.shaderProgramID);
-                Shader.shadowMapShader.uploadInt("textureArray", 0);
+                Shader.shadowMapShaderTerrain.uploadMat4f("combinedViewProjectionMatrix", lightViewProjectionMatrix);
+                Shader.shadowMapShaderTexture2D.uploadMat4f("combinedViewProjectionMatrix", lightViewProjectionMatrix);
+                Shader.shadowMapShaderTextureArray.uploadMat4f("combinedViewProjectionMatrix", lightViewProjectionMatrix);
+                GL46.glUseProgram(Shader.shadowMapShaderTerrain.shaderProgramID);
+                Shader.shadowMapShaderTerrain.uploadInt("textureArray", 0);
 
                 GL46.glEnable(GL46.GL_ALPHA_TEST);
                 GL46.glAlphaFunc( GL46.GL_GREATER, 0.1f);
 
-                GL46.glBindTexture(GL46.GL_TEXTURE_2D_ARRAY, Assets.blockTextureArray);
                 int xOffset;
                 int yOffset;
                 int zOffset;
@@ -389,9 +390,12 @@ public final class RenderWorldScene {
                         if (!this.doesChunkIntersectSunFrustum(frustumInt, xOffset, yOffset, zOffset, ((xOffset + 31)), ((yOffset + 31)), ((zOffset + 31))))
                             continue;
 
+                        GL46.glBindTexture(GL46.GL_TEXTURE_2D_ARRAY, Assets.blockTextureArray);
                         this.controller.regions[i].chunks[j].renderShadowMap(sunX, sunY, sunZ);
                     }
                 }
+
+                CosmicEvolution.instance.save.thePlayer.renderForShadowMap(sunX, sunY, sunZ);
 
                 GL46.glUseProgram(0);
                 GL46.glBindVertexArray(0);

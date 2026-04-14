@@ -24,7 +24,7 @@ public final class BlockPitKilnLit extends BlockPitKilnUnlit implements ITimeUpd
         EntityParticle particle;
         Chunk chunk = CosmicEvolution.instance.save.activeWorld.chunkController.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
         for(int i = 0; i < particleCount; i++){
-            particle = new EntityParticle(xPos + CosmicEvolution.globalRand.nextDouble(-0.5, 0.5), yPos + CosmicEvolution.globalRand.nextDouble(0.125), zPos + CosmicEvolution.globalRand.nextDouble(-0.5, 0.5), false, CosmicEvolution.globalRand.nextInt(30, 180), Block.campfireLit.ID, false, false);
+            particle = new EntityParticle(xPos + CosmicEvolution.globalRand.nextDouble(-0.5, 0.5), yPos + CosmicEvolution.globalRand.nextDouble(0.125), zPos + CosmicEvolution.globalRand.nextDouble(-0.5, 0.5), false, CosmicEvolution.globalRand.nextInt(30, 180), Block.campfireLit.ID, false, false, false, false, 0, 0);
             chunk.addEntityToList(particle);
         }
     }
