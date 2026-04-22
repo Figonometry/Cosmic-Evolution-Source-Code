@@ -9,6 +9,7 @@ public abstract class AIPassive { ;
 
 
     public static void chooseNewTargetAndSetAngle(EntityLiving entity){
+        if(!entity.isAIEnabled)return;
         int x = MathUtil.floorDouble(entity.x);
         int z = MathUtil.floorDouble(entity.z);
 

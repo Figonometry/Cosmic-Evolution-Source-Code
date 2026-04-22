@@ -1,4 +1,6 @@
-package spacegame.render;
+package spacegame.render.model;
+
+import spacegame.render.RenderBlocks;
 
 import java.io.BufferedReader;
 import java.io.File;

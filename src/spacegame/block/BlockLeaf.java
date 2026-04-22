@@ -17,7 +17,7 @@ public final class BlockLeaf extends Block {
     public void onLeftClick(int x, int y, int z, World world, EntityPlayer player){
         super.onLeftClick(x,y,z, world, player);
         if(CosmicEvolution.globalRand.nextInt(100) <= 1){
-            world.addEntity(new EntityItem(x + 0.5, y + 0.5, z + 0.5, Item.treeSeed.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY));
+            world.addEntity(new EntityItem(x + 0.5, y + 0.5, z + 0.5, Item.treeSeed.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY, 0));
         }
         this.notifySurroundingLeafBlocks(x,y,z, world);
     }
@@ -33,10 +33,10 @@ public final class BlockLeaf extends Block {
         if(!this.canLeafDecay(x,y,z, world))return;
 
         if(CosmicEvolution.globalRand.nextInt(100) <= 1){
-            world.addEntity(new EntityItem(x + 0.5, y + 0.5, z + 0.5, Item.treeSeed.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY));
+            world.addEntity(new EntityItem(x + 0.5, y + 0.5, z + 0.5, Item.treeSeed.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY, 0));
         }
         if (this.itemDropChance > CosmicEvolution.globalRand.nextFloat()) {
-            world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).addEntityToList(new EntityItem(x + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), y + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), z + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), this.droppedItemID, Item.NULL_ITEM_METADATA, (byte) 1, Item.list[this.droppedItemID].durability));
+            world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).addEntityToList(new EntityItem(x + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), y + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), z + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), this.droppedItemID, Item.NULL_ITEM_METADATA, (byte) 1, Item.list[this.droppedItemID].durability, 0));
         }
         world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).removeDecayableLeafFromArray((short) Chunk.getBlockIndexFromCoordinates(x,y,z));
         world.setBlockWithNotify(x,y,z, Block.air.ID, false);

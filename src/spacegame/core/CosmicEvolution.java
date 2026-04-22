@@ -27,6 +27,7 @@ import spacegame.util.Logger;
 import spacegame.util.MathUtil;
 import spacegame.util.ScreenshotHandler;
 import spacegame.world.*;
+import spacegame.world.weather.Cloud;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -34,10 +35,13 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.Random;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public final class CosmicEvolution implements Runnable {
     public static CosmicEvolution instance;
     public final File launcherDirectory;
+    public final String launcherFilepath;
     public static final Random globalRand = new Random();
     public volatile boolean running;
     public String title;
@@ -55,7 +59,11 @@ public final class CosmicEvolution implements Runnable {
     public Universe everything;
     public RenderEngine renderEngine = new RenderEngine();
     public SoundPlayer soundPlayer = new SoundPlayer(this);
-    private EntityModelTest entityModelTest;
+    private EntityWolf modelTest;
+    public static ExecutorService threadPool;
+    public static final AtomicInteger threadJobs = new AtomicInteger();
+    public Thread dirtyChunksSchedulerThread;
+    public String osName;
 
 
     public static void main(String[] args) {
@@ -72,11 +80,12 @@ public final class CosmicEvolution implements Runnable {
         mainThread.start();
     }
 
-    private CosmicEvolution(String launcherDirectory) {
+    private CosmicEvolution(String launcherFilepath) {
         if (instance != null) {
             throw new RuntimeException("Main Class already initialized");
         }
-        this.launcherDirectory = new File(launcherDirectory);
+        this.launcherFilepath = launcherFilepath;
+        this.launcherDirectory = new File(launcherFilepath);
         instance = this;
     }
 
@@ -97,7 +106,13 @@ public final class CosmicEvolution implements Runnable {
     }
 
     private void startGame() {
-        this.title = "Cosmic Evolution Alpha v0.43";
+        this.osName = this.verifyOperatingSystem();
+        int numCores = Runtime.getRuntime().availableProcessors();
+        int workerCount = Math.max(1, numCores - 1);
+        threadPool = new ThreadPoolExecutor(workerCount, workerCount, 0L, TimeUnit.MILLISECONDS, new PriorityBlockingQueue<>());
+        this.dirtyChunksSchedulerThread = new Thread(new ChunkJobThreadScheduler());
+        this.dirtyChunksSchedulerThread.start();
+        this.title = "Cosmic Evolution Alpha v0.44";
         GameSettings.loadOptionsFromFile(this.launcherDirectory);
         this.clearLogFiles(new File(this.launcherDirectory + "/crashReports"));
         this.initLWJGL();
@@ -114,6 +129,21 @@ public final class CosmicEvolution implements Runnable {
             for (int i = 0; i < allContents.length; i++) {
                 allContents[i].delete();
             }
+        }
+    }
+
+    private String verifyOperatingSystem() {
+        String operatingSystem = System.getProperty("os.name");
+        operatingSystem = operatingSystem.toLowerCase();
+        this.osName = operatingSystem;
+        if (this.osName.contains("win")) {
+            return "win";
+        } else if (this.osName.contains("mac")) {
+            return "mac";
+        } else if (this.osName.contains("linux") || this.osName.contains("unix")) {
+            return "linux";
+        } else {
+            return "unknown";
         }
     }
 
@@ -155,6 +185,8 @@ public final class CosmicEvolution implements Runnable {
         GLFW.glfwSetMouseButtonCallback(this.window, MouseListener::mouseButtonCallback);
         GLFW.glfwSetScrollCallback(this.window, MouseListener::mouseScrollCallback);
         GLFW.glfwSetKeyCallback(this.window, KeyListener::keyCallback);
+
+        GLFW.glfwSetCharCallback(this.window, CharListener::charCallBack);
 
 
         GLFW.glfwMakeContextCurrent(this.window);
@@ -320,11 +352,6 @@ public final class CosmicEvolution implements Runnable {
                 }
             }
         }
-        if(this.currentlySelectedField != null){
-            if(this.currentlySelectedField.typing){
-                this.currentlySelectedField.scanForInputText();
-            }
-        }
         if(this.currentGui instanceof GuiSelectAssetPackMainMenu){
             File[] folderContents = ((GuiSelectAssetPackMainMenu) this.currentGui).assetPackFolder.listFiles();
             if(folderContents == null){
@@ -385,14 +412,18 @@ public final class CosmicEvolution implements Runnable {
                     KeyListener.setKeyReleased(GLFW.GLFW_KEY_PERIOD);
                 }
 
+
+
                 if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_G) && KeyListener.keyReleased[GLFW.GLFW_KEY_G]){
-                  // if(this.entityModelTest == null){
-                  //     this.entityModelTest = new EntityModelTest(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z);
-                  //     this.save.activeWorld.addEntity(this.entityModelTest);
-                  // } else {
-                  //     this.save.activeWorld.findChunkFromChunkCoordinates(MathUtil.floorDouble(this.entityModelTest.x) >> 5, MathUtil.floorDouble(this.entityModelTest.y) >> 5, MathUtil.floorDouble(this.entityModelTest.z) >> 5).removeEntity(this.entityModelTest);
-                  //     this.entityModelTest = null;
-                  // }
+                    //  if(this.modelTest == null){
+                    //      this.modelTest = new EntityWolf(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, false, true);
+                    //     // this.modelTest.health = 0.1f;
+                    //   //   this.modelTest.isAIEnabled = false;
+                    //      this.save.activeWorld.addEntity(this.modelTest);
+                    //  } else {
+                    //      this.save.activeWorld.findChunkFromChunkCoordinates(MathUtil.floorDouble(this.modelTest.x) >> 5, MathUtil.floorDouble(this.modelTest.y) >> 5, MathUtil.floorDouble(this.modelTest.z) >> 5).removeEntity(this.modelTest);
+                    //      this.modelTest = null;
+                    //  }
                     KeyListener.setKeyReleased(GLFW.GLFW_KEY_G);
                 }
             }
@@ -417,40 +448,42 @@ public final class CosmicEvolution implements Runnable {
             }
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_1) && this.currentGui instanceof GuiInGame){
-            EntityPlayer.selectedInventorySlot = 0;
-        }
+        if(this.currentGui instanceof GuiInGame) {
+            if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_1)) {
+                EntityPlayer.selectedInventorySlot = 0;
+            }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_2) && this.currentGui instanceof GuiInGame){
-            EntityPlayer.selectedInventorySlot = 1;
-        }
+            if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_2)) {
+                EntityPlayer.selectedInventorySlot = 1;
+            }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_3) && this.currentGui instanceof GuiInGame){
-            EntityPlayer.selectedInventorySlot = 2;
-        }
+            if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_3)) {
+                EntityPlayer.selectedInventorySlot = 2;
+            }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_4) && this.currentGui instanceof GuiInGame){
-            EntityPlayer.selectedInventorySlot = 3;
-        }
+            if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_4)) {
+                EntityPlayer.selectedInventorySlot = 3;
+            }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_5) && this.currentGui instanceof GuiInGame){
-            EntityPlayer.selectedInventorySlot = 4;
-        }
+            if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_5)) {
+                EntityPlayer.selectedInventorySlot = 4;
+            }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_6) && this.currentGui instanceof GuiInGame){
-            EntityPlayer.selectedInventorySlot = 5;
-        }
+            if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_6)) {
+                EntityPlayer.selectedInventorySlot = 5;
+            }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_7) && this.currentGui instanceof GuiInGame){
-            EntityPlayer.selectedInventorySlot = 6;
-        }
+            if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_7)) {
+                EntityPlayer.selectedInventorySlot = 6;
+            }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_8) && this.currentGui instanceof GuiInGame){
-            EntityPlayer.selectedInventorySlot = 7;
-        }
+            if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_8)) {
+                EntityPlayer.selectedInventorySlot = 7;
+            }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_9) && this.currentGui instanceof GuiInGame){
-            EntityPlayer.selectedInventorySlot = 8;
+            if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_9)) {
+                EntityPlayer.selectedInventorySlot = 8;
+            }
         }
 
 
@@ -498,6 +531,15 @@ public final class CosmicEvolution implements Runnable {
             }
         }
 
+        if(this.currentGui instanceof GuiSavingWorld){
+            if(threadJobs.get() == 0) {
+                this.save = null;
+                this.setNewGui(new GuiMainMenu(this));
+                this.renderEngine.deleteTexture(Cloud.texture);
+                this.renderEngine.deleteTexture(RenderWorldScene.rainTexture);
+            }
+        }
+
         if(this.currentGui instanceof GuiInGame) {
             if (MouseListener.getScrollY() == -1) {
                 EntityPlayer.selectedInventorySlot++;
@@ -539,7 +581,7 @@ public final class CosmicEvolution implements Runnable {
                     this.save.activeWorld.findChunkFromChunkCoordinates(MathUtil.floorDouble(this.save.thePlayer.x) >> 5, MathUtil.floorDouble(this.save.thePlayer.y) >> 5, MathUtil.floorDouble(this.save.thePlayer.z) >> 5).addEntityToList(droppedBlock);
                 }
             } else if(ItemStack.itemStackOnMouse.item.ID != Item.NULL_ITEM_REFERENCE) {
-                EntityItem droppedItem = new EntityItem(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, ItemStack.itemStackOnMouse.item.ID, Item.NULL_ITEM_METADATA, ItemStack.itemStackOnMouse.count, ItemStack.itemStackOnMouse.durability);
+                EntityItem droppedItem = new EntityItem(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, ItemStack.itemStackOnMouse.item.ID, Item.NULL_ITEM_METADATA, ItemStack.itemStackOnMouse.count, ItemStack.itemStackOnMouse.durability, 0);
                 double[] vector = CosmicEvolution.camera.rayCast(1);
                 Vector3d difVector = new Vector3d(vector[0] - this.save.thePlayer.x, (vector[1] - this.save.thePlayer.y) + this.save.thePlayer.height/2, vector[2] - this.save.thePlayer.z);
                 difVector.normalize();
@@ -550,6 +592,7 @@ public final class CosmicEvolution implements Runnable {
             ItemStack.itemStackOnMouse.count = 0;
             ItemStack.itemStackOnMouse.metadata = Item.NULL_ITEM_METADATA;
             ItemStack.itemStackOnMouse.durability = Item.NULL_ITEM_DURABILITY;
+            ItemStack.itemStackOnMouse.decayTime = 0L;
         }
     }
 
@@ -608,6 +651,7 @@ public final class CosmicEvolution implements Runnable {
                                 ItemStack.itemStackOnMouse.count = 0;
                                 ItemStack.itemStackOnMouse.metadata = Item.NULL_ITEM_METADATA;
                                 ItemStack.itemStackOnMouse.durability = Item.NULL_ITEM_DURABILITY;
+                                ItemStack.itemStackOnMouse.decayTime = 0L;
                             }
                         } else {
                             if (MouseListener.leftClickReleased) {
@@ -624,10 +668,12 @@ public final class CosmicEvolution implements Runnable {
                                 stack.count = ItemStack.itemStackOnMouse.count;
                                 stack.metadata = ItemStack.itemStackOnMouse.metadata;
                                 stack.durability = ItemStack.itemStackOnMouse.durability;
+                                stack.decayTime = ItemStack.itemStackOnMouse.decayTime;
                                 ItemStack.itemStackOnMouse.item = null;
                                 ItemStack.itemStackOnMouse.count = 0;
                                 ItemStack.itemStackOnMouse.metadata = Item.NULL_ITEM_METADATA;
                                 ItemStack.itemStackOnMouse.durability = Item.NULL_ITEM_DURABILITY;
+                                ItemStack.itemStackOnMouse.decayTime = 0L;
                                 if(stack.exclusiveItemType.equals(Item.ITEM_TYPE_PLAYER_STORAGE)){
                                     this.save.thePlayer.setPlayerStorageLevel((byte) stack.item.storageLevel);
                                 }
@@ -636,10 +682,12 @@ public final class CosmicEvolution implements Runnable {
                                 stack.count = ItemStack.itemStackOnMouse.count;
                                 stack.metadata = ItemStack.itemStackOnMouse.metadata;
                                 stack.durability = ItemStack.itemStackOnMouse.durability;
+                                stack.decayTime = ItemStack.itemStackOnMouse.decayTime;
                                 ItemStack.itemStackOnMouse.item = null;
                                 ItemStack.itemStackOnMouse.count = 0;
                                 ItemStack.itemStackOnMouse.metadata = Item.NULL_ITEM_METADATA;
                                 ItemStack.itemStackOnMouse.durability = Item.NULL_ITEM_DURABILITY;
+                                ItemStack.itemStackOnMouse.decayTime = 0L;
                             }
                         }
                     } else if(!stack.item.equals(ItemStack.itemStackOnMouse.item) || (stack.metadata != ItemStack.itemStackOnMouse.metadata)){
@@ -648,16 +696,19 @@ public final class CosmicEvolution implements Runnable {
                         tempStack.count = stack.count;
                         tempStack.durability = stack.durability;
                         tempStack.metadata = stack.metadata;
+                        tempStack.decayTime = stack.decayTime;
 
                         stack.item = ItemStack.itemStackOnMouse.item;;
                         stack.count = ItemStack.itemStackOnMouse.count;
                         stack.durability = ItemStack.itemStackOnMouse.durability;
                         stack.metadata = ItemStack.itemStackOnMouse.metadata;
+                        stack.decayTime = ItemStack.itemStackOnMouse.decayTime;
 
                         ItemStack.itemStackOnMouse.item = tempStack.item;
                         ItemStack.itemStackOnMouse.count = tempStack.count;
                         ItemStack.itemStackOnMouse.durability = tempStack.durability;
                         ItemStack.itemStackOnMouse.metadata = tempStack.metadata;
+                        ItemStack.itemStackOnMouse.decayTime = tempStack.decayTime;
                     }
                 } else if(stack.item != null) {
                     if (MouseListener.leftClickReleased) {
@@ -665,11 +716,13 @@ public final class CosmicEvolution implements Runnable {
                         ItemStack.itemStackOnMouse.count = stack.count;
                         ItemStack.itemStackOnMouse.metadata = stack.metadata;
                         ItemStack.itemStackOnMouse.durability = stack.durability;
+                        ItemStack.itemStackOnMouse.decayTime = stack.decayTime;
                         ItemStack.itemStackOnMouse.exclusiveItemType = stack.exclusiveItemType;
                         stack.item = null;
                         stack.count = 0;
                         stack.metadata = Item.NULL_ITEM_METADATA;
                         stack.durability = Item.NULL_ITEM_DURABILITY;
+                        stack.decayTime = 0L;
                         if(stack.usesExclusiveItem && stack.exclusiveItemType.equals(Item.ITEM_TYPE_PLAYER_STORAGE)){
                             this.save.thePlayer.setPlayerStorageLevel((byte) 1);
                         }
@@ -795,7 +848,7 @@ public final class CosmicEvolution implements Runnable {
                 this.save.activeWorld.chunkController.update();
             }
             if(this.currentGui instanceof GuiWorldLoading){
-                if(Thread.activeCount() < 5 && World.worldLoadPhase == 3 && this.save.activeWorld.chunkController.threadQueue.size() == 0){
+                if(World.worldLoadPhase == 3){
                     GLFW.glfwSetInputMode(this.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
                     if(Assets.blockTextureArray == 0 || Assets.itemTextureArray == 0) {
                         Assets.enableBlockTextureArray();
@@ -853,7 +906,7 @@ public final class CosmicEvolution implements Runnable {
     private void render() {
         GL46.glClear(GL46.GL_COLOR_BUFFER_BIT);
         GL46.glClear(GL46.GL_DEPTH_BUFFER_BIT);
-        if(this.save != null && !(this.currentGui instanceof GuiWorldLoading || this.currentGui instanceof GuiUniverseMap)) {
+        if(this.save != null && !(this.currentGui instanceof GuiWorldLoading || this.currentGui instanceof GuiUniverseMap || this.currentGui instanceof GuiSavingWorld)) {
             this.save.activeWorld.renderWorld();
             this.save.thePlayer.renderShadow();
         }
@@ -919,6 +972,11 @@ public final class CosmicEvolution implements Runnable {
             this.renderEngine.deleteTexture(EntityModelTest.texture);
             EntityModelTest.texture = RenderEngine.NULL_TEXTURE;
         }
+        EntityWolf.ticksSinceLastRender++;
+        if(EntityWolf.ticksSinceLastRender >= 600 && EntityWolf.texture != RenderEngine.NULL_TEXTURE){
+            this.renderEngine.deleteTexture(EntityWolf.texture);
+            EntityWolf.texture = RenderEngine.NULL_TEXTURE;
+        }
     }
 
     public void reloadAllTextures(){
@@ -931,6 +989,16 @@ public final class CosmicEvolution implements Runnable {
         Assets.disableFontTextureAtlas();
 
         this.currentGui.deleteTextures();
+
+        if(EntityDeer.texture != RenderEngine.NULL_TEXTURE){
+            this.renderEngine.deleteTexture(EntityDeer.texture);
+            EntityDeer.texture = RenderEngine.NULL_TEXTURE;
+        }
+
+        if(EntityWolf.texture != RenderEngine.NULL_TEXTURE){
+            this.renderEngine.deleteTexture(EntityWolf.texture);
+            EntityWolf.texture = RenderEngine.NULL_TEXTURE;
+        }
 
         this.initAllBufferObjects();
 
@@ -945,9 +1013,14 @@ public final class CosmicEvolution implements Runnable {
         Assets.enableFontTextureAtlas();
     }
 
+    public static void addJobToThreadPool(ChunkJob chunkJob){
+        threadPool.execute(chunkJob);
+    }
+
     public void shutdown() {
         this.running = false;
         GameSettings.saveOptions();
+        threadPool.shutdown();
     }
 
 }

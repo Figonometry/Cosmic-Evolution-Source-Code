@@ -19,6 +19,19 @@ public abstract class MathUtil {
         return Math.sqrt(a * a + b * b);
     }
 
+    public static double distance3DSquared(double a1, double b1, double c1, double a2, double b2, double c2){
+        double a = a1 - a2;
+        double b = b1 - b2;
+        double c = c1 - c2;
+        return (a * a + b * b + c * c);
+    }
+
+    public static double distance2DSquared(double a1, double b1, double a2, double b2) {
+        double a = a1 - a2;
+        double b = b1 - b2;
+        return (a * a + b * b);
+    }
+
     //Uses an implementation of fast floor
     public static int floorDouble(double a){
         int a1 = (int)a;

@@ -462,6 +462,8 @@ public final class RenderEngine {
                 case 23 -> "stoneAxe";
                 case 24 -> "stoneShovel";
                 case 25 -> "stoneKnife";
+                case 26 -> "deerHide";
+                case 27 -> "rot";
                 default -> "missing";
             };
         }

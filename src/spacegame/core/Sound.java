@@ -29,7 +29,9 @@ public final class Sound {
     public static String rainUnderTree = "src/spacegame/assets/sound/rainUnderTree.ogg";
     public static String rainOutside = "src/spacegame/assets/sound/rainOutside.ogg";
     public static String wind = "src/spacegame/assets/sound/wind.ogg";
-    public static String extinguish = "src/spacegame/assets/sounds/extinguish.ogg";
+    public static String extinguish = "src/spacegame/assets/sound/extinguish.ogg";
+    public static String wolfHurt = "src/spacegame/assets/sound/wolfHurt.ogg";
+    public static String wolfAmbient = "src/spacegame/assets/sound/wolfAmbient.ogg";
     public static boolean canPlaySound = true;
     public String filepath;
     public int bufferID;

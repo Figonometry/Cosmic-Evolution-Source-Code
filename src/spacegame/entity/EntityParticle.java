@@ -2,11 +2,11 @@ package spacegame.entity;
 
 import org.joml.Vector3d;
 import org.joml.Vector3f;
-import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
 import spacegame.render.*;
+import spacegame.render.model.ModelLoader;
 import spacegame.util.MathUtil;
 import spacegame.world.World;
 
@@ -186,7 +186,7 @@ public final class EntityParticle extends EntityNonLiving {
                     worldTessellator.addElements();
             }
 
-            GL46.glDisable(GL46.GL_CULL_FACE);
+
             Shader.worldShaderTextureArray.uploadBoolean("performNormals", true);
             Shader.worldShaderTextureArray.uploadBoolean("isColorCorrected", Block.list[this.associatedBlock].colorize);
             worldTessellator.drawTextureArray(Assets.blockTextureArray, Shader.worldShaderTextureArray, CosmicEvolution.camera);
@@ -209,14 +209,9 @@ public final class EntityParticle extends EntityNonLiving {
             worldTessellator.addVertexTextureArrayWithSampling(colorValue, (float) vertex3.x, (float) vertex3.y, (float) vertex3.z, 2, blockID, 0.46875f, 0.46875f, 0, 0, 0, 0);
             worldTessellator.addVertexTextureArrayWithSampling(colorValue, (float) vertex4.x, (float) vertex4.y, (float) vertex4.z, 0, blockID, -0.46875f, -0.46875f, 0, 0, 0, 0);
             worldTessellator.addElements();
-            GL46.glDisable(GL46.GL_CULL_FACE);
             Shader.worldShaderTextureArray.uploadBoolean("performNormals", false);
             worldTessellator.drawTextureArray(Assets.blockTextureArray, Shader.worldShaderTextureArray, CosmicEvolution.camera);
         }
-
-        GL46.glEnable(GL46.GL_CULL_FACE);
-        GL46.glCullFace(GL46.GL_FRONT);
-
     }
 
 
@@ -228,7 +223,6 @@ public final class EntityParticle extends EntityNonLiving {
         this.chunkZ = MathUtil.floorDouble(this.z) >> 5;
 
         Shader.shadowMapShaderTextureArray.uploadVec3f("chunkOffset", new Vector3f((chunkX - sunX) << 5, (chunkY - sunY) << 5, (chunkZ - sunZ) << 5));
-        World world = CosmicEvolution.instance.save.activeWorld;
         float x = MathUtil.positiveMod(this.x, 32);
         float y = MathUtil.positiveMod(this.y, 32);
         float z = MathUtil.positiveMod(this.z, 32);
@@ -264,7 +258,6 @@ public final class EntityParticle extends EntityNonLiving {
                 worldTessellator.addElements();
             }
 
-            GL46.glDisable(GL46.GL_CULL_FACE);
             worldTessellator.drawTextureArray(0, Shader.shadowMapShaderTextureArray, CosmicEvolution.camera);
         } else {
             Vector3d blockPosition = new Vector3d(x, (float) (y + this.height/2) + 0.125, z);
@@ -278,13 +271,10 @@ public final class EntityParticle extends EntityNonLiving {
             worldTessellator.addVertexTextureArrayWithSampling(0, (float) vertex3.x, (float) vertex3.y, (float) vertex3.z, 2, blockID, 0.46875f, 0.46875f, 0, 0, 0, 0);
             worldTessellator.addVertexTextureArrayWithSampling(0, (float) vertex4.x, (float) vertex4.y, (float) vertex4.z, 0, blockID, -0.46875f, -0.46875f, 0, 0, 0, 0);
             worldTessellator.addElements();
-            GL46.glDisable(GL46.GL_CULL_FACE);
             worldTessellator.drawTextureArray(Assets.blockTextureArray, Shader.shadowMapShaderTextureArray, CosmicEvolution.camera);
         }
-
-        GL46.glEnable(GL46.GL_CULL_FACE);
-        GL46.glCullFace(GL46.GL_FRONT);
     }
+
 
     private  void resetLight() {
         red = 1F;

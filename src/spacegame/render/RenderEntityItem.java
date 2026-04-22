@@ -6,6 +6,8 @@ import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
+import spacegame.render.model.ModelFace;
+import spacegame.render.model.ModelLoader;
 import spacegame.util.MathUtil;
 import spacegame.gui.GuiInGame;
 import spacegame.item.Item;
@@ -121,9 +123,7 @@ public final class RenderEntityItem {
         worldTessellator.addElements();
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-        GL46.glDisable(GL46.GL_CULL_FACE);
         worldTessellator.drawTextureArray(Assets.itemTextureArray, Shader.worldShaderTextureArray, CosmicEvolution.camera);
-        GL46.glEnable(GL46.GL_CULL_FACE);
         GL46.glDisable(GL46.GL_BLEND);
     }
 

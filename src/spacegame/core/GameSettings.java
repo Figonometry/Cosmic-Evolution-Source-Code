@@ -23,7 +23,7 @@ public abstract class GameSettings {
     public static boolean wavyLeaves = true;
     public static boolean wavyWater = true;
     public static boolean transparentLeaves;
-    public static String assetPackPath;
+    public static String assetPackPath = "Default:";
     public static boolean usingDefaultAssets;
     public static KeyBinding keyBeingModified;
     public static KeyBinding forwardKey = new KeyBinding("Forward", "W", GLFW.GLFW_KEY_W);
@@ -104,11 +104,16 @@ public abstract class GameSettings {
                         transparentLeaves = options[1].equals("true");
                     }
                     if(options[0].equals("assetPackPath")){
-                        assetPackPath =  "C:" + options[2];
-                        String[] pathContents = assetPackPath.split(Pattern.quote(File.separator));
-                        String title = pathContents[pathContents.length - 1];
+                        String filepath = CosmicEvolution.instance.osName.equals("win") ? options[2] : options[1];
 
-                        usingDefaultAssets = title.equals("Default");
+                        String assetPacksFilepath = CosmicEvolution.instance.launcherFilepath + File.separator + "assetPacks";
+                        String[] pathContents = filepath.split(Pattern.quote(File.separator));
+
+                        String packName = pathContents[pathContents.length - 1];
+
+                        assetPackPath = assetPacksFilepath + File.separator + packName;
+
+                        usingDefaultAssets = packName.equals("Default");
                     }
                     if(options[0].equals("forwardKey")){
                         forwardKey.key = options[1];

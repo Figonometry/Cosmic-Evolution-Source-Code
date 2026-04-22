@@ -5,7 +5,6 @@ import spacegame.core.CosmicEvolution;
 import spacegame.entity.EntityBlock;
 import spacegame.entity.EntityItem;
 import spacegame.item.Item;
-import spacegame.util.MathUtil;
 import spacegame.world.Chunk;
 
 public final class InWorldCraftingItem {
@@ -70,11 +69,11 @@ public final class InWorldCraftingItem {
 
         if(!CosmicEvolution.instance.save.thePlayer.addItemToInventory(this.outputRecipe.itemID,
                 this.outputRecipe.isBlock ? this.outputRecipe.blockID : Item.NULL_ITEM_METADATA,
-                this.outputRecipe.outputItemCount, this.outputRecipe.isBlock ? Item.NULL_ITEM_DURABILITY :  Item.list[this.outputRecipe.itemID].durability)){
+                this.outputRecipe.outputItemCount, this.outputRecipe.isBlock ? Item.NULL_ITEM_DURABILITY :  Item.list[this.outputRecipe.itemID].durability, 0)){
             if(this.outputRecipe.isBlock){
                 CosmicEvolution.instance.save.activeWorld.addEntity(new EntityBlock(x + 0.5, y + 0.125, z + 0.5, this.outputRecipe.blockID, this.outputRecipe.outputItemCount));
             } else {
-                CosmicEvolution.instance.save.activeWorld.addEntity(new EntityItem(x + 0.5, y + 0.125, z + 0.5, this.outputRecipe.itemID, Item.NULL_ITEM_METADATA, this.outputRecipe.outputItemCount, Item.list[this.outputRecipe.itemID].durability));
+                CosmicEvolution.instance.save.activeWorld.addEntity(new EntityItem(x + 0.5, y + 0.125, z + 0.5, this.outputRecipe.itemID, Item.NULL_ITEM_METADATA, this.outputRecipe.outputItemCount, Item.list[this.outputRecipe.itemID].durability, 0));
             }
         }
 

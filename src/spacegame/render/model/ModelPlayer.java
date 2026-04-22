@@ -1,11 +1,12 @@
-package spacegame.render;
+package spacegame.render.model;
 
 import org.joml.Vector3f;
-import org.lwjgl.opengl.GL46;
 import spacegame.core.CosmicEvolution;
 import spacegame.entity.Entity;
 import spacegame.entity.EntityModelTest;
 import spacegame.entity.EntityPlayer;
+import spacegame.render.RenderEngine;
+import spacegame.render.Shader;
 import spacegame.util.MathUtil;
 
 
@@ -38,7 +39,6 @@ public final class ModelPlayer extends Model {
         this.segments[3] = rightLeg;
         this.segments[4] = leftArm;
         this.segments[5] = rightArm;
-
     }
 
     @Override
@@ -81,10 +81,10 @@ public final class ModelPlayer extends Model {
             }
         }
 
-        this.rotateSegment(LEFT_ARM, 0, 0, 1, angleLeftArm);
-        this.rotateSegment(RIGHT_ARM, 0, 0, 1, angleRightArm);
-        this.rotateSegment(LEFT_LEG, 0, 0, 1, angleLeftLeg);
-        this.rotateSegment(RIGHT_LEG, 0, 0 , 1, angleRightLeg);
+        this.rotateSegment(LEFT_ARM, 0, 0, 1, angleLeftArm, true);
+        this.rotateSegment(RIGHT_ARM, 0, 0, 1, angleRightArm, true);
+        this.rotateSegment(LEFT_LEG, 0, 0, 1, angleLeftLeg, true);
+        this.rotateSegment(RIGHT_LEG, 0, 0 , 1, angleRightLeg, true);
     }
 
     private void animatePunching(EntityPlayer player){
@@ -134,8 +134,8 @@ public final class ModelPlayer extends Model {
         }
 
 
-        this.rotateSegment(RIGHT_ARM, 1, 0, 0, angleX);
-        this.rotateSegment(RIGHT_ARM, 0, 0, 1, angleZ);
+        this.rotateSegment(RIGHT_ARM, 1, 0, 0, angleX, true);
+        this.rotateSegment(RIGHT_ARM, 0, 0, 1, angleZ, true);
     }
 
     public static ModelPlayer getBaseModel(){
@@ -271,7 +271,7 @@ public final class ModelPlayer extends Model {
         Vector3f[] eastFace;
         Vector3f[] westFace;
 
-        this.rotateSegment(BODY, 0, 1, 0, 180);
+        this.rotateSegment(BODY, 0, 1, 0, 180, true);
 
         float angleDeg = associatedEntity.yaw;
         for(int i = 0; i < this.segments.length; i++){

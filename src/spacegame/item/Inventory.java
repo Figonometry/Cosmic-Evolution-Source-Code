@@ -82,14 +82,15 @@ public final class Inventory {
         }
     }
 
-    public void loadItemToInventory(short itemID, short metadata, byte count, short durability, int slot){
+    public void loadItemToInventory(short itemID, short metadata, byte count, short durability, int slot, long decayTime){
         this.itemStacks[slot].item = Item.list[itemID];
         this.itemStacks[slot].metadata = metadata;
         this.itemStacks[slot].durability = durability;
         this.itemStacks[slot].count = count;
+        this.itemStacks[slot].decayTime = decayTime;
     }
 
-    public boolean addItemToInventory(short itemID, short metadata, byte count, short durability){
+    public boolean addItemToInventory(short itemID, short metadata, byte count, short durability, long decayTime){
         ItemStack stack;
         for(int i = 0; i < this.itemStacks.length; i++) {
             stack = this.itemStacks[i];
@@ -115,6 +116,7 @@ public final class Inventory {
                 stack.count = count;
                 stack.setMetadata(metadata);
                 stack.durability = durability;
+                stack.decayTime = decayTime;
                 return true;
             }
         }
@@ -124,7 +126,7 @@ public final class Inventory {
     public void removeItemFromInventory() {
         this.itemStacks[EntityPlayer.selectedInventorySlot].count--;
         if(this.itemStacks[EntityPlayer.selectedInventorySlot].count <= 0){
-            this.itemStacks[EntityPlayer.selectedInventorySlot].item.onDestroy(this.itemStacks[EntityPlayer.selectedInventorySlot], EntityPlayer.selectedInventorySlot);
+            this.itemStacks[EntityPlayer.selectedInventorySlot].item.onDestroy(this.itemStacks[EntityPlayer.selectedInventorySlot]);
         }
     }
 

@@ -4,15 +4,12 @@ import spacegame.block.Block;
 import spacegame.block.BlockContainer;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
+import spacegame.entity.*;
 import spacegame.item.crafting.CraftingBlockRecipes;
 import spacegame.item.crafting.InWorld3DCraftingItem;
 import spacegame.item.crafting.InWorldCraftingItem;
 import spacegame.item.crafting.InWorldCraftingRecipe;
 import spacegame.util.Logger;
-import spacegame.entity.Entity;
-import spacegame.entity.EntityBlock;
-import spacegame.entity.EntityDeer;
-import spacegame.entity.EntityItem;
 import spacegame.item.Inventory;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
@@ -34,7 +31,13 @@ public final class ThreadChunkColumnLoader implements Runnable {
 
     @Override
     public void run() {
-        this.loadChunkColumn(this.x, this.z);
+        try {
+            this.loadChunkColumn(this.x, this.z);
+        } catch (Exception e){
+            e.printStackTrace();
+        } finally {
+            CosmicEvolution.threadJobs.decrementAndGet();
+        }
     }
 
     public void loadChunkColumn(int x, int z) {
@@ -83,12 +86,23 @@ public final class ThreadChunkColumnLoader implements Runnable {
                                         chunk.addEntityToList(entityLoaded);
                                     }
                                     case "EntityItem" -> {
-                                        entityLoaded = new EntityItem(entityLoadedTag.getDouble("x"), entityLoadedTag.getDouble("y"), entityLoadedTag.getDouble("z"), entityLoadedTag.getShort("itemType"), (byte) 1, entityLoadedTag.getByte("count"), entityLoadedTag.getShort("durability"));
+                                        entityLoaded = new EntityItem(entityLoadedTag.getDouble("x"), entityLoadedTag.getDouble("y"), entityLoadedTag.getDouble("z"), entityLoadedTag.getShort("itemType"), (byte) 1, entityLoadedTag.getByte("count"), entityLoadedTag.getShort("durability"), 0);
                                         chunk.addEntityToList(entityLoaded);
                                     }
                                     case "EntityDeer" -> {
                                         entityLoaded = new EntityDeer(entityLoadedTag.getDouble("x"), entityLoadedTag.getDouble("y"), entityLoadedTag.getDouble("z"), false, false);
                                         entityLoaded.despawnTime = entityLoadedTag.getLong("despawnTime");
+                                        ((EntityLiving)entityLoaded).isDead = entityLoadedTag.getBoolean("isDead");
+                                        ((EntityLiving)entityLoaded).isAIEnabled = entityLoadedTag.getBoolean("isAIEnabled");
+                                        ((EntityLiving)entityLoaded).timeDied = entityLoadedTag.getLong("timeDied");
+                                        chunk.addEntityToList(entityLoaded);
+                                    }
+                                    case "EntityWolf" -> {
+                                        entityLoaded = new EntityWolf(entityLoadedTag.getDouble("x"), entityLoadedTag.getDouble("y"), entityLoadedTag.getDouble("z"), false, false);
+                                        entityLoaded.despawnTime = entityLoadedTag.getLong("despawnTime");
+                                        ((EntityLiving)entityLoaded).isDead = entityLoadedTag.getBoolean("isDead");
+                                        ((EntityLiving)entityLoaded).isAIEnabled = entityLoadedTag.getBoolean("isAIEnabled");
+                                        ((EntityLiving)entityLoaded).timeDied = entityLoadedTag.getLong("timeDied");
                                         chunk.addEntityToList(entityLoaded);
                                     }
                                 }
@@ -112,7 +126,8 @@ public final class ThreadChunkColumnLoader implements Runnable {
                                             byte count = item.getByte("count");
                                             short durability = item.getShort("durability");
                                             short metadata = item.getShort("metadata");
-                                            chestInventory.loadItemToInventory(id, metadata, count, durability, j);
+                                            long decayTime = item.getLong("decayTime");
+                                            chestInventory.loadItemToInventory(id, metadata, count, durability, j, decayTime);
                                         }
                                     }
                                     chunk.addChestLocation(index, chestInventory);

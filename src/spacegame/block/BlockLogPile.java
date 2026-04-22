@@ -34,7 +34,7 @@ public final class BlockLogPile extends BlockPile {
             return;
         }
 
-        if(!KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) && player.addItemToInventory(Item.fireWood.ID, Item.NULL_ITEM_METADATA, (byte)2, Item.NULL_ITEM_DURABILITY) && (MouseListener.timeHeldRightClick == 0 || (((CosmicEvolution.instance.save.time - MouseListener.timeHeldRightClick) % 15) == 0))){
+        if(!KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) && player.addItemToInventory(Item.fireWood.ID, Item.NULL_ITEM_METADATA, (byte)2, Item.NULL_ITEM_DURABILITY, 0) && (MouseListener.timeHeldRightClick == 0 || (((CosmicEvolution.instance.save.time - MouseListener.timeHeldRightClick) % 15) == 0))){
             ChestLocation chest = world.getChestLocation(x,y,z);
             chest.inventory.itemStacks[0].count -= 2;
             KeyListener.setKeyReleased(GLFW.GLFW_KEY_LEFT_SHIFT);

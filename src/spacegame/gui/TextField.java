@@ -11,7 +11,6 @@ public final class TextField {
    public int x;
    public int y;
    public String text = "";
-   public String next = null;
    public int keyBeingPressed;
    public boolean canUseSlash;
    public int lineCharLimit;
@@ -63,36 +62,6 @@ public final class TextField {
         fontRenderer.drawString(this.text, this.x - this.width/2, this.y - this.height/2,-15, 16777215, 50, 255);
     }
 
-    public void scanForInputText() {
-        if (this.text.length() != this.lineCharLimit) {
-            if (KeyListener.keyReleased[this.keyBeingPressed]) {
-                boolean capsOriginalValue = KeyListener.capsLockEnabled;
-                if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT)) {
-                    KeyListener.capsLockEnabled = !KeyListener.capsLockEnabled;
-                }
-                this.next = KeyMappings.getKeyNameFromMapForTextFields(this);
-                KeyListener.capsLockEnabled = capsOriginalValue;
-                if (this.next != null) {
-                    this.text = this.text + this.next;
-                }
-            }
-        }
-        if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_BACKSPACE) && KeyListener.keyReleased[GLFW.GLFW_KEY_BACKSPACE] && this.text.length() > 0) {
-            char[] newTextCharacters = new char[this.text.length() - 1];
-            for (int i = 0; i < this.text.length() - 1; i++) {
-                newTextCharacters[i] = this.text.charAt(i);
-            }
-            this.text = new String(newTextCharacters);
-            KeyListener.setKeyReleased(GLFW.GLFW_KEY_BACKSPACE);
-        }
-
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_ENTER) && CosmicEvolution.instance.currentGui instanceof GuiCommandEntry && KeyListener.keyReleased[GLFW.GLFW_KEY_ENTER]){
-            new CommandParser().parseCommand(this.text);
-            this.text = "";
-            this.next = null;
-            KeyListener.setKeyReleased(GLFW.GLFW_KEY_ENTER);
-        }
-    }
 
 
     public boolean isMouseHoveredOver(){

@@ -23,12 +23,18 @@ public abstract class EntityLiving extends Entity {
     public double lastYOnGround;
     public int alertTimer;
     public short blockUnderEntity;
+    public boolean isAIEnabled = true;
+    public double deathWidth;
+    public double deathHeight;
+    public double deathDepth;
     public AxisAlignedBB lowerBlock = new AxisAlignedBB();
     public AxisAlignedBB upperBlock = new AxisAlignedBB();
     public AxisAlignedBB northBlock = new AxisAlignedBB();
     public AxisAlignedBB southBlock = new AxisAlignedBB();
     public AxisAlignedBB eastBlock = new AxisAlignedBB();
     public AxisAlignedBB westBlock = new AxisAlignedBB();
+    public boolean isDead;
+    public long timeDied;
 
     public EntityLiving(int maxTimeAlive){
         if(!(this instanceof EntityPlayer)) {
@@ -39,6 +45,7 @@ public abstract class EntityLiving extends Entity {
     public abstract void checkHealth();
 
     public abstract void handleDeath();
+
 
     public abstract String getHurtSound();
 

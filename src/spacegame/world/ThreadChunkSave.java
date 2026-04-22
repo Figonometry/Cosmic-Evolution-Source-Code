@@ -1,13 +1,10 @@
 package spacegame.world;
 
 import spacegame.core.CosmicEvolution;
+import spacegame.entity.*;
 import spacegame.item.crafting.InWorld3DCraftingItem;
 import spacegame.item.crafting.InWorldCraftingItem;
 import spacegame.util.Logger;
-import spacegame.entity.Entity;
-import spacegame.entity.EntityBlock;
-import spacegame.entity.EntityDeer;
-import spacegame.entity.EntityItem;
 import spacegame.item.ItemStack;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
@@ -23,7 +20,17 @@ public final class ThreadChunkSave implements Runnable {
     }
 
     @Override
-    public void run() {
+    public void run(){
+        try {
+            this.saveChunk();
+        } catch (Exception e){
+            e.printStackTrace();
+        } finally {
+            CosmicEvolution.threadJobs.decrementAndGet();
+        }
+    }
+
+    public void saveChunk() {
         File file = new File(CosmicEvolution.instance.save.activeWorld.worldFolder + "/Chunk." + chunk.x + "." + chunk.y + "." + chunk.z + ".dat");
         try {
             FileOutputStream outputStream = new FileOutputStream(file);
@@ -86,6 +93,16 @@ public final class ThreadChunkSave implements Runnable {
                         entities[i].setString("entityType", "EntityDeer");
                         entities[i].setLong("despawnTime", savingEntity.despawnTime);
                         entities[i].setByte("count", (byte)1);
+                        entities[i].setBoolean("isDead", ((EntityLiving)savingEntity).isDead);
+                        entities[i].setBoolean("isAIEnabled", ((EntityLiving)savingEntity).isAIEnabled);
+                        entities[i].setLong("timeDied", ((EntityLiving)savingEntity).timeDied);
+                    } else if(savingEntity instanceof EntityWolf){
+                        entities[i].setString("entityType", "EntityWolf");
+                        entities[i].setLong("despawnTime", savingEntity.despawnTime);
+                        entities[i].setByte("count", (byte)1);
+                        entities[i].setBoolean("isDead", ((EntityLiving)savingEntity).isDead);
+                        entities[i].setBoolean("isAIEnabled", ((EntityLiving)savingEntity).isAIEnabled);
+                        entities[i].setLong("timeDied", ((EntityLiving)savingEntity).timeDied);
                     }
                     entity.setTag("entity" + entityCount, entities[i]);
                     entityCount++;
@@ -114,6 +131,7 @@ public final class ThreadChunkSave implements Runnable {
                             items[j].setByte("count", stack.count);
                             items[j].setShort("metadata", stack.metadata);
                             items[j].setShort("durability", stack.durability);
+                            items[j].setLong("decayTime", stack.decayTime);
                             inventory.setTag("slot " + slotNumber, items[j]);
                         }
                         slotNumber++;
@@ -218,5 +236,6 @@ public final class ThreadChunkSave implements Runnable {
         } catch (IOException e){
             new Logger(e);
         }
+
     }
 }

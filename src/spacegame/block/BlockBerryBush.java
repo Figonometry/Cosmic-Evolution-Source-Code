@@ -5,6 +5,7 @@ import spacegame.core.MouseListener;
 import spacegame.core.Timer;
 import spacegame.entity.EntityItem;
 import spacegame.entity.EntityPlayer;
+import spacegame.item.IDecayItem;
 import spacegame.item.Item;
 import spacegame.render.RenderBlocks;
 import spacegame.world.World;
@@ -22,7 +23,7 @@ public final class BlockBerryBush extends Block implements ITimeUpdate {
         if(playerHeldItem != Item.block.ID && playerHeldItem != Item.torch.ID){
             if(world.getBlockID(x,y,z) == Block.berryBush.ID){
                 world.setBlockWithNotify(x,y,z, Block.berryBushNoBerries.ID, false);
-                world.addEntity(new EntityItem(x + CosmicEvolution.globalRand.nextFloat(), y + 0.5, z + CosmicEvolution.globalRand.nextFloat(), Item.berry.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY));
+                world.addEntity(new EntityItem(x + CosmicEvolution.globalRand.nextFloat(), y + 0.5, z + CosmicEvolution.globalRand.nextFloat(), Item.berry.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY, world.ce.save.time + ((IDecayItem)Item.berry).getDecayTime()));
                 world.addTimeEvent(x,y,z,CosmicEvolution.instance.save.time + this.getUpdateTime());
             }
             MouseListener.rightClickReleased = false;

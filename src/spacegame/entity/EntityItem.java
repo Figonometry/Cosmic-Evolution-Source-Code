@@ -20,9 +20,10 @@ public final class EntityItem extends EntityNonLiving {
     public int pickupTimer = 0;
     public byte count;
     public short itemDurability;
+    public long decayTime;
 
 
-    public EntityItem(double x, double y, double z, short item, short itemMetadata, byte count, short itemDurability){
+    public EntityItem(double x, double y, double z, short item, short itemMetadata, byte count, short itemDurability, long decayTime){
         this.x = x;
         this.y = y;
         this.z = z;
@@ -34,6 +35,7 @@ public final class EntityItem extends EntityNonLiving {
         this.speed = 0.1;
         this.count = count;
         this.itemDurability = itemDurability;
+        this.decayTime = decayTime;
         this.despawnTime = CosmicEvolution.instance.save.time + 54000;
     }
 
@@ -47,7 +49,7 @@ public final class EntityItem extends EntityNonLiving {
         this.boundingBox.scale(0.5);
         if (CosmicEvolution.instance.save.thePlayer.boundingBox != null) {
             if (this.boundingBox.clip(CosmicEvolution.instance.save.thePlayer.boundingBox) && this.pickupTimer >= 60) {
-                if (CosmicEvolution.instance.save.thePlayer.addItemToInventory(this.item, Item.NULL_ITEM_METADATA, this.count, this.itemDurability)) {
+                if (CosmicEvolution.instance.save.thePlayer.addItemToInventory(this.item, Item.NULL_ITEM_METADATA, this.count, this.itemDurability, this.decayTime)) {
                     CosmicEvolution.instance.soundPlayer.playSound(this.x, this.y, this.z, new Sound(Sound.itemPickup, false, 1f), new Random().nextFloat(1.5F, 1.9F));
                     this.despawn = true;
                 }
@@ -75,6 +77,7 @@ public final class EntityItem extends EntityNonLiving {
     public void renderForShadowMap(int sunX, int sunY, int sunZ){
         new RenderEntityItem(this.x, this.y, this.z, null, false, false, this.item, this.itemMetadata, this.height, this.width).renderItemForShadowMap(sunX,sunY,sunZ);
     }
+
 
 
 }

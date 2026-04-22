@@ -1,0 +1,3 @@
+itemName:ROT
+displayName:Rot
+canPlaceAsItemBlock:true

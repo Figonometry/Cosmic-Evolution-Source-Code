@@ -227,13 +227,8 @@ public class Button {
             }
             case QUIT_TO_MAIN_MENU -> {
                 this.ce.save.saveDataToFile();
-                while (Thread.activeCount() > 3){
-                }
-                this.ce.save = null;
-                this.ce.setNewGui(new GuiMainMenu(this.ce));
                 CosmicEvolution.setGLClearColor(0,0,0,0);
-                CosmicEvolution.instance.renderEngine.deleteTexture(Cloud.texture);
-                CosmicEvolution.instance.renderEngine.deleteTexture(RenderWorldScene.rainTexture);
+                this.ce.setNewGui(new GuiSavingWorld(this.ce));
             }
             case SAVE_1 -> {
                 if(this.clicked) {
@@ -491,9 +486,14 @@ public class Button {
             }
             case DIFFICULTY_OPTIONS -> {
                 if(this.Gui instanceof GuiCreateNewWorld) {
-                    this.ce.setNewGui(new GuiDifficultySettings(this.ce, true, ((GuiCreateNewWorld) this.Gui).saveSlot, ((GuiCreateNewWorld) this.Gui).saveSettings));
+                    GuiDifficultySettings difficultySettings = new GuiDifficultySettings(this.ce, true, ((GuiCreateNewWorld) this.Gui).saveSlot, ((GuiCreateNewWorld) this.Gui).saveSettings);
+                    difficultySettings.worldName = ((GuiCreateNewWorld) this.Gui).nameWorld;
+                    difficultySettings.seed = ((GuiCreateNewWorld) this.Gui).setSeed;
+                    this.ce.setNewGui(difficultySettings);
                 } else if(this.Gui instanceof GuiRenameWorld) {
-                    this.ce.setNewGui(new GuiDifficultySettings(this.ce, false, ((GuiRenameWorld) this.Gui).saveSlot, SaveSettings.loadSaveSettingsFromSaveFile(new File(this.ce.launcherDirectory + "/saves/save" + ((GuiRenameWorld)this.Gui).saveSlot))));
+                    GuiDifficultySettings difficultySettings = new GuiDifficultySettings(this.ce, false, ((GuiRenameWorld) this.Gui).saveSlot, SaveSettings.loadSaveSettingsFromSaveFile(new File(this.ce.launcherDirectory + "/saves/save" + ((GuiRenameWorld)this.Gui).saveSlot)));
+                    difficultySettings.worldName = ((GuiRenameWorld) this.Gui).nameWorld;
+                    this.ce.setNewGui(difficultySettings);
                 }
             }
             case SAVE_OPTIONS -> {
@@ -502,7 +502,11 @@ public class Button {
 
                        SaveSettings saveSettings = ((GuiDifficultySettings) this.Gui).saveSettings;
 
-                       this.ce.setNewGui(new GuiCreateNewWorld(this.ce, ((GuiDifficultySettings) this.Gui).saveSlot, saveSettings));
+                       GuiCreateNewWorld createNewWorld = new GuiCreateNewWorld(this.ce, ((GuiDifficultySettings) this.Gui).saveSlot, saveSettings);
+                       createNewWorld.nameWorld = ((GuiDifficultySettings) this.Gui).worldName;
+                       createNewWorld.setSeed = ((GuiDifficultySettings) this.Gui).seed;
+
+                       this.ce.setNewGui(createNewWorld);
                    } else {
                        SaveSettings settings = ((GuiDifficultySettings)this.Gui).saveSettings;
                        File saveFolder = new File(this.ce.launcherDirectory + "/saves/save" + ((GuiDifficultySettings)this.Gui).saveSlot);
@@ -510,7 +514,10 @@ public class Button {
                        save.saveSettings = settings;
                        save.saveDataToFile();
 
-                       this.ce.setNewGui(new GuiRenameWorld(this.ce, ((GuiDifficultySettings) this.Gui).saveSlot));
+                       GuiRenameWorld renameWorld = new GuiRenameWorld(this.ce, ((GuiDifficultySettings) this.Gui).saveSlot);
+                       renameWorld.nameWorld = ((GuiDifficultySettings) this.Gui).worldName;
+                       
+                       this.ce.setNewGui(renameWorld);
                    }
                 }
             }

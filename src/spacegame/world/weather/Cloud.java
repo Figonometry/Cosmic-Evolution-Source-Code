@@ -35,6 +35,10 @@ public final class Cloud {
         this.depth = depth;
         this.precipitation = precipitation;
         this.killTime = killTime;
+
+        if(maxStrength == 1){
+            maxStrength = 0.9f;
+        }
         this.maxStrength = maxStrength;
     }
 
@@ -67,7 +71,7 @@ public final class Cloud {
     }
 
     private int calculateAlpha(){
-        return this.strength <= 1f ? MathUtil.floatToIntRGBA(this.strength) : 255;
+        return this.strength <= 1f ? MathUtil.floatToIntRGBA(this.strength) : 229;
     }
 
     private int calculateColor(){

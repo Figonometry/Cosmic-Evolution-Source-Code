@@ -1,12 +1,11 @@
 package spacegame.gui;
 
-import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
 import spacegame.core.CosmicEvolution;
 import spacegame.item.Inventory;
 import spacegame.item.ItemStack;
-import spacegame.render.ModelPlayer;
+import spacegame.render.model.ModelPlayer;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
 import spacegame.util.MathUtil;

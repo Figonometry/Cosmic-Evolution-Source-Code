@@ -6,6 +6,7 @@ import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
 import spacegame.util.Logger;
 import spacegame.world.Chunk;
+import spacegame.world.ChunkJobThreadScheduler;
 import spacegame.world.World;
 
 public final class ThreadRebuildChunk implements Runnable {
@@ -23,6 +24,9 @@ public final class ThreadRebuildChunk implements Runnable {
             this.rebuildChunk();
         } catch (Throwable e){
             new Logger(e);
+        } finally {
+            CosmicEvolution.threadJobs.decrementAndGet();
+            ChunkJobThreadScheduler.activeRebuilds.decrementAndGet();
         }
     }
 

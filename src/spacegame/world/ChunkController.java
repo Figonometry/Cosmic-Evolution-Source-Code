@@ -5,15 +5,12 @@ import spacegame.block.BlockContainer;
 import spacegame.block.ITickable;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
+import spacegame.entity.*;
 import spacegame.item.crafting.CraftingBlockRecipes;
 import spacegame.item.crafting.InWorld3DCraftingItem;
 import spacegame.item.crafting.InWorldCraftingItem;
 import spacegame.item.crafting.InWorldCraftingRecipe;
 import spacegame.util.MathUtil;
-import spacegame.entity.Entity;
-import spacegame.entity.EntityBlock;
-import spacegame.entity.EntityDeer;
-import spacegame.entity.EntityItem;
 import spacegame.gui.GuiWorldLoading;
 import spacegame.item.Inventory;
 import spacegame.nbt.NBTIO;
@@ -25,8 +22,9 @@ import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class ChunkController {
     public World parentWorld;
@@ -38,12 +36,11 @@ public final class ChunkController {
     private int lastQueuedLightMapX = 10;
     private int lastQueuedLightMapZ = 10;
     private ChunkColumnSkylightMap lastQueuedLightMap;
-    public ChunkRegion[] regions = new ChunkRegion[128];
+    public final ConcurrentHashMap<Long, ChunkRegion> regionMap = new ConcurrentHashMap<>();
     public ArrayList<Chunk> dirtyChunks = new ArrayList<>();
     public ArrayList<Chunk> nonPopulatedChunks = new ArrayList<>();
     public ArrayList<Chunk> bindingChunks = new ArrayList<>();
     public ArrayList<Chunk> removeChunks = new ArrayList<>();
-    public ArrayList<Thread> threadQueue = new ArrayList<>();
     public ChunkColumnSkylightMap[] columnLightMaps = new ChunkColumnSkylightMap[1024];
     public int playerChunkX;
     public int playerChunkY;
@@ -85,13 +82,18 @@ public final class ChunkController {
                 WorldEarth earth = (WorldEarth) this.parentWorld;
                 while (earth.globalElevationMap.elevation[earth.convertBlockZToGlobalMap(MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z))][earth.convertBlockXToGlobalMap(MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x))] < 0
                 || this.isDesert(MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x), 0, MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z))) {
-                    if ((count & 1) == 0) {
-                        CosmicEvolution.instance.save.thePlayer.z = -489.1328125 * count * 10;
-                    } else {
                         CosmicEvolution.instance.save.thePlayer.z = 489.1328125 * count * 10;
-                    }
-                    count++;
+
+                        if(CosmicEvolution.instance.save.thePlayer.z >= (double) this.parentWorld.size / 4){
+                            count = 0;
+                            CosmicEvolution.instance.save.thePlayer.x -= 25000;
+                            continue;
+                        }
+                        count++;
                 }
+
+                CosmicEvolution.instance.save.spawnX = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x);
+                CosmicEvolution.instance.save.thePlayer.spawnX = CosmicEvolution.instance.save.spawnX;
 
                 CosmicEvolution.instance.save.spawnZ = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z);
                 CosmicEvolution.instance.save.thePlayer.spawnZ = CosmicEvolution.instance.save.spawnZ;
@@ -131,12 +133,8 @@ public final class ChunkController {
         this.numberOfLoadedChunks = this.numberOfLoadedChunks();
         this.populateChunks();
         this.rebuildDirtyChunks();
-        if(this.timer <= 0){ //This was originally meant per tick, moving it to tick however prevents large amounts of the world from rendering properly due to thread race conditions
-            this.checkForMissedChunksAndCheckForUpdateTime();
-            this.timer = 2400;
-        } else {
-            this.timer--;
-        }
+
+        this.checkForMissedChunksAndCheckForUpdateTime();
 
         synchronized (this.bindingChunks) {
             if (this.bindingChunks.size() > 0) {
@@ -150,15 +148,15 @@ public final class ChunkController {
     public void tick(){
         if(!this.parentWorld.paused) {
             this.renderWorldScene.chunksThatContainEntities.clear();
-            this.entityCap = this.numberOfLoadedChunks / 500;
+            this.entityCap = this.numberOfLoadedChunks / 100;
             this.numLoadedEntities = 0;
-            ChunkRegion region;
+
             Chunk chunk;
             int xOffset;
             int yOffset;
             int zOffset;
-            for (int i = 0; i < this.regions.length; i++) {
-                region = this.regions[i];
+            List<ChunkRegion> snapshot = new ArrayList<>(regionMap.values());
+            for (ChunkRegion region : snapshot) {
                 if (region != null) {
                     for (int k = 0; k < region.chunks.length; k++) {
                         chunk = region.chunks[k];
@@ -174,7 +172,7 @@ public final class ChunkController {
                                 }
                             }
                             chunk.tick();
-                            this.numLoadedEntities += chunk.entities.size();
+                            this.numLoadedEntities += chunk.getLivingEntitiesInChunk();
                         }
                     }
                 }
@@ -195,8 +193,10 @@ public final class ChunkController {
                         spawnY = this.findChunkSkyLightMap(spawnX >> 5, spawnZ >> 5).getHeightValue(spawnX, spawnZ);
                         if (this.parentWorld.getBlockID(spawnX, spawnY, spawnZ) == Block.grass.ID && this.parentWorld.getBlockID(spawnX, spawnY + 1, spawnZ) == Block.air.ID) {
                             Chunk chunk1 = this.findChunkFromChunkCoordinates(spawnX >> 5, spawnY >> 5, spawnZ >> 5);
-                            if (chunk1 != null) {
+                            if (chunk1 != null && this.renderWorldScene.sunYVector > 0) {
                                 chunk1.addEntityToList(new EntityDeer(spawnX + 0.5, spawnY + 1.5, spawnZ + 0.5, false, true));
+                            } else if(chunk1 != null){
+                                chunk1.addEntityToList(new EntityWolf(spawnX + 0.5, spawnY + 1.5, spawnZ + 0.5, false, true));
                             }
                         }
                     }
@@ -205,11 +205,6 @@ public final class ChunkController {
             }
         }
 
-        while (Thread.activeCount() < 10 && !this.threadQueue.isEmpty()){
-            this.threadQueue.get(0).start();
-            this.threadQueue.remove(0);
-            this.threadQueue.trimToSize();
-        }
 
         synchronized (this.removeChunks){
             Chunk chunk;
@@ -226,10 +221,9 @@ public final class ChunkController {
     public void renderWorld(){
         if(this.renderWorldScene.recalculateQueries) {
             this.renderWorldScene.renderWithChunks = true;
-            Chunk[] renderableChunks = new Chunk[this.regions.length * 512];
+            Chunk[] renderableChunks = new Chunk[this.regionMap.size() * 512];
 
 
-            ChunkRegion region;
             Chunk chunk;
             int playerChunkX = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x) >> 5;
             int playerChunkY = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.y) >> 5;
@@ -238,8 +232,9 @@ public final class ChunkController {
             int yOffset;
             int zOffset;
             int index = 0;
-            for (int i = 0; i < this.regions.length; i++) {
-                region = this.regions[i];
+
+            List<ChunkRegion> snapshot = new ArrayList<>(regionMap.values());
+            for (ChunkRegion region : snapshot) {
                 if (region != null) {
                     for (int k = 0; k < region.chunks.length; k++) {
                         chunk = region.chunks[k];
@@ -248,11 +243,12 @@ public final class ChunkController {
                                 xOffset = (chunk.x - playerChunkX) << 5;
                                 yOffset = (chunk.y - playerChunkY) << 5;
                                 zOffset = (chunk.z - playerChunkZ) << 5;
-                                if (CosmicEvolution.camera.doesBoundingBoxIntersectFrustum(xOffset - 32, yOffset - 32, zOffset - 32, ((xOffset + 63)), ((yOffset + 63)), ((zOffset + 63))) && !chunk.empty && chunk.shouldRender) {
+                                if (CosmicEvolution.camera.doesBoundingBoxIntersectFrustum(xOffset - 32, yOffset - 32, zOffset - 32, ((xOffset + 63)), ((yOffset + 63)), ((zOffset + 63))) &&
+                                        !chunk.empty && chunk.shouldRender && !chunk.chunkWillUnload) {
                                     xOffset >>= 5;
                                     yOffset >>= 5;
                                     zOffset >>= 5;
-                                    chunk.distanceFromPlayer = (float) Math.sqrt(xOffset * xOffset + yOffset * yOffset + zOffset * zOffset);
+                                    chunk.distanceFromPlayer = (float) ((xOffset * xOffset) + (yOffset * yOffset) + (zOffset * zOffset));
                                     renderableChunks[index] = chunk;
                                     index++;
                                 }
@@ -305,21 +301,19 @@ public final class ChunkController {
     }
 
     public void checkForMissedChunksAndCheckForUpdateTime(){
-        ChunkRegion region;
         Chunk chunk;
-        for(int i = 0; i < this.regions.length; i++){
-            region = this.regions[i];
+        List<ChunkRegion> snapshot = new ArrayList<>(regionMap.values());
+        for(ChunkRegion region : snapshot){
             if(region != null){
                 for(int j = 0; j < region.chunks.length; j++){
                     chunk = region.chunks[j];
                     if(chunk != null){
+
+
                         if(!chunk.shouldRender && !chunk.empty && this.parentWorld.chunkFullySurrounded(chunk.x, chunk.y ,chunk.z) && chunk.populated){
 
                             if(chunk.blocks != null) { //Since all chunks will now be populated this means that fully surrounded chunks that wont ever render will repeatedly tick to notify all blocks, this causes substantial lag
                                 chunk.markDirty();
-                                if(chunk.containsAir || chunk.containsWater){
-                                    chunk.notifyAllBlocks();
-                                }
                             }
                         }
 
@@ -342,28 +336,42 @@ public final class ChunkController {
 
 
     private void rebuildDirtyChunks() {
+
+        if(this.dirtyChunks.size() == 0)return;
+
+        int playerChunkX = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x) >> 5;
+        int playerChunkY = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.y) >> 5;
+        int playerChunkZ = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z) >> 5;
+
+        int maxNewRebuildsThisTick = 10;
+        int rebuildsStarted = 0;
+
         synchronized (this.dirtyChunks) {
             Chunk chunk;
             boolean surrounded = false;
             for (int i = 0; i < this.dirtyChunks.size(); i++) {
                 chunk = this.dirtyChunks.get(i);
-                if (chunk == null) {
-                    continue;
-                }
+                if (chunk == null)continue;
+
+                if(chunk.updating)continue;
+                if(chunk.empty)continue;
+
                 surrounded = this.parentWorld.chunkFullySurrounded(chunk.x, chunk.y, chunk.z);
+
                 if (surrounded && !chunk.populated) {
                     chunk.populated = true;
                 }
-                if (chunk.populated && !chunk.empty && !chunk.updating && surrounded) {
+
+                if (chunk.populated && surrounded) {
                     chunk.elementOffsetOpaque = 0;
                     chunk.elementOffsetTransparent = 0;
                     chunk.needsToUpdate = false;
                     chunk.updating = true;
-                    Thread thread = new Thread(new ThreadRebuildChunk(chunk, this.parentWorld));
-                    thread.setName("Chunk Rebuild Thread for X: " + chunk.x + " Y: " + chunk.y + " Z: " + chunk.z);
-                    thread.setPriority(World.worldLoadPhase == 3 ? 1 : 10);
-                    this.threadQueue.add(thread);
-                } else if (!surrounded) {
+                    CosmicEvolution.threadJobs.incrementAndGet();
+                    ChunkJobThreadScheduler.chunkJobQueue.add(new ChunkJob((float) MathUtil.distance3DSquared(playerChunkX << 5, playerChunkY << 5, playerChunkZ << 5, chunk.x << 5, chunk.y << 5, chunk.z << 5), new ThreadRebuildChunk(chunk, this.parentWorld)));
+                    rebuildsStarted++;
+                    if(rebuildsStarted >=  maxNewRebuildsThisTick)break;
+                } else {
                     chunk.needsToUpdate = true;
                 }
             }
@@ -380,6 +388,8 @@ public final class ChunkController {
                     subtract++;
                 }
             }
+
+            this.dirtyChunks.trimToSize();
 
             this.numberOfLoadedChunks = this.numberOfLoadedChunks();
             if ((!this.loadChunks && this.numberOfLoadedChunks >= ((GameSettings.renderDistance * 2 + 1) * (GameSettings.renderDistance * 2 + 1) * (GameSettings.chunkColumnHeight * 2))) || (this.numberOfLoadedChunks == this.prevNumberOfLoadedChunks)) {
@@ -430,9 +440,8 @@ public final class ChunkController {
 
     public void markAllChunksDirty() {
         Chunk chunk;
-        ChunkRegion region;
-        for (int i = 0; i < this.regions.length; i++) {
-            region = this.regions[i];
+        List<ChunkRegion> snapshot = new ArrayList<>(regionMap.values());
+        for (ChunkRegion region : snapshot) {
             if (region == null) {continue;}
 
                 for (int k = 0; k < region.chunks.length; k++) {
@@ -446,13 +455,12 @@ public final class ChunkController {
 
     public void updateChunksWithLeaves() {
         Chunk chunk;
-        ChunkRegion region;
-        for (int i = 0; i < this.regions.length; i++) {
-            region = this.regions[i];
+        List<ChunkRegion> snapshot = new ArrayList<>(regionMap.values());
+        for (ChunkRegion region : snapshot) {
             if (region == null) {continue;}
 
-            for (int k = 0; k < region.chunks.length; k++) {
-                chunk = region.chunks[k];
+            for (int i = 0; i < region.chunks.length; i++) {
+                chunk = region.chunks[i];
                 if (chunk == null) {continue;}
                 for(int j = 0; j < chunk.blocks.length; j++){
                     if(chunk.blocks[j] == Block.leaf.ID){
@@ -470,49 +478,36 @@ public final class ChunkController {
         if (this.lastQueuedX == x && this.lastQueuedY == y && this.lastQueuedZ == z) {
             return this.lastQueuedChunk;
         }
+        Chunk chunk = this.getChunkRegionFromChunkCoordinates(x, y, z).getChunk(x,y,z);
 
-        ChunkRegion region = this.getChunkRegionFromChunkCoordinates(x, y, z);
-        Chunk chunk;
-
-        for (int i = 0; i < region.chunks.length; i++) {
-            chunk = region.chunks[i];
-            if (chunk == null) {continue;}
-            if (chunk.x != x || chunk.y != y || chunk.z != z) {continue;}
-
+        if(chunk != null) {
             this.lastQueuedX = x;
-            this.lastQueuedZ = y;
-            this.lastQueuedY = z;
+            this.lastQueuedY = y;
+            this.lastQueuedZ = z;
             this.lastQueuedChunk = chunk;
-            return chunk;
         }
-        return null;
+
+
+        return chunk;
+
     }
 
     public ChunkRegion getChunkRegionFromChunkCoordinates(int x, int y, int z) {
-        x >>= 3;
-        y >>= 3;
-        z >>= 3;
-        ChunkRegion region;
-        for (int i = 0; i < this.regions.length; i++) {
-            region = this.regions[i];
-            if (region == null) {continue;}
-            if (region.x != x || region.y != y || region.z != z) {continue;}
-            return region;
-        }
-        region = new ChunkRegion(x, y, z);
-        this.addChunkRegion(region);
+        int rx = x >> 3;
+        int ry = y >> 3;
+        int rz = z >> 3;
+
+        long key = ChunkRegion.regionKey(rx, ry, rz);
+
+        ChunkRegion region = regionMap.get(key);
+        if (region != null) return region;
+
+        region = new ChunkRegion(rx, ry, rz);
+        regionMap.put(key, region);
         return region;
-        //throw new RuntimeException("Region not found at " + x + " " + y + " " + z);
     }
 
-    private void addChunkRegion(ChunkRegion region) {
-        for (int i = 0; i < this.regions.length; i++) {
-            if (this.regions[i] == null) {
-                this.regions[i] = region;
-                return;
-            }
-        }
-    }
+
 
     public ChunkColumnSkylightMap findChunkSkyLightMap(int x, int z) {
         if (this.lastQueuedLightMapX == x && this.lastQueuedLightMapZ == z) {
@@ -720,12 +715,23 @@ public final class ChunkController {
                                         chunk.addEntityToList(entityLoaded);
                                     }
                                     case "EntityItem" -> {
-                                        entityLoaded = new EntityItem(entityLoadedTag.getDouble("x"), entityLoadedTag.getDouble("y"), entityLoadedTag.getDouble("z"), entityLoadedTag.getShort("itemType"), (byte) 1, entityLoadedTag.getByte("count"), entityLoadedTag.getShort("durability"));
+                                        entityLoaded = new EntityItem(entityLoadedTag.getDouble("x"), entityLoadedTag.getDouble("y"), entityLoadedTag.getDouble("z"), entityLoadedTag.getShort("itemType"), (byte) 1, entityLoadedTag.getByte("count"), entityLoadedTag.getShort("durability"), 0);
                                         chunk.addEntityToList(entityLoaded);
                                     }
                                     case "EntityDeer" -> {
                                         entityLoaded = new EntityDeer(entityLoadedTag.getDouble("x"), entityLoadedTag.getDouble("y"), entityLoadedTag.getDouble("z"), false, false);
                                         entityLoaded.despawnTime = entityLoadedTag.getLong("despawnTime");
+                                        ((EntityLiving)entityLoaded).isDead = entityLoadedTag.getBoolean("isDead");
+                                        ((EntityLiving)entityLoaded).isAIEnabled = entityLoadedTag.getBoolean("isAIEnabled");
+                                        ((EntityLiving)entityLoaded).timeDied = entityLoadedTag.getLong("timeDied");
+                                        chunk.addEntityToList(entityLoaded);
+                                    }
+                                    case "EntityWolf" -> {
+                                        entityLoaded = new EntityWolf(entityLoadedTag.getDouble("x"), entityLoadedTag.getDouble("y"), entityLoadedTag.getDouble("z"), false, false);
+                                        entityLoaded.despawnTime = entityLoadedTag.getLong("despawnTime");
+                                        ((EntityLiving)entityLoaded).isDead = entityLoadedTag.getBoolean("isDead");
+                                        ((EntityLiving)entityLoaded).isAIEnabled = entityLoadedTag.getBoolean("isAIEnabled");
+                                        ((EntityLiving)entityLoaded).timeDied = entityLoadedTag.getLong("timeDied");
                                         chunk.addEntityToList(entityLoaded);
                                     }
                                 }
@@ -749,7 +755,8 @@ public final class ChunkController {
                                         byte count = item.getByte("count");
                                         short durability = item.getShort("durability");
                                         short metadata = item.getShort("metadata");
-                                        chestInventory.loadItemToInventory(id, metadata, count, durability, j);
+                                        long decayTime = item.getLong("decayTime");
+                                        chestInventory.loadItemToInventory(id, metadata, count, durability, j, decayTime);
                                     }
                                 }
                                 chunk.addChestLocation(index, chestInventory);
@@ -876,6 +883,8 @@ public final class ChunkController {
     }
 
     private void loadChunks() {
+        int playerChunkX = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x) >> 5;
+        int playerChunkZ = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z) >> 5;
         if (this.generateChunksDistance > GameSettings.renderDistance) {
             this.loadChunks = false;
             if(CosmicEvolution.instance.currentGui instanceof GuiWorldLoading){
@@ -884,10 +893,8 @@ public final class ChunkController {
         } else {
             if (!this.isChunkColumnFullyLoaded(this.generateChunksX, this.generateChunksZ)) {
                 this.findChunkSkyLightMap(this.generateChunksX, this.generateChunksZ);
-                Thread thread = new Thread(new ThreadChunkColumnLoader(this.generateChunksX, this.generateChunksZ, this));
-                thread.setName("Chunk Column Loader Thread for X: " + this.generateChunksX + " Z: " + this.generateChunksZ);
-                thread.setPriority(1);
-                this.threadQueue.add(thread);
+                CosmicEvolution.threadJobs.incrementAndGet();
+                ChunkJobThreadScheduler.chunkJobQueue.add(new ChunkJob((float) MathUtil.distance2DSquared(playerChunkX << 5, playerChunkZ << 5, this.generateChunksX << 5, this.generateChunksZ << 5), new ThreadChunkColumnLoader(this.generateChunksX, this.generateChunksZ, this)));
             }
 
             switch (this.sideOfLoop) {
@@ -930,17 +937,17 @@ public final class ChunkController {
 
     private void unloadChunks() {
         Chunk chunk;
-        ChunkRegion region;
-        Chunk[] unloadingChunks = new Chunk[this.regions.length * 512];
+        Chunk[] unloadingChunks = new Chunk[this.regionMap.size() * 512];
         int unloadingChunksIndex = 0;
 
-        for (int i = 0; i < this.regions.length; i++) {
-            region = this.regions[i];
+        List<ChunkRegion> snapshot = new ArrayList<>(regionMap.values());
+        for (ChunkRegion region : snapshot) {
             if (region != null) {
                 for (int k = 0; k < region.chunks.length; k++) {
                     chunk = region.chunks[k];
                     if (chunk != null) {
                         if (this.shouldChunkUnload(chunk)) {
+                            chunk.chunkWillUnload = true;
                             this.removeChunkFromLists(chunk);
                             unloadingChunks[unloadingChunksIndex] = chunk;
                             unloadingChunksIndex++;
@@ -949,11 +956,8 @@ public final class ChunkController {
                 }
             }
         }
-
-        Thread chunkUnloaderThread = new Thread(new ThreadChunkUnloader(unloadingChunks));
-        chunkUnloaderThread.setName("Chunk Unloading Thread");
-        chunkUnloaderThread.setPriority(1);
-        chunkUnloaderThread.start();
+        CosmicEvolution.threadJobs.incrementAndGet();
+        ChunkJobThreadScheduler.chunkJobQueue.add(new ChunkJob(10000 ,new ThreadChunkUnloader(unloadingChunks)));
 
 
 
@@ -968,39 +972,40 @@ public final class ChunkController {
         }
 
 
-        for (int i = 0; i < this.regions.length; i++) {
-            region = this.regions[i];
-            if (region != null) {
-                if(region.isEmpty()){
-                    this.regions[i] = null;
-                }
+        Iterator<Map.Entry<Long, ChunkRegion>> it = regionMap.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<Long, ChunkRegion> entry = it.next();
+            ChunkRegion region = entry.getValue();
+
+            if (region.isEmpty()) {
+                it.remove(); // removes from the map safely
             }
         }
+
     }
 
     public int numberOfLoadedChunks() {
         int result = 0;
-        Chunk chunk;
-        ChunkRegion region;
-        for (int i = 0; i < this.regions.length; i++) {
-            region = this.regions[i];
-            if (region != null) {
-                for (int k = 0; k < region.chunks.length; k++) {
-                    chunk = region.chunks[k];
-                    if (chunk != null) {
-                        result++;
-                    }
-                }
+
+        // Snapshot the regions to avoid CME
+        List<ChunkRegion> snapshot = new ArrayList<>(regionMap.values());
+
+        for (ChunkRegion region : snapshot) {
+            if (region == null) continue;
+
+            for (Chunk chunk : region.chunks) {
+                if (chunk != null) result++;
             }
         }
+
         return result;
     }
 
+
     public int numberOfLoadedRegions(){
         int result = 0;
-        ChunkRegion region;
-        for(int i = 0; i < this.regions.length; i++){
-            region = this.regions[i];
+        List<ChunkRegion> snapshot = new ArrayList<>(regionMap.values());
+        for(ChunkRegion region : snapshot){
             if(region != null){
                 result++;
             }
@@ -1022,9 +1027,8 @@ public final class ChunkController {
 
 
     public void saveAllRegions() {
-        ChunkRegion region;
-        for(int i = 0; i < this.regions.length; i++){
-            region = this.regions[i];
+        List<ChunkRegion> snapshot = new ArrayList<>(regionMap.values());
+        for(ChunkRegion region : snapshot){
             if(region != null){
                 this.saveRegion(region);
             }
@@ -1043,16 +1047,14 @@ public final class ChunkController {
                 unloadingChunksIndex++;
             }
         }
-        Thread chunkUnloaderThread = new Thread(new ThreadChunkUnloader(unloadingChunks));
-        chunkUnloaderThread.setName("Chunk Unloading Thread");
-        chunkUnloaderThread.setPriority(1);
-        chunkUnloaderThread.start();
+        CosmicEvolution.threadJobs.incrementAndGet();
+        ChunkJobThreadScheduler.chunkJobQueue.add(new ChunkJob(10000, new ThreadChunkUnloader(unloadingChunks)));
     }
 
     public void saveAllRegionsWithoutUnload() {
-        ChunkRegion region;
-        for(int i = 0; i < this.regions.length; i++){
-            region = this.regions[i];
+        List<ChunkRegion> snapshot = new ArrayList<>(regionMap.values());
+        for(ChunkRegion region : snapshot){
+
             if(region != null){
                 this.saveRegionWithoutUnload(region);
             }
@@ -1061,14 +1063,15 @@ public final class ChunkController {
 
     public void saveRegionWithoutUnload(ChunkRegion region) {
         Chunk chunk;
+        int playerChunkX = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x) >> 5;
+        int playerChunkY = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.y) >> 5;
+        int playerChunkZ = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z) >> 5;
         for (int i = 0; i < region.chunks.length; i++) {
             chunk = region.chunks[i];
             if (chunk != null) {
                 if (chunk.modifiedSinceLastSave) {
-                    Thread thread = new Thread(new ThreadChunkSave(chunk));
-                    thread.setName("Chunk Saving Thread For Chunk: " + chunk.x + " " + chunk.y + " " + chunk.z);
-                    thread.setPriority(1);
-                    thread.start();
+                    CosmicEvolution.threadJobs.incrementAndGet();
+                    ChunkJobThreadScheduler.chunkJobQueue.add(new ChunkJob((float) MathUtil.distance3DSquared(playerChunkX << 5, playerChunkY << 5, playerChunkZ << 5, chunk.x << 5, chunk.y << 5, chunk.z << 5), new ThreadChunkSave(chunk)));
                     chunk.modifiedSinceLastSave = false;
                 }
             }

@@ -31,7 +31,7 @@ public final class BlockLog extends Block {
         if(playerHeldItem != Item.NULL_ITEM_REFERENCE && (KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT))){
             if(Item.list[playerHeldItem] instanceof ItemAxe){
                 for(int i = 0; i < 4; i++){
-                    world.addEntity(new EntityItem(x + CosmicEvolution.globalRand.nextDouble(), y + 0.5, z + CosmicEvolution.globalRand.nextDouble(), Item.fireWood.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY));
+                    world.addEntity(new EntityItem(x + CosmicEvolution.globalRand.nextDouble(), y + 0.5, z + CosmicEvolution.globalRand.nextDouble(), Item.fireWood.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY, 0));
                 }
                 KeyListener.setKeyReleased(GLFW.GLFW_KEY_RIGHT_SHIFT);
                 KeyListener.setKeyReleased(GLFW.GLFW_KEY_LEFT_SHIFT);

@@ -4,6 +4,8 @@ import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 import spacegame.block.*;
 import spacegame.item.crafting.InWorldCraftingItem;
+import spacegame.render.model.ModelFace;
+import spacegame.render.model.ModelLoader;
 import spacegame.util.GeneralUtil;
 import spacegame.util.MathUtil;
 import spacegame.item.Item;

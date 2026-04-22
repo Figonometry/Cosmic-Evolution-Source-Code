@@ -9,13 +9,14 @@ import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
 import spacegame.core.*;
 import spacegame.gui.*;
+import spacegame.item.IDecayItem;
 import spacegame.item.Inventory;
 import spacegame.item.Item;
 import spacegame.item.ItemStack;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
-import spacegame.render.Model;
-import spacegame.render.ModelPlayer;
+import spacegame.render.model.Model;
+import spacegame.render.model.ModelPlayer;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
 import spacegame.util.MathUtil;
@@ -55,6 +56,7 @@ public final class EntityPlayer extends EntityLiving {
     public byte maxSwingTimer = 16;
     public boolean isSwinging;
     public boolean startViewBob;
+    public boolean isLeavingWater;
     public int viewBobTimer;
     public byte viewBobDelay;
     public byte inventoryUpgradeLevel = 1;
@@ -76,6 +78,7 @@ public final class EntityPlayer extends EntityLiving {
     public int texture = RenderEngine.NULL_TEXTURE;
     public boolean animate;
     public Model model;
+    public int outOfWaterJumpDelay = 0;
 
     public EntityPlayer(CosmicEvolution cosmicEvolution, double x, double y, double z) {
         super(Integer.MAX_VALUE);
@@ -157,7 +160,8 @@ public final class EntityPlayer extends EntityLiving {
                     byte count = item.getByte("count");
                     short durability = item.getShort("durability");
                     short metadata = item.getShort("metadata");
-                    this.inventory.loadItemToInventory(id, metadata, count, durability, i);
+                    long decayTime = item.getLong("decayTime");
+                    this.inventory.loadItemToInventory(id, metadata, count, durability, i, decayTime);
                 }
             }
         } catch(Exception e){
@@ -210,6 +214,7 @@ public final class EntityPlayer extends EntityLiving {
                     items[i].setByte("count", stack.count);
                     items[i].setShort("metadata", stack.metadata);
                     items[i].setShort("durability", stack.durability);
+                    items[i].setLong("decayTime", stack.decayTime);
                     inventory.setTag("slot " + slotNumber, items[i]);
                 }
                 slotNumber++;
@@ -227,7 +232,7 @@ public final class EntityPlayer extends EntityLiving {
             if (this.inventory.itemStacks[i].item != null) {
                 if (Item.list[this.inventory.itemStacks[i].item.ID].durability != -1) {
                     if (this.inventory.itemStacks[i].durability <= 0) {
-                        this.inventory.itemStacks[i].item.onDestroy(this.inventory.itemStacks[i], i);
+                        this.inventory.itemStacks[i].item.onDestroy(this.inventory.itemStacks[i]);
                     }
                 }
             }
@@ -267,7 +272,7 @@ public final class EntityPlayer extends EntityLiving {
             if(this.inventory.itemStacks[i].item.ID == item){
                 this.inventory.itemStacks[i].count--;
                 if(this.inventory.itemStacks[EntityPlayer.selectedInventorySlot].count <= 0){
-                    this.inventory.itemStacks[EntityPlayer.selectedInventorySlot].item.onDestroy(this.inventory.itemStacks[EntityPlayer.selectedInventorySlot], EntityPlayer.selectedInventorySlot);
+                    this.inventory.itemStacks[EntityPlayer.selectedInventorySlot].item.onDestroy(this.inventory.itemStacks[EntityPlayer.selectedInventorySlot]);
                 }
                 break;
             }
@@ -279,6 +284,13 @@ public final class EntityPlayer extends EntityLiving {
             return this.inventory.itemStacks[selectedInventorySlot].durability;
         }
         return Item.NULL_ITEM_DURABILITY;
+    }
+
+    public long getHeldItemDecayTime(){
+        if(this.inventory.itemStacks[selectedInventorySlot].item != null) {
+            return this.inventory.itemStacks[selectedInventorySlot].decayTime;
+        }
+        return 0L;
     }
 
     public boolean isHoldingBlock(){
@@ -329,7 +341,7 @@ public final class EntityPlayer extends EntityLiving {
                         block.setMovementVector(new Vector3f((float) difVector.x, (float) difVector.y, (float) difVector.z));
                         this.ce.save.activeWorld.addEntity(block);
                     } else {
-                        EntityItem item = new EntityItem(this.x, this.y, this.z, this.inventory.itemStacks[i].item.ID, Item.NULL_ITEM_METADATA, this.inventory.itemStacks[i].count, this.inventory.itemStacks[i].durability);
+                        EntityItem item = new EntityItem(this.x, this.y, this.z, this.inventory.itemStacks[i].item.ID, Item.NULL_ITEM_METADATA, this.inventory.itemStacks[i].count, this.inventory.itemStacks[i].durability, 0);
                         double[] vector = CosmicEvolution.camera.rayCast(1);
                         Vector3d difVector = new Vector3d(vector[0] - this.x, (vector[1] - this.y) + this.height/2, vector[2] - this.z);
                         difVector.normalize();
@@ -368,8 +380,8 @@ public final class EntityPlayer extends EntityLiving {
         return Item.NULL_ITEM_METADATA;
     }
 
-    public boolean addItemToInventory(short itemID, short metadata, byte count, short durability){
-       return this.inventory.addItemToInventory(itemID, metadata, count, durability);
+    public boolean addItemToInventory(short itemID, short metadata, byte count, short durability, long decayTime){
+       return this.inventory.addItemToInventory(itemID, metadata, count, durability,decayTime);
     }
 
     public void removeItemFromInventory(){
@@ -390,7 +402,7 @@ public final class EntityPlayer extends EntityLiving {
                 this.ce.save.activeWorld.findChunkFromChunkCoordinates(this.chunkX, this.chunkY, this.chunkZ).addEntityToList(droppedBlock);
             }
         } else if(itemID != Item.NULL_ITEM_REFERENCE) {
-            EntityItem droppedItem = new EntityItem(this.x, this.y, this.z, itemID, Item.NULL_ITEM_METADATA, (byte) 1, this.getHeldItemDurability());
+            EntityItem droppedItem = new EntityItem(this.x, this.y, this.z, itemID, Item.NULL_ITEM_METADATA, (byte) 1, this.getHeldItemDurability(), this.getHeldItemDecayTime());
             this.removeItemFromInventory();
             double[] vector = CosmicEvolution.camera.rayCast(1);
             Vector3d difVector = new Vector3d(vector[0] - this.x, (vector[1] - this.y) + this.height/2, vector[2] - this.z);
@@ -403,10 +415,11 @@ public final class EntityPlayer extends EntityLiving {
 
     @Override
     public void tick() {
-        if (this.ce.save.activeWorld.chunkController.findChunkFromChunkCoordinates((int) (this.x) >> 5, (int) (this.y) >> 5, (int) (this.z) >> 5) != null && !this.ce.save.activeWorld.paused) {
+        if (this.ce.save.activeWorld.chunkController.findChunkFromChunkCoordinates(MathUtil.floorDouble(this.x) >> 5, MathUtil.floorDouble(this.y) >> 5, MathUtil.floorDouble(this.z) >> 5) != null && !this.ce.save.activeWorld.paused) {
             if(this.ce.currentGui instanceof GuiInGame) {
                 this.updateYawAndPitch();
             }
+            this.checkInventoryForDecayingItems();
             this.setMovementAmountAndKeyControls();
             if(!this.freeMove) {
                 this.doGravity();
@@ -528,11 +541,12 @@ public final class EntityPlayer extends EntityLiving {
 
         this.isShifting = KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT);
 
-        this.speed = this.speedOverride ? this.speed : this.isShifting || this.inWater || (this.moveEntityUp && !this.isJumping) ? 0.05 : 0.1;
+        this.speed = this.speedOverride ? this.speed : this.isShifting || this.isLeavingWater || this.inWater || (this.moveEntityUp && !this.isJumping) ? 0.025 : 0.1;
 
         if(this.freeMove) {
             this.developerDebugMovement();
         }
+
 
         if ((KeyListener.isKeyPressed(GameSettings.jumpKey.keyCode) && this.isOnGround && !this.inWater)) {
             this.moveEntityUp = true;
@@ -556,6 +570,7 @@ public final class EntityPlayer extends EntityLiving {
             this.stopRightArm = false;
             this.stopRightLeg = false;
         }
+
 
 
         this.updateGroundPosition(rawDeltaX, rawDeltaY, rawDeltaZ);
@@ -628,26 +643,30 @@ public final class EntityPlayer extends EntityLiving {
         }
 
 
-        if(this.swimming){
+        if(this.swimming && this.outOfWaterJumpDelay <= 0){
             this.isOnGround = false;
             this.isJumping = false;
             this.jumpTime = 0;
-            this.deltaY = 0.1;
-            CosmicEvolution.camera.viewMatrix.translate(0, -0.1D, 0);
+            this.deltaY = 0.05;
+            CosmicEvolution.camera.viewMatrix.translate(0, -0.05D, 0);
         }
 
 
-        if(this.prevInWater && !this.inWater && !this.moveEntityUp && this.deltaY > 0.0){
+        if(this.prevInWater && !this.inWater && !this.moveEntityUp && this.deltaY > 0.0 && this.outOfWaterJumpDelay <= 0){
+            this.isLeavingWater = true;
             this.moveEntityUp = true;
             this.moveEntityUpDistance = 0.6;
             this.timeFalling = 0;
             this.isJumping = false;
+            this.outOfWaterJumpDelay = 45;
+        } else {
+            this.outOfWaterJumpDelay--;
         }
 
         if(!this.speedOverride) {
             if (this.moveEntityUp) {
                 if (!this.isJumping) {
-                    this.speed = 0.05D;
+                    this.speed = 0.025;
                 }
                 if (this.moveEntityUpDistance <= 0D) {
                     this.moveEntityUp = false;
@@ -659,6 +678,16 @@ public final class EntityPlayer extends EntityLiving {
                     CosmicEvolution.camera.viewMatrix.translate(0, -0.05D, 0);
                     this.moveEntityUpDistance -= 0.05D;
                 }
+            }
+        }
+
+        if(this.isLeavingWater){
+            if(!this.moveEntityUp && ((Block.list[headBlock].waterlogged && Block.list[footBlock].waterlogged) ||
+                    (Block.list[footBlock].waterlogged && Block.list[this.blockUnderPlayer].isSolid))){
+                this.isLeavingWater = false;
+            }
+            if(this.isOnGround){
+                this.isLeavingWater = false;
             }
         }
 
@@ -702,7 +731,7 @@ public final class EntityPlayer extends EntityLiving {
             this.startViewBob = true;
         }
 
-        if(this.blockUnderPlayer == Block.air.ID){
+        if(this.blockUnderPlayer == Block.air.ID || this.isLeavingWater ||  this.isSwinging || this.isShifting || this.inWater){
             this.startViewBob = false;
         }
 
@@ -990,7 +1019,7 @@ public final class EntityPlayer extends EntityLiving {
                 block.setMovementVector(new Vector3f(rand.nextFloat(-1, 1), rand.nextFloat(-1, 1), rand.nextFloat(-1, 1)));
                 chunk.addEntityToList(block);
             } else if(this.inventory.itemStacks[i].item != null){
-                EntityItem item = new EntityItem(this.x, this.y, this.z,this.inventory.itemStacks[i].item.ID ,this.inventory.itemStacks[i].metadata, this.inventory.itemStacks[i].count, this.inventory.itemStacks[i].durability);
+                EntityItem item = new EntityItem(this.x, this.y, this.z,this.inventory.itemStacks[i].item.ID ,this.inventory.itemStacks[i].metadata, this.inventory.itemStacks[i].count, this.inventory.itemStacks[i].durability, 0);
                 item.setMovementVector(new Vector3f(rand.nextFloat(-1, 1), rand.nextFloat(-1, 1), rand.nextFloat(-1, 1)));
                 chunk.addEntityToList(item);
             }
@@ -1041,6 +1070,7 @@ public final class EntityPlayer extends EntityLiving {
         this.model.renderModelForShadowMap(this, sunX, sunY, sunZ);
     }
 
+
     @Override
     public void render(){
        if(texture == RenderEngine.NULL_TEXTURE){
@@ -1061,5 +1091,16 @@ public final class EntityPlayer extends EntityLiving {
         }
         return this.texture;
     }
+
+    public void checkInventoryForDecayingItems(){
+        for(int i = 0; i < this.inventory.itemStacks.length; i++){
+            if(this.inventory.itemStacks[i].item instanceof IDecayItem){
+                if(this.ce.save.time >= this.inventory.itemStacks[i].decayTime){
+                    this.inventory.itemStacks[i].item = Item.rot;
+                }
+            }
+        }
+    }
+
 
 }

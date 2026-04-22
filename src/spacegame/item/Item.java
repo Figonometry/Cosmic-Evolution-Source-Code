@@ -31,12 +31,14 @@ public class Item {
     public static final Item berrySeed = new Item((short)19, 19, "src/spacegame/assets/itemFiles/berrySeed.txt");
     public static final Item reedSeed = new Item((short)20, 19, "src/spacegame/assets/itemFiles/reedSeed.txt");
     public static final Item treeSeed = new Item((short)21, 19, "src/spacegame/assets/itemFiles/treeSeed.txt");
-    public static final Item cookedVenison = new ItemFood((short)22, 20, "src/spacegame/assets/itemFiles/cookedVenison.txt", 300f);
+    public static final Item cookedVenison = new ItemCookedVenison((short)22, 20, "src/spacegame/assets/itemFiles/cookedVenison.txt", 300f);
     public static final Item reedTwine = new Item((short)23, 21, "src/spacegame/assets/itemFiles/reedTwine.txt");
     public static final Item reedCraftingGridTop = new Item((short)24, 22, "src/spacegame/assets/itemFiles/reedCraftingGridTop.txt");
     public static final Item stoneAxe = new ItemAxe((short)25, 23, "src/spacegame/assets/itemFiles/stoneAxe.txt", Material.STONE);
     public static final Item stoneShovel = new ItemShovel((short)26, 24, "src/spacegame/assets/itemFiles/stoneShovel.txt", Material.STONE);
     public static final Item stoneKnife = new ItemKnife((short)27, 25, "src/spacegame/assets/itemFiles/stoneKnife.txt", Material.STONE);
+    public static final Item deerHide = new Item((short)28, 26, "src/spacegame/assets/itemFiles/deerHide.txt");
+    public static final Item rot = new Item((short)29, 27, "src/spacegame/assets/itemFiles/rot.txt");
     public final short ID;
     public final int textureID;
     public float hardness = 0;
@@ -174,11 +176,12 @@ public class Item {
 
 
 
-    public void onDestroy(ItemStack itemStack, int accessor){
-        CosmicEvolution.instance.save.thePlayer.inventory.itemStacks[accessor].item = null;
-        CosmicEvolution.instance.save.thePlayer.inventory.itemStacks[accessor].count = 0;
-        CosmicEvolution.instance.save.thePlayer.inventory.itemStacks[accessor].metadata = 0;
-        CosmicEvolution.instance.save.thePlayer.inventory.itemStacks[accessor].durability = 0;
+    public void onDestroy(ItemStack itemStack){
+        itemStack.item = null;
+        itemStack.count = 0;
+        itemStack.metadata = 0;
+        itemStack.durability = 0;
+        itemStack.decayTime = 0L;
     }
 
 }

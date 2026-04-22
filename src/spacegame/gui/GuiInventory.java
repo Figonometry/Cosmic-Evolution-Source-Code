@@ -1,7 +1,11 @@
 package spacegame.gui;
 
 import org.lwjgl.opengl.GL46;
+import spacegame.block.Block;
+import spacegame.block.ITimeUpdate;
 import spacegame.core.CosmicEvolution;
+import spacegame.core.Timer;
+import spacegame.item.IDecayItem;
 import spacegame.util.MathUtil;
 import spacegame.item.Inventory;
 import spacegame.item.ItemStack;
@@ -41,8 +45,32 @@ public abstract class GuiInventory extends Gui {
         float x = MathUtil.getOpenGLMouseX();
         float y = MathUtil.getOpenGLMouseY();
         int font = 50;
-        float height = font;
+
+        boolean isDecayItem = stack.item instanceof IDecayItem;
+
+        float height = font + (isDecayItem ? font * 3 : 0);
         float width = font * ((displayedName.length() + 2) * 0.34f);
+
+        StringBuilder stringBuilder = new StringBuilder();
+        if(isDecayItem){
+            long timeUntil = stack.decayTime - CosmicEvolution.instance.save.time;
+            long daysUntil = timeUntil / Timer.GAME_DAY;
+            long hoursUntil = (timeUntil % Timer.GAME_DAY) / Timer.GAME_HOUR;
+            long minutesUntil = (timeUntil % Timer.GAME_HOUR) / Timer.GAME_MINUTE;
+
+            stringBuilder.append("Decays In: ");
+            if (daysUntil != 0) {
+                stringBuilder.append(daysUntil).append(daysUntil != 1 ? " Days " : " Day ");
+            }
+            if (hoursUntil != 0 || (minutesUntil != 0 && daysUntil != 0)) {
+                stringBuilder.append(hoursUntil).append(hoursUntil != 1 ? " Hours " : " Hour ");
+            }
+            if (minutesUntil != 0) {
+                stringBuilder.append(minutesUntil).append(minutesUntil != 1 ? " Minutes" : " Minute");
+            }
+        }
+
+        width += font * stringBuilder.length() * 0.34f;
 
         tessellator.addVertex2DTexture(0, x, y, -10, 3);
         tessellator.addVertex2DTexture(0, x + width, y + height, -10, 1);
@@ -57,7 +85,12 @@ public abstract class GuiInventory extends Gui {
         tessellator.toggleOrtho();
 
 
+
         fontRenderer.drawString(displayedName, x, y, -9, 16777215, font, 255);
+
+        if(isDecayItem){
+            fontRenderer.drawString(stringBuilder.toString(), x, y + 120, -9, 16777215, font, 255);
+        }
     }
 
 }

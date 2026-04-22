@@ -26,6 +26,8 @@ public final class GuiDifficultySettings extends Gui {
     public int earth;
     public boolean fromWorldCreateScreen;
     public int saveSlot;
+    public TextField worldName;
+    public TextField seed;
     public GuiDifficultySettings(CosmicEvolution cosmicEvolution, boolean fromWorldCreateScreen, int currentSaveSlot, SaveSettings saveSettings) {
         super(cosmicEvolution);
         this.fromWorldCreateScreen = fromWorldCreateScreen;

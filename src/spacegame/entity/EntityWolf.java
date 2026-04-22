@@ -1,52 +1,48 @@
 package spacegame.entity;
 
-import org.joml.Vector3f;
 import spacegame.block.Block;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.Sound;
 import spacegame.core.Timer;
+import spacegame.entity.ai.AIHostile;
 import spacegame.entity.ai.AIPassive;
 import spacegame.item.IDecayItem;
 import spacegame.item.Item;
+import spacegame.render.RenderEngine;
 import spacegame.render.model.Model;
 import spacegame.render.model.ModelDeer;
-import spacegame.render.RenderEngine;
+import spacegame.render.model.ModelWolf;
 import spacegame.util.MathUtil;
 import spacegame.world.World;
 
 import java.util.Random;
 
-public final class EntityDeer extends EntityLiving implements IDecayable, IHarvestable {
-    public static int ticksSinceLastRender = 0;
-    public static int texture = RenderEngine.NULL_TEXTURE;
-    public int animationTimer = 0;
-    public boolean animate = true;
-    public boolean isMale;
-    public boolean isChild;
+public final class EntityWolf extends EntityLiving implements IDecayable, IHarvestable {
     public boolean stopFrontLeftLeg;
     public boolean stopFrontRightLeg;
     public boolean stopBackLeftLeg;
     public boolean stopBackRightLeg;
+    public boolean isChild;
+    public boolean isMale;
+    public int animationTimer;
+    public boolean animate;
+    public short blockUnderWolf;
+    public int outOfWaterJumpDelay;
     public boolean isLeavingWater;
-    public Vector3f frontLeftLegAngleAtDeath;
-    public Vector3f frontRightLegAngleAtDeath;
-    public Vector3f backLeftLegAngleAtDeath;
-    public Vector3f backRightLegAngleAtDeath;
-    public short blockUnderDeer;
-    public int growthTimer;
+    public boolean alertedToPlayer;
+    public static int ticksSinceLastRender;
     public Model model;
-    public int outOfWaterJumpDelay = 0;
-
-    public EntityDeer(double x, double y, double z, boolean isChild, boolean isMale){
+    public static int texture = RenderEngine.NULL_TEXTURE;
+    public EntityWolf(double x, double y, double z, boolean isChild, boolean isMale) {
         super(54000);
         this.x = x;
         this.y = y;
         this.z = z;
-        this.isMale = isMale;
         this.isChild = isChild;
+        this.isMale = isMale;
         this.health = 100f;
         this.maxHealth = 100f;
-        this.height = 2;
+        this.height = 1.4;
         this.width = 0.5;
         this.depth = 0.5;
         this.deathWidth = 0.5;
@@ -56,9 +52,8 @@ public final class EntityDeer extends EntityLiving implements IDecayable, IHarve
     }
 
 
-
     public void loadTexture(){
-        texture = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/entity/deer.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
+        texture = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/entity/wolf.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
     }
 
     @Override
@@ -99,11 +94,27 @@ public final class EntityDeer extends EntityLiving implements IDecayable, IHarve
             }
         }
 
+        if(this.isPlayerInRange() && !this.alertedToPlayer){
+            this.alertedToPlayer = true;
+        }
+
         this.waitTimer--;
-        if(this.waitTimer <= 0 && !this.shouldMove) {
+        if(this.waitTimer <= 0 && !this.shouldMove && !this.alertedToPlayer) {
             this.rawDeltaX = -0.1f;
             AIPassive.chooseNewTargetAndSetAngle(this);
+        } else if(this.alertedToPlayer){
+            this.rawDeltaX = -0.1f;
+            this.speed = 0.1f;
+            AIHostile.targetPlayer(this);
         }
+
+        if(!this.isPlayerInRange() && this.alertedToPlayer){
+            this.alertedToPlayer = false;
+        }
+    }
+
+    private boolean isPlayerInRange(){
+        return MathUtil.distance3DSquared(this.x, this.y, this.z, CosmicEvolution.instance.save.thePlayer.x, CosmicEvolution.instance.save.thePlayer.y, CosmicEvolution.instance.save.thePlayer.z) <= 40;
     }
 
     private void setCanEntityJump(){
@@ -124,7 +135,7 @@ public final class EntityDeer extends EntityLiving implements IDecayable, IHarve
         short headBlock = CosmicEvolution.instance.save.activeWorld.getBlockID(deerX, deerUpper, deerZ);
         short footBlock = CosmicEvolution.instance.save.activeWorld.getBlockID(deerX, deerLower, deerZ);
         this.inWater = Block.list[headBlock].waterlogged || Block.list[footBlock].waterlogged;
-        this.blockUnderDeer = CosmicEvolution.instance.save.activeWorld.getBlockID(deerX, MathUtil.floorDouble(this.y - (this.height/2) - 0.1), deerZ);
+        this.blockUnderWolf = CosmicEvolution.instance.save.activeWorld.getBlockID(deerX, MathUtil.floorDouble(this.y - (this.height/2) - 0.1), deerZ);
         if(this.inWater){
             this.isOnGround = false;
         }
@@ -179,7 +190,7 @@ public final class EntityDeer extends EntityLiving implements IDecayable, IHarve
 
         if(this.isLeavingWater){
             if(!this.moveEntityUp && ((Block.list[headBlock].waterlogged && Block.list[footBlock].waterlogged) ||
-                    (Block.list[footBlock].waterlogged && Block.list[this.blockUnderDeer].isSolid))){
+                    (Block.list[footBlock].waterlogged && Block.list[this.blockUnderWolf].isSolid))){
                 this.isLeavingWater = false;
             }
             if(this.isOnGround){
@@ -238,6 +249,11 @@ public final class EntityDeer extends EntityLiving implements IDecayable, IHarve
 
         this.updateGroundPosition(this.rawDeltaX, 0, 0);
 
+        if(this.boundingBox.clip(CosmicEvolution.instance.save.thePlayer.boundingBox) && !this.isDead){
+            CosmicEvolution.instance.save.thePlayer.damage(5);
+            //Play sound of the wolf attacking
+        }
+
         if(this.canMoveWithVector){
             this.moveWithVector();
         }
@@ -257,15 +273,15 @@ public final class EntityDeer extends EntityLiving implements IDecayable, IHarve
     public void handleDeath() {
         this.isDead = true;
         this.isAIEnabled = false;
-        ModelDeer.getBaseModel().getLegAnglesAtTimeOfDeath(this.animationTimer, this.animate, this);
+        ModelWolf.getBaseModel().getLegAnglesAtTimeOfDeath(this.animationTimer, this.animate, this);
         this.timeDied = CosmicEvolution.instance.save.time;
         this.animate = false;
     }
 
     @Override
     public void destroyOnDecay(){
-       this.despawn = true;
-       //Replace entity with a corpse block of some kind
+        this.despawn = true;
+        //Replace entity with a corpse block of some kind
     }
 
     public long getDecayTime(){
@@ -274,12 +290,12 @@ public final class EntityDeer extends EntityLiving implements IDecayable, IHarve
 
     @Override
     public String getHurtSound() {
-        return this.isDead ? null : Sound.deerHurt;
+        return this.isDead ? null : Sound.wolfHurt;
     }
 
     @Override
     public String getAmbientSound() {
-        return this.isDead ? null : Sound.deerAmbient;
+        return this.isDead ? null : Sound.wolfAmbient;
     }
 
     @Override
@@ -287,7 +303,7 @@ public final class EntityDeer extends EntityLiving implements IDecayable, IHarve
         if(texture == RenderEngine.NULL_TEXTURE){
             this.loadTexture();
         }
-        this.model = ModelDeer.getBaseModel();
+        this.model = ModelWolf.getBaseModel();
         this.model.animate(this.animationTimer, this.animate, this);
         this.model.renderModel(this);
         ticksSinceLastRender = 0;
@@ -295,7 +311,7 @@ public final class EntityDeer extends EntityLiving implements IDecayable, IHarve
     }
     @Override
     public void renderForShadowMap(int sunX, int sunY, int sunZ){
-        this.model = ModelDeer.getBaseModel();
+        this.model = ModelWolf.getBaseModel();
         this.model.animate(this.animationTimer, this.animate, this);
         this.model.renderModelForShadowMap(this, sunX, sunY, sunZ);
     }
@@ -303,10 +319,10 @@ public final class EntityDeer extends EntityLiving implements IDecayable, IHarve
     @Override
     public void dropItems(double x, double y, double z, World world, EntityPlayer player) {
 
-        if(!player.addItemToInventory(Item.rawVenison.ID, Item.NULL_ITEM_METADATA, (byte) CosmicEvolution.globalRand.nextInt(1,5), Item.NULL_ITEM_DURABILITY, 0)){
-           world.addEntity(new EntityItem(this.x, this.y, this.z, Item.rawVenison.ID, Item.NULL_ITEM_METADATA, (byte) CosmicEvolution.globalRand.nextInt(1, 5), Item.NULL_ITEM_DURABILITY, world.ce.save.time + ((IDecayItem)Item.rawVenison).getDecayTime()));
+        if(!player.addItemToInventory(Item.rawVenison.ID, Item.NULL_ITEM_METADATA, (byte) CosmicEvolution.globalRand.nextInt(1,5), Item.NULL_ITEM_DURABILITY, CosmicEvolution.instance.save.time + ((IDecayItem)(Item.rawVenison)).getDecayTime())){
+            world.addEntity(new EntityItem(this.x, this.y, this.z, Item.rawVenison.ID, Item.NULL_ITEM_METADATA, (byte) CosmicEvolution.globalRand.nextInt(1, 5), Item.NULL_ITEM_DURABILITY, world.ce.save.time + ((IDecayItem)Item.rawVenison).getDecayTime()));
         }
-
+            //Change to appropriate wolf drops
         if(!player.addItemToInventory(Item.deerHide.ID, Item.NULL_ITEM_METADATA, (byte) 1, Item.NULL_ITEM_DURABILITY, 0)){
             world.addEntity(new EntityItem(this.x, this.y, this.z, Item.deerHide.ID, Item.NULL_ITEM_METADATA, (byte) 1, Item.NULL_ITEM_DURABILITY, 0));
         }

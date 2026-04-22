@@ -6,7 +6,7 @@ import spacegame.block.Block;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
 import spacegame.util.MathUtil;
-import spacegame.render.ModelLoader;
+import spacegame.render.model.ModelLoader;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
 import spacegame.world.AxisAlignedBB;
@@ -85,6 +85,7 @@ public abstract class Entity {
         this.setMovementVector(movementVector);
 
     }
+
 
     protected void moveOnly(){
         this.x += this.deltaX;

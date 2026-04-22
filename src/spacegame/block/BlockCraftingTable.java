@@ -34,7 +34,7 @@ public final class BlockCraftingTable extends Block {
 
     @Override
     public void onLeftClick(int x, int y, int z, World world, EntityPlayer player) {
-        world.addEntity(new EntityItem(x + 0.5, y + 0.5, z + 0.5, Item.reedCraftingGridTop.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY));
+        world.addEntity(new EntityItem(x + 0.5, y + 0.5, z + 0.5, Item.reedCraftingGridTop.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY, 0));
         super.onLeftClick(x,y,z, world, player);
     }
 

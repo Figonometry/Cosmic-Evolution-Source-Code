@@ -11,6 +11,8 @@ import spacegame.item.Item;
 import spacegame.item.crafting.CraftingBlockRecipes;
 import spacegame.item.crafting.InWorldCraftingItem;
 import spacegame.render.*;
+import spacegame.render.model.ModelFace;
+import spacegame.render.model.ModelLoader;
 import spacegame.util.MathUtil;
 import spacegame.world.Chunk;
 

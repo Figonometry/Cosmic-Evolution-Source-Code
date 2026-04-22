@@ -8,13 +8,11 @@ import spacegame.block.BlockLeaf;
 import spacegame.block.ITickable;
 import spacegame.block.ITimeUpdate;
 import spacegame.core.CosmicEvolution;
+import spacegame.entity.*;
+import spacegame.item.IDecayItem;
 import spacegame.item.crafting.InWorld3DCraftingItem;
 import spacegame.item.crafting.InWorldCraftingItem;
 import spacegame.util.MathUtil;
-import spacegame.entity.Entity;
-import spacegame.entity.EntityBlock;
-import spacegame.entity.EntityItem;
-import spacegame.entity.EntityParticle;
 import spacegame.item.Inventory;
 import spacegame.item.Item;
 import spacegame.render.RenderBlocks;
@@ -34,6 +32,7 @@ public final class Chunk implements Comparable<Chunk> {
     public long updateTime;
     public boolean populated = false;
     public boolean shouldRender;
+    public boolean chunkWillUnload;
     public boolean updating;
     public boolean containsWater;
     public boolean containsAir;
@@ -219,7 +218,6 @@ public final class Chunk implements Comparable<Chunk> {
         this.southFaceBitMask[calculateBitMaskIndex(z, y)] = southFaceBitMask;
         this.eastFaceBitMask[calculateBitMaskIndex(x, y)] = eastFaceBitMask;
         this.westFaceBitMask[calculateBitMaskIndex(x, y)] = westFaceBitMask;
-        this.markDirty();
     }
 
     public void notifyBlockWithoutRebuild(int x, int y, int z) {
@@ -356,19 +354,7 @@ public final class Chunk implements Comparable<Chunk> {
 
 
     public static int getBlockIndexFromCoordinates(int x, int y, int z) {
-        while (x < 0) {
-            x += 32;
-        }
-        while (y < 0) {
-            y += 32;
-        }
-        while (z < 0) {
-            z += 32;
-        }
-        x %= 32;
-        y %= 32;
-        z %= 32;
-        return (x + (y << 10) + (z << 5));
+        return ((x & 31) + ((y & 31) << 10) + ((z & 31) << 5));
     }
 
     public short getBlockID(int x, int y, int z){
@@ -536,6 +522,16 @@ public final class Chunk implements Comparable<Chunk> {
     }
     public void markToPopulate(){
         this.parentWorld.chunkController.addChunkToPopulationQueue(this);
+    }
+
+    public int getLivingEntitiesInChunk(){
+        int result = 0;
+        for(int i = 0; i < this.entities.size(); i++){
+            if(this.entities.get(i) instanceof EntityLiving){
+                result++;
+            }
+        }
+        return result;
     }
 
 
@@ -776,6 +772,7 @@ public final class Chunk implements Comparable<Chunk> {
                 this.parentWorld.propagateLightSource(x,y,z, Block.list[this.blocks[i]].lightBlockValue);
             }
         }
+        this.markDirty();
     }
 
 
@@ -1177,6 +1174,7 @@ public final class Chunk implements Comparable<Chunk> {
 
     public void renderEntities(int sunX, int sunY, int sunZ){
         Shader.worldShader2DTexture.uploadVec3f("sunChunkOffset", new Vector3f((this.x - sunX) << 5, (this.y - sunY) << 5, (this.z - sunZ) << 5));
+        Shader.worldShaderTextureArray.uploadVec3f("sunChunkOffset", new Vector3f((this.x - sunX) << 5, (this.y - sunY) << 5, (this.z - sunZ) << 5));
         Entity entity;
         for(int i = 0; i < this.entities.size(); i++){
             entity = this.entities.get(i);
@@ -1201,6 +1199,14 @@ public final class Chunk implements Comparable<Chunk> {
         for(int i = 0; i < this.entities.size(); i++){
             entity = this.entities.get(i);
             if(entity != null){
+                if(entity instanceof IDecayable && entity instanceof EntityLiving){
+                    if(((EntityLiving) entity).isDead) {
+                        if (((EntityLiving) entity).timeDied + ((IDecayable) entity).getDecayTime() <= CosmicEvolution.instance.save.time) {
+                            ((IDecayable) entity).destroyOnDecay();
+                        }
+                    }
+                }
+
                 entity.tick();
                 if(entity.despawn){
                     this.removeEntity(entity);
@@ -1257,6 +1263,19 @@ public final class Chunk implements Comparable<Chunk> {
                 }
             }
             this.craftingItems.trimToSize();
+
+
+            ChestLocation chestLocation;
+            for(int i = 0; i < this.chestLocations.size(); i++){
+                chestLocation = this.chestLocations.get(i);
+                for(int j = 0; j < chestLocation.inventory.itemStacks.length; j++){
+                    if(chestLocation.inventory.itemStacks[j].item instanceof IDecayItem){
+                        if(this.parentWorld.ce.save.time >= chestLocation.inventory.itemStacks[j].decayTime){
+                            chestLocation.inventory.itemStacks[j].item = Item.rot;
+                        }
+                    }
+                }
+            }
         }
 
 
@@ -1512,7 +1531,7 @@ public final class Chunk implements Comparable<Chunk> {
                 block.setMovementVector(new Vector3f(rand.nextFloat(-1, 1), rand.nextFloat(-1, 1), rand.nextFloat(-1, 1)));
                 this.addEntityToList(block);
             } else if(inventory.itemStacks[i].item != null){
-                EntityItem item = new EntityItem(this.getBlockXFromIndex(index) + 0.5, this.getBlockYFromIndex(index) + 0.5, this.getBlockZFromIndex(index) + 0.5, inventory.itemStacks[i].item.ID, inventory.itemStacks[i].metadata, inventory.itemStacks[i].count, inventory.itemStacks[i].durability);
+                EntityItem item = new EntityItem(this.getBlockXFromIndex(index) + 0.5, this.getBlockYFromIndex(index) + 0.5, this.getBlockZFromIndex(index) + 0.5, inventory.itemStacks[i].item.ID, inventory.itemStacks[i].metadata, inventory.itemStacks[i].count, inventory.itemStacks[i].durability, 0);
                 item.setMovementVector(new Vector3f(rand.nextFloat(-1, 1), rand.nextFloat(-1, 1), rand.nextFloat(-1, 1)));
                 this.addEntityToList(item);
             }

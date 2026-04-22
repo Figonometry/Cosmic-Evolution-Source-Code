@@ -19,7 +19,7 @@ public final class BlockReed extends Block implements ITimeUpdate {
         short playerHeldItem = player.getHeldItem();
 
         if(playerHeldItem != Item.NULL_ITEM_REFERENCE && Item.list[playerHeldItem] instanceof ItemKnife && world.getBlockID(x,y,z) == Block.reedLower.ID && world.getBlockID(x, y + 1, z) == Block.reedUpper.ID){
-            world.addEntity(new EntityItem(x + 0.5, y + 0.5, z + 0.5, Item.reeds.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY));
+            world.addEntity(new EntityItem(x + 0.5, y + 0.5, z + 0.5, Item.reeds.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY, 0));
             world.addTimeEvent(x,y,z, CosmicEvolution.instance.save.time + this.getUpdateTime());
             world.setBlockWithNotify(x, y + 1, z, Block.air.ID, false);
         } else {

@@ -23,11 +23,12 @@ public final class BlockItem extends BlockContainer {
 
         if(!KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) && !KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT) && playerHeldItem == Item.NULL_ITEM_REFERENCE){
             ChestLocation chest = world.getChestLocation(x,y,z);
-            if(player.addItemToInventory(chest.inventory.itemStacks[0].item.ID, chest.inventory.itemStacks[0].metadata, (byte)1, chest.inventory.itemStacks[0].durability)){
+            if(player.addItemToInventory(chest.inventory.itemStacks[0].item.ID, chest.inventory.itemStacks[0].metadata, (byte)1, chest.inventory.itemStacks[0].durability, chest.inventory.itemStacks[0].decayTime)){
                 chest.inventory.itemStacks[0].count = 0;
                 chest.inventory.itemStacks[0].item = null;
                 chest.inventory.itemStacks[0].durability = Item.NULL_ITEM_DURABILITY;
                 chest.inventory.itemStacks[0].metadata = Item.NULL_ITEM_METADATA;
+                chest.inventory.itemStacks[0].decayTime = 0L;
                 world.removeChestLocation(x,y,z);
                 world.setBlockWithNotify(x,y,z, Block.air.ID, false);
             }

@@ -21,25 +21,22 @@ public final class ChunkRegion {
         this.chunks[getRegionChunkIndex(chunk.x, chunk.y, chunk.z)] = null;
     }
 
-    public static int getRegionChunkIndex(int x, int y, int z) {
-        if (x < 0) {
-            x *= -1;
-        }
-
-        if (y < 0) {
-            y *= -1;
-        }
-
-        if (z < 0) {
-            z *= -1;
-        }
-
-        x %= 8;
-        y %= 8;
-        z %= 8;
-
-        return (x + (y << 6) + (z << 3));
+    public Chunk getChunk(int x, int y, int z){
+        return this.chunks[getRegionChunkIndex(x,y,z)];
     }
+
+    public static int getRegionChunkIndex(int x, int y, int z) {
+        return ((x & 7) + ((y & 7) << 6) + ((z & 7) << 3));
+    }
+
+    public static long regionKey(int rx, int ry, int rz) {
+        long key = 0L;
+        key |= ((long)(rx & 0x1FFFFF)) << 42;
+        key |= ((long)(ry & 0x1FFFFF)) << 21;
+        key |= ((long)(rz & 0x1FFFFF));
+        return key;
+    }
+
 
 
     public boolean isEmpty() {

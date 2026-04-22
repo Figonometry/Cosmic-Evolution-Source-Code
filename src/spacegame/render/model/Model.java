@@ -1,12 +1,10 @@
-package spacegame.render;
+package spacegame.render.model;
 
 import org.joml.Vector3f;
 import spacegame.core.CosmicEvolution;
 import spacegame.entity.Entity;
 import spacegame.gui.GuiInGame;
 import spacegame.util.MathUtil;
-
-import java.awt.*;
 
 public abstract class Model {
     public float red;
@@ -61,21 +59,21 @@ public abstract class Model {
         };
     }
 
-    public void rotateSegment(int segmentInArray, float x, float y, float z, float angleDeg){
+    public void rotateSegment(int segmentInArray, float x, float y, float z, float angleDeg, boolean performTranslation){
         if(segmentInArray < 0 || segmentInArray > this.segments.length - 1){return;}
         boolean rotateX = x == 1;
         boolean rotateY = y == 1;
         boolean rotateZ = z == 1;
         if(rotateX){
-            this.segments[segmentInArray].rotateSegmentX(angleDeg);
+            this.segments[segmentInArray].rotateSegmentX(angleDeg,performTranslation);
             return;
         }
         if(rotateY){
-            this.segments[segmentInArray].rotateSegmentY(angleDeg);
+            this.segments[segmentInArray].rotateSegmentY(angleDeg,performTranslation);
             return;
         }
         if(rotateZ){
-            this.segments[segmentInArray].rotateSegmentZ(angleDeg);
+            this.segments[segmentInArray].rotateSegmentZ(angleDeg,performTranslation);
         }
     }
 

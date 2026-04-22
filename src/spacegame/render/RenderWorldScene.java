@@ -8,18 +8,22 @@ import spacegame.celestial.Sun;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
 import spacegame.entity.EntityParticle;
+import spacegame.render.model.ModelFace;
+import spacegame.render.model.ModelLoader;
 import spacegame.util.MathUtil;
 import spacegame.core.Timer;
 import spacegame.gui.GuiInGame;
 import spacegame.gui.GuiUniverseMap;
 import spacegame.world.Chunk;
 import spacegame.world.ChunkController;
+import spacegame.world.ChunkRegion;
 import spacegame.world.weather.Cloud;
 import spacegame.world.weather.RainQuad;
 
 import java.awt.*;
 import java.lang.Math;
 import java.util.ArrayList;
+import java.util.List;
 
 public final class RenderWorldScene {
     public ChunkController controller;
@@ -203,8 +207,8 @@ public final class RenderWorldScene {
             transparentChunk.renderTransparent(this.sunX,this.sunY,this.sunZ);
         }
 
-        GL46.glDisable(GL46.GL_BLEND);
         GL46.glDisable(GL46.GL_ALPHA_TEST);
+        GL46.glDisable(GL46.GL_BLEND);
 
         //Texture unit 1 is still the active texture from the shadowmap
         GL46.glBindTexture(GL46.GL_TEXTURE_2D, 0);
@@ -215,6 +219,9 @@ public final class RenderWorldScene {
         GL46.glBindTexture(GL46.GL_TEXTURE_2D_ARRAY, 0);
         GL46.glDisable(GL46.GL_CULL_FACE);
         GL46.glUseProgram(0);
+
+
+
 
 
         this.chunksToRender.clear();
@@ -302,8 +309,6 @@ public final class RenderWorldScene {
         CosmicEvolution.camera.viewMatrix = new Matrix4d();
         CosmicEvolution.camera.viewMatrix.rotate(viewMatrixRotation);
 
-        GL46.glEnable(GL46.GL_CULL_FACE);
-        GL46.glCullFace(GL46.GL_FRONT);
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_SRC_ALPHA, GL46.GL_ONE_MINUS_SRC_ALPHA);
         Shader.worldShader2DTexture.uploadBoolean("useFog", false);
@@ -314,7 +319,6 @@ public final class RenderWorldScene {
         }
         Shader.worldShader2DTexture.uploadVec3f("chunkOffset", new Vector3f());
         tessellator.drawTexture2D(Cloud.texture, Shader.worldShader2DTexture, CosmicEvolution.camera);
-        GL46.glDisable(GL46.GL_CULL_FACE);
         GL46.glDisable(GL46.GL_BLEND);
 
         CosmicEvolution.camera.viewMatrix = preservedViewMatrix;
@@ -379,19 +383,20 @@ public final class RenderWorldScene {
                 int xOffset;
                 int yOffset;
                 int zOffset;
-                for (int i = 0; i < this.controller.regions.length; i++) {
-                    if (this.controller.regions[i] == null) continue;
-                    for (int j = 0; j < this.controller.regions[i].chunks.length; j++) {
-                        if (this.controller.regions[i].chunks[j] == null) continue;
-                        if (!this.controller.regions[i].chunks[j].shouldRender) continue;
-                        xOffset = (this.controller.regions[i].chunks[j].x - sunX) << 5;
-                        yOffset = (this.controller.regions[i].chunks[j].y - sunY) << 5;
-                        zOffset = (this.controller.regions[i].chunks[j].z - sunZ) << 5;
+                List<ChunkRegion> snapshot = new ArrayList<>(this.controller.regionMap.values());
+                for (ChunkRegion region : snapshot) {
+                    if (region == null) continue;
+                    for (int j = 0; j < region.chunks.length; j++) {
+                        if (region.chunks[j] == null) continue;
+                        if (!region.chunks[j].shouldRender) continue;
+                        xOffset = (region.chunks[j].x - sunX) << 5;
+                        yOffset = (region.chunks[j].y - sunY) << 5;
+                        zOffset = (region.chunks[j].z - sunZ) << 5;
                         if (!this.doesChunkIntersectSunFrustum(frustumInt, xOffset, yOffset, zOffset, ((xOffset + 31)), ((yOffset + 31)), ((zOffset + 31))))
                             continue;
 
                         GL46.glBindTexture(GL46.GL_TEXTURE_2D_ARRAY, Assets.blockTextureArray);
-                        this.controller.regions[i].chunks[j].renderShadowMap(sunX, sunY, sunZ);
+                        region.chunks[j].renderShadowMap(sunX, sunY, sunZ);
                     }
                 }
 
@@ -476,12 +481,14 @@ public final class RenderWorldScene {
 
                 normalizedCelestialObjectPosition.rotateY(rotationAmountY); // daily rotation
 
-                float latRad = (float) Math.toRadians(playerLat);
-
                 float orbitalPhase = (CosmicEvolution.instance.save.time % currentCelestialObject.orbitalPeriod) / (float)currentCelestialObject.orbitalPeriod;
 
                 float seasonalFactor = (float) (4 + Math.sin((-orbitalPhase * (2 * Math.PI))));
 
+                float latRad = (float) Math.toRadians(playerLat);
+
+
+                normalizedCelestialObjectPosition.rotateZ((float) Math.toRadians(currentCelestialObject.axialTiltX));
                 normalizedCelestialObjectPosition.rotateZ(-latRad * seasonalFactor);
 
                 Vector3f differenceVector = normalizedCelestialObjectPosition.normalize(); // now it's already relative to origin

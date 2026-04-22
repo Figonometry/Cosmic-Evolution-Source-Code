@@ -1,4 +1,4 @@
-package spacegame.render;
+package spacegame.render.model;
 
 import org.joml.Vector3f;
 

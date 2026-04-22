@@ -19,7 +19,7 @@ public final class BlockWater extends BlockFluid {
         short playerHeldItem = player.getHeldItem();
 
         if(playerHeldItem == Item.block.ID && (KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT))){
-            if(player.getHeldBlock() == Block.dirt.ID && player.addItemToInventory(Item.mud.ID, Item.NULL_ITEM_METADATA, (byte)8, Item.NULL_ITEM_DURABILITY)){
+            if(player.getHeldBlock() == Block.dirt.ID && player.addItemToInventory(Item.mud.ID, Item.NULL_ITEM_METADATA, (byte)8, Item.NULL_ITEM_DURABILITY, 0)){
                 player.removeItemFromInventory();
                 MouseListener.rightClickReleased = false;
                 KeyListener.setKeyReleased(GLFW.GLFW_KEY_RIGHT_SHIFT);

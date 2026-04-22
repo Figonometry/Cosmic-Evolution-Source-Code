@@ -142,10 +142,10 @@ public final class GuiWorldLoading extends Gui {
             }
             case 3 -> {
                 switch ((int) second) {
-                    case 0 -> fontRenderer.drawCenteredString("Finalizing Chunk Threads: " + this.ce.save.activeWorld.chunkController.threadQueue.size() + " Threads Remaining", 0, 128,-15, 16777215, 50, 255);
-                    case 1 -> fontRenderer.drawCenteredString("Finalizing Chunk Threads: " + this.ce.save.activeWorld.chunkController.threadQueue.size() + " Threads Remaining.", 0, 128, -15,16777215, 50, 255);
-                    case 2 -> fontRenderer.drawCenteredString("Finalizing Chunk Threads: " + this.ce.save.activeWorld.chunkController.threadQueue.size() + " Threads Remaining..", 0, 128,-15, 16777215, 50, 255);
-                    case 3 -> fontRenderer.drawCenteredString("Finalizing Chunk Threads: " + this.ce.save.activeWorld.chunkController.threadQueue.size() + " Threads Remaining...", 0, 128, -15,16777215, 50, 255);
+                    case 0 -> fontRenderer.drawCenteredString("Finalizing Chunk Threads: " + Thread.activeCount() + " Threads Remaining", 0, 128,-15, 16777215, 50, 255);
+                    case 1 -> fontRenderer.drawCenteredString("Finalizing Chunk Threads: " + Thread.activeCount() + " Threads Remaining.", 0, 128, -15,16777215, 50, 255);
+                    case 2 -> fontRenderer.drawCenteredString("Finalizing Chunk Threads: " + Thread.activeCount() + " Threads Remaining..", 0, 128,-15, 16777215, 50, 255);
+                    case 3 -> fontRenderer.drawCenteredString("Finalizing Chunk Threads: " + Thread.activeCount() + " Threads Remaining...", 0, 128, -15,16777215, 50, 255);
                 }
             }
         }

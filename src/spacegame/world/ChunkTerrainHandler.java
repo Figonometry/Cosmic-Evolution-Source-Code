@@ -216,7 +216,7 @@ public final class ChunkTerrainHandler {
             new WorldGenClayBlob(chunk, (WorldEarth)chunk.parentWorld, grassIndices[rand.nextInt(grassIndices.length)]);
         }
 
-        while (cactusCount > 0 && sandIndex > 0){ //Should not generate outside of desert regions
+        while (cactusCount > 0 && sandIndex > 0){ //Should not generate outside of desert regionMap
             WorldGenCactus worldGenCactus = new WorldGenCactus(chunk, (WorldEarth)chunk.parentWorld, sandIndices[rand.nextInt(sandIndices.length)]);
             cactusCount--;
         }

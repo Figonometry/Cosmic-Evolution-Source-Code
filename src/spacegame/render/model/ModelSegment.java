@@ -1,4 +1,4 @@
-package spacegame.render;
+package spacegame.render.model;
 
 import org.joml.Vector3f;
 import spacegame.util.MathUtil;
@@ -135,17 +135,17 @@ public final class ModelSegment {
 
     public void rotateModelSegmentX(float angleDeg){
         this.updateChildrenPositionX(angleDeg);
-        this.rotateSegmentX(angleDeg);
+        this.rotateSegmentX(angleDeg, true);
     }
 
     public void rotateModelSegmentY(float angleDeg){
         this.updateChildrenPositionY(angleDeg);
-        this.rotateSegmentY(angleDeg);
+        this.rotateSegmentY(angleDeg, true);
     }
 
     public void rotateModelSegmentZ(float angleDeg){
         this.updateChildrenPositionZ(angleDeg);
-        this.rotateSegmentZ(angleDeg);
+        this.rotateSegmentZ(angleDeg, true);
     }
 
 
@@ -159,6 +159,18 @@ public final class ModelSegment {
 
     public void rotatePositionZ(float angleRad){
         this.position.rotateZ(angleRad);
+    }
+
+    public void rotateRotationPointX(float angleRad){
+        this.rotationPoint.rotateX(angleRad);
+    }
+
+    public void rotateRotationPointY(float angleRad){
+        this.rotationPoint.rotateY(angleRad);
+    }
+
+    public void rotateRotationPointZ(float angleRad){
+        this.rotationPoint.rotateZ(angleRad);
     }
 
     public void updateChildrenPositionX(float angleDeg){
@@ -182,12 +194,19 @@ public final class ModelSegment {
     }
 
     public void updateChildrenPositionZ(float angleDeg){
-
+        if(this.childrenSegments == null){return;}
+        angleDeg = angleDeg < 0 ? 360 + angleDeg : angleDeg;
+        float angleRad = (float) Math.toRadians(angleDeg);
+        for(int i = 0; i < this.childrenSegments.length; i++){
+            this.childrenSegments[i].position.add((float) 0, (float) (MathUtil.sin(angleRad) * -this.height), Math.abs((float) ((MathUtil.sin(angleRad) * 0.125f) * this.depth)));
+        }
     }
 
-    public void rotateSegmentX(float angleDeg){
+    public void rotateSegmentX(float angleDeg, boolean performTranslation){
         float angleRad = (float) Math.toRadians(angleDeg);
-        this.translatePreRotation();
+        if(performTranslation) {
+            this.translatePreRotation();
+        }
         for(int i = 0; i < 5; i++){
             this.topFace[i].rotateX(angleRad);
             this.bottomFace[i].rotateX(angleRad);
@@ -196,17 +215,22 @@ public final class ModelSegment {
             this.eastFace[i].rotateX(angleRad);
             this.westFace[i].rotateX(angleRad);
         }
-        this.translatePostRotation();
+        if(performTranslation) {
+            this.translatePostRotation();
+        }
         if(this.childrenSegments == null){return;}
         for(int i = 0; i < this.childrenSegments.length; i++){
-            this.childrenSegments[i].rotateSegmentX(angleDeg);
+            this.childrenSegments[i].rotateSegmentX(angleDeg, performTranslation);
             this.childrenSegments[i].rotatePositionX(angleRad);
+            this.childrenSegments[i].rotateRotationPointX(angleRad);
         }
     }
 
-    public void rotateSegmentY(float angleDeg){
+    public void rotateSegmentY(float angleDeg, boolean performTranslation){
         float angleRad = (float) Math.toRadians(angleDeg);
-        this.translatePreRotation();
+        if(performTranslation) {
+            this.translatePreRotation();
+        }
         for(int i = 0; i < 5; i++){
             this.topFace[i].rotateY(angleRad);
             this.bottomFace[i].rotateY(angleRad);
@@ -215,17 +239,22 @@ public final class ModelSegment {
             this.eastFace[i].rotateY(angleRad);
             this.westFace[i].rotateY(angleRad);
         }
-        this.translatePostRotation();
+        if(performTranslation) {
+            this.translatePostRotation();
+        }
         if(this.childrenSegments == null){return;}
         for(int i = 0; i < this.childrenSegments.length; i++){
-            this.childrenSegments[i].rotateSegmentY(angleDeg);
+            this.childrenSegments[i].rotateSegmentY(angleDeg, performTranslation);
             this.childrenSegments[i].rotatePositionY(angleRad);
+            this.childrenSegments[i].rotateRotationPointY(angleRad);
         }
     }
 
-    public void rotateSegmentZ(float angleDeg){
+    public void rotateSegmentZ(float angleDeg, boolean performTranslation){
         float angleRad = (float) Math.toRadians(angleDeg);
-        this.translatePreRotation();
+        if(performTranslation) {
+            this.translatePreRotation();
+        }
         for(int i = 0; i < 5; i++){
             this.topFace[i].rotateZ(angleRad);
             this.bottomFace[i].rotateZ(angleRad);
@@ -234,11 +263,14 @@ public final class ModelSegment {
             this.eastFace[i].rotateZ(angleRad);
             this.westFace[i].rotateZ(angleRad);
         }
-        this.translatePostRotation();
+        if(performTranslation) {
+            this.translatePostRotation();
+        }
         if(this.childrenSegments == null){return;}
-        for(int i = 0; i < this.childrenSegments.length; i++){
-            this.childrenSegments[i].rotateSegmentZ(angleDeg);
-            this.rotatePositionZ(angleRad);
+        for(int i = 0; i < this.childrenSegments.length; i++) {
+            this.childrenSegments[i].rotateSegmentZ(angleDeg, performTranslation);
+            this.childrenSegments[i].rotatePositionZ(angleRad);
+            this.childrenSegments[i].rotateRotationPointZ(angleRad);
         }
     }
 

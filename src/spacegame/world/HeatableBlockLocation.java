@@ -2,6 +2,7 @@ package spacegame.world;
 
 import spacegame.core.CosmicEvolution;
 import spacegame.core.Timer;
+import spacegame.item.IDecayItem;
 import spacegame.item.IFuel;
 import spacegame.item.IHeatable;
 import spacegame.item.Item;
@@ -91,6 +92,10 @@ public final class HeatableBlockLocation { //Trigger every 15 ticks, also is a "
             if(chestLocation.inventory.itemStacks[2].item == null){
                 chestLocation.inventory.itemStacks[2].item = Item.list[outputItem];
                 chestLocation.inventory.itemStacks[2].count = 0;
+
+                if(Item.list[outputItem] instanceof IDecayItem){
+                    chestLocation.inventory.itemStacks[2].decayTime = CosmicEvolution.instance.save.time + ((IDecayItem) Item.list[outputItem]).getDecayTime();
+                }
             }
 
             if(chestLocation.inventory.itemStacks[1].item != null) {

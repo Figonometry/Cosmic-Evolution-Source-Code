@@ -8,7 +8,7 @@ import spacegame.entity.EntityPlayer;
 import spacegame.item.Inventory;
 import spacegame.item.Item;
 import spacegame.item.ItemKnife;
-import spacegame.render.ModelLoader;
+import spacegame.render.model.ModelLoader;
 import spacegame.util.MathUtil;
 import spacegame.world.AxisAlignedBB;
 import spacegame.world.Chunk;
@@ -493,7 +493,7 @@ public class Block {
         //This is too generic to put in its own class
         if(world.isBlockAbleToBecomePitKiln(this, x, y, z) && playerHeldItem == Item.straw.ID && MouseListener.rightClickReleased && world.isBlockSuitableForPitKiln(x,y,z)){
             Inventory kilnInventory = new Inventory(1,1);
-            kilnInventory.addItemToInventory(world.pitKilnItemType(this.ID, x,y,z), world.getBlockID(x,y,z), world.pitKilnItemCount(this.ID, x,y,z), Item.NULL_ITEM_DURABILITY);
+            kilnInventory.addItemToInventory(world.pitKilnItemType(this.ID, x,y,z), world.getBlockID(x,y,z), world.pitKilnItemCount(this.ID, x,y,z), Item.NULL_ITEM_DURABILITY, 0);
             if(this.ID == Block.brickPile.ID){
                 world.clearChestLocation(x,y,z);
             }
@@ -512,13 +512,13 @@ public class Block {
         short playerHeldItem = player.getHeldItem();
         if(playerHeldItem != Item.NULL_ITEM_REFERENCE) {
             if (this.ID == tallGrass.ID && Item.list[playerHeldItem] instanceof ItemKnife) {
-                world.addEntity(new EntityItem(x + 0.5, y + 0.5, z + 0.5, Item.straw.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY));
+                world.addEntity(new EntityItem(x + 0.5, y + 0.5, z + 0.5, Item.straw.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY, 0));
             }
         }
         if(this.ID == grassWithClay.ID || this.ID == clay.ID){
             int extraClay = CosmicEvolution.globalRand.nextInt(2,4);
             for(int i = 0; i < extraClay; i++){
-                world.addEntity(new EntityItem(x + 0.5, y + 0.5, z + 0.5, Item.clay.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY));
+                world.addEntity(new EntityItem(x + 0.5, y + 0.5, z + 0.5, Item.clay.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY, 0));
             }
         }
 
@@ -544,7 +544,7 @@ public class Block {
         if (list[blockID].droppedItemID != Item.NULL_ITEM_REFERENCE) {
             if (list[blockID].droppedItemID != Item.block.ID) {
                 if (list[blockID].itemDropChance > CosmicEvolution.globalRand.nextFloat()) {
-                    world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).addEntityToList(new EntityItem(x + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), y + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), z + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), list[blockID].droppedItemID, Item.NULL_ITEM_METADATA, (byte) 1, Item.list[list[blockID].droppedItemID].durability));
+                    world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).addEntityToList(new EntityItem(x + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), y + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), z + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), list[blockID].droppedItemID, Item.NULL_ITEM_METADATA, (byte) 1, Item.list[list[blockID].droppedItemID].durability, 0));
                 }
             } else {
                 if (list[blockID].itemDropChance > CosmicEvolution.globalRand.nextFloat()) {
@@ -612,7 +612,7 @@ public class Block {
                 if (list[blockID].droppedItemID != Item.NULL_ITEM_REFERENCE) {
                     if (list[blockID].droppedItemID != Item.block.ID) {
                         if (list[blockID].itemDropChance > CosmicEvolution.globalRand.nextFloat()) {
-                            world.findChunkFromChunkCoordinates(blockX >> 5, blockY >> 5, blockZ >> 5).addEntityToList(new EntityItem(blockX + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), blockY + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), blockZ + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), list[blockID].droppedItemID, Item.NULL_ITEM_METADATA, (byte) 1, Item.list[list[blockID].droppedItemID].durability));
+                            world.findChunkFromChunkCoordinates(blockX >> 5, blockY >> 5, blockZ >> 5).addEntityToList(new EntityItem(blockX + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), blockY + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), blockZ + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), list[blockID].droppedItemID, Item.NULL_ITEM_METADATA, (byte) 1, Item.list[list[blockID].droppedItemID].durability, 0));
                         }
                     } else {
                         if (list[blockID].itemDropChance > CosmicEvolution.globalRand.nextFloat()) {
@@ -750,6 +750,7 @@ public class Block {
                 chunk.getChestLocation(x,y,z).inventory.itemStacks[0].item = Item.list[heldItem];
                 chunk.getChestLocation(x,y,z).inventory.itemStacks[0].metadata = player.getHeldBlock();
                 chunk.getChestLocation(x,y,z).inventory.itemStacks[0].durability = player.getHeldItemDurability();
+                chunk.getChestLocation(x,y,z).inventory.itemStacks[0].decayTime = player.getHeldItemDecayTime();
             }
         }
 

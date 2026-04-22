@@ -1644,49 +1644,19 @@ public abstract class World {
     }
 
     public boolean chunkFullySurrounded(int x, int y, int z) {
-        Chunk chunk1 = this.findChunkFromChunkCoordinates(x - 1, y - 1, z - 1);
-        Chunk chunk2 = this.findChunkFromChunkCoordinates(x, y - 1, z - 1);
-        Chunk chunk3 = this.findChunkFromChunkCoordinates(x + 1, y - 1, z - 1);
-
-        Chunk chunk4 = this.findChunkFromChunkCoordinates(x - 1, y, z - 1);
-        Chunk chunk5 = this.findChunkFromChunkCoordinates(x, y, z - 1);
-        Chunk chunk6 = this.findChunkFromChunkCoordinates(x + 1, y, z - 1);
-
-        Chunk chunk7 = this.findChunkFromChunkCoordinates(x - 1, y + 1, z - 1);
-        Chunk chunk8 = this.findChunkFromChunkCoordinates(x, y + 1, z - 1);
-        Chunk chunk9 = this.findChunkFromChunkCoordinates(x + 1, y + 1, z - 1);
-
-        Chunk chunk10 = this.findChunkFromChunkCoordinates(x - 1, y - 1, z);
-        Chunk chunk11 = this.findChunkFromChunkCoordinates(x, y - 1, z);
-        Chunk chunk12 = this.findChunkFromChunkCoordinates(x + 1, y - 1, z);
-
-        Chunk chunk13 = this.findChunkFromChunkCoordinates(x - 1, y, z);
-
-        Chunk chunk15 = this.findChunkFromChunkCoordinates(x + 1, y, z);
-
-        Chunk chunk16 = this.findChunkFromChunkCoordinates(x - 1, y + 1, z);
-        Chunk chunk17 = this.findChunkFromChunkCoordinates(x, y + 1, z);
-        Chunk chunk18 = this.findChunkFromChunkCoordinates(x + 1, y + 1, z);
-
-        Chunk chunk19 = this.findChunkFromChunkCoordinates(x - 1, y - 1, z + 1);
-        Chunk chunk20 = this.findChunkFromChunkCoordinates(x, y - 1, z + 1);
-        Chunk chunk21 = this.findChunkFromChunkCoordinates(x + 1, y - 1, z + 1);
-
-        Chunk chunk22 = this.findChunkFromChunkCoordinates(x - 1, y, z + 1);
-        Chunk chunk23 = this.findChunkFromChunkCoordinates(x, y, z + 1);
-        Chunk chunk24 = this.findChunkFromChunkCoordinates(x + 1, y, z + 1);
-
-        Chunk chunk25 = this.findChunkFromChunkCoordinates(x - 1, y + 1, z + 1);
-        Chunk chunk26 = this.findChunkFromChunkCoordinates(x, y + 1, z + 1);
-        Chunk chunk27 = this.findChunkFromChunkCoordinates(x + 1, y + 1, z + 1);
-
-        return chunk1 != null && chunk2 != null && chunk3 != null && chunk4 != null && chunk5 != null
-                && chunk6 != null && chunk7 != null && chunk8 != null && chunk9 != null
-                && chunk10 != null && chunk11 != null && chunk12 != null && chunk13 != null
-                && chunk15 != null && chunk16 != null && chunk17 != null && chunk18 != null
-                && chunk19 != null && chunk20 != null && chunk21 != null && chunk22 != null
-                && chunk23 != null && chunk24 != null && chunk25 != null && chunk26 != null && chunk27 != null;
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dy = -1; dy <= 1; dy++) {
+                for (int dz = -1; dz <= 1; dz++) {
+                    if (dx == 0 && dy == 0 && dz == 0) continue;
+                    if (findChunkFromChunkCoordinates(x + dx, y + dy, z + dz) == null) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
     }
+
 
 
     public void renderWorld() {
@@ -1861,7 +1831,7 @@ public abstract class World {
         return entities;
     }
 
-    private boolean hasHitEntity(double x, double y, double z){
+    private boolean hasHitEntity(double x, double y, double z, boolean isLeftClick){
         int chunkX = MathUtil.floorDouble(x) >> 5;
         int chunkY = MathUtil.floorDouble(y) >> 5;
         int chunkZ = MathUtil.floorDouble(z) >> 5;
@@ -1872,6 +1842,19 @@ public abstract class World {
 
         for(int i = 0; i < entities.size(); i++){
             if(entities.get(i) instanceof EntityItem || entities.get(i) instanceof EntityBlock)continue;
+
+            if(entities.get(i) instanceof EntityLiving){
+                if(((EntityLiving) entities.get(i)).isDead && isLeftClick){
+                   continue;
+                } else if(((EntityLiving) entities.get(i)).isDead && entities.get(i) instanceof IHarvestable && !entities.get(i).despawn){
+                    short playerHeldItem = this.ce.save.thePlayer.getHeldItem();
+                    if(playerHeldItem != Item.NULL_ITEM_REFERENCE){
+                        if(Item.list[playerHeldItem].toolType.equals("knife") && this.ce.save.thePlayer.isShifting){
+                            ((IHarvestable) entities.get(i)).dropItems(entities.get(i).x, entities.get(i).y, entities.get(i).z, this, this.ce.save.thePlayer);
+                        }
+                    }
+                }
+            }
             if(entities.get(i).boundingBox.pointInsideBoundingBox(x,y,z)) { //This determines if you hit an entity
                 entities.get(i).damage(movementVector, this.ce.save.thePlayer.getAttackDamageValue());
                 entities.get(i).setLastEntityToHit(this.ce.save.thePlayer);
@@ -1929,7 +1912,7 @@ public abstract class World {
             double cz = pz + dir.z * step * i;
 
             // ENTITY HIT CHECK
-            if (hasHitEntity(cx, cy, cz)) {
+            if (hasHitEntity(cx, cy, cz, isLeftClick)) {
                 return;
             }
 

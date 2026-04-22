@@ -1,13 +1,13 @@
-package spacegame.render;
+package spacegame.render.model;
 
 import org.joml.Vector3f;
 import spacegame.core.CosmicEvolution;
+import spacegame.entity.EntityLiving;
+import spacegame.render.RenderEngine;
+import spacegame.render.Shader;
 import spacegame.util.MathUtil;
 import spacegame.entity.Entity;
 import spacegame.entity.EntityDeer;
-import spacegame.gui.GuiInGame;
-
-import java.awt.*;
 
 public final class ModelDeer extends Model {
     public static final int BODY = 0;
@@ -27,10 +27,10 @@ public final class ModelDeer extends Model {
     public ModelDeer(){
         this.segments = new ModelSegment[12];
         ModelSegment body = new ModelSegment(0.5f, 0.5f, 1.5f, true, null, new Vector3f(), new Vector3f());
-        ModelSegment frontLeftLeg = new ModelSegment(0.125f, 1f, 0.125f, false, body, new Vector3f(0, 0.5f, 0), new Vector3f(0.15f,-0.5f, 0.5f));
-        ModelSegment frontRightLeg = new ModelSegment(0.125f, 1f, 0.125f, false, body, new Vector3f(0, 0.5f, 0), new Vector3f(-0.15f,-0.5f, 0.5f));
-        ModelSegment backLeftLeg = new ModelSegment(0.125f, 1f, 0.125f, false, body, new Vector3f(0, 0.5f, 0), new Vector3f(0.15f,-0.5f, -0.5f));
-        ModelSegment backRightLeg = new ModelSegment(0.125f, 1f, 0.125f, false, body, new Vector3f(0, 0.5f, 0), new Vector3f(-0.15f,-0.5f, -0.5f));
+        ModelSegment frontLeftLeg = new ModelSegment(0.125f, 0.75f, 0.125f, false, body, new Vector3f(0, 0.5f, 0), new Vector3f(0.15f,-0.5f, 0.5f));
+        ModelSegment frontRightLeg = new ModelSegment(0.125f, 0.75f, 0.125f, false, body, new Vector3f(0, 0.5f, 0), new Vector3f(-0.15f,-0.5f, 0.5f));
+        ModelSegment backLeftLeg = new ModelSegment(0.125f, 0.75f, 0.125f, false, body, new Vector3f(0, 0.5f, 0), new Vector3f(0.15f,-0.5f, -0.5f));
+        ModelSegment backRightLeg = new ModelSegment(0.125f, 0.75f, 0.125f, false, body, new Vector3f(0, 0.5f, 0), new Vector3f(-0.15f,-0.5f, -0.5f));
         ModelSegment neck = new ModelSegment(0.25f, 0.25f, 0.5f, false, body, new Vector3f(0,0, -0.25f), new Vector3f(0, 0.1f, 0.85f));
         ModelSegment head1 = new ModelSegment(0.3f, 0.3f, 0.125f, false, neck, new Vector3f(), new Vector3f(0, 0f, 0.25f));
         ModelSegment head2 = new ModelSegment(0.18f, 0.18f, 0.25f, false, head1, new Vector3f(), new Vector3f(0, 0, 0.15f));
@@ -44,8 +44,14 @@ public final class ModelDeer extends Model {
         head1.setChildSegments(new ModelSegment[]{head2, leftEar, rightEar});
         head2.setChildSegments(new ModelSegment[]{head3});
         neck.rotateModelSegmentX(-20);
-        head1.rotateSegmentX(20f);
+        head1.rotateSegmentX(20f, true);
         tail.rotateModelSegmentX(-20f);
+
+
+    // System.out.println(frontLeftLeg.position.x);
+    // System.out.println(frontLeftLeg.position.y);
+    // System.out.println(frontLeftLeg.position.z);
+    // System.out.println();
 
         this.segments[0] = body;
         this.segments[1] = frontLeftLeg;
@@ -67,7 +73,78 @@ public final class ModelDeer extends Model {
 
     @Override
     public void animate(int stepInCycle, boolean continueAnimation, Entity entity){ //120 ticks per cycle
-        this.animateWalkCycle(stepInCycle,continueAnimation, (EntityDeer)entity);
+        if(((EntityLiving)entity).isDead){
+            this.animateCorpse((EntityDeer) entity);
+        } else {
+            this.animateWalkCycle(stepInCycle,continueAnimation, (EntityDeer)entity);
+        }
+    }
+
+    private void animateCorpse(EntityDeer deer){
+        if(CosmicEvolution.instance.save.time - deer.timeDied >= 15){
+             this.segments[BODY].rotateSegmentZ(90, false);
+             this.segments[NECK].rotateModelSegmentX(10);
+             this.segments[TAIL].rotateSegmentX(-45, true);
+             this.segments[FRONT_LEFT_LEG].rotateSegmentY(-30, true);
+             this.segments[FRONT_LEFT_LEG].rotateSegmentX(45, true);
+             this.segments[FRONT_RIGHT_LEG].rotateSegmentY(30, true);
+             this.segments[BACK_LEFT_LEG].rotateSegmentY(-30, true);
+             this.segments[BACK_LEFT_LEG].rotateSegmentX(45, true);
+             this.segments[BACK_RIGHT_LEG].rotateSegmentY(30, true);
+        } else {
+            float ratio = (CosmicEvolution.instance.save.time - deer.timeDied) / 15f;
+            this.segments[BODY].rotateSegmentZ(90 * ratio, false);
+            this.segments[NECK].rotateModelSegmentX(10 * ratio);
+            this.segments[TAIL].rotateSegmentX(-45 * ratio, true);
+            this.segments[FRONT_LEFT_LEG].rotateSegmentY(-30 * ratio, true);
+            this.segments[FRONT_LEFT_LEG].rotateSegmentX(45 * ratio, true);
+            this.segments[FRONT_RIGHT_LEG].rotateSegmentY(30 * ratio, true);
+            this.segments[BACK_LEFT_LEG].rotateSegmentY(-30 * ratio, true);
+            this.segments[BACK_LEFT_LEG].rotateSegmentX(45 * ratio, true);
+            this.segments[BACK_RIGHT_LEG].rotateSegmentY(30 * ratio, true);
+        }
+    }
+
+    public void getLegAnglesAtTimeOfDeath(int stepInCycle, boolean continueAnimation, EntityDeer deer){
+        float legAngleMax = 10f;
+        float angleBackRightLeg = 0;
+        float angleFrontLeftLeg = 0;
+        float angleBackLeftLeg = 0;
+        float angleFrontRightLeg = 0;
+        if(!deer.stopBackRightLeg) {
+            angleBackRightLeg = (float) (MathUtil.sin((stepInCycle / 4.775)) * legAngleMax);
+        }
+        if(!deer.stopFrontLeftLeg) {
+            angleFrontLeftLeg = (float) (MathUtil.sin(((stepInCycle - 7.5) / 4.775)) * legAngleMax);
+        }
+        if(!deer.stopBackLeftLeg) {
+            angleBackLeftLeg = (float) (MathUtil.sin(((stepInCycle - 15) / 4.775)) * legAngleMax);
+        }
+        if(!deer.stopFrontRightLeg) {
+            angleFrontRightLeg = (float) (MathUtil.sin(((stepInCycle - 22.5) / 4.775)) * legAngleMax);
+        }
+
+        if(!continueAnimation){
+            if(angleFrontLeftLeg > -0.1 || angleFrontLeftLeg < 0.1){
+                deer.stopFrontLeftLeg = true;
+            }
+            if(angleFrontRightLeg > -0.1 || angleFrontRightLeg < 0.1){
+                deer.stopFrontRightLeg = true;
+            }
+            if(angleBackLeftLeg > -0.1 || angleBackLeftLeg < 0.1){
+                deer.stopBackLeftLeg = true;
+            }
+            if(angleBackRightLeg > -0.1 || angleBackRightLeg < 0.1){
+                deer.stopBackRightLeg = true;
+            }
+        }
+
+        if(deer.isDead){//It was easier to hook into this and return so I have the angles at time of death
+            deer.frontLeftLegAngleAtDeath = new Vector3f(angleFrontLeftLeg, 0, 0);
+            deer.frontRightLegAngleAtDeath = new Vector3f(angleFrontRightLeg, 0, 0);
+            deer.backLeftLegAngleAtDeath = new Vector3f(angleBackLeftLeg, 0, 0);
+            deer.backRightLegAngleAtDeath = new Vector3f(angleBackRightLeg, 0, 0);
+        }
     }
 
     private void animateWalkCycle(int stepInCycle, boolean continueAnimation, EntityDeer deer){
@@ -104,10 +181,10 @@ public final class ModelDeer extends Model {
             }
         }
 
-        this.rotateSegment(BACK_RIGHT_LEG, 1, 0, 0, angleBackRightLeg);
-        this.rotateSegment(FRONT_LEFT_LEG, 1, 0, 0, angleFrontLeftLeg);
-        this.rotateSegment(BACK_LEFT_LEG, 1, 0, 0, angleBackLeftLeg);
-        this.rotateSegment(FRONT_RIGHT_LEG, 1, 0 , 0, angleFrontRightLeg);
+        this.rotateSegment(BACK_RIGHT_LEG, 1, 0, 0, angleBackRightLeg, true);
+        this.rotateSegment(FRONT_LEFT_LEG, 1, 0, 0, angleFrontLeftLeg, true);
+        this.rotateSegment(BACK_LEFT_LEG, 1, 0, 0, angleBackLeftLeg, true);
+        this.rotateSegment(FRONT_RIGHT_LEG, 1, 0 , 0, angleFrontRightLeg, true);
     }
 
 
@@ -130,6 +207,7 @@ public final class ModelDeer extends Model {
                     workingSegment = workingSegment.parentSegment;
                 }
             }
+
 
             topFace = this.segments[i].getFaceClone(0);
             bottomFace = this.segments[i].getFaceClone(1);

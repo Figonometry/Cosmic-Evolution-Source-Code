@@ -11,6 +11,8 @@ import spacegame.gui.GuiInGame;
 import spacegame.gui.GuiInventory;
 import spacegame.gui.GuiInventoryPlayer;
 import spacegame.render.*;
+import spacegame.render.model.ModelFace;
+import spacegame.render.model.ModelLoader;
 
 import java.awt.*;
 
@@ -21,6 +23,7 @@ public final class ItemStack {
     public short metadata;
     public byte count;
     public short durability;
+    public long decayTime;
     public float x;
     public float y;
     public final float originalX;
@@ -224,11 +227,14 @@ public final class ItemStack {
 
     public void mergeStack(ItemStack incomingStack){
         this.count += incomingStack.count;
+
+        this.decayTime = (this.decayTime + incomingStack.decayTime) / 2;
     }
 
     public ItemStack splitStack(){
         ItemStack newStack =  new ItemStack(this.item, this.count, this.x, this.y);
         newStack.setMetadata(this.metadata);
+        newStack.decayTime = this.decayTime;
         if((this.count & 1) == 1){
             newStack.count = (byte) (this.count/2);
             newStack.count++;
@@ -271,7 +277,7 @@ public final class ItemStack {
         int finalR = (int) (minR + (rDif * ratio));
         int finalG = (int) (minG + (gDif * ratio));
         int finalB = (int) (minB + (bDif * ratio));
-        int color = new Color(finalR, finalG, finalB, 0).getRGB();
+        int color = finalR << 16 | finalG << 8 | finalB;
         RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         tessellator.toggleOrtho();
         tessellator.addVertex2DTexture(0, x, y, z, 3);
