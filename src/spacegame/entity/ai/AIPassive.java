@@ -31,6 +31,60 @@ public abstract class AIPassive { ;
         entity.moveTimer = (int) (distance/distancePerTick);
     }
 
+    public static void targetAwayFromPlayer(EntityLiving entityLiving){
+        if(!entityLiving.isAIEnabled) return;
+        if(entityLiving.boundingBox.clip(CosmicEvolution.instance.save.thePlayer.boundingBox)) return;
+
+        double x = entityLiving.x;
+        double z = entityLiving.z;
+
+        double targetX = CosmicEvolution.instance.save.thePlayer.x;
+        double targetZ = CosmicEvolution.instance.save.thePlayer.z;
+
+        double dx = targetX - x;
+        double dz = targetZ - z;
+
+        entityLiving.yaw = (float) Math.toDegrees(Math.atan2(dz, dx));
+
+
+
+        entityLiving.targetX = targetX;
+        entityLiving.targetZ = targetZ;
+        entityLiving.shouldMove = true;
+
+        double distance = MathUtil.distance2D(x, z, targetX, targetZ);
+        double distancePerTick = distancePerTick(entityLiving);
+
+        entityLiving.moveTimer = (int) (distance / distancePerTick);
+    }
+
+    public static void targetAwayFromEntity(EntityLiving entityLiving, EntityLiving entityThatAlerted){
+        if(!entityLiving.isAIEnabled) return;
+        if(entityLiving.boundingBox.clip(CosmicEvolution.instance.save.thePlayer.boundingBox)) return;
+
+        double x = entityLiving.x;
+        double z = entityLiving.z;
+
+        double targetX = entityThatAlerted.x;
+        double targetZ = entityThatAlerted.z;
+
+        double dx = targetX - x;
+        double dz = targetZ - z;
+
+        entityLiving.yaw = (float) Math.toDegrees(Math.atan2(dz, dx));
+
+
+
+        entityLiving.targetX = targetX;
+        entityLiving.targetZ = targetZ;
+        entityLiving.shouldMove = true;
+
+        double distance = MathUtil.distance2D(x, z, targetX, targetZ);
+        double distancePerTick = distancePerTick(entityLiving);
+
+        entityLiving.moveTimer = (int) (distance / distancePerTick);
+    }
+
 
     private static double distancePerTick(EntityLiving entity) {
         double deltaX = 0;

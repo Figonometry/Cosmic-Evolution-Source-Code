@@ -7,6 +7,7 @@ import spacegame.core.MouseListener;
 import spacegame.core.Sound;
 import spacegame.entity.EntityPlayer;
 import spacegame.item.Item;
+import spacegame.world.AxisAlignedBB;
 import spacegame.world.ChestLocation;
 import spacegame.world.World;
 
@@ -50,6 +51,40 @@ public final class BlockLogPile extends BlockPile {
             }
 
             world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).notifyBlock(x,y,z);
+        }
+    }
+
+    @Override
+    public void adjustBoundingBox(int x, int y, int z, AxisAlignedBB axisAlignedBB){
+        int logCount = CosmicEvolution.instance.save.activeWorld.getChestLocation(x, y, z).inventory.itemStacks[0].count / 2;
+        if (logCount <= 4) {
+            axisAlignedBB.minX = x + Block.quarterBlock.minX;
+            axisAlignedBB.maxX = x + Block.quarterBlock.maxX;
+            axisAlignedBB.minY = y + Block.quarterBlock.minY;
+            axisAlignedBB.maxY = y + Block.quarterBlock.maxY;
+            axisAlignedBB.minZ = z + Block.quarterBlock.minZ;
+            axisAlignedBB.maxZ = z + Block.quarterBlock.maxZ;
+        } else if (logCount <= 8) {
+            axisAlignedBB.minX = x + Block.slab.minX;
+            axisAlignedBB.maxX = x + Block.slab.maxX;
+            axisAlignedBB.minY = y + Block.slab.minY;
+            axisAlignedBB.maxY = y + Block.slab.maxY;
+            axisAlignedBB.minZ = z + Block.slab.minZ;
+            axisAlignedBB.maxZ = z + Block.slab.maxZ;
+        } else if (logCount <= 12) {
+            axisAlignedBB.minX = x + Block.threeQuartersBlock.minX;
+            axisAlignedBB.maxX = x + Block.threeQuartersBlock.maxX;
+            axisAlignedBB.minY = y + Block.threeQuartersBlock.minY;
+            axisAlignedBB.maxY = y + Block.threeQuartersBlock.maxY;
+            axisAlignedBB.minZ = z + Block.threeQuartersBlock.minZ;
+            axisAlignedBB.maxZ = z + Block.threeQuartersBlock.maxZ;
+        } else {
+            axisAlignedBB.minX = x + Block.standardBlock.minX;
+            axisAlignedBB.maxX = x + Block.standardBlock.maxX;
+            axisAlignedBB.minY = y + Block.standardBlock.minY;
+            axisAlignedBB.maxY = y + Block.standardBlock.maxY;
+            axisAlignedBB.minZ = z + Block.standardBlock.minZ;
+            axisAlignedBB.maxZ = z + Block.standardBlock.maxZ;
         }
     }
 }

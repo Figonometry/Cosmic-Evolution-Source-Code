@@ -1,3 +1,0 @@
-itemName:VENISON_COOKED
-displayName:Cooked Venison
-canPlaceAsItemBlock:true

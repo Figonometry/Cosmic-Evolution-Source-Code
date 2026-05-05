@@ -2,8 +2,7 @@ package spacegame.gui;
 
 import spacegame.block.Block;
 import spacegame.core.CosmicEvolution;
-import spacegame.entity.EntityBlock;
-import spacegame.entity.EntityItem;
+import spacegame.entity.*;
 import spacegame.item.Item;
 import spacegame.util.MathUtil;
 
@@ -25,6 +24,7 @@ public final class CommandParser {
         this.commands.add("/the");
         this.commands.add("/kill");
         this.commands.add("/toggleTime");
+        this.commands.add("/summonEntity");
     }
 
     public void parseCommand(String inputString){
@@ -72,12 +72,45 @@ public final class CommandParser {
                 CosmicEvolution.instance.save.activeWorld.timeStopped = !CosmicEvolution.instance.save.activeWorld.timeStopped;
                 String status = CosmicEvolution.instance.save.activeWorld.timeStopped ? "stopped" : "resumed";
                 GuiInGame.setMessageText("Time " + status, 16777215);
+            }
 
+            case "/summonEntity" -> {
+                this.parseSummonEntity(contents);
             }
 
         }
 
 
+    }
+
+
+    private void parseSummonEntity(String[] commandArgs){
+        if(commandArgs.length != 5){
+            GuiInGame.setMessageText("Invalid number of arguments", 16777215);
+            return;
+        }
+
+        if(!Entity.isValidEntity(commandArgs[1]))return;
+
+        double x;
+        double y;
+        double z;
+
+        try{
+            x = Double.parseDouble(commandArgs[2]);
+            y = Double.parseDouble(commandArgs[3]);
+            z = Double.parseDouble(commandArgs[4]);
+        } catch (NumberFormatException e){
+            GuiInGame.setMessageText("Coordinates set to invalid values", 16777215);
+            return;
+        }
+
+
+        if(commandArgs[1].contains("wolf")){
+            CosmicEvolution.instance.save.activeWorld.addEntity(new EntityWolf(x,y,z, false, true));
+        } else if(commandArgs[1].contains("deer")){
+            CosmicEvolution.instance.save.activeWorld.addEntity(new EntityDeer(x,y,z, false, true));
+        }
     }
 
     private void parseSpeed(String[] commandArgs){

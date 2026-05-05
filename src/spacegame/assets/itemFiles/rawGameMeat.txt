@@ -1,0 +1,3 @@
+itemName:GAME_MEAT_RAW
+displayName:Raw Game Meat
+canPlaceAsItemBlock:true

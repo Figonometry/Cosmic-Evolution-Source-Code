@@ -1,0 +1,13 @@
+blockName:DOOR_PRIMITIVE
+droppedItemID:31
+itemDropChance:1
+blockModel:primitiveDoorUpper
+stepSound:wood
+breakTimer:60
+hardness:0.05
+toolType:axe
+displayName:Primitive Door
+alwaysRenderFace:true
+isSolid:false
+boundingBox:doorNorth
+canGreedyMesh:false

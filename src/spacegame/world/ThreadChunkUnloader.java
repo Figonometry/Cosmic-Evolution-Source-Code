@@ -199,7 +199,7 @@ public final class ThreadChunkUnloader implements Runnable {
                             inWorldCrafting3DItemTags[i].setIntArray("craftingLayer" + j, inWorld3DCraftingItem.subVoxelIndices[j]);
                         }
 
-                        crafting3DItems.setTag("inWorld3DCraftingItem" + inWorldCrafting3DItemCount, inWorldCrafting3DItemTags[i]);
+                        crafting3DItems.setTag("inWorldCrafting3DItem" + inWorldCrafting3DItemCount, inWorldCrafting3DItemTags[i]);
                         inWorldCrafting3DItemCount++;
                     }
                     crafting3DItems.setInteger("inWorldCrafting3DItemCount", inWorldCrafting3DItemCount);

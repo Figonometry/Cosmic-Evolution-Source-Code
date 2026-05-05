@@ -196,13 +196,11 @@ public final class ThreadRebuildChunk implements Runnable {
         synchronized (this.parentWorld.chunkController.bindingChunks) {
            this.parentWorld.chunkController.bindingChunks.add(this.workingChunk);
         }
-        this.workingChunk.updating = false;
         this.parentWorld.chunkController.renderWorldScene.recalculateQueries = true;
     }
 
     private void addBlockToRenderData(short block, int index, int face, int[] greedyMeshSize, RenderBlocks renderBlocks) {
         switch (Block.list[block].blockName) {
-            case "TORCH", "TORCH_UNLIT" -> renderBlocks.renderTorch(this.workingChunk, this.parentWorld, block, index, face);
             case "WATER", "TALL_GRASS", "SAPLING" ->
                     renderBlocks.renderTransparentBlock(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);
             case "CAMPFIRE_LIT" -> {
@@ -224,7 +222,6 @@ public final class ThreadRebuildChunk implements Runnable {
             case "BRICK_PILE" -> renderBlocks.renderBrickPile(this.workingChunk, this.parentWorld, block, index, face);
             case "BERRY_BUSH_GROWING" -> renderBlocks.renderBerryBushGrowing(this.workingChunk, this.parentWorld, block, index, face);
             case "REEDS_GROWTH" -> renderBlocks.renderReedGrowing(this.workingChunk, this.parentWorld, block, index, face);
-            case "OAK_LOG" -> renderBlocks.renderStandardBlockWithoutAutoUV(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);
             case "CRAFTING_ITEM_3D" -> renderBlocks.render3DCraftingItem(this.workingChunk, this.parentWorld, block, index, face);
             case "CRAFTING_ITEM" -> renderBlocks.renderCraftingItem(this.workingChunk, this.parentWorld, block, index, face);
             case "LEAF" -> {
@@ -233,6 +230,16 @@ public final class ThreadRebuildChunk implements Runnable {
                 } else {
                     renderBlocks.renderStandardBlock(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);
                 }
+            }
+            case "DOOR_EAST_CLOSED_HINGE_LEFT", "DOOR_EAST_CLOSED_HINGE_RIGHT", "DOOR_EAST_OPEN_HINGE_LEFT", "DOOR_EAST_OPEN_HINGE_RIGHT",
+                    "DOOR_NORTH_CLOSED_HINGE_LEFT", "DOOR_NORTH_CLOSED_HINGE_RIGHT", "DOOR_NORTH_OPEN_HINGE_LEFT", "DOOR_NORTH_OPEN_HINGE_RIGHT",
+                    "DOOR_SOUTH_CLOSED_HINGE_LEFT", "DOOR_SOUTH_CLOSED_HINGE_RIGHT", "DOOR_SOUTH_OPEN_HINGE_LEFT", "DOOR_SOUTH_OPEN_HINGE_RIGHT",
+                    "DOOR_WEST_CLOSED_HINGE_LEFT", "DOOR_WEST_CLOSED_HINGE_RIGHT", "DOOR_WEST_OPEN_HINGE_LEFT", "DOOR_WEST_OPEN_HINGE_RIGHT" -> {
+                //Intentionally blank
+            }
+
+            case "DOOR_PRIMITIVE" -> {
+                renderBlocks.renderDoorPrimitive(this.workingChunk, this.parentWorld, block, index, face);
             }
             default ->
                     renderBlocks.renderStandardBlock(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);

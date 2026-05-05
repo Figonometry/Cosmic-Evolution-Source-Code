@@ -91,7 +91,7 @@ public final class GuiCampfire extends GuiInventory {
         tessellator.addVertex2DTexture(0, backgroundX + backgroundWidth/2, backgroundY + backgroundHeight/2, backgroundZ, 1);
         tessellator.addVertex2DTexture(0, backgroundX - backgroundWidth/2, backgroundY + backgroundHeight/2, backgroundZ, 2);
         tessellator.addVertex2DTexture(0, backgroundX + backgroundWidth/2, backgroundY - backgroundHeight/2, backgroundZ, 0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
         tessellator.drawTexture2D(transparentBackground, Shader.screen2DTexture, CosmicEvolution.camera);
@@ -106,7 +106,7 @@ public final class GuiCampfire extends GuiInventory {
         tessellator.addVertex2DTexture(16777215, inventoryUIX + inventoryUIWidth/2, inventoryUIY + inventoryUIHeight/2, inventoryUIZ, 1);
         tessellator.addVertex2DTexture(16777215, inventoryUIX - inventoryUIWidth/2, inventoryUIY + inventoryUIHeight/2, inventoryUIZ, 2);
         tessellator.addVertex2DTexture(16777215, inventoryUIX + inventoryUIWidth/2, inventoryUIY - inventoryUIHeight/2, inventoryUIZ, 0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         tessellator.drawTexture2D(this.playerInventoryUI, Shader.screen2DTexture, CosmicEvolution.camera);
 
         inventoryUIWidth = 512;
@@ -118,7 +118,7 @@ public final class GuiCampfire extends GuiInventory {
         tessellator.addVertex2DTexture(16777215, inventoryUIX + inventoryUIWidth/2, inventoryUIY + inventoryUIHeight/2, inventoryUIZ, 1);
         tessellator.addVertex2DTexture(16777215, inventoryUIX - inventoryUIWidth/2, inventoryUIY + inventoryUIHeight/2, inventoryUIZ, 2);
         tessellator.addVertex2DTexture(16777215, inventoryUIX + inventoryUIWidth/2, inventoryUIY - inventoryUIHeight/2, inventoryUIZ, 0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         tessellator.drawTexture2D(this.campfireInventoryUI, Shader.screen2DTexture, CosmicEvolution.camera);
 
         inventoryUIZ = -95;
@@ -126,7 +126,7 @@ public final class GuiCampfire extends GuiInventory {
         tessellator.addVertex2DTexture(16777215, inventoryUIX + inventoryUIWidth/2, inventoryUIY + inventoryUIHeight/2, inventoryUIZ, 1);
         tessellator.addVertex2DTexture(16777215, inventoryUIX - inventoryUIWidth/2, inventoryUIY + inventoryUIHeight/2, inventoryUIZ, 2);
         tessellator.addVertex2DTexture(16777215, inventoryUIX + inventoryUIWidth/2, inventoryUIY - inventoryUIHeight/2, inventoryUIZ, 0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         tessellator.drawTexture2D(this.backgroundForProgressBars, Shader.screen2DTexture, CosmicEvolution.camera);
 
         if(this.heatableBlockLocation != null) {
@@ -145,7 +145,7 @@ public final class GuiCampfire extends GuiInventory {
             tessellator.addVertex2DTexture(16777215, inventoryUIX + (inventoryUIWidth * ratioForProgressArrow), inventoryUIY + inventoryUIHeight/2, inventoryUIZ, 1);
             tessellator.addVertex2DTexture(16777215, inventoryUIX , inventoryUIY + inventoryUIHeight/2, inventoryUIZ, 2);
             tessellator.addVertex2DTexture(16777215, inventoryUIX + (inventoryUIWidth * ratioForProgressArrow), inventoryUIY - inventoryUIHeight/2, inventoryUIZ, 0);
-            tessellator.addElements();
+            tessellator.addElementsCW();
             tessellator.drawTexture2D(this.arrowColor, Shader.screen2DTexture, CosmicEvolution.camera);
 
             inventoryUIWidth = 48;
@@ -158,7 +158,7 @@ public final class GuiCampfire extends GuiInventory {
             tessellator.addVertex2DTexture(16777215, inventoryUIX + inventoryUIWidth/2, inventoryUIY + (inventoryUIHeight * ratioForFuelIndicator), inventoryUIZ, 1);
             tessellator.addVertex2DTexture(16777215, inventoryUIX - inventoryUIWidth/2, inventoryUIY + (inventoryUIHeight * ratioForFuelIndicator), inventoryUIZ, 2);
             tessellator.addVertex2DTexture(16777215, inventoryUIX + inventoryUIWidth/2, inventoryUIY, inventoryUIZ, 0);
-            tessellator.addElements();
+            tessellator.addElementsCW();
             tessellator.drawTexture2D(this.fireColor, Shader.screen2DTexture, CosmicEvolution.camera);
 
 

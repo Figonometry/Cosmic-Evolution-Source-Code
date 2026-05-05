@@ -1,0 +1,3 @@
+itemName:DEER_PELT
+displayName:Deer Pelt
+canPlaceAsItemBlock:true

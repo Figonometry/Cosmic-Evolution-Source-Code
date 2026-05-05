@@ -1,7 +1,6 @@
 package spacegame.item;
 
 import spacegame.block.Block;
-import spacegame.core.CosmicEvolution;
 import spacegame.entity.EntityPlayer;
 import spacegame.world.World;
 
@@ -20,7 +19,7 @@ public class Item {
     public static final Item fireWood = new ItemFirewood((short)8, 8, "src/spacegame/assets/itemFiles/fireWood.txt");
     public static final Item stoneHandKnifeBlade = new ItemKnife((short)9, 9, "src/spacegame/assets/itemFiles/stoneHandKnifeBlade.txt", Material.RAW_STONE);
     public static final Item stoneHandShovel = new ItemShovel((short)10, 10, "src/spacegame/assets/itemFiles/stoneHandShovel.txt", Material.RAW_STONE);
-    public static final Item rawVenison = new ItemRawVenison((short)11, 11, "src/spacegame/assets/itemFiles/rawVenison.txt", 5f);
+    public static final Item rawGameMeat = new ItemRawGameMeat((short)11, 11, "src/spacegame/assets/itemFiles/rawGameMeat.txt", 5f);
     public static final Item straw = new Item((short)12, 12, "src/spacegame/assets/itemFiles/straw.txt");
     public static final Item reedBasket = new Item((short)13, 13, "src/spacegame/assets/itemFiles/reedBasket.txt");
     public static final Item clay = new Item((short)14, 14, "src/spacegame/assets/itemFiles/clay.txt"); //Remove
@@ -31,14 +30,16 @@ public class Item {
     public static final Item berrySeed = new Item((short)19, 19, "src/spacegame/assets/itemFiles/berrySeed.txt");
     public static final Item reedSeed = new Item((short)20, 19, "src/spacegame/assets/itemFiles/reedSeed.txt");
     public static final Item treeSeed = new Item((short)21, 19, "src/spacegame/assets/itemFiles/treeSeed.txt");
-    public static final Item cookedVenison = new ItemCookedVenison((short)22, 20, "src/spacegame/assets/itemFiles/cookedVenison.txt", 300f);
+    public static final Item cookedGameMeat = new ItemCookedGameMeat((short)22, 20, "src/spacegame/assets/itemFiles/cookedGameMeat.txt", 300f);
     public static final Item reedTwine = new Item((short)23, 21, "src/spacegame/assets/itemFiles/reedTwine.txt");
     public static final Item reedCraftingGridTop = new Item((short)24, 22, "src/spacegame/assets/itemFiles/reedCraftingGridTop.txt");
     public static final Item stoneAxe = new ItemAxe((short)25, 23, "src/spacegame/assets/itemFiles/stoneAxe.txt", Material.STONE);
     public static final Item stoneShovel = new ItemShovel((short)26, 24, "src/spacegame/assets/itemFiles/stoneShovel.txt", Material.STONE);
     public static final Item stoneKnife = new ItemKnife((short)27, 25, "src/spacegame/assets/itemFiles/stoneKnife.txt", Material.STONE);
-    public static final Item deerHide = new Item((short)28, 26, "src/spacegame/assets/itemFiles/deerHide.txt");
+    public static final Item deerPelt = new Item((short)28, 26, "src/spacegame/assets/itemFiles/deerPelt.txt");
     public static final Item rot = new Item((short)29, 27, "src/spacegame/assets/itemFiles/rot.txt");
+    public static final Item wolfPelt = new Item((short)30, 28, "src/spacegame/assets/itemFiles/wolfPelt.txt");
+    public static final Item primitiveDoor = new Item((short)31, 29, "src/spacegame/assets/itemFiles/primitiveDoor.txt");
     public final short ID;
     public final int textureID;
     public float hardness = 0;

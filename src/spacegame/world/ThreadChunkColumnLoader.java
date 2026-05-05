@@ -179,7 +179,7 @@ public final class ThreadChunkColumnLoader implements Runnable {
                             NBTTagCompound inWorldCrafting3DItemLoadedTag;
                             InWorld3DCraftingItem inWorld3DCraftingItem;
                             for(int i = 0; i < crafting3DItemCount; i++){
-                                inWorldCrafting3DItemLoadedTag = crafting3DItems.getCompoundTag("inWorld3DCraftingItem" + i);
+                                inWorldCrafting3DItemLoadedTag = crafting3DItems.getCompoundTag("inWorldCrafting3DItem" + i);
                                 int index = inWorldCrafting3DItemLoadedTag.getInteger("index");
                                 short materialBlockID = inWorldCrafting3DItemLoadedTag.getShort("materialBlockID");
 

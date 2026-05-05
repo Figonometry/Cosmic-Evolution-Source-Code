@@ -2,6 +2,7 @@ package spacegame.entity;
 
 import org.joml.Vector3d;
 import org.joml.Vector3f;
+import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
@@ -28,14 +29,12 @@ public final class EntityParticle extends EntityNonLiving {
     public float red;
     public float green;
     public float blue;
-    public float shiftXRight;
-    public float shiftYUp;
-    public float shiftXLeft;
-    public float shiftYDown;
+    public int shiftX;
+    public int shiftY;
 
 
     public EntityParticle(double x, double y, double z, boolean useGravity, int timer,
-                          short associatedBlock, boolean useLight, boolean despawnOnGroundContact, boolean collideWithGround, boolean renderAsCube, float shiftX, float shiftY){
+                          short associatedBlock, boolean useLight, boolean despawnOnGroundContact, boolean collideWithGround, boolean renderAsCube, int shiftX, int shiftY){
         this.x = x;
         this.y = y;
         this.z = z;
@@ -49,14 +48,8 @@ public final class EntityParticle extends EntityNonLiving {
         this.acceleration = 0.005;
         this.renderAsCube = renderAsCube;
 
-        this.shiftXRight = shiftX;
-        this.shiftYDown = shiftY;
-
-        this.shiftXLeft = 1.0f - (this.shiftXRight + 0.03125f);
-        this.shiftYUp =  1.0f - (this.shiftYDown + 0.03125f);
-
-        this.shiftXLeft *= -1;
-        this.shiftYUp *= -1;
+        this.shiftX = shiftX;
+        this.shiftY = shiftY;
 
         this.sizeSegment = this.size / timer;
     }
@@ -167,8 +160,23 @@ public final class EntityParticle extends EntityNonLiving {
 
             float skyLightValue = this.getLightValueFromMap(world.getBlockSkyLightValue(MathUtil.floorDouble(this.x), MathUtil.floorDouble(this.y), MathUtil.floorDouble(this.z)));
 
+            blockModel =  Block.grass.blockModel.copyModel().getScaledModel(this.size);
+
+            float shiftXLow = this.shiftX * 0.03125f;
+            float shiftYLow = this.shiftY * 0.03125f;
+            float shiftXHigh = shiftXLow + 0.0625f;
+            float shiftYHigh = shiftYLow + 0.0625f;
+
+
+
+            for(int i = 0; i < blockModel.modelFaces.length; i++){
+                for(int j = 0; j < blockModel.modelFaces[i].UVs.length; j++){
+                    blockModel.modelFaces[i].UVs[j][0] = blockModel.modelFaces[i].UVs[j][0] == 0.0f ? shiftXLow : shiftXHigh;
+                    blockModel.modelFaces[i].UVs[j][1] = blockModel.modelFaces[i].UVs[j][1] == 0.0f ? shiftYLow : shiftYHigh;
+                }
+            }
+
             for(int i = 0 ; i < blockModel.modelFaces.length; i++){
-                blockModel =  Block.grass.blockModel.copyModel().getScaledModel(this.size);
 
                 vertex1 =  new Vector3d(blockModel.modelFaces[i].vertices[0]).add(blockPosition);
                 vertex2 =  new Vector3d(blockModel.modelFaces[i].vertices[1]).add(blockPosition);
@@ -177,19 +185,20 @@ public final class EntityParticle extends EntityNonLiving {
                 vertex5 = new Vector3d(blockModel.modelFaces[i].normal);
 
 
-                    //Left and up are negatives
 
-                    worldTessellator.addVertexTextureArrayWithSampling(colorValue, (float) vertex1.x, (float) vertex1.y, (float) vertex1.z, 3, blockID, this.shiftXRight, this.shiftYUp, (float) vertex5.x, (float) vertex5.y, (float) vertex5.z, skyLightValue);
-                    worldTessellator.addVertexTextureArrayWithSampling(colorValue, (float) vertex2.x, (float) vertex2.y, (float) vertex2.z, 1, blockID, this.shiftXLeft, this.shiftYDown, (float) vertex5.x, (float) vertex5.y, (float) vertex5.z, skyLightValue);
-                    worldTessellator.addVertexTextureArrayWithSampling(colorValue, (float) vertex3.x, (float) vertex3.y, (float) vertex3.z, 2, blockID, this.shiftXRight, this.shiftYDown, (float) vertex5.x, (float) vertex5.y, (float) vertex5.z, skyLightValue);
-                    worldTessellator.addVertexTextureArrayWithSampling(colorValue, (float) vertex4.x, (float) vertex4.y, (float) vertex4.z, 0, blockID, this.shiftXLeft, this.shiftYUp, (float) vertex5.x, (float) vertex5.y, (float) vertex5.z, skyLightValue);
-                    worldTessellator.addElements();
+                    worldTessellator.addVertexTextureArrayWithUV(colorValue, (float) vertex1.x, (float) vertex1.y, (float) vertex1.z, blockID, (float) vertex5.x, (float) vertex5.y, (float) vertex5.z, skyLightValue, blockModel.modelFaces[i].UVs[0][0], blockModel.modelFaces[i].UVs[0][1]);
+                    worldTessellator.addVertexTextureArrayWithUV(colorValue, (float) vertex2.x, (float) vertex2.y, (float) vertex2.z, blockID, (float) vertex5.x, (float) vertex5.y, (float) vertex5.z, skyLightValue,  blockModel.modelFaces[i].UVs[1][0], blockModel.modelFaces[i].UVs[1][1]);
+                    worldTessellator.addVertexTextureArrayWithUV(colorValue, (float) vertex3.x, (float) vertex3.y, (float) vertex3.z, blockID, (float) vertex5.x, (float) vertex5.y, (float) vertex5.z, skyLightValue,  blockModel.modelFaces[i].UVs[2][0], blockModel.modelFaces[i].UVs[2][1]);
+                    worldTessellator.addVertexTextureArrayWithUV(colorValue, (float) vertex4.x, (float) vertex4.y, (float) vertex4.z, blockID,(float) vertex5.x, (float) vertex5.y, (float) vertex5.z, skyLightValue,  blockModel.modelFaces[i].UVs[3][0], blockModel.modelFaces[i].UVs[3][1]);
+                    worldTessellator.addElementsCCW();
             }
 
 
             Shader.worldShaderTextureArray.uploadBoolean("performNormals", true);
             Shader.worldShaderTextureArray.uploadBoolean("isColorCorrected", Block.list[this.associatedBlock].colorize);
+            GL46.glCullFace(GL46.GL_BACK);
             worldTessellator.drawTextureArray(Assets.blockTextureArray, Shader.worldShaderTextureArray, CosmicEvolution.camera);
+            GL46.glCullFace(GL46.GL_FRONT);
             Shader.worldShaderTextureArray.uploadBoolean("performNormals", false);
             Shader.worldShaderTextureArray.uploadBoolean("isColorCorrected", false);
         } else {
@@ -208,7 +217,7 @@ public final class EntityParticle extends EntityNonLiving {
             worldTessellator.addVertexTextureArrayWithSampling(colorValue, (float) vertex2.x, (float) vertex2.y, (float) vertex2.z, 1, blockID, -0.46875f, 0.46875f, 0, 0, 0, 0);
             worldTessellator.addVertexTextureArrayWithSampling(colorValue, (float) vertex3.x, (float) vertex3.y, (float) vertex3.z, 2, blockID, 0.46875f, 0.46875f, 0, 0, 0, 0);
             worldTessellator.addVertexTextureArrayWithSampling(colorValue, (float) vertex4.x, (float) vertex4.y, (float) vertex4.z, 0, blockID, -0.46875f, -0.46875f, 0, 0, 0, 0);
-            worldTessellator.addElements();
+            worldTessellator.addElementsCW();
             Shader.worldShaderTextureArray.uploadBoolean("performNormals", false);
             worldTessellator.drawTextureArray(Assets.blockTextureArray, Shader.worldShaderTextureArray, CosmicEvolution.camera);
         }
@@ -237,10 +246,22 @@ public final class EntityParticle extends EntityNonLiving {
             Vector3d vertex4;
             Vector3d vertex5;
 
-            ModelLoader blockModel = Block.grass.blockModel.copyModel();
+
+           ModelLoader blockModel =  Block.grass.blockModel.copyModel().getScaledModel(this.size);
+
+            float shiftXLow = this.shiftX * 0.03125f;
+            float shiftYLow = this.shiftY * 0.03125f;
+            float shiftXHigh = shiftXLow + 0.0625f;
+            float shiftYHigh = shiftYLow + 0.0625f;
+
+            for(int i = 0; i < blockModel.modelFaces.length; i++){
+                for(int j = 0; j < blockModel.modelFaces[i].UVs.length; j++){
+                    blockModel.modelFaces[i].UVs[j][0] = blockModel.modelFaces[i].UVs[j][0] == 0.0f ? shiftXLow : shiftXHigh;
+                    blockModel.modelFaces[i].UVs[j][1] = blockModel.modelFaces[i].UVs[j][1] == 0.0f ? shiftYLow : shiftYHigh;
+                }
+            }
 
             for(int i = 0 ; i < blockModel.modelFaces.length; i++){
-                blockModel =  Block.grass.blockModel.copyModel().getScaledModel(this.size);
 
                 vertex1 =  new Vector3d(blockModel.modelFaces[i].vertices[0]).add(blockPosition);
                 vertex2 =  new Vector3d(blockModel.modelFaces[i].vertices[1]).add(blockPosition);
@@ -249,13 +270,11 @@ public final class EntityParticle extends EntityNonLiving {
                 vertex5 = new Vector3d(blockModel.modelFaces[i].normal);
 
 
-                //Left and up are negatives
-
-                worldTessellator.addVertexTextureArrayWithSampling(16777215, (float) vertex1.x, (float) vertex1.y, (float) vertex1.z, 3, blockID, this.shiftXRight, this.shiftYUp, (float) vertex5.x, (float) vertex5.y, (float) vertex5.z, 1);
-                worldTessellator.addVertexTextureArrayWithSampling(16777215, (float) vertex2.x, (float) vertex2.y, (float) vertex2.z, 1, blockID, this.shiftXLeft, this.shiftYDown, (float) vertex5.x, (float) vertex5.y, (float) vertex5.z, 1);
-                worldTessellator.addVertexTextureArrayWithSampling(16777215, (float) vertex3.x, (float) vertex3.y, (float) vertex3.z, 2, blockID, this.shiftXRight, this.shiftYDown, (float) vertex5.x, (float) vertex5.y, (float) vertex5.z, 1);
-                worldTessellator.addVertexTextureArrayWithSampling(16777215, (float) vertex4.x, (float) vertex4.y, (float) vertex4.z, 0, blockID, this.shiftXLeft, this.shiftYUp, (float) vertex5.x, (float) vertex5.y, (float) vertex5.z, 1);
-                worldTessellator.addElements();
+                worldTessellator.addVertexTextureArrayWithUV(16777215, (float) vertex1.x, (float) vertex1.y, (float) vertex1.z, blockID, (float) vertex5.x, (float) vertex5.y, (float) vertex5.z, 1, blockModel.modelFaces[i].UVs[0][0], blockModel.modelFaces[i].UVs[0][1]);
+                worldTessellator.addVertexTextureArrayWithUV(16777215, (float) vertex2.x, (float) vertex2.y, (float) vertex2.z, blockID, (float) vertex5.x, (float) vertex5.y, (float) vertex5.z, 1,  blockModel.modelFaces[i].UVs[1][0], blockModel.modelFaces[i].UVs[1][1]);
+                worldTessellator.addVertexTextureArrayWithUV(16777215, (float) vertex3.x, (float) vertex3.y, (float) vertex3.z, blockID, (float) vertex5.x, (float) vertex5.y, (float) vertex5.z, 1,  blockModel.modelFaces[i].UVs[2][0], blockModel.modelFaces[i].UVs[2][1]);
+                worldTessellator.addVertexTextureArrayWithUV(16777215, (float) vertex4.x, (float) vertex4.y, (float) vertex4.z, blockID, (float) vertex5.x, (float) vertex5.y, (float) vertex5.z, 1, blockModel.modelFaces[i].UVs[3][0], blockModel.modelFaces[i].UVs[3][1]);
+                worldTessellator.addElementsCCW();
             }
 
             worldTessellator.drawTextureArray(0, Shader.shadowMapShaderTextureArray, CosmicEvolution.camera);
@@ -270,7 +289,7 @@ public final class EntityParticle extends EntityNonLiving {
             worldTessellator.addVertexTextureArrayWithSampling(0, (float) vertex2.x, (float) vertex2.y, (float) vertex2.z, 1, blockID, -0.46875f, 0.46875f, 0, 0, 0, 0);
             worldTessellator.addVertexTextureArrayWithSampling(0, (float) vertex3.x, (float) vertex3.y, (float) vertex3.z, 2, blockID, 0.46875f, 0.46875f, 0, 0, 0, 0);
             worldTessellator.addVertexTextureArrayWithSampling(0, (float) vertex4.x, (float) vertex4.y, (float) vertex4.z, 0, blockID, -0.46875f, -0.46875f, 0, 0, 0, 0);
-            worldTessellator.addElements();
+            worldTessellator.addElementsCW();
             worldTessellator.drawTextureArray(Assets.blockTextureArray, Shader.shadowMapShaderTextureArray, CosmicEvolution.camera);
         }
     }

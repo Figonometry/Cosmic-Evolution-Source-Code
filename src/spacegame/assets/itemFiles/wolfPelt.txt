@@ -1,0 +1,3 @@
+itemName:WOLF_PELT
+displayName:Wolf Pelt
+canPlaceAsItemBlock:true

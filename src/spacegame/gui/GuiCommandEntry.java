@@ -8,10 +8,12 @@ import spacegame.render.Shader;
 public final class GuiCommandEntry extends Gui {
     public int transparentBackground;
     public TextField commandField;
+    public Button commandList;
     public GuiCommandEntry(CosmicEvolution cosmicEvolution) {
         super(cosmicEvolution);
         this.commandField = new TextField(1800, 64, 0, -350, 100, true);
         this.commandField.typing = true;
+        this.commandList = new Button(EnumButtonEffects.COMMAND_LIST.name(), 512, 64, 0, 300, this, cosmicEvolution);
         cosmicEvolution.currentlySelectedField = this.commandField;
     }
 
@@ -46,7 +48,7 @@ public final class GuiCommandEntry extends Gui {
         tessellator.addVertex2DTexture(0, backgroundX + backgroundWidth/2, backgroundY + backgroundHeight/2, backgroundZ, 1);
         tessellator.addVertex2DTexture(0, backgroundX - backgroundWidth/2, backgroundY + backgroundHeight/2, backgroundZ, 2);
         tessellator.addVertex2DTexture(0, backgroundX + backgroundWidth/2, backgroundY - backgroundHeight/2, backgroundZ, 0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
         tessellator.drawTexture2D(this.transparentBackground, Shader.screen2DTexture, CosmicEvolution.camera);
@@ -57,11 +59,12 @@ public final class GuiCommandEntry extends Gui {
         fontRenderer.drawCenteredString("This is a developer command console, this will disappear later on in Alpha or Beta", 0, -300, -90, 16777215, 60, 255);
 
         this.commandField.renderTextFieldAndText();
+        this.commandList.renderButton();
     }
 
     @Override
     public Button getActiveButton() {
-        return null;
+      return this.commandList.active && this.commandList.isMouseHoveredOver() ? this.commandList : null;
     }
 
     @Override

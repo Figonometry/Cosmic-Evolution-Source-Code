@@ -27,9 +27,9 @@ public final class RainQuad {
 
         short blockID = CosmicEvolution.instance.save.activeWorld.getBlockID(x,y,z);
 
-        this.extinguishFireBlocks(blockID,x,y,z);
-
         if(blockID == Block.air.ID)return;
+
+        this.extinguishFireBlocks(blockID,x,y,z);
 
         if(Block.list[blockID].isSolid || blockID == Block.water.ID){
             if(this.y <= MathUtil.floorDouble(this.y) + 0.5){

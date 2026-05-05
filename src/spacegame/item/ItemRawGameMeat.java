@@ -1,10 +1,9 @@
 package spacegame.item;
 
 import spacegame.core.Timer;
-import spacegame.entity.IDecayable;
 
-public final class ItemRawVenison extends ItemFood implements IHeatable, IDecayItem {
-    public ItemRawVenison(short ID, int textureID, String filepath, float saturationIncrease) {
+public final class ItemRawGameMeat extends ItemFood implements IHeatable, IDecayItem {
+    public ItemRawGameMeat(short ID, int textureID, String filepath, float saturationIncrease) {
         super(ID, textureID, filepath, saturationIncrease);
     }
 
@@ -20,7 +19,7 @@ public final class ItemRawVenison extends ItemFood implements IHeatable, IDecayI
 
     @Override
     public short getOutputItem() {
-        return Item.cookedVenison.ID;
+        return Item.cookedGameMeat.ID;
     }
 
 

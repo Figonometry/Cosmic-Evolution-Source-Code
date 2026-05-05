@@ -14,8 +14,6 @@ import spacegame.render.*;
 import spacegame.render.model.ModelFace;
 import spacegame.render.model.ModelLoader;
 
-import java.awt.*;
-
 public final class ItemStack {
     public Item item;
     public String exclusiveItemType;
@@ -76,7 +74,7 @@ public final class ItemStack {
                 tessellator.addVertex2DTexture(7500402, this.x + (float) this.width / 2, this.y + (float) this.height / 2, z - 5, 1);
                 tessellator.addVertex2DTexture(7500402, this.x - (float) this.width / 2, this.y + (float) this.height / 2, z - 5, 2);
                 tessellator.addVertex2DTexture(7500402, this.x + (float) this.width / 2, this.y - (float) this.height / 2, z - 5, 0);
-                tessellator.addElements();
+                tessellator.addElementsCW();
                 tessellator.drawTexture2D(GuiInventoryPlayer.fillableColor, Shader.screen2DTexture, CosmicEvolution.camera);
             }
             GL46.glEnable(GL46.GL_BLEND);
@@ -85,7 +83,7 @@ public final class ItemStack {
             tessellator.addVertex2DTexture(0, this.x + (float) this.width / 2, this.y + (float) this.height / 2, z, 1);
             tessellator.addVertex2DTexture(0, this.x - (float) this.width / 2, this.y + (float) this.height / 2, z, 2);
             tessellator.addVertex2DTexture(0, this.x + (float) this.width / 2, this.y - (float) this.height / 2, z, 0);
-            tessellator.addElements();
+            tessellator.addElementsCW();
             tessellator.drawTexture2D(GuiInventory.transparentBackground, Shader.screen2DTexture, CosmicEvolution.camera);
             GL46.glDisable(GL46.GL_BLEND);
             tessellator.toggleOrtho();
@@ -105,23 +103,21 @@ public final class ItemStack {
                 int red = 255;
                 int green = 255;
                 int blue = 255;
-                float[] UVSamples;
                 for(int face = 0; face < 6; face++){
                     faces = model.getModelFaceOfType(face);
                     for(int i = 0; i < faces.length; i++){
                         if(faces[i] == null)continue;
                         textureID = Block.list[this.metadata].getBlockTexture(this.metadata, face);
-                        UVSamples = face == RenderBlocks.TOP_FACE || face == RenderBlocks.BOTTOM_FACE ? RenderBlocks.autoUVTopBottom(RenderBlocks.getFaceWidth(faces[i]), RenderBlocks.getFaceHeight(faces[i])) : RenderBlocks.autoUVNSEW(RenderBlocks.getFaceWidth(faces[i]), RenderBlocks.getFaceHeight(faces[i]));
                         vertex1 = new Vector3f(faces[i].vertices[0].x, faces[i].vertices[0].y, faces[i].vertices[0].z).mul(38).rotateY((float)(0.25 * Math.PI)).rotateX((float)(0.20 * Math.PI)).add(position);
                         vertex2 = new Vector3f(faces[i].vertices[1].x, faces[i].vertices[1].y, faces[i].vertices[1].z).mul(38).rotateY((float)(0.25 * Math.PI)).rotateX((float)(0.20 * Math.PI)).add(position);
                         vertex3 = new Vector3f(faces[i].vertices[2].x, faces[i].vertices[2].y, faces[i].vertices[2].z).mul(38).rotateY((float)(0.25 * Math.PI)).rotateX((float)(0.20 * Math.PI)).add(position);
                         vertex4 = new Vector3f(faces[i].vertices[3].x, faces[i].vertices[3].y, faces[i].vertices[3].z).mul(38).rotateY((float)(0.25 * Math.PI)).rotateX((float)(0.20 * Math.PI)).add(position);
 
-                        tessellator.addVertexTextureArrayWithSampling(((red << 16) | (green << 8) | blue), vertex1.x, vertex1.y, vertex1.z, 3, textureID, UVSamples[0], UVSamples[1]);
-                        tessellator.addVertexTextureArrayWithSampling(((red << 16) | (green << 8) | blue), vertex2.x, vertex2.y, vertex2.z, 1, textureID, UVSamples[2], UVSamples[3]);
-                        tessellator.addVertexTextureArrayWithSampling(((red << 16) | (green << 8) | blue), vertex3.x, vertex3.y, vertex3.z, 2, textureID, UVSamples[4], UVSamples[5]);
-                        tessellator.addVertexTextureArrayWithSampling(((red << 16) | (green << 8) | blue), vertex4.x, vertex4.y, vertex4.z, 0, textureID, UVSamples[6], UVSamples[7]);
-                        tessellator.addElements();
+                        tessellator.addVertexTextureArrayWithUV(((red << 16) | (green << 8) | blue), vertex1.x, vertex1.y, vertex1.z, textureID, faces[i].UVs[0][0], faces[i].UVs[0][1]);
+                        tessellator.addVertexTextureArrayWithUV(((red << 16) | (green << 8) | blue), vertex2.x, vertex2.y, vertex2.z, textureID, faces[i].UVs[1][0], faces[i].UVs[1][1]);
+                        tessellator.addVertexTextureArrayWithUV(((red << 16) | (green << 8) | blue), vertex3.x, vertex3.y, vertex3.z, textureID, faces[i].UVs[2][0], faces[i].UVs[2][1]);
+                        tessellator.addVertexTextureArrayWithUV(((red << 16) | (green << 8) | blue), vertex4.x, vertex4.y, vertex4.z, textureID, faces[i].UVs[3][0], faces[i].UVs[3][1]);
+                        tessellator.addElementsCCW();
 
                         red -= 10;
                         green -= 10;
@@ -133,11 +129,11 @@ public final class ItemStack {
                 int z = -70;
                 GL46.glEnable(GL46.GL_BLEND);
                 GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-                tessellator.addVertexTextureArray(16777215, this.x - (float) this.width / 2, this.y - (float) this.height / 2, z, 3, this.item.getTextureID(this.item.ID, (byte)1, RenderBlocks.WEST_FACE), RenderBlocks.WEST_FACE);
-                tessellator.addVertexTextureArray(16777215, this.x + (float) this.width / 2, this.y + (float) this.height / 2, z, 1, this.item.getTextureID(this.item.ID, (byte)1, RenderBlocks.WEST_FACE), RenderBlocks.WEST_FACE);
-                tessellator.addVertexTextureArray(16777215, this.x - (float) this.width / 2, this.y + (float) this.height / 2, z, 2, this.item.getTextureID(this.item.ID, (byte)1, RenderBlocks.WEST_FACE), RenderBlocks.WEST_FACE);
-                tessellator.addVertexTextureArray(16777215, this.x + (float) this.width / 2, this.y - (float) this.height / 2, z, 0, this.item.getTextureID(this.item.ID, (byte)1, RenderBlocks.WEST_FACE), RenderBlocks.WEST_FACE);
-                tessellator.addElements();
+                tessellator.addVertexTextureArrayWithCorner(16777215, this.x - (float) this.width / 2, this.y - (float) this.height / 2, z, 3, this.item.getTextureID(this.item.ID, (byte)1, RenderBlocks.WEST_FACE));
+                tessellator.addVertexTextureArrayWithCorner(16777215, this.x + (float) this.width / 2, this.y + (float) this.height / 2, z, 1, this.item.getTextureID(this.item.ID, (byte)1, RenderBlocks.WEST_FACE));
+                tessellator.addVertexTextureArrayWithCorner(16777215, this.x - (float) this.width / 2, this.y + (float) this.height / 2, z, 2, this.item.getTextureID(this.item.ID, (byte)1, RenderBlocks.WEST_FACE));
+                tessellator.addVertexTextureArrayWithCorner(16777215, this.x + (float) this.width / 2, this.y - (float) this.height / 2, z, 0, this.item.getTextureID(this.item.ID, (byte)1, RenderBlocks.WEST_FACE));
+                tessellator.addElementsCW();
                 Shader.screenTextureArray.uploadInt("textureArray", 0);
                 tessellator.drawTextureArray(Assets.itemTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
                 GL46.glDisable(GL46.GL_BLEND);
@@ -169,23 +165,21 @@ public final class ItemStack {
                 int red = 255;
                 int green = 255;
                 int blue = 255;
-                float[] UVSamples;
                 for(int face = 0; face < 6; face++){
                     faces = model.getModelFaceOfType(face);
                     for(int i = 0; i < faces.length; i++){
                         if(faces[i] == null)continue;
                         textureID = Block.list[this.metadata].getBlockTexture(this.metadata, face);
-                        UVSamples = face == RenderBlocks.TOP_FACE || face == RenderBlocks.BOTTOM_FACE ? RenderBlocks.autoUVTopBottom(RenderBlocks.getFaceWidth(faces[i]), RenderBlocks.getFaceHeight(faces[i])) : RenderBlocks.autoUVNSEW(RenderBlocks.getFaceWidth(faces[i]), RenderBlocks.getFaceHeight(faces[i]));
                         vertex1 = new Vector3f(faces[i].vertices[0].x, faces[i].vertices[0].y, faces[i].vertices[0].z).mul(38).rotateY((float)(0.25 * Math.PI)).rotateX((float)(0.20 * Math.PI)).add(position);
                         vertex2 = new Vector3f(faces[i].vertices[1].x, faces[i].vertices[1].y, faces[i].vertices[1].z).mul(38).rotateY((float)(0.25 * Math.PI)).rotateX((float)(0.20 * Math.PI)).add(position);
                         vertex3 = new Vector3f(faces[i].vertices[2].x, faces[i].vertices[2].y, faces[i].vertices[2].z).mul(38).rotateY((float)(0.25 * Math.PI)).rotateX((float)(0.20 * Math.PI)).add(position);
                         vertex4 = new Vector3f(faces[i].vertices[3].x, faces[i].vertices[3].y, faces[i].vertices[3].z).mul(38).rotateY((float)(0.25 * Math.PI)).rotateX((float)(0.20 * Math.PI)).add(position);
 
-                        tessellator.addVertexTextureArrayWithSampling(((red << 16) | (green << 8) | blue), vertex1.x, vertex1.y, vertex1.z, 3, textureID, UVSamples[0], UVSamples[1]);
-                        tessellator.addVertexTextureArrayWithSampling(((red << 16) | (green << 8) | blue), vertex2.x, vertex2.y, vertex2.z, 1, textureID, UVSamples[2], UVSamples[3]);
-                        tessellator.addVertexTextureArrayWithSampling(((red << 16) | (green << 8) | blue), vertex3.x, vertex3.y, vertex3.z, 2, textureID, UVSamples[4], UVSamples[5]);
-                        tessellator.addVertexTextureArrayWithSampling(((red << 16) | (green << 8) | blue), vertex4.x, vertex4.y, vertex4.z, 0, textureID, UVSamples[6], UVSamples[7]);
-                        tessellator.addElements();
+                        tessellator.addVertexTextureArrayWithUV(((red << 16) | (green << 8) | blue), vertex1.x, vertex1.y, vertex1.z,textureID, faces[i].UVs[0][0], faces[i].UVs[0][1]);
+                        tessellator.addVertexTextureArrayWithUV(((red << 16) | (green << 8) | blue), vertex2.x, vertex2.y, vertex2.z,textureID, faces[i].UVs[1][0], faces[i].UVs[1][1]);
+                        tessellator.addVertexTextureArrayWithUV(((red << 16) | (green << 8) | blue), vertex3.x, vertex3.y, vertex3.z,textureID, faces[i].UVs[2][0], faces[i].UVs[2][1]);
+                        tessellator.addVertexTextureArrayWithUV(((red << 16) | (green << 8) | blue), vertex4.x, vertex4.y, vertex4.z,textureID, faces[i].UVs[3][0], faces[i].UVs[3][1]);
+                        tessellator.addElementsCCW();
 
                         red -= 10;
                         green -= 10;
@@ -197,11 +191,11 @@ public final class ItemStack {
                 int z = -70;
                 GL46.glEnable(GL46.GL_BLEND);
                 GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-                tessellator.addVertexTextureArray(16777215, this.x - (float) this.width / 2 + 5, this.y - (float) this.height / 2 - 2, z, 3, this.item.getTextureID(this.item.ID, (byte)1, RenderBlocks.WEST_FACE), RenderBlocks.WEST_FACE);
-                tessellator.addVertexTextureArray(16777215, this.x + (float) this.width / 2 + 5, this.y + (float) this.height / 2 - 2, z, 1, this.item.getTextureID(this.item.ID, (byte)1, RenderBlocks.WEST_FACE), RenderBlocks.WEST_FACE);
-                tessellator.addVertexTextureArray(16777215, this.x - (float) this.width / 2 + 5, this.y + (float) this.height / 2 - 2, z, 2, this.item.getTextureID(this.item.ID, (byte)1, RenderBlocks.WEST_FACE), RenderBlocks.WEST_FACE);
-                tessellator.addVertexTextureArray(16777215, this.x + (float) this.width / 2 + 5, this.y - (float) this.height / 2 - 2, z, 0, this.item.getTextureID(this.item.ID, (byte)1, RenderBlocks.WEST_FACE), RenderBlocks.WEST_FACE);
-                tessellator.addElements();
+                tessellator.addVertexTextureArrayWithCorner(16777215, this.x - (float) this.width / 2 + 5, this.y - (float) this.height / 2 - 2, z, 3, this.item.getTextureID(this.item.ID, (byte)1, RenderBlocks.WEST_FACE));
+                tessellator.addVertexTextureArrayWithCorner(16777215, this.x + (float) this.width / 2 + 5, this.y + (float) this.height / 2 - 2, z, 1, this.item.getTextureID(this.item.ID, (byte)1, RenderBlocks.WEST_FACE));
+                tessellator.addVertexTextureArrayWithCorner(16777215, this.x - (float) this.width / 2 + 5, this.y + (float) this.height / 2 - 2, z, 2, this.item.getTextureID(this.item.ID, (byte)1, RenderBlocks.WEST_FACE));
+                tessellator.addVertexTextureArrayWithCorner(16777215, this.x + (float) this.width / 2 + 5, this.y - (float) this.height / 2 - 2, z, 0, this.item.getTextureID(this.item.ID, (byte)1, RenderBlocks.WEST_FACE));
+                tessellator.addElementsCW();
                 Shader.screenTextureArray.uploadInt("textureArray", 0);
                 tessellator.drawTextureArray(Assets.itemTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
                 GL46.glDisable(GL46.GL_BLEND);
@@ -284,13 +278,13 @@ public final class ItemStack {
         tessellator.addVertex2DTexture(0, x + (64), y + 5, z, 1);
         tessellator.addVertex2DTexture(0, x, y + 5, z, 2);
         tessellator.addVertex2DTexture(0, x + (64), y, z, 0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         z += 5;
         tessellator.addVertex2DTexture(color, x, y, z, 3);
         tessellator.addVertex2DTexture(color, x + (64 * ratio), y + 5, z, 1);
         tessellator.addVertex2DTexture(color, x, y + 5, z, 2);
         tessellator.addVertex2DTexture(color, x + (64 * ratio), y, z, 0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         tessellator.drawTexture2D(texID, Shader.screen2DTexture, CosmicEvolution.camera);
         tessellator.toggleOrtho();
     }

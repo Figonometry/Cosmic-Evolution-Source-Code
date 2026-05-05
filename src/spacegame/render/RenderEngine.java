@@ -433,6 +433,8 @@ public final class RenderEngine {
                 case 39 -> "torchBurnedOut";
                 case 40 -> "primitiveCraftingTableSide";
                 case 41 -> "primitiveCraftingTableTop";
+                case 42 -> "primitiveDoorBase";
+                case 43 -> "twine";
                 default -> "missing";
             };
         } else if(textureFolderpath.contains("item")){
@@ -447,7 +449,7 @@ public final class RenderEngine {
                 case 8 -> "fireWood";
                 case 9 -> "stoneHandKnife";
                 case 10 -> "stoneHandShovel";
-                case 11 -> "rawVenison";
+                case 11 -> "rawGameMeat";
                 case 12 -> "straw";
                 case 13 -> "strawBasket";
                 case 14 -> "clay";
@@ -456,14 +458,16 @@ public final class RenderEngine {
                 case 17 -> "mud";
                 case 18 -> "reeds";
                 case 19 -> "berrySeed";
-                case 20 -> "cookedVenison";
+                case 20 -> "cookedGameMeat";
                 case 21 -> "reedTwine";
                 case 22 -> "reedCraftingGrid";
                 case 23 -> "stoneAxe";
                 case 24 -> "stoneShovel";
                 case 25 -> "stoneKnife";
-                case 26 -> "deerHide";
+                case 26 -> "deerPelt";
                 case 27 -> "rot";
+                case 28 -> "wolfPelt";
+                case 29 -> "primitiveDoor";
                 default -> "missing";
             };
         }
@@ -660,7 +664,7 @@ public final class RenderEngine {
             this.vertexBuffer.put(normal.z);
         }
 
-        public void addVertexTextureArray(int colorValue, float x, float y, float z, int corner, float blockID, int faceType){
+        public void addVertexTextureArrayWithCorner(int colorValue, float x, float y, float z, int corner, float blockID){
             if(colorValue > 16777215){
                 colorValue = 16777215;
             }
@@ -683,6 +687,31 @@ public final class RenderEngine {
             this.vertexBuffer.put(alpha);
             this.vertexBuffer.put(texCoords[0]);
             this.vertexBuffer.put(texCoords[1]);
+            this.vertexBuffer.put(blockID);
+        }
+
+        public void addVertexTextureArrayWithUV(int colorValue, float x, float y, float z, float blockID, float uvX, float uvY){
+            if(colorValue > 16777215){
+                colorValue = 16777215;
+            }
+            if(colorValue < 0){
+                colorValue = 0;
+            }
+
+            final float red = MathUtil.intToFloatRGBA((colorValue >> 16) & 255);
+            final float green = MathUtil.intToFloatRGBA((colorValue >> 8) & 255);
+            final float blue = MathUtil.intToFloatRGBA(colorValue & 255);
+            final float alpha = 1f;
+
+            this.vertexBuffer.put(x);
+            this.vertexBuffer.put(y);
+            this.vertexBuffer.put(z);
+            this.vertexBuffer.put(red);
+            this.vertexBuffer.put(green);
+            this.vertexBuffer.put(blue);
+            this.vertexBuffer.put(alpha);
+            this.vertexBuffer.put(uvX);
+            this.vertexBuffer.put(uvY);
             this.vertexBuffer.put(blockID);
         }
 
@@ -712,7 +741,7 @@ public final class RenderEngine {
             this.vertexBuffer.put(blockID);
         }
 
-        public void addElements(){
+        public void addElementsCW(){
             this.elementBuffer.put(this.elementOffset + 2);
             this.elementBuffer.put(this.elementOffset + 1);
             this.elementBuffer.put(this.elementOffset + 0);
@@ -721,6 +750,17 @@ public final class RenderEngine {
             this.elementBuffer.put(this.elementOffset + 3);
             this.elementOffset += 4;
         }
+
+        public void addElementsCCW(){
+            this.elementBuffer.put(this.elementOffset + 0);
+            this.elementBuffer.put(this.elementOffset + 1);
+            this.elementBuffer.put(this.elementOffset + 2);
+            this.elementBuffer.put(this.elementOffset + 0);
+            this.elementBuffer.put(this.elementOffset + 2);
+            this.elementBuffer.put(this.elementOffset + 3);
+            this.elementOffset += 4;
+        }
+
 
         private float[] texCoords(int corner) {
 
@@ -1187,6 +1227,36 @@ public final class RenderEngine {
             this.vertexBuffer.put(skyLightValue);
         }
 
+        public void addVertex2DTextureWithUV(int colorValue, float x, float y, float z, float normalX, float normalY, float normalZ, float skyLightValue, int alphaValue, float uvX, float uvY){
+            if(colorValue > 16777215){
+                colorValue = 16777215;
+            }
+            if(colorValue < 0){
+                colorValue = 0;
+            }
+
+            final float red = MathUtil.intToFloatRGBA((colorValue >> 16) & 255);
+            final float green = MathUtil.intToFloatRGBA((colorValue >> 8) & 255);
+            final float blue = MathUtil.intToFloatRGBA(colorValue & 255);
+            final float alpha = MathUtil.intToFloatRGBA(alphaValue);
+
+            this.vertexBuffer.put(x);
+            this.vertexBuffer.put(y);
+            this.vertexBuffer.put(z);
+            this.vertexBuffer.put(red);
+            this.vertexBuffer.put(green);
+            this.vertexBuffer.put(blue);
+            this.vertexBuffer.put(alpha);
+
+            this.vertexBuffer.put(uvX);
+            this.vertexBuffer.put(uvY);
+
+            this.vertexBuffer.put(normalX);
+            this.vertexBuffer.put(normalY);
+            this.vertexBuffer.put(normalZ);
+            this.vertexBuffer.put(skyLightValue);
+        }
+
         public void addVertex2DTextureWithSampling(int colorValue, float x, float y, float z, int corner, float xSample, float ySample, float normalX, float normalY, float normalZ, float skyLightValue){
             if(colorValue > 16777215){
                 colorValue = 16777215;
@@ -1260,7 +1330,7 @@ public final class RenderEngine {
             this.vertexBuffer.put(skyLightValue);
         }
 
-        public void addVertexTextureArray(int colorValue, float x, float y, float z, int corner, float blockID, int faceType, float normalX, float normalY, float normalZ, float skyLightValue){
+        public void addVertexTextureArray(int colorValue, float x, float y, float z, int corner, float blockID, float normalX, float normalY, float normalZ, float skyLightValue){
             if(colorValue > 16777215){
                 colorValue = 16777215;
             }
@@ -1284,6 +1354,35 @@ public final class RenderEngine {
             this.vertexBuffer.put(alpha);
             this.vertexBuffer.put(texCoords[0]);
             this.vertexBuffer.put(texCoords[1]);
+            this.vertexBuffer.put(blockID);
+            this.vertexBuffer.put(normalX);
+            this.vertexBuffer.put(normalY);
+            this.vertexBuffer.put(normalZ);
+            this.vertexBuffer.put(skyLightValue);
+        }
+
+        public void addVertexTextureArrayWithUV(int colorValue, float x, float y, float z, float blockID, float normalX, float normalY, float normalZ, float skyLightValue, float uvX, float uvY){
+            if(colorValue > 16777215){
+                colorValue = 16777215;
+            }
+            if(colorValue < 0){
+                colorValue = 0;
+            }
+
+            final float red = MathUtil.intToFloatRGBA((colorValue >> 16) & 255);
+            final float green = MathUtil.intToFloatRGBA((colorValue >> 8) & 255);
+            final float blue = MathUtil.intToFloatRGBA(colorValue & 255);
+            final float alpha = 1f;
+
+            this.vertexBuffer.put(x);
+            this.vertexBuffer.put(y);
+            this.vertexBuffer.put(z);
+            this.vertexBuffer.put(red);
+            this.vertexBuffer.put(green);
+            this.vertexBuffer.put(blue);
+            this.vertexBuffer.put(alpha);
+            this.vertexBuffer.put(uvX);
+            this.vertexBuffer.put(uvY);
             this.vertexBuffer.put(blockID);
             this.vertexBuffer.put(normalX);
             this.vertexBuffer.put(normalY);
@@ -1322,12 +1421,22 @@ public final class RenderEngine {
             this.vertexBuffer.put(skyLightValue);
         }
 
-        public void addElements(){
+        public void addElementsCW(){
             this.elementBuffer.put(this.elementOffset + 2);
             this.elementBuffer.put(this.elementOffset + 1);
             this.elementBuffer.put(this.elementOffset + 0);
             this.elementBuffer.put(this.elementOffset + 0);
             this.elementBuffer.put(this.elementOffset + 1);
+            this.elementBuffer.put(this.elementOffset + 3);
+            this.elementOffset += 4;
+        }
+
+        public void addElementsCCW(){
+            this.elementBuffer.put(this.elementOffset + 0);
+            this.elementBuffer.put(this.elementOffset + 1);
+            this.elementBuffer.put(this.elementOffset + 2);
+            this.elementBuffer.put(this.elementOffset + 0);
+            this.elementBuffer.put(this.elementOffset + 2);
             this.elementBuffer.put(this.elementOffset + 3);
             this.elementOffset += 4;
         }

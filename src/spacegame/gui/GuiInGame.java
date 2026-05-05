@@ -5,6 +5,7 @@ import org.joml.*;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
+import spacegame.block.BlockDoor;
 import spacegame.block.BlockTorch;
 import spacegame.block.ITimeUpdate;
 import spacegame.core.CosmicEvolution;
@@ -152,19 +153,19 @@ public final class GuiInGame extends Gui {
                 tessellator.addVertex2DTexture(8355711, (float) CosmicEvolution.width / 2, (float) CosmicEvolution.height / 2, -900, 1);
                 tessellator.addVertex2DTexture(8355711, (float) -CosmicEvolution.width / 2, (float) CosmicEvolution.height / 2, -900, 2);
                 tessellator.addVertex2DTexture(8355711, (float) CosmicEvolution.width / 2, (float) -CosmicEvolution.height / 2, -900, 0);
-                tessellator.addElements();
+                tessellator.addElementsCW();
                 tessellator.drawTexture2D(water, Shader.screen2DTexture, CosmicEvolution.camera);
                 tessellator.toggleOrtho();
                 GL46.glDisable(GL46.GL_BLEND);
                 renderAirBar();
-            } else if (blockPlayerHeadIsIn != Block.air.ID && Block.list[blockPlayerHeadIsIn].isSolid && blockPlayerHeadIsIn != Block.leaf.ID) {
+            } else if (blockPlayerHeadIsIn != Block.air.ID && Block.list[blockPlayerHeadIsIn].isSolid && blockPlayerHeadIsIn != Block.leaf.ID && !(Block.list[blockPlayerHeadIsIn] instanceof BlockDoor)) {
                 int textureID = Block.list[blockPlayerHeadIsIn].textureID;
                 tessellator.toggleOrtho();
-                tessellator.addVertexTextureArray(4144959, (float) -CosmicEvolution.width / 2, (float) -CosmicEvolution.height / 2, -900, 3, textureID, 2);
-                tessellator.addVertexTextureArray(4144959, (float) CosmicEvolution.width / 2, (float) CosmicEvolution.height / 2, -900, 1, textureID, 2);
-                tessellator.addVertexTextureArray(4144959, (float) -CosmicEvolution.width / 2, (float) CosmicEvolution.height / 2, -900, 2, textureID, 2);
-                tessellator.addVertexTextureArray(4144959, (float) CosmicEvolution.width / 2, (float) -CosmicEvolution.height / 2, -900, 0, textureID, 2);
-                tessellator.addElements();
+                tessellator.addVertexTextureArrayWithCorner(4144959, (float) -CosmicEvolution.width / 2, (float) -CosmicEvolution.height / 2, -900, 3, textureID);
+                tessellator.addVertexTextureArrayWithCorner(4144959, (float) CosmicEvolution.width / 2, (float) CosmicEvolution.height / 2, -900, 1, textureID);
+                tessellator.addVertexTextureArrayWithCorner(4144959, (float) -CosmicEvolution.width / 2, (float) CosmicEvolution.height / 2, -900, 2, textureID);
+                tessellator.addVertexTextureArrayWithCorner(4144959, (float) CosmicEvolution.width / 2, (float) -CosmicEvolution.height / 2, -900, 0, textureID);
+                tessellator.addElementsCW();
                 tessellator.drawTextureArray(Assets.blockTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
                 tessellator.toggleOrtho();
             }
@@ -177,7 +178,7 @@ public final class GuiInGame extends Gui {
         tessellator.addVertex2DTexture(16777215, (float) 970, (float) 970, -100, 1);
         tessellator.addVertex2DTexture(16777215, (float) -970, (float) 970, -100, 2);
         tessellator.addVertex2DTexture(16777215, (float) 970, (float) -970, -100, 0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         GL46.glDepthMask(false);
         tessellator.drawTexture2D(vignette, Shader.screen2DTexture, CosmicEvolution.camera);
         GL46.glDepthMask(true);
@@ -191,6 +192,10 @@ public final class GuiInGame extends Gui {
         if(blockID == Block.craftingItem.ID) {
             int[] coords = CosmicEvolution.instance.save.thePlayer.getPlayerLookingAtBlockCoords();
             renderCraftingItemInfoOverlay(coords[0], coords[1], coords[2]);
+        }
+        if(blockID >= 135 && blockID <= 150){ //Door facing directions
+            int[] coords = CosmicEvolution.instance.save.thePlayer.getPlayerLookingAtBlockCoords();
+            blockID = CosmicEvolution.instance.save.activeWorld.getBlockID(coords[0], coords[1] + 1, coords[2]);
         }
         RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         FontRenderer fontRenderer = FontRenderer.instance;
@@ -229,7 +234,7 @@ public final class GuiInGame extends Gui {
             tessellator.addVertex2DTexture(0, x + width / 2f, y + height / 2f, -90, 1);
             tessellator.addVertex2DTexture(0, x - width / 2f, y + height / 2f, -90, 2);
             tessellator.addVertex2DTexture(0, x + width / 2f, y - height / 2f, -90, 0);
-            tessellator.addElements();
+            tessellator.addElementsCW();
             tessellator.drawTexture2D(transparentBackground, Shader.screen2DTexture, CosmicEvolution.camera);
             tessellator.toggleOrtho();
             fontRenderer.drawCenteredString(Block.list[blockID].getDisplayName(blockCoordinates[0], blockCoordinates[1], blockCoordinates[2]), 0, 450, -14, 16777215, 50, 255);
@@ -247,7 +252,7 @@ public final class GuiInGame extends Gui {
             tessellator.addVertex2DTexture(0, x + width / 2f, y + height / 2f, -90, 1);
             tessellator.addVertex2DTexture(0, x - width / 2f, y + height / 2f, -90, 2);
             tessellator.addVertex2DTexture(0, x + width / 2f, y - height / 2f, -90, 0);
-            tessellator.addElements();
+            tessellator.addElementsCW();
             tessellator.drawTexture2D(transparentBackground, Shader.screen2DTexture, CosmicEvolution.camera);
             tessellator.toggleOrtho();
             fontRenderer.drawCenteredString(Block.list[blockID].getDisplayName(blockCoordinates[0], blockCoordinates[1], blockCoordinates[2]), 0, 425, -14, 16777215, 50, 255);
@@ -275,7 +280,7 @@ public final class GuiInGame extends Gui {
         tessellator.addVertex2DTexture(0, x + width / 2f, y + height / 2f, -90, 1);
         tessellator.addVertex2DTexture(0, x - width / 2f, y + height / 2f, -90, 2);
         tessellator.addVertex2DTexture(0, x + width / 2f, y - height / 2f, -90, 0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         tessellator.drawTexture2D(transparentBackground, Shader.screen2DTexture, CosmicEvolution.camera);
         tessellator.toggleOrtho();
         y = 200;
@@ -287,11 +292,11 @@ public final class GuiInGame extends Gui {
             if(!craftingItem.itemsFilled[i]) {
                 y -= 30;
                 tessellator.toggleOrtho();
-                tessellator.addVertexTextureArray(16777215, x - 30, y - 30, -85, 3, craftingItem.outputRecipe.requiredItems[i], RenderBlocks.WEST_FACE);
-                tessellator.addVertexTextureArray(16777215, x + 30, y + 30, -85, 1, craftingItem.outputRecipe.requiredItems[i], RenderBlocks.WEST_FACE);
-                tessellator.addVertexTextureArray(16777215, x - 30, y + 30, -85, 2, craftingItem.outputRecipe.requiredItems[i], RenderBlocks.WEST_FACE);
-                tessellator.addVertexTextureArray(16777215, x + 30, y - 30, -85, 0, craftingItem.outputRecipe.requiredItems[i], RenderBlocks.WEST_FACE);
-                tessellator.addElements();
+                tessellator.addVertexTextureArrayWithCorner(16777215, x - 30, y - 30, -85, 3, craftingItem.outputRecipe.requiredItems[i]);
+                tessellator.addVertexTextureArrayWithCorner(16777215, x + 30, y + 30, -85, 1, craftingItem.outputRecipe.requiredItems[i]);
+                tessellator.addVertexTextureArrayWithCorner(16777215, x - 30, y + 30, -85, 2, craftingItem.outputRecipe.requiredItems[i]);
+                tessellator.addVertexTextureArrayWithCorner(16777215, x + 30, y - 30, -85, 0, craftingItem.outputRecipe.requiredItems[i]);
+                tessellator.addElementsCW();
                 tessellator.drawTextureArray(Assets.itemTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
                 tessellator.toggleOrtho();
             }
@@ -302,11 +307,11 @@ public final class GuiInGame extends Gui {
             y -= 30;
             fontRenderer.drawCenteredString("MISSING: " + Item.reedTwine.getDisplayName(Item.NULL_ITEM_REFERENCE), x, y, -14, 255 << 16, 50, 255);
             tessellator.toggleOrtho();
-            tessellator.addVertexTextureArray(16777215, x - 30, y - 30, -85, 3, Item.reedTwine.getTextureID(Item.reedTwine.ID, Item.NULL_ITEM_METADATA, RenderBlocks.WEST_FACE), RenderBlocks.WEST_FACE);
-            tessellator.addVertexTextureArray(16777215, x + 30, y + 30, -85, 1, Item.reedTwine.getTextureID(Item.reedTwine.ID, Item.NULL_ITEM_METADATA, RenderBlocks.WEST_FACE), RenderBlocks.WEST_FACE);
-            tessellator.addVertexTextureArray(16777215, x - 30, y + 30, -85, 2, Item.reedTwine.getTextureID(Item.reedTwine.ID, Item.NULL_ITEM_METADATA, RenderBlocks.WEST_FACE), RenderBlocks.WEST_FACE);
-            tessellator.addVertexTextureArray(16777215, x + 30, y - 30, -85, 0, Item.reedTwine.getTextureID(Item.reedTwine.ID, Item.NULL_ITEM_METADATA, RenderBlocks.WEST_FACE), RenderBlocks.WEST_FACE);
-            tessellator.addElements();
+            tessellator.addVertexTextureArrayWithCorner(16777215, x - 30, y - 30, -85, 3, Item.reedTwine.getTextureID(Item.reedTwine.ID, Item.NULL_ITEM_METADATA, RenderBlocks.WEST_FACE));
+            tessellator.addVertexTextureArrayWithCorner(16777215, x + 30, y + 30, -85, 1, Item.reedTwine.getTextureID(Item.reedTwine.ID, Item.NULL_ITEM_METADATA, RenderBlocks.WEST_FACE));
+            tessellator.addVertexTextureArrayWithCorner(16777215, x - 30, y + 30, -85, 2, Item.reedTwine.getTextureID(Item.reedTwine.ID, Item.NULL_ITEM_METADATA, RenderBlocks.WEST_FACE));
+            tessellator.addVertexTextureArrayWithCorner(16777215, x + 30, y - 30, -85, 0, Item.reedTwine.getTextureID(Item.reedTwine.ID, Item.NULL_ITEM_METADATA, RenderBlocks.WEST_FACE));
+            tessellator.addElementsCW();
             tessellator.drawTextureArray(Assets.itemTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
             tessellator.toggleOrtho();
         }
@@ -351,7 +356,7 @@ public final class GuiInGame extends Gui {
         tessellator.addVertex2DTexture(0, x + 864, y + 96, -90, 1);
         tessellator.addVertex2DTexture(0, x, y + 96, -90, 2);
         tessellator.addVertex2DTexture(0, x + 864, y, -90, 0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
         tessellator.drawTexture2D(transparentBackground, Shader.screen2DTexture, CosmicEvolution.camera);
@@ -365,7 +370,7 @@ public final class GuiInGame extends Gui {
         tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 0 ? 0 : 16777215, x + size, y + size, -80, 1);
         tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 0 ? 0 : 16777215, x, y + size, -80, 2);
         tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 0 ? 0 : 16777215, x + size, y, -80, 0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         size = 96;
         x += size;
         if(EntityPlayer.selectedInventorySlot == 1){
@@ -375,7 +380,7 @@ public final class GuiInGame extends Gui {
         tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 1 ? 0 : 16777215, x + size, y + size, -80, 1);
         tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 1 ? 0 : 16777215, x, y + size, -80, 2);
         tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 1 ? 0 : 16777215, x + size, y, -80, 0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         size = 96;
         x += size;
         if(EntityPlayer.selectedInventorySlot == 2){
@@ -385,7 +390,7 @@ public final class GuiInGame extends Gui {
         tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 2 ? 0 : 16777215, x + size, y + size, -80, 1);
         tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 2 ? 0 : 16777215, x, y + size, -80, 2);
         tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 2 ? 0 : 16777215, x + size, y, -80, 0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         size = 96;
         x += size;
         if(EntityPlayer.selectedInventorySlot == 3){
@@ -395,7 +400,7 @@ public final class GuiInGame extends Gui {
         tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 3 ? 0 : 16777215, x + size, y + size, -80, 1);
         tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 3 ? 0 : 16777215, x, y + size, -80, 2);
         tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 3 ? 0 : 16777215, x + size, y, -80, 0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         size = 96;
         x += size;
         if(EntityPlayer.selectedInventorySlot == 4){
@@ -405,7 +410,7 @@ public final class GuiInGame extends Gui {
         tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 4 ? 0 : 16777215, x + size, y + size, -80, 1);
         tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 4 ? 0 : 16777215, x, y + size, -80, 2);
         tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 4 ? 0 : 16777215, x + size, y, -80, 0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         size = 96;
         x += size;
         if(EntityPlayer.selectedInventorySlot == 5){
@@ -415,7 +420,7 @@ public final class GuiInGame extends Gui {
         tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 5 ? 0 : 16777215, x + size, y + size, -80, 1);
         tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 5 ? 0 : 16777215, x, y + size, -80, 2);
         tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 5 ? 0 : 16777215, x + size, y, -80, 0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         size = 96;
         x += size;
         if(EntityPlayer.selectedInventorySlot == 6){
@@ -425,7 +430,7 @@ public final class GuiInGame extends Gui {
         tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 6 ? 0 : 16777215, x + size, y + size, -80, 1);
         tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 6 ? 0 : 16777215, x, y + size, -80, 2);
         tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 6 ? 0 : 16777215, x + size, y, -80, 0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         size = 96;
         x += size;
         if(EntityPlayer.selectedInventorySlot == 7){
@@ -435,7 +440,7 @@ public final class GuiInGame extends Gui {
         tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 7 ? 0 : 16777215, x + size, y + size, -80, 1);
         tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 7 ? 0 : 16777215, x, y + size, -80, 2);
         tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 7 ? 0 : 16777215, x + size, y, -80, 0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         size = 96;
         x += size;
         if(EntityPlayer.selectedInventorySlot == 8){
@@ -445,7 +450,7 @@ public final class GuiInGame extends Gui {
         tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 8 ? 0 : 16777215, x + size, y + size, -80, 1);
         tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 8 ? 0 : 16777215, x, y + size, -80, 2);
         tessellator.addVertex2DTexture(EntityPlayer.selectedInventorySlot == 8 ? 0 : 16777215, x + size, y, -80, 0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
         tessellator.drawTexture2D(hotbar, Shader.screen2DTexture, CosmicEvolution.camera);
@@ -483,28 +488,28 @@ public final class GuiInGame extends Gui {
         tessellator.addVertex2DTexture(4128768, x + 368, y + 16, -90, 1);
         tessellator.addVertex2DTexture(4128768, x, y + 16, -90, 2);
         tessellator.addVertex2DTexture(4128768, x + 368, y, -90, 0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
 
         float progress = (int) (368 * (CosmicEvolution.instance.save.thePlayer.health / CosmicEvolution.instance.save.thePlayer.maxHealth));
         tessellator.addVertex2DTexture(11016473, x, y, -89, 3);
         tessellator.addVertex2DTexture(11016473, x + progress, y + 16, -89, 1);
         tessellator.addVertex2DTexture(11016473, x, y + 16, -89, 2);
         tessellator.addVertex2DTexture(11016473, x + progress, y, -89, 0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
 
         x += 496;
         tessellator.addVertex2DTexture(5522201, x, y, -90, 3);
         tessellator.addVertex2DTexture(5522201, x + 368, y + 16, -90, 1);
         tessellator.addVertex2DTexture(5522201, x, y + 16, -90, 2);
         tessellator.addVertex2DTexture(5522201, x + 368, y, -90, 0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
 
         progress = (int) (368 * (CosmicEvolution.instance.save.thePlayer.saturation / CosmicEvolution.instance.save.thePlayer.maxSaturation));
         tessellator.addVertex2DTexture(16764748, x, y, -89, 3);
         tessellator.addVertex2DTexture(16764748, x + progress, y + 16, -89, 1);
         tessellator.addVertex2DTexture(16764748, x, y + 16, -89, 2);
         tessellator.addVertex2DTexture(16764748, x + progress, y, -89, 0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
 
 
 
@@ -521,14 +526,14 @@ public final class GuiInGame extends Gui {
         tessellator.addVertex2DTexture(9535, x + 864, y + 16, -90, 1);
         tessellator.addVertex2DTexture(9535, x, y + 16, -90, 2);
         tessellator.addVertex2DTexture(9535, x + 864, y, -90, 0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
 
         float progress = (int) (864 * ((300 - CosmicEvolution.instance.save.thePlayer.drowningTimer) / 300f));
         tessellator.addVertex2DTexture(38143, x, y, -89, 3);
         tessellator.addVertex2DTexture(38143, x + progress, y + 16, -89, 1);
         tessellator.addVertex2DTexture(38143, x, y + 16, -89, 2);
         tessellator.addVertex2DTexture(38143, x + progress, y, -89, 0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         tessellator.drawTexture2D(fillableColorWithShadedBottom, Shader.screen2DTexture, CosmicEvolution.camera);
         tessellator.toggleOrtho();
     }
@@ -575,12 +580,11 @@ public final class GuiInGame extends Gui {
                 Vector3f vertex4;
                 float textureID;
                 int colorVal;
-                float[] UVSamples;
                 for(int face = 0; face < 6; face++){
                     ModelFace[] faces = model.getModelFaceOfType(face);
                     for(int i = 0; i < faces.length; i++){
                         if(faces[i] == null)continue;
-                        UVSamples = face == RenderBlocks.TOP_FACE || face == RenderBlocks.BOTTOM_FACE ? RenderBlocks.autoUVTopBottom(RenderBlocks.getFaceWidth(faces[i]), RenderBlocks.getFaceHeight(faces[i])) : RenderBlocks.autoUVNSEW(RenderBlocks.getFaceWidth(faces[i]), RenderBlocks.getFaceHeight(faces[i]));
+
                         textureID = RenderBlocks.getBlockTextureID(heldBlock, face);
                         vertex1 = new Vector3f(faces[i].vertices[0].x, faces[i].vertices[0].y, faces[i].vertices[0].z).rotate(rotation).add(position);
                         vertex2 = new Vector3f(faces[i].vertices[1].x, faces[i].vertices[1].y, faces[i].vertices[1].z).rotate(rotation).add(position);
@@ -588,11 +592,11 @@ public final class GuiInGame extends Gui {
                         vertex4 = new Vector3f(faces[i].vertices[3].x, faces[i].vertices[3].y, faces[i].vertices[3].z).rotate(rotation).add(position);
 
 
-                        tessellator.addVertexTextureArrayWithSampling(colorRGB, vertex1.x, vertex1.y, vertex1.z, 3, textureID, UVSamples[0], UVSamples[1]);
-                        tessellator.addVertexTextureArrayWithSampling(colorRGB, vertex2.x, vertex2.y, vertex2.z, 1, textureID, UVSamples[2], UVSamples[3]);
-                        tessellator.addVertexTextureArrayWithSampling(colorRGB, vertex3.x, vertex3.y, vertex3.z, 2, textureID, UVSamples[4], UVSamples[5]);
-                        tessellator.addVertexTextureArrayWithSampling(colorRGB, vertex4.x, vertex4.y, vertex4.z, 0, textureID, UVSamples[6], UVSamples[7]);
-                        tessellator.addElements();
+                        tessellator.addVertexTextureArrayWithUV(colorRGB, vertex1.x, vertex1.y, vertex1.z, textureID, faces[i].UVs[0][0], faces[i].UVs[0][1]);
+                        tessellator.addVertexTextureArrayWithUV(colorRGB, vertex2.x, vertex2.y, vertex2.z, textureID, faces[i].UVs[1][0], faces[i].UVs[1][1]);
+                        tessellator.addVertexTextureArrayWithUV(colorRGB, vertex3.x, vertex3.y, vertex3.z, textureID, faces[i].UVs[2][0], faces[i].UVs[2][1]);
+                        tessellator.addVertexTextureArrayWithUV(colorRGB, vertex4.x, vertex4.y, vertex4.z, textureID, faces[i].UVs[3][0], faces[i].UVs[3][1]);
+                        tessellator.addElementsCCW();
                         colorVal = colorRGB & 255;
                         colorVal -= 10;
                         colorRGB = (colorVal << 16) | (colorVal << 8) | colorVal;
@@ -602,7 +606,7 @@ public final class GuiInGame extends Gui {
                 Matrix4d preservedViewMatrix = CosmicEvolution.camera.viewMatrix.get(new Matrix4d());
                 CosmicEvolution.camera.viewMatrix = new Matrix4d();
                 GL46.glEnable(GL46.GL_CULL_FACE);
-                GL46.glCullFace(GL46.GL_FRONT);
+                GL46.glCullFace(GL46.GL_BACK);
                 tessellator.drawTextureArray(Assets.blockTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
                 GL46.glDisable(GL46.GL_CULL_FACE);
                 CosmicEvolution.camera.viewMatrix = preservedViewMatrix;
@@ -661,7 +665,7 @@ public final class GuiInGame extends Gui {
                 tessellator.addVertex2DTextureWithSampling(colorRGB, topFace[1].x, topFace[1].y, topFace[1].z, 0, UVSamples[2], UVSamples[3]);
                 tessellator.addVertex2DTextureWithSampling(colorRGB, topFace[2].x, topFace[2].y, topFace[2].z, 1, UVSamples[4], UVSamples[5]);
                 tessellator.addVertex2DTextureWithSampling(colorRGB, topFace[3].x, topFace[3].y, topFace[3].z, 3, UVSamples[6], UVSamples[7]);
-                tessellator.addElements();
+                tessellator.addElementsCW();
 
                 colorVal = colorRGB & 255;
                 colorVal -= 10;
@@ -672,7 +676,7 @@ public final class GuiInGame extends Gui {
                 tessellator.addVertex2DTextureWithSampling(colorRGB, bottomFace[1].x, bottomFace[1].y, bottomFace[1].z, 0, UVSamples[2], UVSamples[3]);
                 tessellator.addVertex2DTextureWithSampling(colorRGB, bottomFace[2].x, bottomFace[2].y, bottomFace[2].z, 1, UVSamples[4], UVSamples[5]);
                 tessellator.addVertex2DTextureWithSampling(colorRGB, bottomFace[3].x, bottomFace[3].y, bottomFace[3].z, 3, UVSamples[6], UVSamples[7]);
-                tessellator.addElements();
+                tessellator.addElementsCW();
 
                 colorVal = colorRGB & 255;
                 colorVal -= 10;
@@ -683,7 +687,7 @@ public final class GuiInGame extends Gui {
                 tessellator.addVertex2DTextureWithSampling(colorRGB, northFace[1].x, northFace[1].y, northFace[1].z, 1, UVSamples[2], UVSamples[3]);
                 tessellator.addVertex2DTextureWithSampling(colorRGB, northFace[2].x, northFace[2].y, northFace[2].z, 2, UVSamples[4], UVSamples[5]);
                 tessellator.addVertex2DTextureWithSampling(colorRGB, northFace[3].x, northFace[3].y, northFace[3].z, 0, UVSamples[6], UVSamples[7]);
-                tessellator.addElements();
+                tessellator.addElementsCW();
 
                 colorVal = colorRGB & 255;
                 colorVal -= 10;
@@ -694,7 +698,7 @@ public final class GuiInGame extends Gui {
                 tessellator.addVertex2DTextureWithSampling(colorRGB, southFace[1].x, southFace[1].y, southFace[1].z, 1, UVSamples[2], UVSamples[3]);
                 tessellator.addVertex2DTextureWithSampling(colorRGB, southFace[2].x, southFace[2].y, southFace[2].z, 2, UVSamples[4], UVSamples[5]);
                 tessellator.addVertex2DTextureWithSampling(colorRGB, southFace[3].x, southFace[3].y, southFace[3].z, 0, UVSamples[6], UVSamples[7]);
-                tessellator.addElements();
+                tessellator.addElementsCW();
 
                 colorVal = colorRGB & 255;
                 colorVal -= 10;
@@ -705,7 +709,7 @@ public final class GuiInGame extends Gui {
                 tessellator.addVertex2DTextureWithSampling(colorRGB, eastFace[1].x, eastFace[1].y, eastFace[1].z, 1, UVSamples[2], UVSamples[3]);
                 tessellator.addVertex2DTextureWithSampling(colorRGB, eastFace[2].x, eastFace[2].y, eastFace[2].z, 2, UVSamples[4], UVSamples[5]);
                 tessellator.addVertex2DTextureWithSampling(colorRGB, eastFace[3].x, eastFace[3].y, eastFace[3].z, 0, UVSamples[6], UVSamples[7]);
-                tessellator.addElements();
+                tessellator.addElementsCW();
 
                 colorVal = colorRGB & 255;
                 colorVal -= 10;
@@ -716,7 +720,7 @@ public final class GuiInGame extends Gui {
                 tessellator.addVertex2DTextureWithSampling(colorRGB, westFace[1].x, westFace[1].y, westFace[1].z, 1, UVSamples[2], UVSamples[3]);
                 tessellator.addVertex2DTextureWithSampling(colorRGB, westFace[2].x, westFace[2].y, westFace[2].z, 2, UVSamples[4], UVSamples[5]);
                 tessellator.addVertex2DTextureWithSampling(colorRGB, westFace[3].x, westFace[3].y, westFace[3].z, 0, UVSamples[6], UVSamples[7]);
-                tessellator.addElements();
+                tessellator.addElementsCW();
 
                 Matrix4d preservedViewMatrix = CosmicEvolution.camera.viewMatrix.get(new Matrix4d());
                 CosmicEvolution.camera.viewMatrix = new Matrix4d();
@@ -814,7 +818,7 @@ public final class GuiInGame extends Gui {
                         tessellator.addVertex2DTexture(colorValue, vertex2.x, vertex2.y, vertex2.z, 1);
                         tessellator.addVertex2DTexture(colorValue, vertex3.x, vertex3.y, vertex3.z, 2);
                         tessellator.addVertex2DTexture(colorValue, vertex4.x, vertex4.y, vertex4.z, 0);
-                        tessellator.addElements();
+                        tessellator.addElementsCW();
                         if (x == 0) {
                             //Render north face
                         }
@@ -854,7 +858,7 @@ public final class GuiInGame extends Gui {
                                 tessellator.addVertex2DTexture(colorValue, vertex2.x, vertex2.y, vertex2.z, 1);
                                 tessellator.addVertex2DTexture(colorValue, vertex3.x, vertex3.y, vertex3.z, 2);
                                 tessellator.addVertex2DTexture(colorValue, vertex4.x, vertex4.y, vertex4.z, 0);
-                                tessellator.addElements();
+                                tessellator.addElementsCW();
                                 x -= pixelWidth;
                             }
                         }
@@ -885,7 +889,7 @@ public final class GuiInGame extends Gui {
                    //             tessellator.addVertex2DTexture(colorValue, vertex2.x, vertex2.y, vertex2.z, 1);
                    //             tessellator.addVertex2DTexture(colorValue, vertex3.x, vertex3.y, vertex3.z, 2);
                    //             tessellator.addVertex2DTexture(colorValue, vertex4.x, vertex4.y, vertex4.z, 0);
-                   //             tessellator.addElements();
+                   //             tessellator.addElementsCW();
                    //             x += pixelWidth;
                    //         }
                    //     }
@@ -916,7 +920,7 @@ public final class GuiInGame extends Gui {
                                 tessellator.addVertex2DTexture(colorValue, vertex2.x, vertex2.y, vertex2.z, 1);
                                 tessellator.addVertex2DTexture(colorValue, vertex3.x, vertex3.y, vertex3.z, 2);
                                 tessellator.addVertex2DTexture(colorValue, vertex4.x, vertex4.y, vertex4.z, 0);
-                                tessellator.addElements();
+                                tessellator.addElementsCW();
                                 y -= pixelWidth;
                             }
                         }
@@ -947,7 +951,7 @@ public final class GuiInGame extends Gui {
                                 tessellator.addVertex2DTexture(colorValue, vertex2.x, vertex2.y, vertex2.z, 1);
                                 tessellator.addVertex2DTexture(colorValue, vertex3.x, vertex3.y, vertex3.z, 2);
                                 tessellator.addVertex2DTexture(colorValue, vertex4.x, vertex4.y, vertex4.z, 0);
-                                tessellator.addElements();
+                                tessellator.addElementsCW();
                                 y += pixelWidth;
                             }
                         }
@@ -1051,6 +1055,66 @@ public final class GuiInGame extends Gui {
                         float translateX = rand.nextFloat(0.25f, 0.75f);
                         float translateZ = rand.nextFloat(0.25f, 0.75f);
                         Vector3f offset = new Vector3f(translateX, 0f, translateZ);
+
+                        if(Block.list[block].ID == Block.doorPrimitiveUpper.ID || (block >= Block.doorNorthDoorHingeLeftClosed.ID && block <= Block.doorWestDoorHingeRightOpen.ID)){
+                            short lowerBlock = Block.list[block].ID == Block.doorPrimitiveUpper.ID ?  CosmicEvolution.instance.save.activeWorld.getBlockID(locationX, locationY - 1, locationZ) : block;
+
+                            modelLoader = (block >= Block.doorNorthDoorHingeLeftClosed.ID && block <= Block.doorWestDoorHingeRightOpen.ID) ? Block.primitiveDoorLower : modelLoader;
+
+                            boolean doorOpen = Block.list[lowerBlock].isDoorOpen;
+                            switch (Block.list[lowerBlock].faceDirection){
+                                case "North" -> {
+                                    if(doorOpen && lowerBlock == Block.doorNorthDoorHingeLeftOpen.ID){
+                                        modelLoader = modelLoader.copyModel().rotateModel(270, 0, 1, 0);
+                                        modelLoader = modelLoader.copyModel().translateModel(0.5f, 0, 0.9375f);
+                                    } else if(doorOpen && lowerBlock == Block.doorNorthDoorHingeRightOpen.ID){
+                                        modelLoader = modelLoader.copyModel().rotateModel(90, 0, 1, 0);
+                                        modelLoader = modelLoader.copyModel().translateModel(0.5f, 0, 0.0625f);
+                                    } else {
+                                        modelLoader = modelLoader.copyModel().translateModel(0.0625f, 0, 0.5f);
+                                    }
+                                }
+                                case "South" -> {
+                                    if(doorOpen && lowerBlock == Block.doorSouthDoorHingeLeftOpen.ID){
+                                        modelLoader = modelLoader.copyModel().rotateModel(90, 0, 1, 0);
+                                        modelLoader = modelLoader.copyModel().translateModel(0.5f, 0, 0.0625f);
+                                    } else if(doorOpen && lowerBlock == Block.doorSouthDoorHingeRightOpen.ID){
+                                        modelLoader = modelLoader.copyModel().rotateModel(270, 0, 1, 0);
+                                        modelLoader = modelLoader.copyModel().translateModel(0.5f, 0, 0.9375f);
+                                    } else {
+                                        modelLoader = modelLoader.copyModel().rotateModel(180, 0, 1, 0);
+                                        modelLoader = modelLoader.copyModel().translateModel(0.9375f, 0, 0.5f);
+                                    }
+                                }
+                                case "East" -> {
+                                    if(doorOpen && lowerBlock == Block.doorEastDoorHingeLeftOpen.ID){
+                                        modelLoader = modelLoader.copyModel().rotateModel(180, 0, 1, 0);
+                                        modelLoader = modelLoader.copyModel().translateModel(0.0625f, 0, 0.5f);
+                                    } else if(doorOpen && lowerBlock == Block.doorEastDoorHingeRightOpen.ID){
+                                        modelLoader = modelLoader.copyModel().translateModel(0.9375f, 0, 0.5f);
+                                    } else {
+                                        modelLoader = modelLoader.copyModel().rotateModel(270, 0, 1, 0);
+                                        modelLoader = modelLoader.copyModel().translateModel(0.5f, 0, 0.0625f);
+                                    }
+                                }
+                                case "West" -> {
+                                    if(doorOpen && lowerBlock == Block.doorWestDoorHingeLeftOpen.ID){
+                                        modelLoader = modelLoader.copyModel().translateModel(0.9375f, 0, 0.5f);
+                                    } else if(doorOpen && lowerBlock == Block.doorWestDoorHingeRightOpen.ID){
+                                        modelLoader = modelLoader.copyModel().rotateModel(180, 0, 1, 0);
+                                        modelLoader = modelLoader.copyModel().translateModel(0.0625f, 0, 0.5f);
+                                    } else {
+                                        modelLoader = modelLoader.copyModel().rotateModel(90, 0, 1, 0);
+                                        modelLoader = modelLoader.copyModel().translateModel(0.5f, 0, 0.9375f);
+                                    }
+                                }
+                                default -> {
+                                    throw new IllegalStateException("Unknown Face Direction on door");
+                                }
+                            }
+                        }
+
+
                         for (int i = 0; i < modelLoader.modelFaces.length; i++) {
 
                             ModelFace modelFace = modelLoader.modelFaces[i];
@@ -1077,11 +1141,11 @@ public final class GuiInGame extends Gui {
                             }
 
 
-                            renderSpecialFace(tessellator, 16777215, Chunk.getBlockIndexFromCoordinates(locationX, locationY, locationZ),textureID, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, chunk, blockBreakingAtlas.getTexture(textureID), 0, 0, 0, 0);
-                            tessellator.addElements();
+                            renderSpecialFace(tessellator, 16777215, Chunk.getBlockIndexFromCoordinates(locationX, locationY, locationZ),textureID, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, chunk, blockBreakingAtlas.getTexture(textureID), 0, 0, 0, 0);
+                            tessellator.addElementsCCW();
                         }
                         GL46.glEnable(GL46.GL_CULL_FACE);
-                        GL46.glCullFace(GL46.GL_FRONT);
+                        GL46.glCullFace(GL46.GL_BACK);
                         GL46.glEnable(GL46.GL_BLEND);
                         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
                         GL46.glEnable(GL46.GL_ALPHA_TEST);
@@ -1161,6 +1225,66 @@ public final class GuiInGame extends Gui {
                     float translateX = rand.nextFloat(0.25f, 0.75f);
                     float translateZ = rand.nextFloat(0.25f, 0.75f);
                     Vector3f offset = new Vector3f(translateX, 0f, translateZ);
+
+                    if(Block.list[block].ID == Block.doorPrimitiveUpper.ID || (block >= Block.doorNorthDoorHingeLeftClosed.ID && block <= Block.doorWestDoorHingeRightOpen.ID)){
+                        short lowerBlock = Block.list[block].ID == Block.doorPrimitiveUpper.ID ?  CosmicEvolution.instance.save.activeWorld.getBlockID(locationX, locationY - 1, locationZ) : block;
+
+                        modelLoader = (block >= Block.doorNorthDoorHingeLeftClosed.ID && block <= Block.doorWestDoorHingeRightOpen.ID) ? Block.primitiveDoorLower : modelLoader;
+
+                        boolean doorOpen = Block.list[lowerBlock].isDoorOpen;
+                        switch (Block.list[lowerBlock].faceDirection){
+                            case "North" -> {
+                                if(doorOpen && lowerBlock == Block.doorNorthDoorHingeLeftOpen.ID){
+                                    modelLoader = modelLoader.copyModel().rotateModel(270, 0, 1, 0);
+                                    modelLoader = modelLoader.copyModel().translateModel(0.5f, 0, 0.9375f);
+                                } else if(doorOpen && lowerBlock == Block.doorNorthDoorHingeRightOpen.ID){
+                                    modelLoader = modelLoader.copyModel().rotateModel(90, 0, 1, 0);
+                                    modelLoader = modelLoader.copyModel().translateModel(0.5f, 0, 0.0625f);
+                                } else {
+                                    modelLoader = modelLoader.copyModel().translateModel(0.0625f, 0, 0.5f);
+                                }
+                            }
+                            case "South" -> {
+                                if(doorOpen && lowerBlock == Block.doorSouthDoorHingeLeftOpen.ID){
+                                    modelLoader = modelLoader.copyModel().rotateModel(90, 0, 1, 0);
+                                    modelLoader = modelLoader.copyModel().translateModel(0.5f, 0, 0.0625f);
+                                } else if(doorOpen && lowerBlock == Block.doorSouthDoorHingeRightOpen.ID){
+                                    modelLoader = modelLoader.copyModel().rotateModel(270, 0, 1, 0);
+                                    modelLoader = modelLoader.copyModel().translateModel(0.5f, 0, 0.9375f);
+                                } else {
+                                    modelLoader = modelLoader.copyModel().rotateModel(180, 0, 1, 0);
+                                    modelLoader = modelLoader.copyModel().translateModel(0.9375f, 0, 0.5f);
+                                }
+                            }
+                            case "East" -> {
+                                if(doorOpen && lowerBlock == Block.doorEastDoorHingeLeftOpen.ID){
+                                    modelLoader = modelLoader.copyModel().rotateModel(180, 0, 1, 0);
+                                    modelLoader = modelLoader.copyModel().translateModel(0.0625f, 0, 0.5f);
+                                } else if(doorOpen && lowerBlock == Block.doorEastDoorHingeRightOpen.ID){
+                                    modelLoader = modelLoader.copyModel().translateModel(0.9375f, 0, 0.5f);
+                                } else {
+                                    modelLoader = modelLoader.copyModel().rotateModel(270, 0, 1, 0);
+                                    modelLoader = modelLoader.copyModel().translateModel(0.5f, 0, 0.0625f);
+                                }
+                            }
+                            case "West" -> {
+                                if(doorOpen && lowerBlock == Block.doorWestDoorHingeLeftOpen.ID){
+                                    modelLoader = modelLoader.copyModel().translateModel(0.9375f, 0, 0.5f);
+                                } else if(doorOpen && lowerBlock == Block.doorWestDoorHingeRightOpen.ID){
+                                    modelLoader = modelLoader.copyModel().rotateModel(180, 0, 1, 0);
+                                    modelLoader = modelLoader.copyModel().translateModel(0.0625f, 0, 0.5f);
+                                } else {
+                                    modelLoader = modelLoader.copyModel().rotateModel(90, 0, 1, 0);
+                                    modelLoader = modelLoader.copyModel().translateModel(0.5f, 0, 0.9375f);
+                                }
+                            }
+                            default -> {
+                                throw new IllegalStateException("Unknown Face Direction on door");
+                            }
+                        }
+                    }
+
+
                     for(int i = 0; i < modelLoader.modelFaces.length; i++){
                         ModelFace modelFace = modelLoader.modelFaces[i];
 
@@ -1189,12 +1313,12 @@ public final class GuiInGame extends Gui {
 
                         renderSpecialFace(tessellator, 16777215, Chunk.getBlockIndexFromCoordinates(locationX, locationY, locationZ), 0, modelFace, 0,0,0,0,0,0,0,0, 3,1,2,0, chunk,null, modelFace.normal.x, modelFace.normal.y, modelFace.normal.z, chunk.getSkyLightValue(locationX, locationY, locationZ));
                         if(Block.list[block].ID != Block.crafting3DItem.ID) {
-                            tessellator.addElements();
+                            tessellator.addElementsCCW();
                         }
                     }
 
                     GL46.glEnable(GL46.GL_CULL_FACE);
-                    GL46.glCullFace(GL46.GL_FRONT);
+                    GL46.glCullFace(GL46.GL_BACK);
                     GL46.glEnable(GL46.GL_POLYGON_OFFSET_FILL);
                     GL46.glPolygonOffset(-1f, -1f);
                     tessellator.drawTexture2D(outline, Shader.worldShader2DTexture, CosmicEvolution.camera);
@@ -1301,12 +1425,12 @@ public final class GuiInGame extends Gui {
 
                     modelFace = baseModel.getModelFace(face);
                     renderSpecialFace(tessellator, color, index, 0, modelFace, 0,0,0,0,0,0,0,0, 3,1,2,0, chunk, null, modelFace.normal.x, modelFace.normal.y, modelFace.normal.z, 15);
-                    tessellator.addElements();
+                    tessellator.addElementsCCW();
                 }
             }
 
             GL46.glEnable(GL46.GL_CULL_FACE);
-            GL46.glCullFace(GL46.GL_FRONT);
+            GL46.glCullFace(GL46.GL_BACK);
             GL46.glEnable(GL46.GL_POLYGON_OFFSET_FILL);
             GL46.glPolygonOffset(-1f, -1f);
             Shader.worldShader2DTexture.uploadBoolean("performNormals", false);
@@ -1467,12 +1591,12 @@ public final class GuiInGame extends Gui {
             for(int face = 0; face < 6; face++) {
                 modelFace = blockModel.getModelFace(face);
                 renderSpecialFace(tessellator, isPlayerLookingAtIndex ? blue : craftingBlock.craftingRecipe.recipeIndices[craftingBlock.activeCraftingLayer][i] == 1 && craftingBlock.subVoxelIndices[craftingBlock.activeCraftingLayer][i] == 0 ? red : green, index, 0, modelFace, 0,0,0,0,0,0,0,0, 3,1,2,0, chunk,null, modelFace.normal.x, modelFace.normal.y, modelFace.normal.z, chunk.getSkyLightValue(x,y,z));
-                tessellator.addElements();
+                tessellator.addElementsCCW();
             }
 
         }
         GL46.glEnable(GL46.GL_CULL_FACE);
-        GL46.glCullFace(GL46.GL_FRONT);
+        GL46.glCullFace(GL46.GL_BACK);
         GL46.glEnable(GL46.GL_POLYGON_OFFSET_FILL);
         GL46.glPolygonOffset(-1f, -1f);
         Shader.worldShader2DTexture.uploadBoolean("performNormals", false);
@@ -1622,8 +1746,8 @@ public final class GuiInGame extends Gui {
             tessellator.vertexBuffer.put(green);
             tessellator.vertexBuffer.put(blue);
             tessellator.vertexBuffer.put(alpha);
-            tessellator.vertexBuffer.put(0);
-            tessellator.vertexBuffer.put(1);
+            tessellator.vertexBuffer.put(blockFace.UVs[0][0]);
+            tessellator.vertexBuffer.put(blockFace.UVs[0][1]);
             tessellator.vertexBuffer.put(normalX);
             tessellator.vertexBuffer.put(normalY);
             tessellator.vertexBuffer.put(normalZ);
@@ -1636,8 +1760,8 @@ public final class GuiInGame extends Gui {
             tessellator.vertexBuffer.put(green);
             tessellator.vertexBuffer.put(blue);
             tessellator.vertexBuffer.put(alpha);
-            tessellator.vertexBuffer.put(1);
-            tessellator.vertexBuffer.put(0);
+            tessellator.vertexBuffer.put(blockFace.UVs[1][0]);
+            tessellator.vertexBuffer.put(blockFace.UVs[1][1]);
             tessellator.vertexBuffer.put(normalX);
             tessellator.vertexBuffer.put(normalY);
             tessellator.vertexBuffer.put(normalZ);
@@ -1650,8 +1774,8 @@ public final class GuiInGame extends Gui {
             tessellator.vertexBuffer.put(green);
             tessellator.vertexBuffer.put(blue);
             tessellator.vertexBuffer.put(alpha);
-            tessellator.vertexBuffer.put(1);
-            tessellator.vertexBuffer.put(1);
+            tessellator.vertexBuffer.put(blockFace.UVs[2][0]);
+            tessellator.vertexBuffer.put(blockFace.UVs[2][1]);
             tessellator.vertexBuffer.put(normalX);
             tessellator.vertexBuffer.put(normalY);
             tessellator.vertexBuffer.put(normalZ);
@@ -1664,8 +1788,8 @@ public final class GuiInGame extends Gui {
             tessellator.vertexBuffer.put(green);
             tessellator.vertexBuffer.put(blue);
             tessellator.vertexBuffer.put(alpha);
-            tessellator.vertexBuffer.put(0);
-            tessellator.vertexBuffer.put(0);
+            tessellator.vertexBuffer.put(blockFace.UVs[3][0]);
+            tessellator.vertexBuffer.put(blockFace.UVs[3][1]);
             tessellator.vertexBuffer.put(normalX);
             tessellator.vertexBuffer.put(normalY);
             tessellator.vertexBuffer.put(normalZ);

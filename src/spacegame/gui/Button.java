@@ -11,7 +11,6 @@ import spacegame.nbt.NBTTagCompound;
 import spacegame.render.*;
 import spacegame.world.SaveSettings;
 import spacegame.world.ThreadDeleteWorld;
-import spacegame.world.weather.Cloud;
 import spacegame.world.Save;
 
 import java.awt.*;
@@ -123,6 +122,8 @@ public class Button {
                 } else if(this.Gui instanceof GuiDifficultySettings){
                     SaveSettings saveSettings = ((GuiDifficultySettings) this.Gui).saveSettings;
                     this.ce.setNewGui(((GuiDifficultySettings) this.Gui).fromWorldCreateScreen ? new GuiCreateNewWorld(this.ce, ((GuiDifficultySettings) this.Gui).saveSlot, saveSettings) : new GuiRenameWorld(this.ce, ((GuiDifficultySettings) this.Gui).saveSlot));
+                } else if(this.Gui instanceof GuiCommandList){
+                    this.ce.setNewGui(new GuiCommandEntry(this.ce));
                 }
             }
             case FOV -> {
@@ -533,6 +534,9 @@ public class Button {
                     saveSettings.changeTestingMode(!saveSettings.testingMode);
                 }
             }
+            case COMMAND_LIST -> {
+                this.ce.setNewGui(new GuiCommandList(this.ce));
+            }
         }
         GameSettings.saveOptions();
     }
@@ -563,7 +567,7 @@ public class Button {
         tessellator.addVertex2DTextureWithAtlas(16777215,this.x + this.width/2, this.y + this.height/2, -20,1, buttonTexture, textureID, 255);
         tessellator.addVertex2DTextureWithAtlas(16777215,this.x - this.width/2, this.y + this.height/2, -20,2, buttonTexture, textureID, 255);
         tessellator.addVertex2DTextureWithAtlas(16777215,this.x + this.width/2, this.y - this.height/2, -20,0, buttonTexture, textureID, 255);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         tessellator.drawTexture2DWithAtlas(buttonTextureLoader, Shader.screen2DTextureAtlas, CosmicEvolution.camera);
         tessellator.toggleOrtho();
         this.drawCenteredString();
@@ -576,7 +580,7 @@ public class Button {
             tessellator.addVertex2DTexture(16711680,this.x - 250, this.y + 50, -10,1);
             tessellator.addVertex2DTexture(16711680,this.x - 350, this.y + 50, -10,2);
             tessellator.addVertex2DTexture(16711680,this.x - 250, this.y -50, -10,0);
-            tessellator.addElements();
+            tessellator.addElementsCW();
             tessellator.drawTexture2D(texture, Shader.screen2DTexture, CosmicEvolution.camera);
             tessellator.toggleOrtho();
             CosmicEvolution.instance.renderEngine.deleteTexture(texture);
@@ -588,7 +592,7 @@ public class Button {
             tessellator.addVertex2DTexture(16777215,this.x + 30, this.y + 30, -9,1);
             tessellator.addVertex2DTexture(16777215,this.x - 30, this.y + 30, -9,2);
             tessellator.addVertex2DTexture(16777215,this.x + 30, this.y - 30, -9,0);
-            tessellator.addElements();
+            tessellator.addElementsCW();
             tessellator.drawTexture2D(this.image, Shader.screen2DTexture, CosmicEvolution.camera);
             tessellator.toggleOrtho();
         }
@@ -859,6 +863,9 @@ public class Button {
             }
             case ASSET_PACK_IN_GAME -> {
                 string = "Asset Packs";
+            }
+            case COMMAND_LIST -> {
+                string = "Command List";
             }
 
             default -> string = "";

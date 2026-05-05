@@ -4,7 +4,6 @@ import spacegame.core.CosmicEvolution;
 import spacegame.core.MouseListener;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
-import spacegame.render.Texture;
 import spacegame.util.MathUtil;
 
 public final class Scrollbar {
@@ -52,7 +51,7 @@ public final class Scrollbar {
         tessellator.addVertex2DTexture( 128 << 16 | 128 << 8 | 128,this.x + this.width/2, this.y + this.height/2, -20,1);
         tessellator.addVertex2DTexture( 128 << 16 | 128 << 8 | 128,this.x - this.width/2, this.y + this.height/2, -20,2);
         tessellator.addVertex2DTexture( 128 << 16 | 128 << 8 | 128,this.x + this.width/2, this.y - this.height/2, -20,0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         tessellator.drawTexture2D(image, Shader.screen2DTextureAtlas, CosmicEvolution.camera);
         tessellator.toggleOrtho();
     }

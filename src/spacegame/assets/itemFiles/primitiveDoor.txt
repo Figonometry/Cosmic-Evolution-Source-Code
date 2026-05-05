@@ -1,0 +1,3 @@
+itemName:DOOR_PRIMITIVE
+canPlaceOnGround:true
+displayName:Primitive Door

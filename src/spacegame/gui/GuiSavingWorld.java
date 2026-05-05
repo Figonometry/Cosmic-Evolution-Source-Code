@@ -3,11 +3,9 @@ package spacegame.gui;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
 import spacegame.core.CosmicEvolution;
-import spacegame.core.GameSettings;
 import spacegame.core.Timer;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
-import spacegame.world.World;
 
 public final class GuiSavingWorld extends Gui {
     private CosmicEvolution ce;
@@ -54,7 +52,7 @@ public final class GuiSavingWorld extends Gui {
         tessellator.addVertex2DTexture(0, backgroundX + backgroundWidth/2, backgroundY + backgroundHeight/2, backgroundZ, 1);
         tessellator.addVertex2DTexture(0, backgroundX - backgroundWidth/2, backgroundY + backgroundHeight/2, backgroundZ, 2);
         tessellator.addVertex2DTexture(0, backgroundX + backgroundWidth/2, backgroundY - backgroundHeight/2, backgroundZ, 0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
         tessellator.drawTexture2D(this.transparentBackground, Shader.screen2DTexture, CosmicEvolution.camera);

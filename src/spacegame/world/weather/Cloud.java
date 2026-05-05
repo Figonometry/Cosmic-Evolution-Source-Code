@@ -1,14 +1,9 @@
 package spacegame.world.weather;
 
-import org.joml.Vector3f;
-import org.lwjgl.opengl.GL46;
 import spacegame.core.CosmicEvolution;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.render.RenderEngine;
-import spacegame.render.Shader;
 import spacegame.util.MathUtil;
-
-import java.awt.*;
 
 public final class Cloud {
     public double x;
@@ -133,37 +128,37 @@ public final class Cloud {
         tessellator.addVertex2DTexture(color, xMin, yMax, zMax, 1, 0, 1, 0, skyLightValue, alphaVal);
         tessellator.addVertex2DTexture(color, xMax, yMax, zMax, 2, 0, 1, 0, skyLightValue, alphaVal);
         tessellator.addVertex2DTexture(color, xMin, yMax, zMin, 0, 0, 1, 0, skyLightValue, alphaVal);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         //Bottom
         tessellator.addVertex2DTexture(color, xMin, yMin, zMin, 3, 0, -1, 0, skyLightValue, alphaVal);
         tessellator.addVertex2DTexture(color, xMax, yMin, zMax, 1, 0, -1, 0, skyLightValue, alphaVal);
         tessellator.addVertex2DTexture(color, xMin, yMin, zMax, 2, 0, -1, 0, skyLightValue, alphaVal);
         tessellator.addVertex2DTexture(color, xMax, yMin, zMin, 0, 0, -1, 0, skyLightValue, alphaVal);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         //North
         tessellator.addVertex2DTexture(color, xMin, yMin, zMin, 3, -1, 0, 0, skyLightValue, alphaVal);
         tessellator.addVertex2DTexture(color, xMin, yMax, zMax, 1, -1, 0, 0, skyLightValue, alphaVal);
         tessellator.addVertex2DTexture(color, xMin, yMax, zMin, 2, -1, 0, 0, skyLightValue, alphaVal);
         tessellator.addVertex2DTexture(color, xMin, yMin, zMax, 0, -1, 0, 0, skyLightValue, alphaVal);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         //South
         tessellator.addVertex2DTexture(color, xMax, yMin, zMax, 3, 1, 0, 0, skyLightValue, alphaVal);
         tessellator.addVertex2DTexture(color, xMax, yMax, zMin, 1, 1, 0, 0, skyLightValue, alphaVal);
         tessellator.addVertex2DTexture(color, xMax, yMax, zMax, 2, 1, 0, 0, skyLightValue, alphaVal);
         tessellator.addVertex2DTexture(color, xMax, yMin, zMin, 0, 1, 0, 0, skyLightValue, alphaVal);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         //East
         tessellator.addVertex2DTexture(color, xMax, yMin, zMin, 3, 0, 0, -1, skyLightValue, alphaVal);
         tessellator.addVertex2DTexture(color, xMin, yMax, zMin, 1, 0, 0, -1, skyLightValue, alphaVal);
         tessellator.addVertex2DTexture(color, xMax, yMax, zMin, 2, 0, 0, -1, skyLightValue, alphaVal);
         tessellator.addVertex2DTexture(color, xMin, yMin, zMin, 0, 0, 0, -1, skyLightValue, alphaVal);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         //West
         tessellator.addVertex2DTexture(color, xMin, yMin, zMax, 3, 0, 0, 1, skyLightValue, alphaVal);
         tessellator.addVertex2DTexture(color, xMax, yMax, zMax, 1, 0, 0, 1, skyLightValue, alphaVal);
         tessellator.addVertex2DTexture(color, xMin, yMax, zMax, 2, 0, 0, 1, skyLightValue, alphaVal);
         tessellator.addVertex2DTexture(color, xMax, yMin, zMax, 0, 0, 0, 1, skyLightValue, alphaVal);
-        tessellator.addElements();
+        tessellator.addElementsCW();
     }
 
     public void update(){

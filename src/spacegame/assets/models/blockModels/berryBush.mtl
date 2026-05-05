@@ -1,2 +1,6 @@
-# Made in Blockbench 4.12.6
+# Made in Blockbench 5.1.4
+newmtl m_81b96e67-63ef-195e-d55e-88ee3c353b9f
+map_Kd berryBushTopBase.png
+newmtl m_bfb6d911-5448-1ba5-5a2d-f65edfa9b506
+map_Kd berryBushSideBase.png
 newmtl none

@@ -5,6 +5,7 @@ import org.joml.Vector3f;
 import spacegame.block.*;
 import spacegame.core.*;
 import spacegame.entity.*;
+import spacegame.entity.ai.AIPassive;
 import spacegame.gui.*;
 import spacegame.item.Inventory;
 import spacegame.item.Item;
@@ -272,7 +273,6 @@ public abstract class World {
         }
 
         this.setWindParameters();
-
     }
 
     public abstract void initNoiseMaps();
@@ -1657,6 +1657,21 @@ public abstract class World {
         return true;
     }
 
+    public Chunk[] getSurroundingChunks(int x, int y, int z){
+        int index = 0;
+        Chunk[] surroundingChunks = new Chunk[26];
+            for (int dx = -1; dx <= 1; dx++) {
+                for (int dy = -1; dy <= 1; dy++) {
+                    for (int dz = -1; dz <= 1; dz++) {
+                        if (dx == 0 && dy == 0 && dz == 0) continue;
+                        surroundingChunks[index] = this.findChunkFromChunkCoordinates(x + dx, y + dy, z + dz);
+                        index++;
+                    }
+                }
+            }
+            return surroundingChunks;
+    }
+
 
 
     public void renderWorld() {
@@ -2221,32 +2236,42 @@ public abstract class World {
 
     private void handleBlockBreaking(Block block, int bx, int by, int bz, double hitX, double hitY, double hitZ) {
         EntityPlayer p = ce.save.thePlayer;
+        if(p.timeStartedBreakingBlock == Long.MIN_VALUE){
+            p.timeStartedBreakingBlock = this.ce.save.time;
+        }
 
         if(Block.list[this.getBlockID(bx, by, bz)] instanceof BlockCraftingTable && this.getBlockID(bx, by + 1, bz) == Block.craftingItem.ID)return;
+
 
         if (p.blockLookingAt[0] == bx && p.blockLookingAt[1] == by && p.blockLookingAt[2] == bz) {
 
             short held = p.getHeldItem();
             if (held == Item.NULL_ITEM_REFERENCE) held = 0;
 
-            p.breakTimer++;
 
-            if(p.breakTimer % 15 == 0){
+            if(p.breakTimer % 6 == 0 && block.hardness < (p.hardnessThreshold + Item.list[held].hardness) && (!block.requiresTool)){
                 this.generateParticlesOnBlockBreakingAnimation(block.ID, bx, by, bz,  this.determineHitFace(bx, by, bz, hitX, hitY, hitZ));
+            } else if((block.hardness > (p.hardnessThreshold + Item.list[held].hardness) || block.requiresTool && !block.toolType.equals(Item.list[held].toolType))){
+                if((this.ce.save.time - p.timeStartedBreakingBlock) % 6 == 0) {
+                    this.generateParticlesOnBlockBreakingAnimation(block.ID, bx, by, bz, this.determineHitFace(bx, by, bz, hitX, hitY, hitZ));
+                }
             }
+
+            p.breakTimer++;
 
 
             if (block.hardness > (p.hardnessThreshold + Item.list[held].hardness)) {
-                p.breakTimer = 1;
+                p.breakTimer = 0;
             }
 
             if (block.requiresTool && !block.toolType.equals(Item.list[held].toolType)) {
-                p.breakTimer = 1;
+                p.breakTimer = 0;
             }
 
             if (p.breakTimer >= block.getDynamicBreakTimer() && block.breakTimer >= 0) {
                 block.onLeftClick(bx, by, bz, this, p);
                 p.breakTimer = 0;
+                p.timeStartedBreakingBlock = Long.MIN_VALUE;
             } else if (ce.save.time % 20 == 0) {
                 CosmicEvolution.instance.soundPlayer.playSound(
                         bx, by, bz,
@@ -2257,11 +2282,12 @@ public abstract class World {
 
         } else {
             p.breakTimer = 0;
+            p.timeStartedBreakingBlock = Long.MIN_VALUE;
         }
     }
 
     public void generateParticlesOnBlockBreak(short blockID, int x, int y, int z){
-            EntityParticle[] particles = new EntityParticle[8];
+            EntityParticle[] particles = new EntityParticle[16];
 
 
             for(int i = 0; i < particles.length; i++){
@@ -2270,7 +2296,7 @@ public abstract class World {
                 float zMove = CosmicEvolution.globalRand.nextFloat(0.5f, 1);
                 zMove = CosmicEvolution.globalRand.nextBoolean() ? zMove : -zMove;
 
-                particles[i] = new EntityParticle(x + 0.5, y + 0.5, z + 0.5, true, 240, blockID, true, false, true, true, CosmicEvolution.globalRand.nextFloat(0.96875f), CosmicEvolution.globalRand.nextFloat(0.96875f));
+                particles[i] = new EntityParticle(x + 0.5, y + 0.5, z + 0.5, true, 240, blockID, true, false, true, true, CosmicEvolution.globalRand.nextInt(31), CosmicEvolution.globalRand.nextInt(31));
 
                 particles[i].setMovementVector(new Vector3f(xMove, 0, zMove));
 
@@ -2283,6 +2309,9 @@ public abstract class World {
 
     public void generateParticlesOnBlockBreakingAnimation(short blockID, int x, int y, int z, int hitFace) {
 
+        if(blockID >= Block.doorNorthDoorHingeLeftClosed.ID && blockID <= Block.doorWestDoorHingeRightOpen.ID){
+            blockID = this.getBlockID(x, y + 1, z);
+        }
 
         double moveX = hitFace == Block.FACE_NORTH ? -0.5 : hitFace == Block.FACE_SOUTH ? 0.5 : 0;
         double moveY = hitFace == Block.FACE_UP ? 0.5 : hitFace == Block.FACE_DOWN ? -0.5 : 0;
@@ -2292,7 +2321,23 @@ public abstract class World {
         double spawnY = y + 0.5 + moveY;
         double spawnZ = z + 0.5 + moveZ;
 
-        EntityParticle particle = new EntityParticle(spawnX, spawnY, spawnZ, true, 240, blockID, true, false, true, true, CosmicEvolution.globalRand.nextFloat(0.96875f), CosmicEvolution.globalRand.nextFloat(0.96875f));
+        switch (hitFace){
+            case Block.FACE_UP, Block.FACE_DOWN -> {
+                spawnX += CosmicEvolution.globalRand.nextDouble(-0.5, 0.5);
+                spawnZ += CosmicEvolution.globalRand.nextDouble(-0.5, 0.5);
+            }
+            case Block.FACE_NORTH, Block.FACE_SOUTH -> {
+                spawnY += CosmicEvolution.globalRand.nextDouble(-0.5, 0.5);
+                spawnZ += CosmicEvolution.globalRand.nextDouble(-0.5, 0.5);
+            }
+            case Block.FACE_EAST, Block.FACE_WEST -> {
+                spawnY += CosmicEvolution.globalRand.nextDouble(-0.5, 0.5);
+                spawnX += CosmicEvolution.globalRand.nextDouble(-0.5, 0.5);
+            }
+        }
+
+
+        EntityParticle particle = new EntityParticle(spawnX, spawnY, spawnZ, true, 240, blockID, true, false, true, true, CosmicEvolution.globalRand.nextInt(31), CosmicEvolution.globalRand.nextInt(31));
 
         float xMove = CosmicEvolution.globalRand.nextFloat(0.5f, 1);
         xMove = CosmicEvolution.globalRand.nextBoolean() ? xMove : -xMove;
@@ -2331,6 +2376,55 @@ public abstract class World {
         particle.size = CosmicEvolution.globalRand.nextFloat(0.03125f, 0.125f);
 
         this.addEntity(particle);
+    }
+
+    public void alertNearbyDeer(EntityLiving originatingEntity){
+        //Alert nearby deer and set their target away from the entity that alerted them
+        int chunkX = MathUtil.floorDouble(originatingEntity.x) >> 5;
+        int chunkY = MathUtil.floorDouble(originatingEntity.y) >> 5;
+        int chunkZ = MathUtil.floorDouble(originatingEntity.z) >> 5;
+
+        Chunk chunkEntityIsIn = this.findChunkFromChunkCoordinates(chunkX, chunkY, chunkY);
+        Chunk[] surroundingChunks = this.getSurroundingChunks(chunkX, chunkY, chunkZ);
+
+        EntityDeer deer;
+        Entity entity;
+        for(int i = 0; i < chunkEntityIsIn.entities.size(); i++){
+            entity = chunkEntityIsIn.entities.get(i);
+            if(entity instanceof EntityDeer){
+                deer = (EntityDeer)entity;
+                if(this.isDeerInRangeToAlert(deer.x, deer.y, deer.z, originatingEntity.x, originatingEntity.y, originatingEntity.z)){
+                    deer.alerted = true;
+                    AIPassive.targetAwayFromEntity(deer, originatingEntity);
+                }
+            }
+        }
+
+        for(int i = 0; i < surroundingChunks.length; i++){
+            if(surroundingChunks[i] == null)continue;
+            for(int j = 0; j < surroundingChunks[i].entities.size(); j++){
+                entity = surroundingChunks[i].entities.get(j);
+                if(entity instanceof EntityDeer){
+                    deer = (EntityDeer)entity;
+                    if(this.isDeerInRangeToAlert(deer.x, deer.y, deer.z, originatingEntity.x, originatingEntity.y, originatingEntity.z)){
+                        deer.alerted = true;
+                        AIPassive.targetAwayFromEntity(deer, originatingEntity);
+                    }
+                }
+            }
+        }
+    }
+
+    public boolean isDeerInRangeToAlert(double deerX, double deerY, double deerZ, double originX, double originY, double originZ){
+        return MathUtil.distance3DSquared(deerX, deerY, deerZ, originX, originY, originZ) <= 256;
+    }
+
+    public void addDoorTransition(DoorTransition doorTransition, int x, int y, int z){
+        this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).addDoorTransition(doorTransition);
+    }
+
+    public DoorTransition getDoorTransition(int x, int y, int z){
+        return this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).getDoorTransition(x,y,z);
     }
 
 }

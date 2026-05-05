@@ -1,3 +1,0 @@
-itemName:DEER_HIDE
-displayName:Raw Deer Hide
-canPlaceAsItemBlock:true

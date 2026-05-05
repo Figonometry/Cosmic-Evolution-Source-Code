@@ -57,7 +57,10 @@ public abstract class EntityLiving extends Entity {
         this.canDamage = false;
         this.alerted = true;
         this.alertTimer = new Random().nextInt(300, 600);
-        AIPassive.chooseNewTargetAndSetAngle(this);
+        if(this instanceof EntityDeer) {
+            AIPassive.targetAwayFromPlayer(this); //make deer run away, wolves should continue attacking
+            CosmicEvolution.instance.save.activeWorld.alertNearbyDeer(this);
+        }
         CosmicEvolution.instance.soundPlayer.playSound(this.x, this.y, this.z, new Sound(this.getHurtSound(), false, 1f), new Random().nextFloat(0.9F, 1));
     }
 

@@ -93,7 +93,7 @@ public final class GuiUniverseMap extends Gui {
                 tessellator.addVertexCubeMap((vertex1.x), (vertex1.y),(vertex1.z));
                 tessellator.addVertexCubeMap((vertex2.x), (vertex2.y),(vertex2.z));
                 tessellator.addVertexCubeMap((vertex3.x), (vertex3.y),(vertex3.z));
-                tessellator.addElements();
+                tessellator.addElementsCW();
             }
         }
 

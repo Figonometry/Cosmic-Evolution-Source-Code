@@ -137,10 +137,16 @@ public final class ChunkController {
         this.checkForMissedChunksAndCheckForUpdateTime();
 
         synchronized (this.bindingChunks) {
+            Chunk chunk;
             if (this.bindingChunks.size() > 0) {
-                this.bindingChunks.get(0).bindRenderData();
+                chunk = this.bindingChunks.get(0);
+                chunk.bindRenderData();
                 this.bindingChunks.remove(0);
                 this.bindingChunks.trimToSize();
+
+                if(chunk.updateImmediately){
+                    chunk.markDirty();
+                }
             }
         }
     }
@@ -400,7 +406,9 @@ public final class ChunkController {
     }
 
     public void addChunkToRebuildQueue(Chunk addedChunk) {
-        if (addedChunk == null) {return;}
+        if(addedChunk == null)return;
+        if(addedChunk.updating)return;
+
         synchronized (this.dirtyChunks) {
             Chunk chunk;
             boolean canAdd = true;

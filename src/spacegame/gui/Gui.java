@@ -34,7 +34,7 @@ public abstract class Gui {
         tessellator.addVertex2DTextureWithAtlas(color, x + 30, y + 30, z, 1, textureID, fontID, 255);
         tessellator.addVertex2DTextureWithAtlas(color, x, y + 30, z, 2, textureID, fontID, 255);
         tessellator.addVertex2DTextureWithAtlas(color, x + 30, y, z, 0, textureID, fontID, 255);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         tessellator.drawTexture2DWithAtlas(Assets.fontTextureLoader, Shader.screen2DTextureAtlas, CosmicEvolution.camera);
         tessellator.toggleOrtho();
     }

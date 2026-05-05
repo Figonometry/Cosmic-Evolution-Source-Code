@@ -70,7 +70,7 @@ public final class GuiWorldSelect extends Gui {
         tessellator.addVertex2DTexture(16777215, titleX + titleWidth/2, titleY + titleHeight/2, titleZ, 1);
         tessellator.addVertex2DTexture(16777215, titleX - titleWidth/2, titleY + titleHeight/2, titleZ, 2);
         tessellator.addVertex2DTexture(16777215, titleX + titleWidth/2, titleY - titleHeight/2, titleZ, 0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         tessellator.drawTexture2D(this.title, Shader.screen2DTexture, CosmicEvolution.camera);
 
         int earthSize = 256;
@@ -81,7 +81,7 @@ public final class GuiWorldSelect extends Gui {
         tessellator.addVertex2DTexture(16777215, earthX + earthSize, earthY + earthSize, earthZ, 1);
         tessellator.addVertex2DTexture(16777215, earthX - earthSize, earthY + earthSize, earthZ, 2);
         tessellator.addVertex2DTexture(16777215, earthX + earthSize, earthY - earthSize, earthZ, 0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         tessellator.drawTexture2D(this.earth, Shader.screen2DTexture, CosmicEvolution.camera);
 
         int backgroundWidth = CosmicEvolution.width;
@@ -93,7 +93,7 @@ public final class GuiWorldSelect extends Gui {
         tessellator.addVertex2DTexture(0, backgroundX + backgroundWidth/2, backgroundY + backgroundHeight/2, backgroundZ, 1);
         tessellator.addVertex2DTexture(0, backgroundX - backgroundWidth/2, backgroundY + backgroundHeight/2, backgroundZ, 2);
         tessellator.addVertex2DTexture(0, backgroundX + backgroundWidth/2, backgroundY - backgroundHeight/2, backgroundZ, 0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
         tessellator.drawTexture2D(this.background, Shader.screen2DTexture, CosmicEvolution.camera);

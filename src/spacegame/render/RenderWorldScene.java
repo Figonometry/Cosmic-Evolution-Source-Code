@@ -84,7 +84,7 @@ public final class RenderWorldScene {
         this.controller.drawCalls = 0;
 
         GL46.glEnable(GL46.GL_CULL_FACE);
-        GL46.glCullFace(GL46.GL_FRONT);
+        GL46.glCullFace(GL46.GL_BACK);
         //The block array is bound to texture 0, all shadowmaps are bound from texture unit 1 up, they must all be properly active and unbound during cleanup
         GL46.glBindTexture(GL46.GL_TEXTURE_2D_ARRAY, Assets.blockTextureArray);
 
@@ -182,6 +182,9 @@ public final class RenderWorldScene {
         GL46.glActiveTexture(GL46.GL_TEXTURE0);
         GL46.glBindVertexArray(0);
 
+        GL46.glEnable(GL46.GL_CULL_FACE);
+        GL46.glCullFace(GL46.GL_FRONT);
+
         for (Chunk entityChunk : chunksThatContainEntities) {
             entityChunk.renderEntities(this.sunX, this.sunY, this.sunZ);
         }
@@ -189,6 +192,8 @@ public final class RenderWorldScene {
         for(int i = 0; i < this.rainParticles.size(); i++){
             this.rainParticles.get(i).render();
         }
+
+        GL46.glDisable(GL46.GL_CULL_FACE);
 
         GL46.glEnable(GL46.GL_ALPHA_TEST);
         GL46.glAlphaFunc(GL46.GL_GREATER, 0.1F);
@@ -200,7 +205,7 @@ public final class RenderWorldScene {
         GL46.glBindTexture(GL46.GL_TEXTURE_2D_ARRAY, Assets.blockTextureArray);
 
         GL46.glEnable(GL46.GL_CULL_FACE);
-        GL46.glCullFace(GL46.GL_FRONT);
+        GL46.glCullFace(GL46.GL_BACK);
 
         for (Chunk transparentChunk : chunksToRender) {
             this.controller.drawCalls++;
@@ -277,11 +282,11 @@ public final class RenderWorldScene {
             for(int j = 0; j < rainModel.modelFaces.length; j++){
                 modelFace = rainModel.modelFaces[j];
 
-                tessellator.addVertex2DTexture(16777215, modelFace.vertices[0].x + position.x, modelFace.vertices[0].y + position.y, modelFace.vertices[0].z + position.z, 3, modelFace.normal.x, modelFace.normal.y, modelFace.normal.z, this.baseLight, 255);
-                tessellator.addVertex2DTexture(16777215, modelFace.vertices[1].x + position.x, modelFace.vertices[1].y + position.y, modelFace.vertices[1].z + position.z, 1, modelFace.normal.x, modelFace.normal.y, modelFace.normal.z, this.baseLight, 255);
-                tessellator.addVertex2DTexture(16777215, modelFace.vertices[2].x + position.x, modelFace.vertices[2].y + position.y, modelFace.vertices[2].z + position.z, 2, modelFace.normal.x, modelFace.normal.y, modelFace.normal.z, this.baseLight, 255);
-                tessellator.addVertex2DTexture(16777215, modelFace.vertices[3].x + position.x, modelFace.vertices[3].y + position.y, modelFace.vertices[3].z + position.z, 0, modelFace.normal.x, modelFace.normal.y, modelFace.normal.z, this.baseLight, 255);
-                tessellator.addElements();
+                tessellator.addVertex2DTextureWithUV(16777215, modelFace.vertices[0].x + position.x, modelFace.vertices[0].y + position.y, modelFace.vertices[0].z + position.z, modelFace.normal.x, modelFace.normal.y, modelFace.normal.z, this.baseLight, 255, modelFace.UVs[0][0], modelFace.UVs[0][1]);
+                tessellator.addVertex2DTextureWithUV(16777215, modelFace.vertices[1].x + position.x, modelFace.vertices[1].y + position.y, modelFace.vertices[1].z + position.z, modelFace.normal.x, modelFace.normal.y, modelFace.normal.z, this.baseLight, 255, modelFace.UVs[1][0], modelFace.UVs[1][1]);
+                tessellator.addVertex2DTextureWithUV(16777215, modelFace.vertices[2].x + position.x, modelFace.vertices[2].y + position.y, modelFace.vertices[2].z + position.z, modelFace.normal.x, modelFace.normal.y, modelFace.normal.z, this.baseLight, 255, modelFace.UVs[2][0], modelFace.UVs[2][1]);
+                tessellator.addVertex2DTextureWithUV(16777215, modelFace.vertices[3].x + position.x, modelFace.vertices[3].y + position.y, modelFace.vertices[3].z + position.z, modelFace.normal.x, modelFace.normal.y, modelFace.normal.z, this.baseLight, 255, modelFace.UVs[3][0], modelFace.UVs[3][1]);
+                tessellator.addElementsCCW();
             }
 
         }
@@ -290,7 +295,7 @@ public final class RenderWorldScene {
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
         GL46.glEnable(GL46.GL_CULL_FACE);
-        GL46.glCullFace(GL46.GL_FRONT);
+        GL46.glCullFace(GL46.GL_BACK);
 
         tessellator.drawTexture2D(rainTexture, Shader.worldShader2DTexture, CosmicEvolution.camera);
 
@@ -532,7 +537,7 @@ public final class RenderWorldScene {
                             tessellator.addVertexCubeMapCelestialBody(this.calculateNormals(vertex1) ,vertex1.x + celestialObjectPosition.x, vertex1.y + celestialObjectPosition.y, vertex1.z + celestialObjectPosition.z);
                             tessellator.addVertexCubeMapCelestialBody(this.calculateNormals(vertex2) ,vertex2.x + celestialObjectPosition.x, vertex2.y + celestialObjectPosition.y, vertex2.z + celestialObjectPosition.z);
                             tessellator.addVertexCubeMapCelestialBody(this.calculateNormals(vertex3) ,vertex3.x + celestialObjectPosition.x, vertex3.y + celestialObjectPosition.y, vertex3.z + celestialObjectPosition.z);
-                            tessellator.addElements();
+                            tessellator.addElementsCW();
                         }
                     }
                     Shader.worldShaderCubeMapTexture.uploadVec3f("position", celestialObjectPosition);
@@ -573,7 +578,7 @@ public final class RenderWorldScene {
                     tessellator.addVertex2DTexture(color, (float) vertex2SunFlare.x, (float) vertex2SunFlare.y, (float) vertex2SunFlare.z, 1, 0, 0, 0, this.baseLight, 255);
                     tessellator.addVertex2DTexture(color, (float) vertex3SunFlare.x, (float) vertex3SunFlare.y, (float) vertex3SunFlare.z, 2, 0, 0, 0, this.baseLight, 255);
                     tessellator.addVertex2DTexture(color, (float) vertex4SunFlare.x, (float) vertex4SunFlare.y, (float) vertex4SunFlare.z, 0, 0, 0, 0, this.baseLight, 255);
-                    tessellator.addElements();
+                    tessellator.addElementsCW();
                     GL46.glEnable(GL46.GL_BLEND);
                     GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_COLOR);
                     Shader.worldShader2DTexture.uploadBoolean("useFog", false);
@@ -632,7 +637,7 @@ public final class RenderWorldScene {
                     tessellator.addVertexCubeMap((vertex1.x), (vertex1.y), (vertex1.z));
                     tessellator.addVertexCubeMap((vertex2.x), (vertex2.y), (vertex2.z));
                     tessellator.addVertexCubeMap((vertex3.x), (vertex3.y), (vertex3.z));
-                    tessellator.addElements();
+                    tessellator.addElementsCW();
                 }
             }
 
@@ -985,7 +990,7 @@ public final class RenderWorldScene {
             tessellator.addVertex2DTexture(sunriseColor, vertex2.x, vertex2.y, vertex2.z, 1);
             tessellator.addVertex2DTexture(sunriseColor, vertex3.x, vertex3.y, vertex3.z, 2);
             tessellator.addVertex2DTexture(sunriseColor, vertex4.x, vertex4.y, vertex4.z, 0);
-            tessellator.addElements();
+            tessellator.addElementsCW();
             GL46.glEnable(GL46.GL_BLEND);
             GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE);
             Shader.worldShader2DTexture.uploadBoolean("useFog", false);

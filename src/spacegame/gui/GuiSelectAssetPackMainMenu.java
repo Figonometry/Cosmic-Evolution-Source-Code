@@ -135,7 +135,7 @@ public final class GuiSelectAssetPackMainMenu extends Gui {
         tessellator.addVertex2DTexture(16777215, titleX + titleWidth/2, titleY + titleHeight/2, titleZ, 1);
         tessellator.addVertex2DTexture(16777215, titleX - titleWidth/2, titleY + titleHeight/2, titleZ, 2);
         tessellator.addVertex2DTexture(16777215, titleX + titleWidth/2, titleY - titleHeight/2, titleZ, 0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         tessellator.drawTexture2D(this.title, Shader.screen2DTexture, CosmicEvolution.camera);
 
         int earthSize = 256;
@@ -146,7 +146,7 @@ public final class GuiSelectAssetPackMainMenu extends Gui {
         tessellator.addVertex2DTexture(16777215, earthX + earthSize, earthY + earthSize, earthZ, 1);
         tessellator.addVertex2DTexture(16777215, earthX - earthSize, earthY + earthSize, earthZ, 2);
         tessellator.addVertex2DTexture(16777215, earthX + earthSize, earthY - earthSize, earthZ, 0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         tessellator.drawTexture2D(this.earth, Shader.screen2DTexture, CosmicEvolution.camera);
 
         int backgroundWidth = CosmicEvolution.width;
@@ -158,7 +158,7 @@ public final class GuiSelectAssetPackMainMenu extends Gui {
         tessellator.addVertex2DTexture(0, backgroundX + backgroundWidth/2, backgroundY + backgroundHeight/2, backgroundZ, 1);
         tessellator.addVertex2DTexture(0, backgroundX - backgroundWidth/2, backgroundY + backgroundHeight/2, backgroundZ, 2);
         tessellator.addVertex2DTexture(0, backgroundX + backgroundWidth/2, backgroundY - backgroundHeight/2, backgroundZ, 0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
         tessellator.drawTexture2D(this.background, Shader.screen2DTexture, CosmicEvolution.camera);
@@ -173,7 +173,7 @@ public final class GuiSelectAssetPackMainMenu extends Gui {
         tessellator.addVertex2DTexture(0, contentAreaX + contentAreaWidth/2, contentAreaY + contentAreaHeight/2, contentAreaZ, 1);
         tessellator.addVertex2DTexture(0, contentAreaX - contentAreaWidth/2, contentAreaY + contentAreaHeight/2, contentAreaZ, 2);
         tessellator.addVertex2DTexture(0, contentAreaX + contentAreaWidth/2, contentAreaY - contentAreaHeight/2, contentAreaZ, 0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         tessellator.drawTexture2D(this.fillableColor, Shader.screen2DTexture, CosmicEvolution.camera);
         tessellator.toggleOrtho();
 
@@ -218,7 +218,7 @@ public final class GuiSelectAssetPackMainMenu extends Gui {
             tessellator.addVertex2DTexture(outlineColor, x + width / 2, y + height / 2, contentAreaZ, 1);
             tessellator.addVertex2DTexture(outlineColor, x - width / 2, y + height / 2, contentAreaZ, 2);
             tessellator.addVertex2DTexture(outlineColor, x + width / 2, y - height / 2, contentAreaZ, 0);
-            tessellator.addElements();
+            tessellator.addElementsCW();
             tessellator.drawTexture2D(this.outline, Shader.screen2DTexture, CosmicEvolution.camera);
             tessellator.toggleOrtho();
 
@@ -232,7 +232,7 @@ public final class GuiSelectAssetPackMainMenu extends Gui {
             tessellator.addVertex2DTexture(16777215, x + width / 2, y + height / 2, contentAreaZ, 1);
             tessellator.addVertex2DTexture(16777215, x - width / 2, y + height / 2, contentAreaZ, 2);
             tessellator.addVertex2DTexture(16777215, x + width / 2, y - height / 2, contentAreaZ, 0);
-            tessellator.addElements();
+            tessellator.addElementsCW();
             tessellator.drawTexture2D(this.assetPacks[i].icon, Shader.screen2DTexture, CosmicEvolution.camera);
             tessellator.toggleOrtho();
 

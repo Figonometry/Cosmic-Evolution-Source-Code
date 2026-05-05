@@ -71,7 +71,7 @@ public final class GuiLightFire extends GuiAction {
         tessellator.addVertex2DTexture(0, x + backgroundWidth/2, y + backgroundHeight/2, z, 1);
         tessellator.addVertex2DTexture(0, x - backgroundWidth/2, y + backgroundHeight/2, z, 2);
         tessellator.addVertex2DTexture(0, x + backgroundWidth/2, y - backgroundHeight/2, z, 0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
         tessellator.drawTexture2D(this.transparentBackground, Shader.screen2DTexture, CosmicEvolution.camera);
@@ -83,7 +83,7 @@ public final class GuiLightFire extends GuiAction {
         tessellator.addVertex2DTexture(16777215, x + backgroundWidth/2, y + backgroundHeight/2, z, 1);
         tessellator.addVertex2DTexture(16777215, x - backgroundWidth/2, y + backgroundHeight/2, z, 2);
         tessellator.addVertex2DTexture(16777215, x + backgroundWidth/2, y - backgroundHeight/2, z, 0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         tessellator.drawTexture2D(this.campFire, Shader.screen2DTexture, CosmicEvolution.camera);
         GL46.glDisable(GL46.GL_BLEND);
         tessellator.toggleOrtho();

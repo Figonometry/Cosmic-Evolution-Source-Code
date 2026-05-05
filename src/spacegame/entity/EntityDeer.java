@@ -303,12 +303,12 @@ public final class EntityDeer extends EntityLiving implements IDecayable, IHarve
     @Override
     public void dropItems(double x, double y, double z, World world, EntityPlayer player) {
 
-        if(!player.addItemToInventory(Item.rawVenison.ID, Item.NULL_ITEM_METADATA, (byte) CosmicEvolution.globalRand.nextInt(1,5), Item.NULL_ITEM_DURABILITY, 0)){
-           world.addEntity(new EntityItem(this.x, this.y, this.z, Item.rawVenison.ID, Item.NULL_ITEM_METADATA, (byte) CosmicEvolution.globalRand.nextInt(1, 5), Item.NULL_ITEM_DURABILITY, world.ce.save.time + ((IDecayItem)Item.rawVenison).getDecayTime()));
+        if(!player.addItemToInventory(Item.rawGameMeat.ID, Item.NULL_ITEM_METADATA, (byte) CosmicEvolution.globalRand.nextInt(1,5), Item.NULL_ITEM_DURABILITY, 0)){
+           world.addEntity(new EntityItem(this.x, this.y, this.z, Item.rawGameMeat.ID, Item.NULL_ITEM_METADATA, (byte) CosmicEvolution.globalRand.nextInt(1, 5), Item.NULL_ITEM_DURABILITY, world.ce.save.time + ((IDecayItem)Item.rawGameMeat).getDecayTime()));
         }
 
-        if(!player.addItemToInventory(Item.deerHide.ID, Item.NULL_ITEM_METADATA, (byte) 1, Item.NULL_ITEM_DURABILITY, 0)){
-            world.addEntity(new EntityItem(this.x, this.y, this.z, Item.deerHide.ID, Item.NULL_ITEM_METADATA, (byte) 1, Item.NULL_ITEM_DURABILITY, 0));
+        if(!player.addItemToInventory(Item.deerPelt.ID, Item.NULL_ITEM_METADATA, (byte) 1, Item.NULL_ITEM_DURABILITY, 0)){
+            world.addEntity(new EntityItem(this.x, this.y, this.z, Item.deerPelt.ID, Item.NULL_ITEM_METADATA, (byte) 1, Item.NULL_ITEM_DURABILITY, 0));
         }
 
 

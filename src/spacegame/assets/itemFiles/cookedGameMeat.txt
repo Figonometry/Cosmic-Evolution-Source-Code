@@ -1,0 +1,3 @@
+itemName:GAME_MEAT_COOKED
+displayName:Cooked Game Meat
+canPlaceAsItemBlock:true

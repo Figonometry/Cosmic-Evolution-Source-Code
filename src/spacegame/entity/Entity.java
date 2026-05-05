@@ -14,7 +14,7 @@ import spacegame.world.AxisAlignedBB;
 import java.util.ArrayList;
 
 public abstract class Entity {
-    public static ModelLoader standardBlock = new ModelLoader("src/spacegame/assets/models/entityModels/centeredStandardBlock.obj");
+    public static ModelLoader standardBlock = new ModelLoader("src/spacegame/assets/models/entityModels/centeredStandardBlock.obj", false);
     public ModelLoader entityModel;
     public AxisAlignedBB boundingBox = new AxisAlignedBB();
     public double x;
@@ -86,6 +86,10 @@ public abstract class Entity {
 
     }
 
+    public static boolean isValidEntity(String entityName){
+        return entityName.contains("deer") || entityName.contains("wolf");
+    }
+
 
     protected void moveOnly(){
         this.x += this.deltaX;
@@ -145,7 +149,7 @@ public abstract class Entity {
             tessellator.addVertex2DTexture(16777215, (float) ((MathUtil.positiveMod(this.x, 32)) - (this.width)), (float) ((MathUtil.positiveMod(this.y, 32)) - (this.height / 2) + 0.01F), (float) ((MathUtil.positiveMod(this.z, 32)) + (this.width)), 1);
             tessellator.addVertex2DTexture(16777215, (float) ((MathUtil.positiveMod(this.x, 32)) + (this.width)), (float) ((MathUtil.positiveMod(this.y, 32)) - (this.height / 2) + 0.01F), (float) ((MathUtil.positiveMod(this.z, 32)) + (this.width)), 2);
             tessellator.addVertex2DTexture(16777215, (float) ((MathUtil.positiveMod(this.x, 32)) - (this.width)), (float) ((MathUtil.positiveMod(this.y, 32)) - (this.height / 2) + 0.01F), (float) ((MathUtil.positiveMod(this.z, 32)) - (this.width)), 0);
-            tessellator.addElements();
+            tessellator.addElementsCW();
             GL46.glEnable(GL46.GL_BLEND);
             GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
             tessellator.drawTexture2D(shadow, Shader.worldShader2DTexture, CosmicEvolution.camera);

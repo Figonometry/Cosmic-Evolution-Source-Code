@@ -1,6 +1,5 @@
 package spacegame.gui;
 
-import org.lwjgl.opengl.GL46;
 import spacegame.core.CosmicEvolution;
 import spacegame.render.Assets;
 import spacegame.render.RenderEngine;
@@ -410,7 +409,7 @@ public final class FontRenderer {
                 tessellator.addVertex2DTextureWithAtlas(color, x, y, depth, 0, Assets.fontTextureAtlas.textures.get(stringGlyphIndex[i]), stringGlyphIndex[i]/16F, alpha);
             }
             x += font * spacingSizePerFont;
-            tessellator.addElements();
+            tessellator.addElementsCW();
         }
         tessellator.toggleOrtho();
         tessellator.drawTexture2DWithAtlas(Assets.fontTextureLoader, Shader.screen2DTextureAtlas, CosmicEvolution.camera);
@@ -436,7 +435,7 @@ public final class FontRenderer {
                 tessellator.addVertex2DTextureWithAtlas(color, cursorX, y, depth, 0, Assets.fontTextureAtlas.textures.get(stringGlyphIndex[i]), stringGlyphIndex[i]/16F, alpha);
             }
             cursorX += glyphAdvance;
-            tessellator.addElements();
+            tessellator.addElementsCW();
         }
         tessellator.toggleOrtho();
         tessellator.drawTexture2DWithAtlas(Assets.fontTextureLoader, Shader.screen2DTextureAtlas, CosmicEvolution.camera);

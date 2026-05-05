@@ -56,5 +56,6 @@ public enum EnumButtonEffects {
     DIFFICULTY_OPTIONS,
     SAVE_OPTIONS,
     DROP_INVENTORY_ON_DEATH,
-    TESTING_MODE;
+    TESTING_MODE,
+    COMMAND_LIST;
 }

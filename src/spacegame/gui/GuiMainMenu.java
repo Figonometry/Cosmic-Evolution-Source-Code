@@ -109,7 +109,7 @@ public final class GuiMainMenu extends Gui {
         tessellator.addVertex2DTexture(16777215, earthX + earthSize, earthY + earthSize, earthZ, 1);
         tessellator.addVertex2DTexture(16777215, earthX - earthSize, earthY + earthSize, earthZ, 2);
         tessellator.addVertex2DTexture(16777215, earthX + earthSize, earthY - earthSize, earthZ, 0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         tessellator.drawTexture2D(this.earth, Shader.screen2DTexture, CosmicEvolution.camera);
 
         int titleWidth = 1476;
@@ -121,7 +121,7 @@ public final class GuiMainMenu extends Gui {
         tessellator.addVertex2DTexture(16777215, titleX + titleWidth/2, titleY + titleHeight/2, titleZ, 1);
         tessellator.addVertex2DTexture(16777215, titleX - titleWidth/2, titleY + titleHeight/2, titleZ, 2);
         tessellator.addVertex2DTexture(16777215, titleX + titleWidth/2, titleY - titleHeight/2, titleZ, 0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         tessellator.drawTexture2D(this.title, Shader.screen2DTexture, CosmicEvolution.camera);
 
         tessellator.toggleOrtho();
@@ -151,7 +151,7 @@ public final class GuiMainMenu extends Gui {
             tessellator.addVertex2DTexture(0, backgroundX + backgroundWidth/2f, backgroundY + backgroundHeight/2f, backgroundZ, 1);
             tessellator.addVertex2DTexture(0, backgroundX - backgroundWidth/2f, backgroundY + backgroundHeight/2f, backgroundZ, 2);
             tessellator.addVertex2DTexture(0, backgroundX + backgroundWidth/2f, backgroundY - backgroundHeight/2f, backgroundZ, 0);
-            tessellator.addElements();
+            tessellator.addElementsCW();
             GL46.glEnable(GL46.GL_BLEND);
             GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
             tessellator.drawTexture2D(this.background, Shader.screen2DTexture, CosmicEvolution.camera);
@@ -193,7 +193,7 @@ public final class GuiMainMenu extends Gui {
             tessellator.addVertex2DTexture(0, backgroundX + backgroundWidth/2, backgroundY + backgroundHeight/2, backgroundZ, 1);
             tessellator.addVertex2DTexture(0, backgroundX - backgroundWidth/2, backgroundY + backgroundHeight/2, backgroundZ, 2);
             tessellator.addVertex2DTexture(0, backgroundX + backgroundWidth/2, backgroundY - backgroundHeight/2, backgroundZ, 0);
-            tessellator.addElements();
+            tessellator.addElementsCW();
             GL46.glEnable(GL46.GL_BLEND);
             GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
             tessellator.drawTexture2D(this.background, Shader.screen2DTexture, CosmicEvolution.camera);
@@ -242,7 +242,7 @@ public final class GuiMainMenu extends Gui {
         tessellator.addVertex2DTexture(color, x + size, y + size, z, 1);
         tessellator.addVertex2DTexture(color, x - size, y + size, z, 2);
         tessellator.addVertex2DTexture(color, x + size, y - size, z, 0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
     }
 
     private static int changeStarColor(int starNumber){

@@ -84,6 +84,8 @@ public final class Chunk implements Comparable<Chunk> {
     public ArrayList<HeatableBlockLocation> heatableBlocks = new ArrayList<>();
     public ArrayList<InWorld3DCraftingItem> crafting3DItems = new ArrayList<>();
     public ArrayList<InWorldCraftingItem> craftingItems = new ArrayList<>();
+    public ArrayList<DoorTransition> doorTransitions = new ArrayList<>();
+    public boolean updateImmediately;
     public int opaqueVBOID = -10;
     public int opaqueVAOID = -10;
     public int opaqueEBOID = -10;
@@ -504,9 +506,13 @@ public final class Chunk implements Comparable<Chunk> {
         return new float[]{redFinal, greenFinal, blueFinal};
     }
 
+    public int [] getBlockCoordinatesFromIndex(int index){
+        return new int[]{this.getBlockXFromIndex(index), this.getBlockZFromIndex(index), this.getBlockZFromIndex(index)};
+    }
+
 
     public int getBlockXFromIndex(int index) {
-        return ((index % 32) + (this.x << 5));
+        return ((index & 31) + (this.x << 5));
     }
 
     public int getBlockYFromIndex(int index) {
@@ -514,7 +520,7 @@ public final class Chunk implements Comparable<Chunk> {
     }
 
     public int getBlockZFromIndex(int index) {
-        return ((index % 1024) >> 5) + (this.z << 5);
+        return ((index & 1023) >> 5) + (this.z << 5);
     }
 
     public void markDirty() {
@@ -936,6 +942,8 @@ public final class Chunk implements Comparable<Chunk> {
             GL46.glBindBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, this.transparentEBOID);
             GL46.glBufferData(GL46.GL_ELEMENT_ARRAY_BUFFER, this.elementBufferTransparent, GL46.GL_STATIC_DRAW);
         }
+
+        this.updating = false;
     }
 
 
@@ -1279,6 +1287,19 @@ public final class Chunk implements Comparable<Chunk> {
         }
 
 
+        if(this.doorTransitions.size() > 0){
+            DoorTransition doorTransition;
+
+            for(int i = 0; i < this.doorTransitions.size(); i++){
+                doorTransition = this.doorTransitions.get(i);
+                if(doorTransition.completeTime <= CosmicEvolution.instance.save.time){
+                    this.removeDoorTransition(doorTransition);
+                }
+            }
+            this.markDirty();
+        }
+
+
         if(CosmicEvolution.instance.save.time % 15 == 0){
             HeatableBlockLocation heatableBlockLocation;
             for(int i = 0; i < this.heatableBlocks.size(); i++){
@@ -1540,6 +1561,36 @@ public final class Chunk implements Comparable<Chunk> {
             inventory.itemStacks[i].durability = 0;
             inventory.itemStacks[i].metadata = 0;
         }
+    }
+
+    public void addDoorTransition(DoorTransition doorTransition){
+        this.doorTransitions.add(doorTransition);
+    }
+
+    public void removeDoorTransition(DoorTransition doorTransition){
+
+        DoorTransition doorTransition1;
+        for(int i = 0; i < this.doorTransitions.size(); i++){
+            doorTransition1 = this.doorTransitions.get(i);
+
+            if(doorTransition.x == doorTransition1.x && doorTransition.y == doorTransition1.y && doorTransition.z == doorTransition1.z){
+                this.doorTransitions.remove(i);
+                this.doorTransitions.trimToSize();
+                break;
+            }
+        }
+    }
+
+    public DoorTransition getDoorTransition(int x, int y, int z){
+        DoorTransition doorTransition;
+        for(int i = 0; i < this.doorTransitions.size(); i++){
+            doorTransition = this.doorTransitions.get(i);
+
+            if(doorTransition.x == x && doorTransition.y == y && doorTransition.z == z){
+                return doorTransition;
+            }
+        }
+        return null;
     }
 
 

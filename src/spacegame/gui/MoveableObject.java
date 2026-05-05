@@ -32,7 +32,7 @@ public final class MoveableObject {
         tessellator.addVertex2DTexture(16777215, this.x + width/2, this.y + height/2, z, 1);
         tessellator.addVertex2DTexture(16777215, this.x - width/2, this.y + height/2, z, 2);
         tessellator.addVertex2DTexture(16777215, this.x + width/2, this.y - height/2, z, 0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         tessellator.drawTexture2D(textureID, Shader.screen2DTexture, CosmicEvolution.camera);
         tessellator.toggleOrtho();
     }

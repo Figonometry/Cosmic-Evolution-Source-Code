@@ -1,372 +1,251 @@
 package spacegame.render.model;
 
+import org.joml.Vector3f;
 import spacegame.render.RenderBlocks;
+import spacegame.render.RenderEngine;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
-public final class ModelLoader{
+public class ModelLoader{
     public ModelFace[] modelFaces = new ModelFace[512];
     public String filepath;
     private int sortType = 0;
-    private float[][] topFaceTemplate = new float[4][3];
-    private float[][] bottomFaceTemplate = new float[4][3];
-    private float[][] northFaceTemplate = new float[4][3];
-    private float[][] southFaceTemplate = new float[4][3];
-    private float[][] eastFaceTemplate = new float[4][3];
-    private float[][] westFaceTemplate = new float[4][3];
-    private float[][] topFaceUnsortedTemplate = new float[4][3];
-    private float[][] bottomFaceUnsortedTemplate = new float[4][3];
-    private float[][] northFaceUnsortedTemplate = new float[4][3];
-    private float[][] southFaceUnsortedTemplate = new float[4][3];
-    private float[][] eastFaceUnsortedTemplate = new float[4][3];
-    private float[][] westFaceUnsortedTemplate = new float[4][3];
+    public boolean usesMultipleTextures;
 
-    public ModelLoader(String filepath) {
+    public ModelLoader(String filepath, boolean usesMultipleTextures) {
         this.filepath = filepath;
+        this.usesMultipleTextures = usesMultipleTextures;
 
         this.loadModelFromOBJFile();
     }
+
+
+
+    /*
+    Top Face vertex order
+    xMax
+    zLeast
+
+    xLeast
+    zMax
+
+    xMax
+    zMax
+
+    xLeast
+    zLeast
+
+    Bottom Face vertex order
+    xLeast
+    zLeast
+
+    xMax
+    zMax
+
+    xLeast
+    zMax
+
+    xMax
+    zLeast
+
+    North Face vertex order
+    yLeast
+    zLeast
+
+    yMax
+    zMax
+
+    yMax
+    zLeast
+
+    yLeast
+    zMax
+
+    South Face vertex order
+    yLeast
+    zMax
+
+    yMax
+    zLeast
+
+    yMax
+    zMax
+
+    yLeast
+    zLeast
+
+    East Face vertex order
+    xMax
+    yLeast
+
+    xLeast
+    yMax
+
+    xMax
+    yMax
+
+    xLeast
+    yLeast
+
+    West Face vertex order
+    xLeast
+    yLeast
+
+    xMax
+    yMax
+
+    xLeast
+    yMax
+
+    xMax
+    yLeast
+     */
 
     private ModelLoader(){}
 
     public void loadModelFromOBJFile() {
         File modelFile = new File(this.filepath);
 
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(modelFile));
-            String line = " ";
-            int index = 0;
-            int modelFaceIndex = 0;
+        List<float[]> vertexList = new ArrayList<>();
+        List<float[]> uvList     = new ArrayList<>();
+        List<float[]> normalList = new ArrayList<>();
+        List<ModelFace> faces    = new ArrayList<>();
+
+        int faceTexture = RenderEngine.NULL_TEXTURE;
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(modelFile))) {
+            String line;
             while ((line = reader.readLine()) != null) {
+                line = line.trim();
+                if (line.isEmpty()) continue;
 
-                if (line != null && line.length() > 0) {
+                // ----- object / face name -----
+                if (line.startsWith("o ")) {
+                    String name = line.substring(2);
 
-                    switch (line) {
-                        case "o topFace" -> this.sortType = RenderBlocks.TOP_FACE;
-                        case "o bottomFace" -> this.sortType = RenderBlocks.BOTTOM_FACE;
-                        case "o northFace" -> this.sortType = RenderBlocks.NORTH_FACE;
-                        case "o southFace" -> this.sortType = RenderBlocks.SOUTH_FACE;
-                        case "o eastFace" -> this.sortType = RenderBlocks.EAST_FACE;
-                        case "o westFace" -> this.sortType = RenderBlocks.WEST_FACE;
-                        case "o topFaceUnsorted" -> this.sortType = RenderBlocks.TOP_FACE_UNSORTED;
-                        case "o bottomFaceUnsorted" -> this.sortType = RenderBlocks.BOTTOM_FACE_UNSORTED;
-                        case "o northFaceUnsorted" -> this.sortType = RenderBlocks.NORTH_FACE_UNSORTED;
-                        case "o southFaceUnsorted" -> this.sortType = RenderBlocks.SOUTH_FACE_UNSORTED;
-                        case "o eastFaceUnsorted" -> this.sortType = RenderBlocks.EAST_FACE_UNSORTED;
-                        case "o westFaceUnsorted" -> this.sortType = RenderBlocks.WEST_FACE_UNSORTED;
-                    }
-
-                    if (line.charAt(0) == 'v' && line.charAt(1) == ' ') {
-                        String[] vertexString = line.split(" ");
-                        String[] rawVertices = new String[3];
-
-                        rawVertices[0] = vertexString[1];
-                        rawVertices[1] = vertexString[2];
-                        rawVertices[2] = vertexString[3];
-
-                        float[] vertex = new float[3];
-                        vertex[0] = Float.parseFloat(rawVertices[0]);
-                        vertex[1] = Float.parseFloat(rawVertices[1]);
-                        vertex[2] = Float.parseFloat(rawVertices[2]);
-
-                        vertex[0] = this.clampFloat(vertex[0]);
-                        vertex[1] = this.clampFloat(vertex[1]);
-                        vertex[2] = this.clampFloat(vertex[2]);
-
-                        switch (this.sortType) {
-                            case RenderBlocks.TOP_FACE -> this.topFaceTemplate[index] = vertex;
-                            case RenderBlocks.BOTTOM_FACE -> this.bottomFaceTemplate[index] = vertex;
-                            case RenderBlocks.NORTH_FACE -> this.northFaceTemplate[index] = vertex;
-                            case RenderBlocks.SOUTH_FACE -> this.southFaceTemplate[index] = vertex;
-                            case RenderBlocks.EAST_FACE -> this.eastFaceTemplate[index] = vertex;
-                            case RenderBlocks.WEST_FACE -> this.westFaceTemplate[index] = vertex;
-                            case RenderBlocks.TOP_FACE_UNSORTED -> this.topFaceUnsortedTemplate[index] = vertex;
-                            case RenderBlocks.BOTTOM_FACE_UNSORTED -> this.bottomFaceUnsortedTemplate[index] = vertex;
-                            case RenderBlocks.NORTH_FACE_UNSORTED -> this.northFaceUnsortedTemplate[index] = vertex;
-                            case RenderBlocks.SOUTH_FACE_UNSORTED -> this.southFaceUnsortedTemplate[index] = vertex;
-                            case RenderBlocks.EAST_FACE_UNSORTED -> this.eastFaceUnsortedTemplate[index] = vertex;
-                            case RenderBlocks.WEST_FACE_UNSORTED -> this.westFaceUnsortedTemplate[index] = vertex;
+                    if (this.usesMultipleTextures) {
+                        String[] parts = name.split("-");
+                        faceTexture = Integer.parseInt(parts[0]);
+                        switch (parts[1]) {
+                            case "topFace"    -> this.sortType = RenderBlocks.TOP_FACE;
+                            case "bottomFace" -> this.sortType = RenderBlocks.BOTTOM_FACE;
+                            case "northFace"  -> this.sortType = RenderBlocks.NORTH_FACE;
+                            case "southFace"  -> this.sortType = RenderBlocks.SOUTH_FACE;
+                            case "eastFace"   -> this.sortType = RenderBlocks.EAST_FACE;
+                            case "westFace"   -> this.sortType = RenderBlocks.WEST_FACE;
                         }
-
-                        index++;
-                        if (index == 4) {
-                            switch (this.sortType) {
-                                case RenderBlocks.TOP_FACE -> this.topFaceTemplate = this.sortTopFace();
-                                case RenderBlocks.BOTTOM_FACE -> this.bottomFaceTemplate = this.sortBottomFace();
-                                case RenderBlocks.NORTH_FACE -> this.northFaceTemplate = this.sortNorthFace();
-                                case RenderBlocks.SOUTH_FACE -> this.southFaceTemplate = this.sortSouthFace();
-                                case RenderBlocks.EAST_FACE -> this.eastFaceTemplate = this.sortEastFace();
-                                case RenderBlocks.WEST_FACE -> this.westFaceTemplate = this.sortWestFace();
-                            }
-
-                            switch (this.sortType) {
-                                case RenderBlocks.TOP_FACE -> {
-                                    this.modelFaces[modelFaceIndex] = new ModelFace(0);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(0, 0, this.topFaceTemplate[0][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(0, 1, this.topFaceTemplate[0][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(0, 2, this.topFaceTemplate[0][2]);
-
-                                    this.modelFaces[modelFaceIndex].setFloatValue(1, 0, this.topFaceTemplate[1][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(1, 1, this.topFaceTemplate[1][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(1, 2, this.topFaceTemplate[1][2]);
-
-                                    this.modelFaces[modelFaceIndex].setFloatValue(2, 0, this.topFaceTemplate[2][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(2, 1, this.topFaceTemplate[2][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(2, 2, this.topFaceTemplate[2][2]);
-
-                                    this.modelFaces[modelFaceIndex].setFloatValue(3, 0, this.topFaceTemplate[3][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(3, 1, this.topFaceTemplate[3][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(3, 2, this.topFaceTemplate[3][2]);
-                                }
-                                case RenderBlocks.BOTTOM_FACE -> {
-                                    this.modelFaces[modelFaceIndex] = new ModelFace(1);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(0, 0, this.bottomFaceTemplate[0][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(0, 1, this.bottomFaceTemplate[0][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(0, 2, this.bottomFaceTemplate[0][2]);
-
-                                    this.modelFaces[modelFaceIndex].setFloatValue(1, 0, this.bottomFaceTemplate[1][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(1, 1, this.bottomFaceTemplate[1][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(1, 2, this.bottomFaceTemplate[1][2]);
-
-                                    this.modelFaces[modelFaceIndex].setFloatValue(2, 0, this.bottomFaceTemplate[2][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(2, 1, this.bottomFaceTemplate[2][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(2, 2, this.bottomFaceTemplate[2][2]);
-
-                                    this.modelFaces[modelFaceIndex].setFloatValue(3, 0, this.bottomFaceTemplate[3][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(3, 1, this.bottomFaceTemplate[3][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(3, 2, this.bottomFaceTemplate[3][2]);
-                                }
-                                case RenderBlocks.NORTH_FACE -> {
-                                    this.modelFaces[modelFaceIndex] = new ModelFace(2);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(0, 0, this.northFaceTemplate[0][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(0, 1, this.northFaceTemplate[0][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(0, 2, this.northFaceTemplate[0][2]);
-
-                                    this.modelFaces[modelFaceIndex].setFloatValue(1, 0, this.northFaceTemplate[1][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(1, 1, this.northFaceTemplate[1][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(1, 2, this.northFaceTemplate[1][2]);
-
-                                    this.modelFaces[modelFaceIndex].setFloatValue(2, 0, this.northFaceTemplate[2][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(2, 1, this.northFaceTemplate[2][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(2, 2, this.northFaceTemplate[2][2]);
-
-                                    this.modelFaces[modelFaceIndex].setFloatValue(3, 0, this.northFaceTemplate[3][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(3, 1, this.northFaceTemplate[3][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(3, 2, this.northFaceTemplate[3][2]);
-                                }
-                                case RenderBlocks.SOUTH_FACE -> {
-                                    this.modelFaces[modelFaceIndex] = new ModelFace(3);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(0, 0, this.southFaceTemplate[0][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(0, 1, this.southFaceTemplate[0][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(0, 2, this.southFaceTemplate[0][2]);
-
-                                    this.modelFaces[modelFaceIndex].setFloatValue(1, 0, this.southFaceTemplate[1][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(1, 1, this.southFaceTemplate[1][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(1, 2, this.southFaceTemplate[1][2]);
-
-                                    this.modelFaces[modelFaceIndex].setFloatValue(2, 0, this.southFaceTemplate[2][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(2, 1, this.southFaceTemplate[2][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(2, 2, this.southFaceTemplate[2][2]);
-
-                                    this.modelFaces[modelFaceIndex].setFloatValue(3, 0, this.southFaceTemplate[3][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(3, 1, this.southFaceTemplate[3][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(3, 2, this.southFaceTemplate[3][2]);
-                                }
-                                case RenderBlocks.EAST_FACE -> {
-                                    this.modelFaces[modelFaceIndex] = new ModelFace(4);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(0, 0, this.eastFaceTemplate[0][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(0, 1, this.eastFaceTemplate[0][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(0, 2, this.eastFaceTemplate[0][2]);
-
-                                    this.modelFaces[modelFaceIndex].setFloatValue(1, 0, this.eastFaceTemplate[1][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(1, 1, this.eastFaceTemplate[1][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(1, 2, this.eastFaceTemplate[1][2]);
-
-                                    this.modelFaces[modelFaceIndex].setFloatValue(2, 0, this.eastFaceTemplate[2][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(2, 1, this.eastFaceTemplate[2][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(2, 2, this.eastFaceTemplate[2][2]);
-
-                                    this.modelFaces[modelFaceIndex].setFloatValue(3, 0, this.eastFaceTemplate[3][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(3, 1, this.eastFaceTemplate[3][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(3, 2, this.eastFaceTemplate[3][2]);
-                                }
-                                case RenderBlocks.WEST_FACE -> {
-                                    this.modelFaces[modelFaceIndex] = new ModelFace(5);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(0, 0, this.westFaceTemplate[0][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(0, 1, this.westFaceTemplate[0][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(0, 2, this.westFaceTemplate[0][2]);
-
-                                    this.modelFaces[modelFaceIndex].setFloatValue(1, 0, this.westFaceTemplate[1][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(1, 1, this.westFaceTemplate[1][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(1, 2, this.westFaceTemplate[1][2]);
-
-                                    this.modelFaces[modelFaceIndex].setFloatValue(2, 0, this.westFaceTemplate[2][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(2, 1, this.westFaceTemplate[2][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(2, 2, this.westFaceTemplate[2][2]);
-
-                                    this.modelFaces[modelFaceIndex].setFloatValue(3, 0, this.westFaceTemplate[3][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(3, 1, this.westFaceTemplate[3][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(3, 2, this.westFaceTemplate[3][2]);
-                                }
-                                case RenderBlocks.TOP_FACE_UNSORTED -> {
-                                    this.modelFaces[modelFaceIndex] = new ModelFace(6);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(0, 0, this.topFaceUnsortedTemplate[0][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(0, 1, this.topFaceUnsortedTemplate[0][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(0, 2, this.topFaceUnsortedTemplate[0][2]);
-
-                                    this.modelFaces[modelFaceIndex].setFloatValue(1, 0, this.topFaceUnsortedTemplate[1][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(1, 1, this.topFaceUnsortedTemplate[1][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(1, 2, this.topFaceUnsortedTemplate[1][2]);
-
-                                    this.modelFaces[modelFaceIndex].setFloatValue(2, 0, this.topFaceUnsortedTemplate[2][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(2, 1, this.topFaceUnsortedTemplate[2][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(2, 2, this.topFaceUnsortedTemplate[2][2]);
-
-                                    this.modelFaces[modelFaceIndex].setFloatValue(3, 0, this.topFaceUnsortedTemplate[3][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(3, 1, this.topFaceUnsortedTemplate[3][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(3, 2, this.topFaceUnsortedTemplate[3][2]);
-                                }
-                                case RenderBlocks.BOTTOM_FACE_UNSORTED -> {
-                                    this.modelFaces[modelFaceIndex] = new ModelFace(7);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(0, 0, this.bottomFaceUnsortedTemplate[0][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(0, 1, this.bottomFaceUnsortedTemplate[0][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(0, 2, this.bottomFaceUnsortedTemplate[0][2]);
-
-                                    this.modelFaces[modelFaceIndex].setFloatValue(1, 0, this.bottomFaceUnsortedTemplate[1][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(1, 1, this.bottomFaceUnsortedTemplate[1][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(1, 2, this.bottomFaceUnsortedTemplate[1][2]);
-
-                                    this.modelFaces[modelFaceIndex].setFloatValue(2, 0, this.bottomFaceUnsortedTemplate[2][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(2, 1, this.bottomFaceUnsortedTemplate[2][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(2, 2, this.bottomFaceUnsortedTemplate[2][2]);
-
-                                    this.modelFaces[modelFaceIndex].setFloatValue(3, 0, this.bottomFaceUnsortedTemplate[3][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(3, 1, this.bottomFaceUnsortedTemplate[3][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(3, 2, this.bottomFaceUnsortedTemplate[3][2]);
-                                }
-                                case RenderBlocks.NORTH_FACE_UNSORTED -> {
-                                    this.modelFaces[modelFaceIndex] = new ModelFace(8);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(0, 0, this.northFaceUnsortedTemplate[0][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(0, 1, this.northFaceUnsortedTemplate[0][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(0, 2, this.northFaceUnsortedTemplate[0][2]);
-
-                                    this.modelFaces[modelFaceIndex].setFloatValue(1, 0, this.northFaceUnsortedTemplate[1][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(1, 1, this.northFaceUnsortedTemplate[1][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(1, 2, this.northFaceUnsortedTemplate[1][2]);
-
-                                    this.modelFaces[modelFaceIndex].setFloatValue(2, 0, this.northFaceUnsortedTemplate[2][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(2, 1, this.northFaceUnsortedTemplate[2][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(2, 2, this.northFaceUnsortedTemplate[2][2]);
-
-                                    this.modelFaces[modelFaceIndex].setFloatValue(3, 0, this.northFaceUnsortedTemplate[3][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(3, 1, this.northFaceUnsortedTemplate[3][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(3, 2, this.northFaceUnsortedTemplate[3][2]);
-                                }
-                                case RenderBlocks.SOUTH_FACE_UNSORTED -> {
-                                    this.modelFaces[modelFaceIndex] = new ModelFace(9);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(0, 0, this.southFaceUnsortedTemplate[0][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(0, 1, this.southFaceUnsortedTemplate[0][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(0, 2, this.southFaceUnsortedTemplate[0][2]);
-
-                                    this.modelFaces[modelFaceIndex].setFloatValue(1, 0, this.southFaceUnsortedTemplate[1][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(1, 1, this.southFaceUnsortedTemplate[1][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(1, 2, this.southFaceUnsortedTemplate[1][2]);
-
-                                    this.modelFaces[modelFaceIndex].setFloatValue(2, 0, this.southFaceUnsortedTemplate[2][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(2, 1, this.southFaceUnsortedTemplate[2][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(2, 2, this.southFaceUnsortedTemplate[2][2]);
-
-                                    this.modelFaces[modelFaceIndex].setFloatValue(3, 0, this.southFaceUnsortedTemplate[3][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(3, 1, this.southFaceUnsortedTemplate[3][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(3, 2, this.southFaceUnsortedTemplate[3][2]);
-                                }
-                                case RenderBlocks.EAST_FACE_UNSORTED -> {
-                                    this.modelFaces[modelFaceIndex] = new ModelFace(10);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(0, 0, this.eastFaceUnsortedTemplate[0][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(0, 1, this.eastFaceUnsortedTemplate[0][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(0, 2, this.eastFaceUnsortedTemplate[0][2]);
-
-                                    this.modelFaces[modelFaceIndex].setFloatValue(1, 0, this.eastFaceUnsortedTemplate[1][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(1, 1, this.eastFaceUnsortedTemplate[1][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(1, 2, this.eastFaceUnsortedTemplate[1][2]);
-
-                                    this.modelFaces[modelFaceIndex].setFloatValue(2, 0, this.eastFaceUnsortedTemplate[2][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(2, 1, this.eastFaceUnsortedTemplate[2][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(2, 2, this.eastFaceUnsortedTemplate[2][2]);
-
-                                    this.modelFaces[modelFaceIndex].setFloatValue(3, 0, this.eastFaceUnsortedTemplate[3][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(3, 1, this.eastFaceUnsortedTemplate[3][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(3, 2, this.eastFaceUnsortedTemplate[3][2]);
-                                }
-                                case RenderBlocks.WEST_FACE_UNSORTED -> {
-                                    this.modelFaces[modelFaceIndex] = new ModelFace(11);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(0, 0, this.westFaceUnsortedTemplate[0][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(0, 1, this.westFaceUnsortedTemplate[0][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(0, 2, this.westFaceUnsortedTemplate[0][2]);
-
-                                    this.modelFaces[modelFaceIndex].setFloatValue(1, 0, this.westFaceUnsortedTemplate[1][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(1, 1, this.westFaceUnsortedTemplate[1][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(1, 2, this.westFaceUnsortedTemplate[1][2]);
-
-                                    this.modelFaces[modelFaceIndex].setFloatValue(2, 0, this.westFaceUnsortedTemplate[2][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(2, 1, this.westFaceUnsortedTemplate[2][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(2, 2, this.westFaceUnsortedTemplate[2][2]);
-
-                                    this.modelFaces[modelFaceIndex].setFloatValue(3, 0, this.westFaceUnsortedTemplate[3][0]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(3, 1, this.westFaceUnsortedTemplate[3][1]);
-                                    this.modelFaces[modelFaceIndex].setFloatValue(3, 2, this.westFaceUnsortedTemplate[3][2]);
-                                }
-                            }
-                            index = 0;
+                    } else {
+                        faceTexture = RenderEngine.NULL_TEXTURE;
+                        switch (name) {
+                            case "topFace"    -> this.sortType = RenderBlocks.TOP_FACE;
+                            case "bottomFace" -> this.sortType = RenderBlocks.BOTTOM_FACE;
+                            case "northFace"  -> this.sortType = RenderBlocks.NORTH_FACE;
+                            case "southFace"  -> this.sortType = RenderBlocks.SOUTH_FACE;
+                            case "eastFace"   -> this.sortType = RenderBlocks.EAST_FACE;
+                            case "westFace"   -> this.sortType = RenderBlocks.WEST_FACE;
                         }
                     }
+                    continue;
+                }
 
-                    if(line.charAt(0) == 'v' && line.charAt(1) == 'n'){
-                        String[] normalString = line.split(" ");
-                        String[] rawNormal = new String[3];
+                // ----- vertices -----
+                if (line.startsWith("v ")) {
+                    String[] s = line.split("\\s+");
+                    float x = this.clampFloat(Float.parseFloat(s[1]));
+                    float y = this.clampFloat(Float.parseFloat(s[2]));
+                    float z = this.clampFloat(Float.parseFloat(s[3]));
+                    vertexList.add(new float[]{x, y, z});
+                    continue;
+                }
 
-                        rawNormal[0] = normalString[1];
-                        rawNormal[1] = normalString[2];
-                        rawNormal[2] = normalString[3];
+                // ----- UVs -----
+                if (line.startsWith("vt ")) {
+                    String[] s = line.split("\\s+");
+                    float u = Float.parseFloat(s[1]);
+                    float v = Float.parseFloat(s[2]);
+                    uvList.add(new float[]{u, v});
+                    continue;
+                }
 
-                        float[] normal = new float[3];
-                        normal[0] = Float.parseFloat(rawNormal[0]);
-                        normal[1] = Float.parseFloat(rawNormal[1]);
-                        normal[2] = Float.parseFloat(rawNormal[2]);
+                // ----- normals -----
+                if (line.startsWith("vn ")) {
+                    String[] s = line.split("\\s+");
+                    float nx = this.clampFloat(Float.parseFloat(s[1]));
+                    float ny = this.clampFloat(Float.parseFloat(s[2]));
+                    float nz = this.clampFloat(Float.parseFloat(s[3]));
+                    normalList.add(new float[]{nx, ny, nz});
+                    continue;
+                }
 
-                        normal[0] = this.clampFloat(normal[0]);
-                        normal[1] = this.clampFloat(normal[1]);
-                        normal[2] = this.clampFloat(normal[2]);
-
-                        this.modelFaces[modelFaceIndex].setNormal(normal[0], normal[1], normal[2]);
-                        modelFaceIndex++;
+                // ----- faces -----
+                if (line.startsWith("f ")) {
+                    String[] parts = line.split("\\s+");
+                    if (parts.length != 5) {
+                        // expecting quads only
+                        continue;
                     }
+
+                    float[][] faceVerts  = new float[4][3];
+                    float[][] faceUVs    = new float[4][2];
+                    float[]   faceNormal = new float[3];
+
+                    for (int i = 0; i < 4; i++) {
+                        String[] idx = parts[i + 1].split("/");
+
+                        int vIdx  = Integer.parseInt(idx[0]) - 1;
+                        int vtIdx = Integer.parseInt(idx[1]) - 1;
+                        int vnIdx = Integer.parseInt(idx[2]) - 1;
+
+
+
+                        float[] v = vertexList.get(vIdx);
+                        float[] t = uvList.get(vtIdx);
+                        float[] n = normalList.get(vnIdx);
+
+                        faceVerts[i][0] = v[0];
+                        faceVerts[i][1] = v[1];
+                        faceVerts[i][2] = v[2];
+
+                        faceUVs[i][0] = t[0];
+                        faceUVs[i][1] = 1.0f - t[1]; //This is needed because of the difference between blockbench model UVs and what OpenGL expects
+
+                        faceNormal[0] = n[0];
+                        faceNormal[1] = n[1];
+                        faceNormal[2] = n[2];
+                    }
+
+                    SortedFace sorted = this.sortFace(faceVerts, faceUVs, faceNormal);
+
+                    ModelFace mf = new ModelFace(this.sortType);
+                    for (int i = 0; i < 4; i++) {
+                        mf.setFloatValue(i, 0, sorted.verts[i][0]);
+                        mf.setFloatValue(i, 1, sorted.verts[i][1]);
+                        mf.setFloatValue(i, 2, sorted.verts[i][2]);
+
+                        mf.setUV(i, 0, sorted.uvs[i][0]);
+                        mf.setUV(i, 1, sorted.uvs[i][1]);
+                    }
+                    mf.setNormal(faceNormal[0], faceNormal[1], faceNormal[2]);
+                    mf.texture = faceTexture;
+
+                    faces.add(mf);
                 }
             }
         } catch (IOException e) {
+            System.out.println(this.filepath); //I need to know which model threw since these are all loaded at class load
             throw new RuntimeException(e);
         }
 
-
-        int modelFacesSize = 0;
-        for (int i = 0; i < this.modelFaces.length; i++) {
-            if (this.modelFaces[i] != null) {
-                modelFacesSize++;
-            }
-        }
-
-        ModelFace[] newModelFaces = new ModelFace[modelFacesSize];
-        for (int i = 0; i < newModelFaces.length; i++) {
-            newModelFaces[i] = this.modelFaces[i];
-        }
-
-        this.modelFaces = newModelFaces;
-
+        // shrink to exact size
+        this.modelFaces = faces.toArray(new ModelFace[0]);
     }
+
 
     private float clampFloat(float value) {
         if (value <= 0.00000000001F && value >= -0.000000000001F) {
@@ -377,946 +256,97 @@ public final class ModelLoader{
         return value;
     }
 
-    private float[][] sortTopFace() {
-        float[][] topFace = new float[4][3];
-        float[] xValues = new float[4];
-        float[] zValues = new float[4];
-        int xValueIndex = 0;
-        int zValueIndex = 0;
 
-        for (int i = 0; i < this.topFaceTemplate.length; i++) {
-            for (int j = 0; j < 3; j++) {
-                if (j == 0) {
-                    xValues[xValueIndex] = this.topFaceTemplate[i][j];
-                    xValueIndex++;
-                } else if (j == 2) {
-                    zValues[zValueIndex] = this.topFaceTemplate[i][j];
-                    zValueIndex++;
-                }
-            }
+    public static class SortedFace {
+        public float[][] verts;
+        public float[][] uvs;
+    }
+
+    private SortedFace sortFace(float[][] verts, float[][] uvs, float[] normalArr) {
+
+        // Convert verts to Vector3f for math
+        Vector3f[] v = new Vector3f[4];
+        for (int i = 0; i < 4; i++) {
+            v[i] = new Vector3f(verts[i][0], verts[i][1], verts[i][2]);
         }
 
-        Arrays.sort(xValues);
-        Arrays.sort(zValues);
+        // Convert normal
+        Vector3f normal = new Vector3f(normalArr[0], normalArr[1], normalArr[2]).normalize();
 
-        float xLeast = xValues[0];
-        float xLess = xValues[1];
-        float xGreater = xValues[2];
-        float xGreatest = xValues[3];
-        float zLeast = zValues[0];
-        float zLess = zValues[1];
-        float zGreater = zValues[2];
-        float zGreatest = zValues[3];
+        // Compute centroid
+        Vector3f centroid = new Vector3f();
+        for (Vector3f p : v) centroid.add(p);
+        centroid.div(4f);
 
-
-        if (this.topFaceTemplate[0][0] == xGreatest && this.topFaceTemplate[0][2] == zLeast) {
-            topFace[0] = this.topFaceTemplate[0];
-        } else if (this.topFaceTemplate[1][0] == xGreatest && this.topFaceTemplate[1][2] == zLeast) {
-            topFace[0] = this.topFaceTemplate[1];
-        } else if (this.topFaceTemplate[2][0] == xGreatest && this.topFaceTemplate[2][2] == zLeast) {
-            topFace[0] = this.topFaceTemplate[2];
-        } else if (this.topFaceTemplate[3][0] == xGreatest && this.topFaceTemplate[3][2] == zLeast) {
-            topFace[0] = this.topFaceTemplate[3];
-        } else if (this.topFaceTemplate[0][0] == xGreater && this.topFaceTemplate[0][2] == zLeast) {
-            topFace[0] = this.topFaceTemplate[0];
-        } else if (this.topFaceTemplate[1][0] == xGreater && this.topFaceTemplate[1][2] == zLeast) {
-            topFace[0] = this.topFaceTemplate[1];
-        } else if (this.topFaceTemplate[2][0] == xGreater && this.topFaceTemplate[2][2] == zLeast) {
-            topFace[0] = this.topFaceTemplate[2];
-        } else if (this.topFaceTemplate[3][0] == xGreater && this.topFaceTemplate[3][2] == zLeast) {
-            topFace[0] = this.topFaceTemplate[3];
-        } else if (this.topFaceTemplate[0][0] == xGreater && this.topFaceTemplate[0][2] == zLess) {
-            topFace[0] = this.topFaceTemplate[0];
-        } else if (this.topFaceTemplate[1][0] == xGreater && this.topFaceTemplate[1][2] == zLess) {
-            topFace[0] = this.topFaceTemplate[1];
-        } else if (this.topFaceTemplate[2][0] == xGreater && this.topFaceTemplate[2][2] == zLess) {
-            topFace[0] = this.topFaceTemplate[2];
-        } else if (this.topFaceTemplate[3][0] == xGreater && this.topFaceTemplate[3][2] == zLess) {
-            topFace[0] = this.topFaceTemplate[3];
+        // Build tangent/bitangent basis
+        Vector3f up = new Vector3f(0, 1, 0);
+        if (Math.abs(normal.dot(up)) > 0.9f) {
+            up.set(1, 0, 0);
         }
 
+        Vector3f tangent = new Vector3f();
+        normal.cross(up, tangent).normalize();
 
-        if (this.topFaceTemplate[0][0] == xLeast && this.topFaceTemplate[0][2] == zGreatest) {
-            topFace[1] = this.topFaceTemplate[0];
-        } else if (this.topFaceTemplate[1][0] == xLeast && this.topFaceTemplate[1][2] == zGreatest) {
-            topFace[1] = this.topFaceTemplate[1];
-        } else if (this.topFaceTemplate[2][0] == xLeast && this.topFaceTemplate[2][2] == zGreatest) {
-            topFace[1] = this.topFaceTemplate[2];
-        } else if (this.topFaceTemplate[3][0] == xLeast && this.topFaceTemplate[3][2] == zGreatest) {
-            topFace[1] = this.topFaceTemplate[3];
-        } else if (this.topFaceTemplate[0][0] == xLess && this.topFaceTemplate[0][2] == zGreatest) {
-            topFace[1] = this.topFaceTemplate[0];
-        } else if (this.topFaceTemplate[1][0] == xLess && this.topFaceTemplate[1][2] == zGreatest) {
-            topFace[1] = this.topFaceTemplate[1];
-        } else if (this.topFaceTemplate[2][0] == xLess && this.topFaceTemplate[2][2] == zGreatest) {
-            topFace[1] = this.topFaceTemplate[2];
-        } else if (this.topFaceTemplate[3][0] == xLess && this.topFaceTemplate[3][2] == zGreatest) {
-            topFace[1] = this.topFaceTemplate[3];
-        } else if (this.topFaceTemplate[0][0] == xLess && this.topFaceTemplate[0][2] == zGreater) {
-            topFace[1] = this.topFaceTemplate[0];
-        } else if (this.topFaceTemplate[1][0] == xLess && this.topFaceTemplate[1][2] == zGreater) {
-            topFace[1] = this.topFaceTemplate[1];
-        } else if (this.topFaceTemplate[2][0] == xLess && this.topFaceTemplate[2][2] == zGreater) {
-            topFace[1] = this.topFaceTemplate[2];
-        } else if (this.topFaceTemplate[3][0] == xLess && this.topFaceTemplate[3][2] == zGreater) {
-            topFace[1] = this.topFaceTemplate[3];
+        Vector3f bitangent = new Vector3f();
+        tangent.cross(normal, bitangent).normalize();
+
+        // Project verts into 2D
+        float[][] pts2D = new float[4][2];
+        for (int i = 0; i < 4; i++) {
+            Vector3f rel = new Vector3f(v[i]).sub(centroid);
+            pts2D[i][0] = rel.dot(tangent);
+            pts2D[i][1] = rel.dot(bitangent);
         }
 
+        // Sort by angle
+        Integer[] order = {0, 1, 2, 3};
+        Arrays.sort(order, (a, b) -> {
+            float angleA = (float) Math.atan2(pts2D[a][1], pts2D[a][0]);
+            float angleB = (float) Math.atan2(pts2D[b][1], pts2D[b][0]);
+            return Float.compare(angleA, angleB);
+        });
 
-        if (this.topFaceTemplate[0][0] == xGreatest && this.topFaceTemplate[0][2] == zGreatest) {
-            topFace[2] = this.topFaceTemplate[0];
-        } else if (this.topFaceTemplate[1][0] == xGreatest && this.topFaceTemplate[1][2] == zGreatest) {
-            topFace[2] = this.topFaceTemplate[1];
-        } else if (this.topFaceTemplate[2][0] == xGreatest && this.topFaceTemplate[2][2] == zGreatest) {
-            topFace[2] = this.topFaceTemplate[2];
-        } else if (this.topFaceTemplate[3][0] == xGreatest && this.topFaceTemplate[3][2] == zGreatest) {
-            topFace[2] = this.topFaceTemplate[3];
-        } else if (this.topFaceTemplate[0][0] == xGreater && this.topFaceTemplate[0][2] == zGreatest) {
-            topFace[2] = this.topFaceTemplate[0];
-        } else if (this.topFaceTemplate[1][0] == xGreater && this.topFaceTemplate[1][2] == zGreatest) {
-            topFace[2] = this.topFaceTemplate[1];
-        } else if (this.topFaceTemplate[2][0] == xGreater && this.topFaceTemplate[2][2] == zGreatest) {
-            topFace[2] = this.topFaceTemplate[2];
-        } else if (this.topFaceTemplate[3][0] == xGreater && this.topFaceTemplate[3][2] == zGreatest) {
-            topFace[2] = this.topFaceTemplate[3];
-        } else if (this.topFaceTemplate[0][0] == xGreater && this.topFaceTemplate[0][2] == zGreater) {
-            topFace[2] = this.topFaceTemplate[0];
-        } else if (this.topFaceTemplate[1][0] == xGreater && this.topFaceTemplate[1][2] == zGreater) {
-            topFace[2] = this.topFaceTemplate[1];
-        } else if (this.topFaceTemplate[2][0] == xGreater && this.topFaceTemplate[2][2] == zGreater) {
-            topFace[2] = this.topFaceTemplate[2];
-        } else if (this.topFaceTemplate[3][0] == xGreater && this.topFaceTemplate[3][2] == zGreater) {
-            topFace[2] = this.topFaceTemplate[3];
+        // Reorder verts
+        Vector3f[] sortedVec = new Vector3f[4];
+        for (int i = 0; i < 4; i++) {
+            sortedVec[i] = v[order[i]];
         }
 
+        // Enforce CCW winding
+        Vector3f a = new Vector3f(sortedVec[1]).sub(sortedVec[0]);
+        Vector3f b = new Vector3f(sortedVec[2]).sub(sortedVec[0]);
+        Vector3f cross = new Vector3f(a).cross(b);
 
-        if (this.topFaceTemplate[0][0] == xLeast && this.topFaceTemplate[0][2] == zLeast) {
-            topFace[3] = this.topFaceTemplate[0];
-        } else if (this.topFaceTemplate[1][0] == xLeast && this.topFaceTemplate[1][2] == zLeast) {
-            topFace[3] = this.topFaceTemplate[1];
-        } else if (this.topFaceTemplate[2][0] == xLeast && this.topFaceTemplate[2][2] == zLeast) {
-            topFace[3] = this.topFaceTemplate[2];
-        } else if (this.topFaceTemplate[3][0] == xLeast && this.topFaceTemplate[3][2] == zLeast) {
-            topFace[3] = this.topFaceTemplate[3];
-        } else if (this.topFaceTemplate[0][0] == xLess && this.topFaceTemplate[0][2] == zLeast) {
-            topFace[3] = this.topFaceTemplate[0];
-        } else if (this.topFaceTemplate[1][0] == xLess && this.topFaceTemplate[1][2] == zLeast) {
-            topFace[3] = this.topFaceTemplate[1];
-        } else if (this.topFaceTemplate[2][0] == xLess && this.topFaceTemplate[2][2] == zLeast) {
-            topFace[3] = this.topFaceTemplate[2];
-        } else if (this.topFaceTemplate[3][0] == xLess && this.topFaceTemplate[3][2] == zLeast) {
-            topFace[3] = this.topFaceTemplate[3];
-        } else if (this.topFaceTemplate[0][0] == xLess && this.topFaceTemplate[0][2] == zLess) {
-            topFace[3] = this.topFaceTemplate[0];
-        } else if (this.topFaceTemplate[1][0] == xLess && this.topFaceTemplate[1][2] == zLess) {
-            topFace[3] = this.topFaceTemplate[1];
-        } else if (this.topFaceTemplate[2][0] == xLess && this.topFaceTemplate[2][2] == zLess) {
-            topFace[3] = this.topFaceTemplate[2];
-        } else if (this.topFaceTemplate[3][0] == xLess && this.topFaceTemplate[3][2] == zLess) {
-            topFace[3] = this.topFaceTemplate[3];
+        if (cross.dot(normal) < 0) {
+            // Reverse 1 and 3
+            Vector3f tmp = sortedVec[1];
+            sortedVec[1] = sortedVec[3];
+            sortedVec[3] = tmp;
+
+            // Also reverse UVs
+            float[] tmpUV = uvs[order[1]];
+            uvs[order[1]] = uvs[order[3]];
+            uvs[order[3]] = tmpUV;
         }
 
+        // Build output
+        SortedFace out = new SortedFace();
+        out.verts = new float[4][3];
+        out.uvs   = new float[4][2];
 
-        return topFace;
+        for (int i = 0; i < 4; i++) {
+            out.verts[i][0] = sortedVec[i].x;
+            out.verts[i][1] = sortedVec[i].y;
+            out.verts[i][2] = sortedVec[i].z;
+
+            out.uvs[i][0] = uvs[order[i]][0];
+            out.uvs[i][1] = uvs[order[i]][1];
+        }
+
+        return out;
     }
 
 
-    private float[][] sortBottomFace() {
-        float[][] bottomFace = new float[4][3];
-        float[] xValues = new float[4];
-        float[] zValues = new float[4];
-        int xValueIndex = 0;
-        int zValueIndex = 0;
-
-        for (int i = 0; i < this.bottomFaceTemplate.length; i++) {
-            for (int j = 0; j < 3; j++) {
-                if (j == 0) {
-                    xValues[xValueIndex] = this.bottomFaceTemplate[i][j];
-                    xValueIndex++;
-                } else if (j == 2) {
-                    zValues[zValueIndex] = this.bottomFaceTemplate[i][j];
-                    zValueIndex++;
-                }
-            }
-        }
-
-        Arrays.sort(xValues);
-        Arrays.sort(zValues);
-
-        float xLeast = xValues[0];
-        float xLess = xValues[1];
-        float xGreater = xValues[2];
-        float xGreatest = xValues[3];
-        float zLeast = zValues[0];
-        float zLess = zValues[1];
-        float zGreater = zValues[2];
-        float zGreatest = zValues[3];
-
-
-        if (this.bottomFaceTemplate[0][0] == xLeast && this.bottomFaceTemplate[0][2] == zLeast) {
-            bottomFace[0] = this.bottomFaceTemplate[0];
-        } else if (this.bottomFaceTemplate[1][0] == xLeast && this.bottomFaceTemplate[1][2] == zLeast) {
-            bottomFace[0] = this.bottomFaceTemplate[1];
-        } else if (this.bottomFaceTemplate[2][0] == xLeast && this.bottomFaceTemplate[2][2] == zLeast) {
-            bottomFace[0] = this.bottomFaceTemplate[2];
-        } else if (this.bottomFaceTemplate[3][0] == xLeast && this.bottomFaceTemplate[3][2] == zLeast) {
-            bottomFace[0] = this.bottomFaceTemplate[3];
-        } else if (this.bottomFaceTemplate[0][0] == xLess && this.bottomFaceTemplate[0][2] == zLeast) {
-            bottomFace[0] = this.bottomFaceTemplate[0];
-        } else if (this.bottomFaceTemplate[1][0] == xLess && this.bottomFaceTemplate[1][2] == zLeast) {
-            bottomFace[0] = this.bottomFaceTemplate[1];
-        } else if (this.bottomFaceTemplate[2][0] == xLess && this.bottomFaceTemplate[2][2] == zLeast) {
-            bottomFace[0] = this.bottomFaceTemplate[2];
-        } else if (this.bottomFaceTemplate[3][0] == xLess && this.bottomFaceTemplate[3][2] == zLeast) {
-            bottomFace[0] = this.bottomFaceTemplate[3];
-        } else if (this.bottomFaceTemplate[0][0] == xLess && this.bottomFaceTemplate[0][2] == zLess) {
-            bottomFace[0] = this.bottomFaceTemplate[0];
-        } else if (this.bottomFaceTemplate[1][0] == xLess && this.bottomFaceTemplate[1][2] == zLess) {
-            bottomFace[0] = this.bottomFaceTemplate[1];
-        } else if (this.bottomFaceTemplate[2][0] == xLess && this.bottomFaceTemplate[2][2] == zLess) {
-            bottomFace[0] = this.bottomFaceTemplate[2];
-        } else if (this.bottomFaceTemplate[3][0] == xLess && this.bottomFaceTemplate[3][2] == zLess) {
-            bottomFace[0] = this.bottomFaceTemplate[3];
-        }
-
-
-        if (this.bottomFaceTemplate[0][0] == xGreatest && this.bottomFaceTemplate[0][2] == zGreatest) {
-            bottomFace[1] = this.bottomFaceTemplate[0];
-        } else if (this.bottomFaceTemplate[1][0] == xGreatest && this.bottomFaceTemplate[1][2] == zGreatest) {
-            bottomFace[1] = this.bottomFaceTemplate[1];
-        } else if (this.bottomFaceTemplate[2][0] == xGreatest && this.bottomFaceTemplate[2][2] == zGreatest) {
-            bottomFace[1] = this.bottomFaceTemplate[2];
-        } else if (this.bottomFaceTemplate[3][0] == xGreatest && this.bottomFaceTemplate[3][2] == zGreatest) {
-            bottomFace[1] = this.bottomFaceTemplate[3];
-        } else if (this.bottomFaceTemplate[0][0] == xGreater && this.bottomFaceTemplate[0][2] == zGreatest) {
-            bottomFace[1] = this.bottomFaceTemplate[0];
-        } else if (this.bottomFaceTemplate[1][0] == xGreater && this.bottomFaceTemplate[1][2] == zGreatest) {
-            bottomFace[1] = this.bottomFaceTemplate[1];
-        } else if (this.bottomFaceTemplate[2][0] == xGreater && this.bottomFaceTemplate[2][2] == zGreatest) {
-            bottomFace[1] = this.bottomFaceTemplate[2];
-        } else if (this.bottomFaceTemplate[3][0] == xGreater && this.bottomFaceTemplate[3][2] == zGreatest) {
-            bottomFace[1] = this.bottomFaceTemplate[3];
-        } else if (this.bottomFaceTemplate[0][0] == xGreater && this.bottomFaceTemplate[0][2] == zGreater) {
-            bottomFace[1] = this.bottomFaceTemplate[0];
-        } else if (this.bottomFaceTemplate[1][0] == xGreater && this.bottomFaceTemplate[1][2] == zGreater) {
-            bottomFace[1] = this.bottomFaceTemplate[1];
-        } else if (this.bottomFaceTemplate[2][0] == xGreater && this.bottomFaceTemplate[2][2] == zGreater) {
-            bottomFace[1] = this.bottomFaceTemplate[2];
-        } else if (this.bottomFaceTemplate[3][0] == xGreater && this.bottomFaceTemplate[3][2] == zGreater) {
-            bottomFace[1] = this.bottomFaceTemplate[3];
-        }
-
-
-        if (this.bottomFaceTemplate[0][0] == xLeast && this.bottomFaceTemplate[0][2] == zGreatest) {
-            bottomFace[2] = this.bottomFaceTemplate[0];
-        } else if (this.bottomFaceTemplate[1][0] == xLeast && this.bottomFaceTemplate[1][2] == zGreatest) {
-            bottomFace[2] = this.bottomFaceTemplate[1];
-        } else if (this.bottomFaceTemplate[2][0] == xLeast && this.bottomFaceTemplate[2][2] == zGreatest) {
-            bottomFace[2] = this.bottomFaceTemplate[2];
-        } else if (this.bottomFaceTemplate[3][0] == xLeast && this.bottomFaceTemplate[3][2] == zGreatest) {
-            bottomFace[2] = this.bottomFaceTemplate[3];
-        } else if (this.bottomFaceTemplate[0][0] == xLess && this.bottomFaceTemplate[0][2] == zGreatest) {
-            bottomFace[2] = this.bottomFaceTemplate[0];
-        } else if (this.bottomFaceTemplate[1][0] == xLess && this.bottomFaceTemplate[1][2] == zGreatest) {
-            bottomFace[2] = this.bottomFaceTemplate[1];
-        } else if (this.bottomFaceTemplate[2][0] == xLess && this.bottomFaceTemplate[2][2] == zGreatest) {
-            bottomFace[2] = this.bottomFaceTemplate[2];
-        } else if (this.bottomFaceTemplate[3][0] == xLess && this.bottomFaceTemplate[3][2] == zGreatest) {
-            bottomFace[2] = this.bottomFaceTemplate[3];
-        } else if (this.bottomFaceTemplate[0][0] == xLess && this.bottomFaceTemplate[0][2] == zGreater) {
-            bottomFace[2] = this.bottomFaceTemplate[0];
-        } else if (this.bottomFaceTemplate[1][0] == xLess && this.bottomFaceTemplate[1][2] == zGreater) {
-            bottomFace[2] = this.bottomFaceTemplate[1];
-        } else if (this.bottomFaceTemplate[2][0] == xLess && this.bottomFaceTemplate[2][2] == zGreater) {
-            bottomFace[2] = this.bottomFaceTemplate[2];
-        } else if (this.bottomFaceTemplate[3][0] == xLess && this.bottomFaceTemplate[3][2] == zGreater) {
-            bottomFace[2] = this.bottomFaceTemplate[3];
-        }
-
-
-        if (this.bottomFaceTemplate[0][0] == xGreatest && this.bottomFaceTemplate[0][2] == zLeast) {
-            bottomFace[3] = this.bottomFaceTemplate[0];
-        } else if (this.bottomFaceTemplate[1][0] == xGreatest && this.bottomFaceTemplate[1][2] == zLeast) {
-            bottomFace[3] = this.bottomFaceTemplate[1];
-        } else if (this.bottomFaceTemplate[2][0] == xGreatest && this.bottomFaceTemplate[2][2] == zLeast) {
-            bottomFace[3] = this.bottomFaceTemplate[2];
-        } else if (this.bottomFaceTemplate[3][0] == xGreatest && this.bottomFaceTemplate[3][2] == zLeast) {
-            bottomFace[3] = this.bottomFaceTemplate[3];
-        } else if (this.bottomFaceTemplate[0][0] == xGreater && this.bottomFaceTemplate[0][2] == zLeast) {
-            bottomFace[3] = this.bottomFaceTemplate[0];
-        } else if (this.bottomFaceTemplate[1][0] == xGreater && this.bottomFaceTemplate[1][2] == zLeast) {
-            bottomFace[3] = this.bottomFaceTemplate[1];
-        } else if (this.bottomFaceTemplate[2][0] == xGreater && this.bottomFaceTemplate[2][2] == zLeast) {
-            bottomFace[3] = this.bottomFaceTemplate[2];
-        } else if (this.bottomFaceTemplate[3][0] == xGreater && this.bottomFaceTemplate[3][2] == zLeast) {
-            bottomFace[3] = this.bottomFaceTemplate[3];
-        } else if (this.bottomFaceTemplate[0][0] == xGreater && this.bottomFaceTemplate[0][2] == zLess) {
-            bottomFace[3] = this.bottomFaceTemplate[0];
-        } else if (this.bottomFaceTemplate[1][0] == xGreater && this.bottomFaceTemplate[1][2] == zLess) {
-            bottomFace[3] = this.bottomFaceTemplate[1];
-        } else if (this.bottomFaceTemplate[2][0] == xGreater && this.bottomFaceTemplate[2][2] == zLess) {
-            bottomFace[3] = this.bottomFaceTemplate[2];
-        } else if (this.bottomFaceTemplate[3][0] == xGreater && this.bottomFaceTemplate[3][2] == zLess) {
-            bottomFace[3] = this.bottomFaceTemplate[3];
-        }
-
-
-        return bottomFace;
-    }
-
-
-    private float[][] sortNorthFace() {
-        float[][] northFace = new float[4][3];
-        float[] yValues = new float[4];
-        float[] zValues = new float[4];
-        int yValueIndex = 0;
-        int zValueIndex = 0;
-
-        for (int i = 0; i < this.northFaceTemplate.length; i++) {
-            for (int j = 0; j < 3; j++) {
-                if (j == 1) {
-                    yValues[yValueIndex] = this.northFaceTemplate[i][j];
-                    yValueIndex++;
-                } else if (j == 2) {
-                    zValues[zValueIndex] = this.northFaceTemplate[i][j];
-                    zValueIndex++;
-                }
-            }
-        }
-
-        Arrays.sort(yValues);
-        Arrays.sort(zValues);
-
-        float yLeast = yValues[0];
-        float yLess = yValues[1];
-        float yGreater = yValues[2];
-        float yGreatest = yValues[3];
-        float zLeast = zValues[0];
-        float zLess = zValues[1];
-        float zGreater = zValues[2];
-        float zGreatest = zValues[3];
-
-
-        if (this.northFaceTemplate[0][1] == yLeast && this.northFaceTemplate[0][2] == zLeast) {
-            northFace[0] = this.northFaceTemplate[0];
-        } else if (this.northFaceTemplate[1][1] == yLeast && this.northFaceTemplate[1][2] == zLeast) {
-            northFace[0] = this.northFaceTemplate[1];
-        } else if (this.northFaceTemplate[2][1] == yLeast && this.northFaceTemplate[2][2] == zLeast) {
-            northFace[0] = this.northFaceTemplate[2];
-        } else if (this.northFaceTemplate[3][1] == yLeast && this.northFaceTemplate[3][2] == zLeast) {
-            northFace[0] = this.northFaceTemplate[3];
-        } else if (this.northFaceTemplate[0][1] == yLess && this.northFaceTemplate[0][2] == zLeast) {
-            northFace[0] = this.northFaceTemplate[0];
-        } else if (this.northFaceTemplate[1][1] == yLess && this.northFaceTemplate[1][2] == zLeast) {
-            northFace[0] = this.northFaceTemplate[1];
-        } else if (this.northFaceTemplate[2][1] == yLess && this.northFaceTemplate[2][2] == zLeast) {
-            northFace[0] = this.northFaceTemplate[2];
-        } else if (this.northFaceTemplate[3][1] == yLess && this.northFaceTemplate[3][2] == zLeast) {
-            northFace[0] = this.northFaceTemplate[3];
-        } else if (this.northFaceTemplate[0][1] == yLess && this.northFaceTemplate[0][2] == zLess) {
-            northFace[0] = this.northFaceTemplate[0];
-        } else if (this.northFaceTemplate[1][1] == yLess && this.northFaceTemplate[1][2] == zLess) {
-            northFace[0] = this.northFaceTemplate[1];
-        } else if (this.northFaceTemplate[2][1] == yLess && this.northFaceTemplate[2][2] == zLess) {
-            northFace[0] = this.northFaceTemplate[2];
-        } else if (this.northFaceTemplate[3][1] == yLess && this.northFaceTemplate[3][2] == zLess) {
-            northFace[0] = this.northFaceTemplate[3];
-        }
-
-
-        if (this.northFaceTemplate[0][1] == yGreatest && this.northFaceTemplate[0][2] == zGreatest) {
-            northFace[1] = this.northFaceTemplate[0];
-        } else if (this.northFaceTemplate[1][1] == yGreatest && this.northFaceTemplate[1][2] == zGreatest) {
-            northFace[1] = this.northFaceTemplate[1];
-        } else if (this.northFaceTemplate[2][1] == yGreatest && this.northFaceTemplate[2][2] == zGreatest) {
-            northFace[1] = this.northFaceTemplate[2];
-        } else if (this.northFaceTemplate[3][1] == yGreatest && this.northFaceTemplate[3][2] == zGreatest) {
-            northFace[1] = this.northFaceTemplate[3];
-        } else if (this.northFaceTemplate[0][1] == yGreater && this.northFaceTemplate[0][2] == zGreatest) {
-            northFace[1] = this.northFaceTemplate[0];
-        } else if (this.northFaceTemplate[1][1] == yGreater && this.northFaceTemplate[1][2] == zGreatest) {
-            northFace[1] = this.northFaceTemplate[1];
-        } else if (this.northFaceTemplate[2][1] == yGreater && this.northFaceTemplate[2][2] == zGreatest) {
-            northFace[1] = this.northFaceTemplate[2];
-        } else if (this.northFaceTemplate[3][1] == yGreater && this.northFaceTemplate[3][2] == zGreatest) {
-            northFace[1] = this.northFaceTemplate[3];
-        } else if (this.northFaceTemplate[0][1] == yGreater && this.northFaceTemplate[0][2] == zGreater) {
-            northFace[1] = this.northFaceTemplate[0];
-        } else if (this.northFaceTemplate[1][1] == yGreater && this.northFaceTemplate[1][2] == zGreater) {
-            northFace[1] = this.northFaceTemplate[1];
-        } else if (this.northFaceTemplate[2][1] == yGreater && this.northFaceTemplate[2][2] == zGreater) {
-            northFace[1] = this.northFaceTemplate[2];
-        } else if (this.northFaceTemplate[3][1] == yGreater && this.northFaceTemplate[3][2] == zGreater) {
-            northFace[1] = this.northFaceTemplate[3];
-        }
-
-
-        if (this.northFaceTemplate[0][1] == yGreatest && this.northFaceTemplate[0][2] == zLeast) {
-            northFace[2] = this.northFaceTemplate[0];
-        } else if (this.northFaceTemplate[1][1] == yGreatest && this.northFaceTemplate[1][2] == zLeast) {
-            northFace[2] = this.northFaceTemplate[1];
-        } else if (this.northFaceTemplate[2][1] == yGreatest && this.northFaceTemplate[2][2] == zLeast) {
-            northFace[2] = this.northFaceTemplate[2];
-        } else if (this.northFaceTemplate[3][1] == yGreatest && this.northFaceTemplate[3][2] == zLeast) {
-            northFace[2] = this.northFaceTemplate[3];
-        } else if (this.northFaceTemplate[0][1] == yGreater && this.northFaceTemplate[0][2] == zLeast) {
-            northFace[2] = this.northFaceTemplate[0];
-        } else if (this.northFaceTemplate[1][1] == yGreater && this.northFaceTemplate[1][2] == zLeast) {
-            northFace[2] = this.northFaceTemplate[1];
-        } else if (this.northFaceTemplate[2][1] == yGreater && this.northFaceTemplate[2][2] == zLeast) {
-            northFace[2] = this.northFaceTemplate[2];
-        } else if (this.northFaceTemplate[3][1] == yGreater && this.northFaceTemplate[3][2] == zLeast) {
-            northFace[2] = this.northFaceTemplate[3];
-        } else if (this.northFaceTemplate[0][1] == yGreater && this.northFaceTemplate[0][2] == zLess) {
-            northFace[2] = this.northFaceTemplate[0];
-        } else if (this.northFaceTemplate[1][1] == yGreater && this.northFaceTemplate[1][2] == zLess) {
-            northFace[2] = this.northFaceTemplate[1];
-        } else if (this.northFaceTemplate[2][1] == yGreater && this.northFaceTemplate[2][2] == zLess) {
-            northFace[2] = this.northFaceTemplate[2];
-        } else if (this.northFaceTemplate[3][1] == yGreater && this.northFaceTemplate[3][2] == zLess) {
-            northFace[2] = this.northFaceTemplate[3];
-        }
-
-
-        if (this.northFaceTemplate[0][1] == yLeast && this.northFaceTemplate[0][2] == zGreatest) {
-            northFace[3] = this.northFaceTemplate[0];
-        } else if (this.northFaceTemplate[1][1] == yLeast && this.northFaceTemplate[1][2] == zGreatest) {
-            northFace[3] = this.northFaceTemplate[1];
-        } else if (this.northFaceTemplate[2][1] == yLeast && this.northFaceTemplate[2][2] == zGreatest) {
-            northFace[3] = this.northFaceTemplate[2];
-        } else if (this.northFaceTemplate[3][1] == yLeast && this.northFaceTemplate[3][2] == zGreatest) {
-            northFace[3] = this.northFaceTemplate[3];
-        } else if (this.northFaceTemplate[0][1] == yLess && this.northFaceTemplate[0][2] == zGreatest) {
-            northFace[3] = this.northFaceTemplate[0];
-        } else if (this.northFaceTemplate[1][1] == yLess && this.northFaceTemplate[1][2] == zGreatest) {
-            northFace[3] = this.northFaceTemplate[1];
-        } else if (this.northFaceTemplate[2][1] == yLess && this.northFaceTemplate[2][2] == zGreatest) {
-            northFace[3] = this.northFaceTemplate[2];
-        } else if (this.northFaceTemplate[3][1] == yLess && this.northFaceTemplate[3][2] == zGreatest) {
-            northFace[3] = this.northFaceTemplate[3];
-        } else if (this.northFaceTemplate[0][1] == yLess && this.northFaceTemplate[0][2] == zGreater) {
-            northFace[3] = this.northFaceTemplate[0];
-        } else if (this.northFaceTemplate[1][1] == yLess && this.northFaceTemplate[1][2] == zGreater) {
-            northFace[3] = this.northFaceTemplate[1];
-        } else if (this.northFaceTemplate[2][1] == yLess && this.northFaceTemplate[2][2] == zGreater) {
-            northFace[3] = this.northFaceTemplate[2];
-        } else if (this.northFaceTemplate[3][1] == yLess && this.northFaceTemplate[3][2] == zGreater) {
-            northFace[3] = this.northFaceTemplate[3];
-        }
-
-
-        return northFace;
-    }
-
-
-    private float[][] sortSouthFace() {
-        float[][] southFace = new float[4][3];
-        float[] yValues = new float[4];
-        float[] zValues = new float[4];
-        int yValueIndex = 0;
-        int zValueIndex = 0;
-
-        for (int i = 0; i < this.southFaceTemplate.length; i++) {
-            for (int j = 0; j < 3; j++) {
-                if (j == 1) {
-                    yValues[yValueIndex] = this.southFaceTemplate[i][j];
-                    yValueIndex++;
-                } else if (j == 2) {
-                    zValues[zValueIndex] = this.southFaceTemplate[i][j];
-                    zValueIndex++;
-                }
-            }
-        }
-
-        Arrays.sort(yValues);
-        Arrays.sort(zValues);
-
-        float yLeast = yValues[0];
-        float yLess = yValues[1];
-        float yGreater = yValues[2];
-        float yGreatest = yValues[3];
-        float zLeast = zValues[0];
-        float zLess = zValues[1];
-        float zGreater = zValues[2];
-        float zGreatest = zValues[3];
-
-
-        if (this.southFaceTemplate[0][1] == yLeast && this.southFaceTemplate[0][2] == zGreatest) {
-            southFace[0] = this.southFaceTemplate[0];
-        } else if (this.southFaceTemplate[1][1] == yLeast && this.southFaceTemplate[1][2] == zGreatest) {
-            southFace[0] = this.southFaceTemplate[1];
-        } else if (this.southFaceTemplate[2][1] == yLeast && this.southFaceTemplate[2][2] == zGreatest) {
-            southFace[0] = this.southFaceTemplate[2];
-        } else if (this.southFaceTemplate[3][1] == yLeast && this.southFaceTemplate[3][2] == zGreatest) {
-            southFace[0] = this.southFaceTemplate[3];
-        } else if (this.southFaceTemplate[0][1] == yLess && this.southFaceTemplate[0][2] == zGreatest) {
-            southFace[0] = this.southFaceTemplate[0];
-        } else if (this.southFaceTemplate[1][1] == yLess && this.southFaceTemplate[1][2] == zGreatest) {
-            southFace[0] = this.southFaceTemplate[1];
-        } else if (this.southFaceTemplate[2][1] == yLess && this.southFaceTemplate[2][2] == zGreatest) {
-            southFace[0] = this.southFaceTemplate[2];
-        } else if (this.southFaceTemplate[3][1] == yLess && this.southFaceTemplate[3][2] == zGreatest) {
-            southFace[0] = this.southFaceTemplate[3];
-        } else if (this.southFaceTemplate[0][1] == yLess && this.southFaceTemplate[0][2] == zGreater) {
-            southFace[0] = this.southFaceTemplate[0];
-        } else if (this.southFaceTemplate[1][1] == yLess && this.southFaceTemplate[1][2] == zGreater) {
-            southFace[0] = this.southFaceTemplate[1];
-        } else if (this.southFaceTemplate[2][1] == yLess && this.southFaceTemplate[2][2] == zGreater) {
-            southFace[0] = this.southFaceTemplate[2];
-        } else if (this.southFaceTemplate[3][1] == yLess && this.southFaceTemplate[3][2] == zGreater) {
-            southFace[0] = this.southFaceTemplate[3];
-        }
-
-
-        if (this.southFaceTemplate[0][1] == yGreatest && this.southFaceTemplate[0][2] == zLeast) {
-            southFace[1] = this.southFaceTemplate[0];
-        } else if (this.southFaceTemplate[1][1] == yGreatest && this.southFaceTemplate[1][2] == zLeast) {
-            southFace[1] = this.southFaceTemplate[1];
-        } else if (this.southFaceTemplate[2][1] == yGreatest && this.southFaceTemplate[2][2] == zLeast) {
-            southFace[1] = this.southFaceTemplate[2];
-        } else if (this.southFaceTemplate[3][1] == yGreatest && this.southFaceTemplate[3][2] == zLeast) {
-            southFace[1] = this.southFaceTemplate[3];
-        } else if (this.southFaceTemplate[0][1] == yGreater && this.southFaceTemplate[0][2] == zLeast) {
-            southFace[1] = this.southFaceTemplate[0];
-        } else if (this.southFaceTemplate[1][1] == yGreater && this.southFaceTemplate[1][2] == zLeast) {
-            southFace[1] = this.southFaceTemplate[1];
-        } else if (this.southFaceTemplate[2][1] == yGreater && this.southFaceTemplate[2][2] == zLeast) {
-            southFace[1] = this.southFaceTemplate[2];
-        } else if (this.southFaceTemplate[3][1] == yGreater && this.southFaceTemplate[3][2] == zLeast) {
-            southFace[1] = this.southFaceTemplate[3];
-        } else if (this.southFaceTemplate[0][1] == yGreater && this.southFaceTemplate[0][2] == zLess) {
-            southFace[1] = this.southFaceTemplate[0];
-        } else if (this.southFaceTemplate[1][1] == yGreater && this.southFaceTemplate[1][2] == zLess) {
-            southFace[1] = this.southFaceTemplate[1];
-        } else if (this.southFaceTemplate[2][1] == yGreater && this.southFaceTemplate[2][2] == zLess) {
-            southFace[1] = this.southFaceTemplate[2];
-        } else if (this.southFaceTemplate[3][1] == yGreater && this.southFaceTemplate[3][2] == zLess) {
-            southFace[1] = this.southFaceTemplate[3];
-        }
-
-
-        if (this.southFaceTemplate[0][1] == yGreatest && this.southFaceTemplate[0][2] == zGreatest) {
-            southFace[2] = this.southFaceTemplate[0];
-        } else if (this.southFaceTemplate[1][1] == yGreatest && this.southFaceTemplate[1][2] == zGreatest) {
-            southFace[2] = this.southFaceTemplate[1];
-        } else if (this.southFaceTemplate[2][1] == yGreatest && this.southFaceTemplate[2][2] == zGreatest) {
-            southFace[2] = this.southFaceTemplate[2];
-        } else if (this.southFaceTemplate[3][1] == yGreatest && this.southFaceTemplate[3][2] == zGreatest) {
-            southFace[2] = this.southFaceTemplate[3];
-        } else if (this.southFaceTemplate[0][1] == yGreater && this.southFaceTemplate[0][2] == zGreatest) {
-            southFace[2] = this.southFaceTemplate[0];
-        } else if (this.southFaceTemplate[1][1] == yGreater && this.southFaceTemplate[1][2] == zGreatest) {
-            southFace[2] = this.southFaceTemplate[1];
-        } else if (this.southFaceTemplate[2][1] == yGreater && this.southFaceTemplate[2][2] == zGreatest) {
-            southFace[2] = this.southFaceTemplate[2];
-        } else if (this.southFaceTemplate[3][1] == yGreater && this.southFaceTemplate[3][2] == zGreatest) {
-            southFace[2] = this.southFaceTemplate[3];
-        } else if (this.southFaceTemplate[0][1] == yGreater && this.southFaceTemplate[0][2] == zGreater) {
-            southFace[2] = this.southFaceTemplate[0];
-        } else if (this.southFaceTemplate[1][1] == yGreater && this.southFaceTemplate[1][2] == zGreater) {
-            southFace[2] = this.southFaceTemplate[1];
-        } else if (this.southFaceTemplate[2][1] == yGreater && this.southFaceTemplate[2][2] == zGreater) {
-            southFace[2] = this.southFaceTemplate[2];
-        } else if (this.southFaceTemplate[3][1] == yGreater && this.southFaceTemplate[3][2] == zGreater) {
-            southFace[2] = this.southFaceTemplate[3];
-        }
-
-
-        if (this.southFaceTemplate[0][1] == yLeast && this.southFaceTemplate[0][2] == zLeast) {
-            southFace[3] = this.southFaceTemplate[0];
-        } else if (this.southFaceTemplate[1][1] == yLeast && this.southFaceTemplate[1][2] == zLeast) {
-            southFace[3] = this.southFaceTemplate[1];
-        } else if (this.southFaceTemplate[2][1] == yLeast && this.southFaceTemplate[2][2] == zLeast) {
-            southFace[3] = this.southFaceTemplate[2];
-        } else if (this.southFaceTemplate[3][1] == yLeast && this.southFaceTemplate[3][2] == zLeast) {
-            southFace[3] = this.southFaceTemplate[3];
-        } else if (this.southFaceTemplate[0][1] == yLess && this.southFaceTemplate[0][2] == zLeast) {
-            southFace[3] = this.southFaceTemplate[0];
-        } else if (this.southFaceTemplate[1][1] == yLess && this.southFaceTemplate[1][2] == zLeast) {
-            southFace[3] = this.southFaceTemplate[1];
-        } else if (this.southFaceTemplate[2][1] == yLess && this.southFaceTemplate[2][2] == zLeast) {
-            southFace[3] = this.southFaceTemplate[2];
-        } else if (this.southFaceTemplate[3][1] == yLess && this.southFaceTemplate[3][2] == zLeast) {
-            southFace[3] = this.southFaceTemplate[3];
-        } else if (this.southFaceTemplate[0][1] == yLess && this.southFaceTemplate[0][2] == zLess) {
-            southFace[3] = this.southFaceTemplate[0];
-        } else if (this.southFaceTemplate[1][1] == yLess && this.southFaceTemplate[1][2] == zLess) {
-            southFace[3] = this.southFaceTemplate[1];
-        } else if (this.southFaceTemplate[2][1] == yLess && this.southFaceTemplate[2][2] == zLess) {
-            southFace[3] = this.southFaceTemplate[2];
-        } else if (this.southFaceTemplate[3][1] == yLess && this.southFaceTemplate[3][2] == zLess) {
-            southFace[3] = this.southFaceTemplate[3];
-        }
-
-
-        return southFace;
-    }
-
-
-    private float[][] sortEastFace() {
-        float[][] eastFace = new float[4][3];
-        float[] yValues = new float[4];
-        float[] xValues = new float[4];
-        int yValueIndex = 0;
-        int xValueIndex = 0;
-
-        for (int i = 0; i < this.eastFaceTemplate.length; i++) {
-            for (int j = 0; j < 3; j++) {
-                if (j == 1) {
-                    yValues[yValueIndex] = this.eastFaceTemplate[i][j];
-                    yValueIndex++;
-                } else if (j == 0) {
-                    xValues[xValueIndex] = this.eastFaceTemplate[i][j];
-                    xValueIndex++;
-                }
-            }
-        }
-
-        Arrays.sort(yValues);
-        Arrays.sort(xValues);
-
-        float yLeast = yValues[0];
-        float yLess = yValues[1];
-        float yGreater = yValues[2];
-        float yGreatest = yValues[3];
-        float xLeast = xValues[0];
-        float xLess = xValues[1];
-        float xGreater = xValues[2];
-        float xGreatest = xValues[3];
-
-
-        if (this.eastFaceTemplate[0][1] == yLeast && this.eastFaceTemplate[0][0] == xGreatest) {
-            eastFace[0] = this.eastFaceTemplate[0];
-        } else if (this.eastFaceTemplate[1][1] == yLeast && this.eastFaceTemplate[1][0] == xGreatest) {
-            eastFace[0] = this.eastFaceTemplate[1];
-        } else if (this.eastFaceTemplate[2][1] == yLeast && this.eastFaceTemplate[2][0] == xGreatest) {
-            eastFace[0] = this.eastFaceTemplate[2];
-        } else if (this.eastFaceTemplate[3][1] == yLeast && this.eastFaceTemplate[3][0] == xGreatest) {
-            eastFace[0] = this.eastFaceTemplate[3];
-        } else if (this.eastFaceTemplate[0][1] == yLess && this.eastFaceTemplate[0][0] == xGreatest) {
-            eastFace[0] = this.eastFaceTemplate[0];
-        } else if (this.eastFaceTemplate[1][1] == yLess && this.eastFaceTemplate[1][0] == xGreatest) {
-            eastFace[0] = this.eastFaceTemplate[1];
-        } else if (this.eastFaceTemplate[2][1] == yLess && this.eastFaceTemplate[2][0] == xGreatest) {
-            eastFace[0] = this.eastFaceTemplate[2];
-        } else if (this.eastFaceTemplate[3][1] == yLess && this.eastFaceTemplate[3][0] == xGreatest) {
-            eastFace[0] = this.eastFaceTemplate[3];
-        } else if (this.eastFaceTemplate[0][1] == yLess && this.eastFaceTemplate[0][0] == xGreater) {
-            eastFace[0] = this.eastFaceTemplate[0];
-        } else if (this.eastFaceTemplate[1][1] == yLess && this.eastFaceTemplate[1][0] == xGreater) {
-            eastFace[0] = this.eastFaceTemplate[1];
-        } else if (this.eastFaceTemplate[2][1] == yLess && this.eastFaceTemplate[2][0] == xGreater) {
-            eastFace[0] = this.eastFaceTemplate[2];
-        } else if (this.eastFaceTemplate[3][1] == yLess && this.eastFaceTemplate[3][0] == xGreater) {
-            eastFace[0] = this.eastFaceTemplate[3];
-        } else if (this.eastFaceTemplate[0][1] == yLeast && this.eastFaceTemplate[0][0] == xGreater) {
-            eastFace[0] = this.eastFaceTemplate[0];
-        } else if (this.eastFaceTemplate[1][1] == yLeast && this.eastFaceTemplate[1][0] == xGreater) {
-            eastFace[0] = this.eastFaceTemplate[1];
-        } else if (this.eastFaceTemplate[2][1] == yLeast && this.eastFaceTemplate[2][0] == xGreater) {
-            eastFace[0] = this.eastFaceTemplate[2];
-        } else if (this.eastFaceTemplate[3][1] == yLeast && this.eastFaceTemplate[3][0] == xGreater) {
-            eastFace[0] = this.eastFaceTemplate[3];
-        } else if (this.eastFaceTemplate[0][1] == yLeast && this.eastFaceTemplate[0][0] == xLess) {
-            eastFace[0] = this.eastFaceTemplate[0];
-        } else if (this.eastFaceTemplate[1][1] == yLeast && this.eastFaceTemplate[1][0] == xLess) {
-            eastFace[0] = this.eastFaceTemplate[1];
-        } else if (this.eastFaceTemplate[2][1] == yLeast && this.eastFaceTemplate[2][0] == xLess) {
-            eastFace[0] = this.eastFaceTemplate[2];
-        } else if (this.eastFaceTemplate[3][1] == yLeast && this.eastFaceTemplate[3][0] == xLess) {
-            eastFace[0] = this.eastFaceTemplate[3];
-        } else if (this.eastFaceTemplate[0][1] == yLeast && this.eastFaceTemplate[0][0] == xLeast) {
-            eastFace[0] = this.eastFaceTemplate[0];
-        } else if (this.eastFaceTemplate[1][1] == yLeast && this.eastFaceTemplate[1][0] == xLeast) {
-            eastFace[0] = this.eastFaceTemplate[1];
-        } else if (this.eastFaceTemplate[2][1] == yLeast && this.eastFaceTemplate[2][0] == xLeast) {
-            eastFace[0] = this.eastFaceTemplate[2];
-        } else if (this.eastFaceTemplate[3][1] == yLeast && this.eastFaceTemplate[3][0] == xLeast) {
-            eastFace[0] = this.eastFaceTemplate[3];
-        }
-
-
-        if (this.eastFaceTemplate[0][1] == yGreatest && this.eastFaceTemplate[0][0] == xLeast) {
-            eastFace[1] = this.eastFaceTemplate[0];
-        } else if (this.eastFaceTemplate[1][1] == yGreatest && this.eastFaceTemplate[1][0] == xLeast) {
-            eastFace[1] = this.eastFaceTemplate[1];
-        } else if (this.eastFaceTemplate[2][1] == yGreatest && this.eastFaceTemplate[2][0] == xLeast) {
-            eastFace[1] = this.eastFaceTemplate[2];
-        } else if (this.eastFaceTemplate[3][1] == yGreatest && this.eastFaceTemplate[3][0] == xLeast) {
-            eastFace[1] = this.eastFaceTemplate[3];
-        } else if (this.eastFaceTemplate[0][1] == yGreater && this.eastFaceTemplate[0][0] == xLeast) {
-            eastFace[1] = this.eastFaceTemplate[0];
-        } else if (this.eastFaceTemplate[1][1] == yGreater && this.eastFaceTemplate[1][0] == xLeast) {
-            eastFace[1] = this.eastFaceTemplate[1];
-        } else if (this.eastFaceTemplate[2][1] == yGreater && this.eastFaceTemplate[2][0] == xLeast) {
-            eastFace[1] = this.eastFaceTemplate[2];
-        } else if (this.eastFaceTemplate[3][1] == yGreater && this.eastFaceTemplate[3][0] == xLeast) {
-            eastFace[1] = this.eastFaceTemplate[3];
-        } else if (this.eastFaceTemplate[0][1] == yGreater && this.eastFaceTemplate[0][0] == xLess) {
-            eastFace[1] = this.eastFaceTemplate[0];
-        } else if (this.eastFaceTemplate[1][1] == yGreater && this.eastFaceTemplate[1][0] == xLess) {
-            eastFace[1] = this.eastFaceTemplate[1];
-        } else if (this.eastFaceTemplate[2][1] == yGreater && this.eastFaceTemplate[2][0] == xLess) {
-            eastFace[1] = this.eastFaceTemplate[2];
-        } else if (this.eastFaceTemplate[3][1] == yGreater && this.eastFaceTemplate[3][0] == xLess) {
-            eastFace[1] = this.eastFaceTemplate[3];
-        } else if (this.eastFaceTemplate[0][1] == yGreatest && this.eastFaceTemplate[0][0] == xLess) {
-            eastFace[1] = this.eastFaceTemplate[0];
-        } else if (this.eastFaceTemplate[1][1] == yGreatest && this.eastFaceTemplate[1][0] == xLess) {
-            eastFace[1] = this.eastFaceTemplate[1];
-        } else if (this.eastFaceTemplate[2][1] == yGreatest && this.eastFaceTemplate[2][0] == xLess) {
-            eastFace[1] = this.eastFaceTemplate[2];
-        } else if (this.eastFaceTemplate[3][1] == yGreatest && this.eastFaceTemplate[3][0] == xLess) {
-            eastFace[1] = this.eastFaceTemplate[3];
-        }
-
-
-        if (this.eastFaceTemplate[0][1] == yGreatest && this.eastFaceTemplate[0][0] == xGreatest) {
-            eastFace[2] = this.eastFaceTemplate[0];
-        } else if (this.eastFaceTemplate[1][1] == yGreatest && this.eastFaceTemplate[1][0] == xGreatest) {
-            eastFace[2] = this.eastFaceTemplate[1];
-        } else if (this.eastFaceTemplate[2][1] == yGreatest && this.eastFaceTemplate[2][0] == xGreatest) {
-            eastFace[2] = this.eastFaceTemplate[2];
-        } else if (this.eastFaceTemplate[3][1] == yGreatest && this.eastFaceTemplate[3][0] == xGreatest) {
-            eastFace[2] = this.eastFaceTemplate[3];
-        } else if (this.eastFaceTemplate[0][1] == yGreater && this.eastFaceTemplate[0][0] == xGreatest) {
-            eastFace[2] = this.eastFaceTemplate[0];
-        } else if (this.eastFaceTemplate[1][1] == yGreater && this.eastFaceTemplate[1][0] == xGreatest) {
-            eastFace[2] = this.eastFaceTemplate[1];
-        } else if (this.eastFaceTemplate[2][1] == yGreater && this.eastFaceTemplate[2][0] == xGreatest) {
-            eastFace[2] = this.eastFaceTemplate[2];
-        } else if (this.eastFaceTemplate[3][1] == yGreater && this.eastFaceTemplate[3][0] == xGreatest) {
-            eastFace[2] = this.eastFaceTemplate[3];
-        } else if (this.eastFaceTemplate[0][1] == yGreater && this.eastFaceTemplate[0][0] == xGreater) {
-            eastFace[2] = this.eastFaceTemplate[0];
-        } else if (this.eastFaceTemplate[1][1] == yGreater && this.eastFaceTemplate[1][0] == xGreater) {
-            eastFace[2] = this.eastFaceTemplate[1];
-        } else if (this.eastFaceTemplate[2][1] == yGreater && this.eastFaceTemplate[2][0] == xGreater) {
-            eastFace[2] = this.eastFaceTemplate[2];
-        } else if (this.eastFaceTemplate[3][1] == yGreater && this.eastFaceTemplate[3][0] == xGreater) {
-            eastFace[2] = this.eastFaceTemplate[3];
-        } else if (this.eastFaceTemplate[0][1] == yGreatest && this.eastFaceTemplate[0][0] == xGreater) {
-            eastFace[2] = this.eastFaceTemplate[0];
-        } else if (this.eastFaceTemplate[1][1] == yGreatest && this.eastFaceTemplate[1][0] == xGreater) {
-            eastFace[2] = this.eastFaceTemplate[1];
-        } else if (this.eastFaceTemplate[2][1] == yGreatest && this.eastFaceTemplate[2][0] == xGreater) {
-            eastFace[2] = this.eastFaceTemplate[2];
-        } else if (this.eastFaceTemplate[3][1] == yGreatest && this.eastFaceTemplate[3][0] == xGreater) {
-            eastFace[2] = this.eastFaceTemplate[3];
-        }
-
-
-        if (this.eastFaceTemplate[0][1] == yLeast && this.eastFaceTemplate[0][0] == xLeast) {
-            eastFace[3] = this.eastFaceTemplate[0];
-        } else if (this.eastFaceTemplate[1][1] == yLeast && this.eastFaceTemplate[1][0] == xLeast) {
-            eastFace[3] = this.eastFaceTemplate[1];
-        } else if (this.eastFaceTemplate[2][1] == yLeast && this.eastFaceTemplate[2][0] == xLeast) {
-            eastFace[3] = this.eastFaceTemplate[2];
-        } else if (this.eastFaceTemplate[3][1] == yLeast && this.eastFaceTemplate[3][0] == xLeast) {
-            eastFace[3] = this.eastFaceTemplate[3];
-        } else if (this.eastFaceTemplate[0][1] == yLess && this.eastFaceTemplate[0][0] == xLeast) {
-            eastFace[3] = this.eastFaceTemplate[0];
-        } else if (this.eastFaceTemplate[1][1] == yLess && this.eastFaceTemplate[1][0] == xLeast) {
-            eastFace[3] = this.eastFaceTemplate[1];
-        } else if (this.eastFaceTemplate[2][1] == yLess && this.eastFaceTemplate[2][0] == xLeast) {
-            eastFace[3] = this.eastFaceTemplate[2];
-        } else if (this.eastFaceTemplate[3][1] == yLess && this.eastFaceTemplate[3][0] == xLeast) {
-            eastFace[3] = this.eastFaceTemplate[3];
-        } else if (this.eastFaceTemplate[0][1] == yLess && this.eastFaceTemplate[0][0] == xLess) {
-            eastFace[3] = this.eastFaceTemplate[0];
-        } else if (this.eastFaceTemplate[1][1] == yLess && this.eastFaceTemplate[1][0] == xLess) {
-            eastFace[3] = this.eastFaceTemplate[1];
-        } else if (this.eastFaceTemplate[2][1] == yLess && this.eastFaceTemplate[2][0] == xLess) {
-            eastFace[3] = this.eastFaceTemplate[2];
-        } else if (this.eastFaceTemplate[3][1] == yLess && this.eastFaceTemplate[3][0] == xLess) {
-            eastFace[3] = this.eastFaceTemplate[3];
-        } else if (this.eastFaceTemplate[0][1] == yLeast && this.eastFaceTemplate[0][0] == xLess) {
-            eastFace[3] = this.eastFaceTemplate[0];
-        } else if (this.eastFaceTemplate[1][1] == yLeast && this.eastFaceTemplate[1][0] == xLess) {
-            eastFace[3] = this.eastFaceTemplate[1];
-        } else if (this.eastFaceTemplate[2][1] == yLeast && this.eastFaceTemplate[2][0] == xLess) {
-            eastFace[3] = this.eastFaceTemplate[2];
-        } else if (this.eastFaceTemplate[3][1] == yLeast && this.eastFaceTemplate[3][0] == xLess) {
-            eastFace[3] = this.eastFaceTemplate[3];
-        }
-
-        return eastFace;
-    }
-
-    private float[][] sortWestFace() {
-        float[][] westFace = new float[4][3];
-        float[] yValues = new float[4];
-        float[] xValues = new float[4];
-        int yValueIndex = 0;
-        int xValueIndex = 0;
-
-        for (int i = 0; i < this.westFaceTemplate.length; i++) {
-            for (int j = 0; j < 3; j++) {
-                if (j == 1) {
-                    yValues[yValueIndex] = this.westFaceTemplate[i][j];
-                    yValueIndex++;
-                } else if (j == 0) {
-                    xValues[xValueIndex] = this.westFaceTemplate[i][j];
-                    xValueIndex++;
-                }
-            }
-        }
-
-        Arrays.sort(yValues);
-        Arrays.sort(xValues);
-
-        float yLeast = yValues[0];
-        float yLess = yValues[1];
-        float yGreater = yValues[2];
-        float yGreatest = yValues[3];
-        float xLeast = xValues[0];
-        float xLess = xValues[1];
-        float xGreater = xValues[2];
-        float xGreatest = xValues[3];
-
-
-        if (this.westFaceTemplate[0][1] == yLeast && this.westFaceTemplate[0][0] == xLeast) {
-            westFace[0] = this.westFaceTemplate[0];
-        } else if (this.westFaceTemplate[1][1] == yLeast && this.westFaceTemplate[1][0] == xLeast) {
-            westFace[0] = this.westFaceTemplate[1];
-        } else if (this.westFaceTemplate[2][1] == yLeast && this.westFaceTemplate[2][0] == xLeast) {
-            westFace[0] = this.westFaceTemplate[2];
-        } else if (this.westFaceTemplate[3][1] == yLeast && this.westFaceTemplate[3][0] == xLeast) {
-            westFace[0] = this.westFaceTemplate[3];
-        } else if (this.westFaceTemplate[0][1] == yLess && this.westFaceTemplate[0][0] == xLeast) {
-            westFace[0] = this.westFaceTemplate[0];
-        } else if (this.westFaceTemplate[1][1] == yLess && this.westFaceTemplate[1][0] == xLeast) {
-            westFace[0] = this.westFaceTemplate[1];
-        } else if (this.westFaceTemplate[2][1] == yLess && this.westFaceTemplate[2][0] == xLeast) {
-            westFace[0] = this.westFaceTemplate[2];
-        } else if (this.westFaceTemplate[3][1] == yLess && this.westFaceTemplate[3][0] == xLeast) {
-            westFace[0] = this.westFaceTemplate[3];
-        } else if (this.westFaceTemplate[0][1] == yLess && this.westFaceTemplate[0][0] == xLess) {
-            westFace[0] = this.westFaceTemplate[0];
-        } else if (this.westFaceTemplate[1][1] == yLess && this.westFaceTemplate[1][0] == xLess) {
-            westFace[0] = this.westFaceTemplate[1];
-        } else if (this.westFaceTemplate[2][1] == yLess && this.westFaceTemplate[2][0] == xLess) {
-            westFace[0] = this.westFaceTemplate[2];
-        } else if (this.westFaceTemplate[3][1] == yLess && this.westFaceTemplate[3][0] == xLess) {
-            westFace[0] = this.westFaceTemplate[3];
-        } else if (this.westFaceTemplate[0][1] == yLeast && this.westFaceTemplate[0][0] == xLess) {
-            westFace[0] = this.westFaceTemplate[0];
-        } else if (this.westFaceTemplate[1][1] == yLeast && this.westFaceTemplate[1][0] == xLess) {
-            westFace[0] = this.westFaceTemplate[1];
-        } else if (this.westFaceTemplate[2][1] == yLeast && this.westFaceTemplate[2][0] == xLess) {
-            westFace[0] = this.westFaceTemplate[2];
-        } else if (this.westFaceTemplate[3][1] == yLeast && this.westFaceTemplate[3][0] == xLess) {
-            westFace[0] = this.westFaceTemplate[3];
-        }
-
-
-        if (this.westFaceTemplate[0][1] == yGreatest && this.westFaceTemplate[0][0] == xGreatest) {
-            westFace[1] = this.westFaceTemplate[0];
-        } else if (this.westFaceTemplate[1][1] == yGreatest && this.westFaceTemplate[1][0] == xGreatest) {
-            westFace[1] = this.westFaceTemplate[1];
-        } else if (this.westFaceTemplate[2][1] == yGreatest && this.westFaceTemplate[2][0] == xGreatest) {
-            westFace[1] = this.westFaceTemplate[2];
-        } else if (this.westFaceTemplate[3][1] == yGreatest && this.westFaceTemplate[3][0] == xGreatest) {
-            westFace[1] = this.westFaceTemplate[3];
-        } else if (this.westFaceTemplate[0][1] == yGreater && this.westFaceTemplate[0][0] == xGreatest) {
-            westFace[1] = this.westFaceTemplate[0];
-        } else if (this.westFaceTemplate[1][1] == yGreater && this.westFaceTemplate[1][0] == xGreatest) {
-            westFace[1] = this.westFaceTemplate[1];
-        } else if (this.westFaceTemplate[2][1] == yGreater && this.westFaceTemplate[2][0] == xGreatest) {
-            westFace[1] = this.westFaceTemplate[2];
-        } else if (this.westFaceTemplate[3][1] == yGreater && this.westFaceTemplate[3][0] == xGreatest) {
-            westFace[1] = this.westFaceTemplate[3];
-        } else if (this.westFaceTemplate[0][1] == yGreater && this.westFaceTemplate[0][0] == xGreater) {
-            westFace[1] = this.westFaceTemplate[0];
-        } else if (this.westFaceTemplate[1][1] == yGreater && this.westFaceTemplate[1][0] == xGreater) {
-            westFace[1] = this.westFaceTemplate[1];
-        } else if (this.westFaceTemplate[2][1] == yGreater && this.westFaceTemplate[2][0] == xGreater) {
-            westFace[1] = this.westFaceTemplate[2];
-        } else if (this.westFaceTemplate[3][1] == yGreater && this.westFaceTemplate[3][0] == xGreater) {
-            westFace[1] = this.westFaceTemplate[3];
-        } else if (this.westFaceTemplate[0][1] == yGreatest && this.westFaceTemplate[0][0] == xGreater) {
-            westFace[1] = this.westFaceTemplate[0];
-        } else if (this.westFaceTemplate[1][1] == yGreatest && this.westFaceTemplate[1][0] == xGreater) {
-            westFace[1] = this.westFaceTemplate[1];
-        } else if (this.westFaceTemplate[2][1] == yGreatest && this.westFaceTemplate[2][0] == xGreater) {
-            westFace[1] = this.westFaceTemplate[2];
-        } else if (this.westFaceTemplate[3][1] == yGreatest && this.westFaceTemplate[3][0] == xGreater) {
-            westFace[1] = this.westFaceTemplate[3];
-        }
-
-
-        if (this.westFaceTemplate[0][1] == yGreatest && this.westFaceTemplate[0][0] == xLeast) {
-            westFace[2] = this.westFaceTemplate[0];
-        } else if (this.westFaceTemplate[1][1] == yGreatest && this.westFaceTemplate[1][0] == xLeast) {
-            westFace[2] = this.westFaceTemplate[1];
-        } else if (this.westFaceTemplate[2][1] == yGreatest && this.westFaceTemplate[2][0] == xLeast) {
-            westFace[2] = this.westFaceTemplate[2];
-        } else if (this.westFaceTemplate[3][1] == yGreatest && this.westFaceTemplate[3][0] == xLeast) {
-            westFace[2] = this.westFaceTemplate[3];
-        } else if (this.westFaceTemplate[0][1] == yGreater && this.westFaceTemplate[0][0] == xLeast) {
-            westFace[2] = this.westFaceTemplate[0];
-        } else if (this.westFaceTemplate[1][1] == yGreater && this.westFaceTemplate[1][0] == xLeast) {
-            westFace[2] = this.westFaceTemplate[1];
-        } else if (this.westFaceTemplate[2][1] == yGreater && this.westFaceTemplate[2][0] == xLeast) {
-            westFace[2] = this.westFaceTemplate[2];
-        } else if (this.westFaceTemplate[3][1] == yGreater && this.westFaceTemplate[3][0] == xLeast) {
-            westFace[2] = this.westFaceTemplate[3];
-        } else if (this.westFaceTemplate[0][1] == yGreater && this.westFaceTemplate[0][0] == xLess) {
-            westFace[2] = this.westFaceTemplate[0];
-        } else if (this.westFaceTemplate[1][1] == yGreater && this.westFaceTemplate[1][0] == xLess) {
-            westFace[2] = this.westFaceTemplate[1];
-        } else if (this.westFaceTemplate[2][1] == yGreater && this.westFaceTemplate[2][0] == xLess) {
-            westFace[2] = this.westFaceTemplate[2];
-        } else if (this.westFaceTemplate[3][1] == yGreater && this.westFaceTemplate[3][0] == xLess) {
-            westFace[2] = this.westFaceTemplate[3];
-        } else if (this.westFaceTemplate[0][1] == yGreatest && this.westFaceTemplate[0][0] == xLess) {
-            westFace[2] = this.westFaceTemplate[0];
-        } else if (this.westFaceTemplate[1][1] == yGreatest && this.westFaceTemplate[1][0] == xLess) {
-            westFace[2] = this.westFaceTemplate[1];
-        } else if (this.westFaceTemplate[2][1] == yGreatest && this.westFaceTemplate[2][0] == xLess) {
-            westFace[2] = this.westFaceTemplate[2];
-        } else if (this.westFaceTemplate[3][1] == yGreatest && this.westFaceTemplate[3][0] == xLess) {
-            westFace[2] = this.westFaceTemplate[3];
-        }
-
-
-        if (this.westFaceTemplate[0][1] == yLeast && this.westFaceTemplate[0][0] == xGreatest) {
-            westFace[3] = this.westFaceTemplate[0];
-        } else if (this.westFaceTemplate[1][1] == yLeast && this.westFaceTemplate[1][0] == xGreatest) {
-            westFace[3] = this.westFaceTemplate[1];
-        } else if (this.westFaceTemplate[2][1] == yLeast && this.westFaceTemplate[2][0] == xGreatest) {
-            westFace[3] = this.westFaceTemplate[2];
-        } else if (this.westFaceTemplate[3][1] == yLeast && this.westFaceTemplate[3][0] == xGreatest) {
-            westFace[3] = this.westFaceTemplate[3];
-        } else if (this.westFaceTemplate[0][1] == yLess && this.westFaceTemplate[0][0] == xGreatest) {
-            westFace[3] = this.westFaceTemplate[0];
-        } else if (this.westFaceTemplate[1][1] == yLess && this.westFaceTemplate[1][0] == xGreatest) {
-            westFace[3] = this.westFaceTemplate[1];
-        } else if (this.westFaceTemplate[2][1] == yLess && this.westFaceTemplate[2][0] == xGreatest) {
-            westFace[3] = this.westFaceTemplate[2];
-        } else if (this.westFaceTemplate[3][1] == yLess && this.westFaceTemplate[3][0] == xGreatest) {
-            westFace[3] = this.westFaceTemplate[3];
-        } else if (this.westFaceTemplate[0][1] == yLess && this.westFaceTemplate[0][0] == xGreater) {
-            westFace[3] = this.westFaceTemplate[0];
-        } else if (this.westFaceTemplate[1][1] == yLess && this.westFaceTemplate[1][0] == xGreater) {
-            westFace[3] = this.westFaceTemplate[1];
-        } else if (this.westFaceTemplate[2][1] == yLess && this.westFaceTemplate[2][0] == xGreater) {
-            westFace[3] = this.westFaceTemplate[2];
-        } else if (this.westFaceTemplate[3][1] == yLess && this.westFaceTemplate[3][0] == xGreater) {
-            westFace[3] = this.westFaceTemplate[3];
-        } else if (this.westFaceTemplate[0][1] == yLeast && this.westFaceTemplate[0][0] == xGreater) {
-            westFace[3] = this.westFaceTemplate[0];
-        } else if (this.westFaceTemplate[1][1] == yLeast && this.westFaceTemplate[1][0] == xGreater) {
-            westFace[3] = this.westFaceTemplate[1];
-        } else if (this.westFaceTemplate[2][1] == yLeast && this.westFaceTemplate[2][0] == xGreater) {
-            westFace[3] = this.westFaceTemplate[2];
-        } else if (this.westFaceTemplate[3][1] == yLeast && this.westFaceTemplate[3][0] == xGreater) {
-            westFace[3] = this.westFaceTemplate[3];
-        }
-
-
-        return westFace;
-    }
 
     public void addModelFace(ModelFace modelFace){
         for(int i = 0; i < this.modelFaces.length; i++){
@@ -1338,8 +368,12 @@ public final class ModelLoader{
                     scaledFace.vertices[j].x = this.modelFaces[i].vertices[j].x * scaleFactor;
                     scaledFace.vertices[j].y = this.modelFaces[i].vertices[j].y * scaleFactor;
                     scaledFace.vertices[j].z = this.modelFaces[i].vertices[j].z * scaleFactor;
+
+                    scaledFace.UVs[j][0] = this.modelFaces[i].UVs[j][0];
+                    scaledFace.UVs[j][1] = this.modelFaces[i].UVs[j][1];
                 }
                 scaledFace.setNormal(this.modelFaces[i].normal.x, this.modelFaces[i].normal.y, this.modelFaces[i].normal.z);
+                scaledFace.texture = this.modelFaces[i].texture;
                 scaledModel.addModelFace(scaledFace);
             }
         }
@@ -1370,8 +404,12 @@ public final class ModelLoader{
                     translatedFace.vertices[j].x = this.modelFaces[i].vertices[j].x + x;
                     translatedFace.vertices[j].y = this.modelFaces[i].vertices[j].y + y;
                     translatedFace.vertices[j].z = this.modelFaces[i].vertices[j].z + z;
+
+                    translatedFace.UVs[j][0] = this.modelFaces[i].UVs[j][0];
+                    translatedFace.UVs[j][1] = this.modelFaces[i].UVs[j][1];
                 }
                 translatedFace.setNormal(this.modelFaces[i].normal.x, this.modelFaces[i].normal.y, this.modelFaces[i].normal.z);
+                translatedFace.texture = this.modelFaces[i].texture;
                 translatedModel.addModelFace(translatedFace);
             }
         }
@@ -1403,6 +441,9 @@ public final class ModelLoader{
                     rotatedFace.vertices[j].y = this.modelFaces[i].vertices[j].y;
                     rotatedFace.vertices[j].z = this.modelFaces[i].vertices[j].z;
 
+                    rotatedFace.UVs[j][0] = this.modelFaces[i].UVs[j][0];
+                    rotatedFace.UVs[j][1] = this.modelFaces[i].UVs[j][1];
+
                     if(x == 1){
                         rotatedFace.vertices[j].rotateX(rad);
                     }
@@ -1414,6 +455,7 @@ public final class ModelLoader{
                     }
                 }
                 rotatedFace.setNormal(this.modelFaces[i].normal.x, this.modelFaces[i].normal.y, this.modelFaces[i].normal.z);
+                rotatedFace.texture = this.modelFaces[i].texture;
                 if(x == 1){
                     rotatedFace.normal.rotateX(rad);
                 }
@@ -1442,149 +484,65 @@ public final class ModelLoader{
         return rotatedModel;
     }
 
-    public ModelLoader alterStandardBlockModel(int xFactor, int yFactor, int zFactor){
-        final float changeConstant = 0.03125F;
-        ModelLoader alteredModel = new ModelLoader();
-        ModelFace alteredFace;
-        for(int i = 0; i < this.modelFaces.length; i++){
-            if(this.modelFaces[i] != null){
-               alteredFace = new ModelFace(this.modelFaces[i].faceType);
-                for(int j = 0; j < alteredFace.vertices.length; j++){
-                    alteredFace.vertices[j].x = this.modelFaces[i].vertices[j].x;
-                    alteredFace.vertices[j].y = this.modelFaces[i].vertices[j].y;
-                    alteredFace.vertices[j].z = this.modelFaces[i].vertices[j].z;
+    public ModelLoader alterStandardBlockModel(int xFactor, int yFactor, int zFactor) {
+        final float c = 0.03125f; // 1/32
+        final float center = 0.5f;
+
+        ModelLoader out = new ModelLoader();
+        for (int i = 0; i < this.modelFaces.length; i++) {
+            ModelFace src = this.modelFaces[i];
+            if (src == null) continue;
+
+            ModelFace f = src.copyFace();
+
+            for (int v = 0; v < 4; v++) {
+                float x = f.vertices[v].x;
+                float y = f.vertices[v].y;
+                float z = f.vertices[v].z;
+
+                // shrink in X around center
+                if (xFactor != 0) {
+                    if (x < center) x += c * xFactor;
+                    else            x -= c * xFactor;
                 }
-                alteredFace.setNormal(this.modelFaces[i].normal.x, this.modelFaces[i].normal.y, this.modelFaces[i].normal.z);
-                alteredModel.addModelFace(alteredFace);
-            }
-        }
 
-        for(int i = 0; i < alteredModel.modelFaces.length; i++){
-            if(alteredModel.modelFaces[i] != null){
-                alteredFace = alteredModel.modelFaces[i];
-                switch (alteredFace.faceType){
-                    case RenderBlocks.TOP_FACE -> {
-                        alteredFace.vertices[0].x = alteredFace.vertices[0].x - (changeConstant * xFactor);
-                        alteredFace.vertices[0].y = alteredFace.vertices[0].y - (changeConstant * yFactor);
-                        alteredFace.vertices[0].z = alteredFace.vertices[0].z + (changeConstant * zFactor);
+                // shrink in Z around center
+                if (zFactor != 0) {
+                    if (z < center) z += c * zFactor;
+                    else            z -= c * zFactor;
+                }
 
-                        alteredFace.vertices[1].x = alteredFace.vertices[1].x + (changeConstant * xFactor);
-                        alteredFace.vertices[1].y = alteredFace.vertices[1].y - (changeConstant * yFactor);
-                        alteredFace.vertices[1].z = alteredFace.vertices[1].z - (changeConstant * zFactor);
-
-                        alteredFace.vertices[2].x = alteredFace.vertices[2].x - (changeConstant * xFactor);
-                        alteredFace.vertices[2].y = alteredFace.vertices[2].y - (changeConstant * yFactor);
-                        alteredFace.vertices[2].z = alteredFace.vertices[2].z - (changeConstant * zFactor);
-
-                        alteredFace.vertices[3].x = alteredFace.vertices[3].x + (changeConstant * xFactor);
-                        alteredFace.vertices[3].y = alteredFace.vertices[3].y - (changeConstant * yFactor);
-                        alteredFace.vertices[3].z = alteredFace.vertices[3].z + (changeConstant * zFactor);
-                    }
-                    case RenderBlocks.BOTTOM_FACE -> {
-                        alteredFace.vertices[0].x = alteredFace.vertices[0].x + (changeConstant * xFactor);
-                        alteredFace.vertices[0].y = alteredFace.vertices[0].y + (changeConstant * yFactor);
-                        alteredFace.vertices[0].z = alteredFace.vertices[0].z + (changeConstant * zFactor);
-
-                        alteredFace.vertices[1].x = alteredFace.vertices[1].x - (changeConstant * xFactor);
-                        alteredFace.vertices[1].y = alteredFace.vertices[1].y + (changeConstant * yFactor);
-                        alteredFace.vertices[1].z = alteredFace.vertices[1].z - (changeConstant * zFactor);
-
-                        alteredFace.vertices[2].x = alteredFace.vertices[2].x + (changeConstant * xFactor);
-                        alteredFace.vertices[2].y = alteredFace.vertices[2].y + (changeConstant * yFactor);
-                        alteredFace.vertices[2].z = alteredFace.vertices[2].z - (changeConstant * zFactor);
-
-                        alteredFace.vertices[3].x = alteredFace.vertices[3].x - (changeConstant * xFactor);
-                        alteredFace.vertices[3].y = alteredFace.vertices[3].y + (changeConstant * yFactor);
-                        alteredFace.vertices[3].z = alteredFace.vertices[3].z + (changeConstant * zFactor);
-                    }
-                    case RenderBlocks.NORTH_FACE -> {
-                        alteredFace.vertices[0].x = alteredFace.vertices[0].x + (changeConstant * xFactor);
-                        alteredFace.vertices[0].y = alteredFace.vertices[0].y + (changeConstant * yFactor);
-                        alteredFace.vertices[0].z = alteredFace.vertices[0].z + (changeConstant * zFactor);
-
-                        alteredFace.vertices[1].x = alteredFace.vertices[1].x + (changeConstant * xFactor);
-                        alteredFace.vertices[1].y = alteredFace.vertices[1].y - (changeConstant * yFactor);
-                        alteredFace.vertices[1].z = alteredFace.vertices[1].z - (changeConstant * zFactor);
-
-                        alteredFace.vertices[2].x = alteredFace.vertices[2].x + (changeConstant * xFactor);
-                        alteredFace.vertices[2].y = alteredFace.vertices[2].y - (changeConstant * yFactor);
-                        alteredFace.vertices[2].z = alteredFace.vertices[2].z + (changeConstant * zFactor);
-
-                        alteredFace.vertices[3].x = alteredFace.vertices[3].x + (changeConstant * xFactor);
-                        alteredFace.vertices[3].y = alteredFace.vertices[3].y + (changeConstant * yFactor);
-                        alteredFace.vertices[3].z = alteredFace.vertices[3].z - (changeConstant * zFactor);
-                    }
-                    case RenderBlocks.SOUTH_FACE -> {
-                        alteredFace.vertices[0].x = alteredFace.vertices[0].x - (changeConstant * xFactor);
-                        alteredFace.vertices[0].y = alteredFace.vertices[0].y + (changeConstant * yFactor);
-                        alteredFace.vertices[0].z = alteredFace.vertices[0].z - (changeConstant * zFactor);
-
-                        alteredFace.vertices[1].x = alteredFace.vertices[1].x - (changeConstant * xFactor);
-                        alteredFace.vertices[1].y = alteredFace.vertices[1].y - (changeConstant * yFactor);
-                        alteredFace.vertices[1].z = alteredFace.vertices[1].z + (changeConstant * zFactor);
-
-                        alteredFace.vertices[2].x = alteredFace.vertices[2].x - (changeConstant * xFactor);
-                        alteredFace.vertices[2].y = alteredFace.vertices[2].y - (changeConstant * yFactor);
-                        alteredFace.vertices[2].z = alteredFace.vertices[2].z - (changeConstant * zFactor);
-
-                        alteredFace.vertices[3].x = alteredFace.vertices[3].x - (changeConstant * xFactor);
-                        alteredFace.vertices[3].y = alteredFace.vertices[3].y + (changeConstant * yFactor);
-                        alteredFace.vertices[3].z = alteredFace.vertices[3].z + (changeConstant * zFactor);
-                    }
-                    case RenderBlocks.EAST_FACE -> {
-                        alteredFace.vertices[0].x = alteredFace.vertices[0].x - (changeConstant * xFactor);
-                        alteredFace.vertices[0].y = alteredFace.vertices[0].y + (changeConstant * yFactor);
-                        alteredFace.vertices[0].z = alteredFace.vertices[0].z + (changeConstant * zFactor);
-
-                        alteredFace.vertices[1].x = alteredFace.vertices[1].x + (changeConstant * xFactor);
-                        alteredFace.vertices[1].y = alteredFace.vertices[1].y - (changeConstant * yFactor);
-                        alteredFace.vertices[1].z = alteredFace.vertices[1].z + (changeConstant * zFactor);
-
-                        alteredFace.vertices[2].x = alteredFace.vertices[2].x - (changeConstant * xFactor);
-                        alteredFace.vertices[2].y = alteredFace.vertices[2].y - (changeConstant * yFactor);
-                        alteredFace.vertices[2].z = alteredFace.vertices[2].z + (changeConstant * zFactor);
-
-                        alteredFace.vertices[3].x = alteredFace.vertices[3].x + (changeConstant * xFactor);
-                        alteredFace.vertices[3].y = alteredFace.vertices[3].y + (changeConstant * yFactor);
-                        alteredFace.vertices[3].z = alteredFace.vertices[3].z + (changeConstant * zFactor);
-                    }
-                    case RenderBlocks.WEST_FACE -> {
-                        alteredFace.vertices[0].x = alteredFace.vertices[0].x + (changeConstant * xFactor);
-                        alteredFace.vertices[0].y = alteredFace.vertices[0].y + (changeConstant * yFactor);
-                        alteredFace.vertices[0].z = alteredFace.vertices[0].z - (changeConstant * zFactor);
-
-                        alteredFace.vertices[1].x = alteredFace.vertices[1].x - (changeConstant * xFactor);
-                        alteredFace.vertices[1].y = alteredFace.vertices[1].y - (changeConstant * yFactor);
-                        alteredFace.vertices[1].z = alteredFace.vertices[1].z - (changeConstant * zFactor);
-
-                        alteredFace.vertices[2].x = alteredFace.vertices[2].x + (changeConstant * xFactor);
-                        alteredFace.vertices[2].y = alteredFace.vertices[2].y - (changeConstant * yFactor);
-                        alteredFace.vertices[2].z = alteredFace.vertices[2].z - (changeConstant * zFactor);
-
-                        alteredFace.vertices[3].x = alteredFace.vertices[3].x - (changeConstant * xFactor);
-                        alteredFace.vertices[3].y = alteredFace.vertices[3].y + (changeConstant * yFactor);
-                        alteredFace.vertices[3].z = alteredFace.vertices[3].z - (changeConstant * zFactor);
+                // shrink in Y only for top/bottom faces
+                if (yFactor != 0) {
+                    if (f.faceType == RenderBlocks.TOP_FACE) {
+                        // move top downward
+                        y -= c * yFactor;
+                    } else if (f.faceType == RenderBlocks.BOTTOM_FACE) {
+                        // move bottom upward
+                        y += c * yFactor;
                     }
                 }
+
+                f.vertices[v].x = x;
+                f.vertices[v].y = y;
+                f.vertices[v].z = z;
             }
+
+            out.addModelFace(f);
         }
 
+        // trim nulls if you still want the compact array
+        int count = 0;
+        for (ModelFace mf : out.modelFaces) if (mf != null) count++;
+        ModelFace[] compact = new ModelFace[count];
+        int idx = 0;
+        for (ModelFace mf : out.modelFaces) if (mf != null) compact[idx++] = mf;
+        out.modelFaces = compact;
 
-        int modelFacesSize = 0;
-        for (int i = 0; i < alteredModel.modelFaces.length; i++) {
-            if (alteredModel.modelFaces[i] != null) {
-                modelFacesSize++;
-            }
-        }
-
-        ModelFace[] newModelFaces = new ModelFace[modelFacesSize];
-        for (int i = 0; i < newModelFaces.length; i++) {
-            newModelFaces[i] = alteredModel.modelFaces[i];
-        }
-
-        alteredModel.modelFaces = newModelFaces;
-        return alteredModel;
+        return out;
     }
+
+
 
     public ModelLoader extendTopFace(){
         ModelLoader alteredModel = new ModelLoader();
@@ -1596,7 +554,12 @@ public final class ModelLoader{
                     alteredFace.vertices[j].x = this.modelFaces[i].vertices[j].x;
                     alteredFace.vertices[j].y = this.modelFaces[i].vertices[j].y;
                     alteredFace.vertices[j].z = this.modelFaces[i].vertices[j].z;
+
+                    alteredFace.UVs[j][0] = this.modelFaces[i].UVs[j][0];
+                    alteredFace.UVs[j][1] = this.modelFaces[i].UVs[j][1];
                 }
+                alteredFace.setNormal(this.modelFaces[i].normal.x, this.modelFaces[i].normal.y, this.modelFaces[i].normal.z);
+                alteredFace.texture = this.modelFaces[i].texture;
                 alteredModel.addModelFace(alteredFace);
             }
         }
@@ -1643,7 +606,12 @@ public final class ModelLoader{
                     alteredFace.vertices[j].x = this.modelFaces[i].vertices[j].x;
                     alteredFace.vertices[j].y = this.modelFaces[i].vertices[j].y;
                     alteredFace.vertices[j].z = this.modelFaces[i].vertices[j].z;
+
+                    alteredFace.UVs[j][0] = this.modelFaces[i].UVs[j][0];
+                    alteredFace.UVs[j][1] = this.modelFaces[i].UVs[j][1];
                 }
+                alteredFace.setNormal(this.modelFaces[i].normal.x, this.modelFaces[i].normal.y, this.modelFaces[i].normal.z);
+                alteredFace.texture = this.modelFaces[i].texture;
                 alteredModel.addModelFace(alteredFace);
             }
         }
@@ -1690,7 +658,13 @@ public final class ModelLoader{
                     alteredFace.vertices[j].x = this.modelFaces[i].vertices[j].x;
                     alteredFace.vertices[j].y = this.modelFaces[i].vertices[j].y;
                     alteredFace.vertices[j].z = this.modelFaces[i].vertices[j].z;
+
+                    alteredFace.UVs[j][0] = this.modelFaces[i].UVs[j][0];
+                    alteredFace.UVs[j][1] = this.modelFaces[i].UVs[j][1];
+
                 }
+                alteredFace.setNormal(this.modelFaces[i].normal.x, this.modelFaces[i].normal.y, this.modelFaces[i].normal.z);
+                alteredFace.texture = this.modelFaces[i].texture;
                 alteredModel.addModelFace(alteredFace);
             }
         }
@@ -1742,7 +716,12 @@ public final class ModelLoader{
                     alteredFace.vertices[j].x = this.modelFaces[i].vertices[j].x;
                     alteredFace.vertices[j].y = this.modelFaces[i].vertices[j].y;
                     alteredFace.vertices[j].z = this.modelFaces[i].vertices[j].z;
+
+                    alteredFace.UVs[j][0] = this.modelFaces[i].UVs[j][0];
+                    alteredFace.UVs[j][1] = this.modelFaces[i].UVs[j][1];
                 }
+                alteredFace.setNormal(this.modelFaces[i].normal.x, this.modelFaces[i].normal.y, this.modelFaces[i].normal.z);
+                alteredFace.texture = this.modelFaces[i].texture;
                 alteredModel.addModelFace(alteredFace);
             }
         }
@@ -1794,7 +773,12 @@ public final class ModelLoader{
                     alteredFace.vertices[j].x = this.modelFaces[i].vertices[j].x;
                     alteredFace.vertices[j].y = this.modelFaces[i].vertices[j].y;
                     alteredFace.vertices[j].z = this.modelFaces[i].vertices[j].z;
+
+                    alteredFace.UVs[j][0] = this.modelFaces[i].UVs[j][0];
+                    alteredFace.UVs[j][1] = this.modelFaces[i].UVs[j][1];
                 }
+                alteredFace.setNormal(this.modelFaces[i].normal.x, this.modelFaces[i].normal.y, this.modelFaces[i].normal.z);
+                alteredFace.texture = this.modelFaces[i].texture;
                 alteredModel.addModelFace(alteredFace);
             }
         }
@@ -1849,7 +833,12 @@ public final class ModelLoader{
                     alteredFace.vertices[j].x = this.modelFaces[i].vertices[j].x;
                     alteredFace.vertices[j].y = this.modelFaces[i].vertices[j].y;
                     alteredFace.vertices[j].z = this.modelFaces[i].vertices[j].z;
+
+                    alteredFace.UVs[j][0] = this.modelFaces[i].UVs[j][0];
+                    alteredFace.UVs[j][1] = this.modelFaces[i].UVs[j][1];
                 }
+                alteredFace.setNormal(this.modelFaces[i].normal.x, this.modelFaces[i].normal.y, this.modelFaces[i].normal.z);
+                alteredFace.texture = this.modelFaces[i].texture;
                 alteredModel.addModelFace(alteredFace);
             }
         }
@@ -1930,10 +919,15 @@ public final class ModelLoader{
             returnModel.modelFaces[i].normal.y = this.modelFaces[i].normal.y;
             returnModel.modelFaces[i].normal.z = this.modelFaces[i].normal.z;
 
+            returnModel.modelFaces[i].texture = this.modelFaces[i].texture;
+
             for(int j = 0; j < returnModel.modelFaces[i].vertices.length; j++){
                 returnModel.modelFaces[i].vertices[j].x = this.modelFaces[i].vertices[j].x;
                 returnModel.modelFaces[i].vertices[j].y = this.modelFaces[i].vertices[j].y;
                 returnModel.modelFaces[i].vertices[j].z = this.modelFaces[i].vertices[j].z;
+
+                returnModel.modelFaces[i].UVs[j][0] = this.modelFaces[i].UVs[j][0];
+                returnModel.modelFaces[i].UVs[j][1] = this.modelFaces[i].UVs[j][1];
             }
         }
 

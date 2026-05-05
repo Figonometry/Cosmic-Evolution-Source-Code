@@ -10,7 +10,6 @@ import spacegame.item.IDecayItem;
 import spacegame.item.Item;
 import spacegame.render.RenderEngine;
 import spacegame.render.model.Model;
-import spacegame.render.model.ModelDeer;
 import spacegame.render.model.ModelWolf;
 import spacegame.util.MathUtil;
 import spacegame.world.World;
@@ -114,7 +113,7 @@ public final class EntityWolf extends EntityLiving implements IDecayable, IHarve
     }
 
     private boolean isPlayerInRange(){
-        return MathUtil.distance3DSquared(this.x, this.y, this.z, CosmicEvolution.instance.save.thePlayer.x, CosmicEvolution.instance.save.thePlayer.y, CosmicEvolution.instance.save.thePlayer.z) <= 40;
+        return MathUtil.distance3DSquared(this.x, this.y, this.z, CosmicEvolution.instance.save.thePlayer.x, CosmicEvolution.instance.save.thePlayer.y, CosmicEvolution.instance.save.thePlayer.z) <= 256;
     }
 
     private void setCanEntityJump(){
@@ -249,9 +248,9 @@ public final class EntityWolf extends EntityLiving implements IDecayable, IHarve
 
         this.updateGroundPosition(this.rawDeltaX, 0, 0);
 
-        if(this.boundingBox.clip(CosmicEvolution.instance.save.thePlayer.boundingBox) && !this.isDead){
+        if(this.boundingBox.clip(CosmicEvolution.instance.save.thePlayer.boundingBox) && !this.isDead && CosmicEvolution.instance.save.thePlayer.canDamage){
             CosmicEvolution.instance.save.thePlayer.damage(5);
-            //Play sound of the wolf attacking
+            CosmicEvolution.instance.soundPlayer.playSound(this.x, this.y, this.z, new Sound(Sound.wolfAttack, false, 1), 1.0f);
         }
 
         if(this.canMoveWithVector){
@@ -319,12 +318,12 @@ public final class EntityWolf extends EntityLiving implements IDecayable, IHarve
     @Override
     public void dropItems(double x, double y, double z, World world, EntityPlayer player) {
 
-        if(!player.addItemToInventory(Item.rawVenison.ID, Item.NULL_ITEM_METADATA, (byte) CosmicEvolution.globalRand.nextInt(1,5), Item.NULL_ITEM_DURABILITY, CosmicEvolution.instance.save.time + ((IDecayItem)(Item.rawVenison)).getDecayTime())){
-            world.addEntity(new EntityItem(this.x, this.y, this.z, Item.rawVenison.ID, Item.NULL_ITEM_METADATA, (byte) CosmicEvolution.globalRand.nextInt(1, 5), Item.NULL_ITEM_DURABILITY, world.ce.save.time + ((IDecayItem)Item.rawVenison).getDecayTime()));
+        if(!player.addItemToInventory(Item.rawGameMeat.ID, Item.NULL_ITEM_METADATA, (byte) CosmicEvolution.globalRand.nextInt(1,5), Item.NULL_ITEM_DURABILITY, CosmicEvolution.instance.save.time + ((IDecayItem)(Item.rawGameMeat)).getDecayTime())){
+            world.addEntity(new EntityItem(this.x, this.y, this.z, Item.rawGameMeat.ID, Item.NULL_ITEM_METADATA, (byte) CosmicEvolution.globalRand.nextInt(1, 5), Item.NULL_ITEM_DURABILITY, world.ce.save.time + ((IDecayItem)Item.rawGameMeat).getDecayTime()));
         }
             //Change to appropriate wolf drops
-        if(!player.addItemToInventory(Item.deerHide.ID, Item.NULL_ITEM_METADATA, (byte) 1, Item.NULL_ITEM_DURABILITY, 0)){
-            world.addEntity(new EntityItem(this.x, this.y, this.z, Item.deerHide.ID, Item.NULL_ITEM_METADATA, (byte) 1, Item.NULL_ITEM_DURABILITY, 0));
+        if(!player.addItemToInventory(Item.wolfPelt.ID, Item.NULL_ITEM_METADATA, (byte) 1, Item.NULL_ITEM_DURABILITY, 0)){
+            world.addEntity(new EntityItem(this.x, this.y, this.z, Item.wolfPelt.ID, Item.NULL_ITEM_METADATA, (byte) 1, Item.NULL_ITEM_DURABILITY, 0));
         }
 
 

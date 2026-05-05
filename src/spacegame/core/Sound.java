@@ -21,8 +21,6 @@ public final class Sound {
     public static String fallDamage = "src/spacegame/assets/sound/fallDamage.ogg";
     public static String deerHurt = "src/spacegame/assets/sound/deerHurt.ogg";
     public static String deerAmbient = "src/spacegame/assets/sound/deerAmbient.ogg";
-    public static String leftClickStoneCraftingMaterial = "src/spacegame/assets/sound/leftClickCraftingMaterialStone.ogg";
-    public static String rightClickStoneCraftingMaterial = "src/spacegame/assets/sound/rightClickCraftingMaterialStone.ogg";
     public static String fireCrackling = "src/spacegame/assets/sound/fireCrackling.ogg";
     public static String clay = "src/spacegame/assets/sound/stepClay.ogg";
     public static String rainIndoors = "src/spacegame/assets/sound/rainIndoors.ogg";
@@ -32,11 +30,13 @@ public final class Sound {
     public static String extinguish = "src/spacegame/assets/sound/extinguish.ogg";
     public static String wolfHurt = "src/spacegame/assets/sound/wolfHurt.ogg";
     public static String wolfAmbient = "src/spacegame/assets/sound/wolfAmbient.ogg";
+    public static String wolfAttack = "src/spacegame/assets/sound/wolfAttack.ogg";
+    public static String doorOpen = "src/spacegame/assets/sound/doorOpen.ogg";
+    public static String crunch = "src/spacegame/assets/sound/crunch.ogg";
     public static boolean canPlaySound = true;
     public String filepath;
     public int bufferID;
     public int sourceID;
-    public boolean isPlaying;
     public float soundMultiplier;
 
 

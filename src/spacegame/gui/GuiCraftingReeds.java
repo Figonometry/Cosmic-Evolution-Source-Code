@@ -86,7 +86,7 @@ public final class GuiCraftingReeds extends GuiCrafting {
         tessellator.addVertex2DTexture(0, backgroundX + (float) backgroundWidth / 2, backgroundY + (float) backgroundHeight / 2, backgroundZ, 1);
         tessellator.addVertex2DTexture(0, backgroundX - (float) backgroundWidth / 2, backgroundY + (float) backgroundHeight / 2, backgroundZ, 2);
         tessellator.addVertex2DTexture(0, backgroundX + (float) backgroundWidth / 2, backgroundY - (float) backgroundHeight / 2, backgroundZ, 0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
         tessellator.drawTexture2D(this.transparentBackground, Shader.screen2DTexture, CosmicEvolution.camera);
@@ -101,7 +101,7 @@ public final class GuiCraftingReeds extends GuiCrafting {
         tessellator.addVertex2DTexture(16777215, backgroundX + (float) backgroundWidth / 2, backgroundY + (float) backgroundHeight / 2, backgroundZ, 1);
         tessellator.addVertex2DTexture(16777215, backgroundX - (float) backgroundWidth / 2, backgroundY + (float) backgroundHeight / 2, backgroundZ, 2);
         tessellator.addVertex2DTexture(16777215, backgroundX + (float) backgroundWidth / 2, backgroundY - (float) backgroundHeight / 2, backgroundZ, 0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         tessellator.drawTexture2D(this.inventoryUI, Shader.screen2DTexture, CosmicEvolution.camera);
 
 
@@ -115,7 +115,7 @@ public final class GuiCraftingReeds extends GuiCrafting {
             tessellator.addVertex2DTexture(transparentColor, this.selectableRecipes[i].x + (this.selectableRecipes[i].width / 2), this.selectableRecipes[i].y + (this.selectableRecipes[i].height / 2), selectableZ, 1);
             tessellator.addVertex2DTexture(transparentColor, this.selectableRecipes[i].x - (this.selectableRecipes[i].width / 2), this.selectableRecipes[i].y + (this.selectableRecipes[i].height / 2), selectableZ, 2);
             tessellator.addVertex2DTexture(transparentColor, this.selectableRecipes[i].x + (this.selectableRecipes[i].width / 2), this.selectableRecipes[i].y - (this.selectableRecipes[i].height / 2), selectableZ, 0);
-            tessellator.addElements();
+            tessellator.addElementsCW();
         }
 
         tessellator.drawTexture2D(this.transparentBackground, Shader.screen2DTexture, CosmicEvolution.camera);
@@ -123,11 +123,11 @@ public final class GuiCraftingReeds extends GuiCrafting {
         selectableZ = -88;
         for (int i = 0; i < this.selectableRecipes.length; i++) {
             if(this.selectableRecipes[i].isBlock)continue;
-            tessellator.addVertexTextureArray(16777215, this.selectableRecipes[i].x - (this.selectableRecipes[i].width / 2), this.selectableRecipes[i].y - (this.selectableRecipes[i].height / 2), selectableZ, 3, Item.list[this.selectableRecipes[i].itemID].getTextureID( this.selectableRecipes[i].itemID, Item.NULL_ITEM_METADATA, RenderBlocks.WEST_FACE), RenderBlocks.WEST_FACE);
-            tessellator.addVertexTextureArray(16777215, this.selectableRecipes[i].x + (this.selectableRecipes[i].width / 2), this.selectableRecipes[i].y + (this.selectableRecipes[i].height / 2), selectableZ, 1, Item.list[this.selectableRecipes[i].itemID].getTextureID( this.selectableRecipes[i].itemID, Item.NULL_ITEM_METADATA, RenderBlocks.WEST_FACE), RenderBlocks.WEST_FACE);
-            tessellator.addVertexTextureArray(16777215, this.selectableRecipes[i].x - (this.selectableRecipes[i].width / 2), this.selectableRecipes[i].y + (this.selectableRecipes[i].height / 2), selectableZ, 2, Item.list[this.selectableRecipes[i].itemID].getTextureID( this.selectableRecipes[i].itemID, Item.NULL_ITEM_METADATA, RenderBlocks.WEST_FACE), RenderBlocks.WEST_FACE);
-            tessellator.addVertexTextureArray(16777215, this.selectableRecipes[i].x + (this.selectableRecipes[i].width / 2), this.selectableRecipes[i].y - (this.selectableRecipes[i].height / 2), selectableZ, 0, Item.list[this.selectableRecipes[i].itemID].getTextureID( this.selectableRecipes[i].itemID, Item.NULL_ITEM_METADATA, RenderBlocks.WEST_FACE), RenderBlocks.WEST_FACE);
-            tessellator.addElements();
+            tessellator.addVertexTextureArrayWithCorner(16777215, this.selectableRecipes[i].x - (this.selectableRecipes[i].width / 2), this.selectableRecipes[i].y - (this.selectableRecipes[i].height / 2), selectableZ, 3, Item.list[this.selectableRecipes[i].itemID].getTextureID( this.selectableRecipes[i].itemID, Item.NULL_ITEM_METADATA, RenderBlocks.WEST_FACE));
+            tessellator.addVertexTextureArrayWithCorner(16777215, this.selectableRecipes[i].x + (this.selectableRecipes[i].width / 2), this.selectableRecipes[i].y + (this.selectableRecipes[i].height / 2), selectableZ, 1, Item.list[this.selectableRecipes[i].itemID].getTextureID( this.selectableRecipes[i].itemID, Item.NULL_ITEM_METADATA, RenderBlocks.WEST_FACE));
+            tessellator.addVertexTextureArrayWithCorner(16777215, this.selectableRecipes[i].x - (this.selectableRecipes[i].width / 2), this.selectableRecipes[i].y + (this.selectableRecipes[i].height / 2), selectableZ, 2, Item.list[this.selectableRecipes[i].itemID].getTextureID( this.selectableRecipes[i].itemID, Item.NULL_ITEM_METADATA, RenderBlocks.WEST_FACE));
+            tessellator.addVertexTextureArrayWithCorner(16777215, this.selectableRecipes[i].x + (this.selectableRecipes[i].width / 2), this.selectableRecipes[i].y - (this.selectableRecipes[i].height / 2), selectableZ, 0, Item.list[this.selectableRecipes[i].itemID].getTextureID( this.selectableRecipes[i].itemID, Item.NULL_ITEM_METADATA, RenderBlocks.WEST_FACE));
+            tessellator.addElementsCW();
         }
 
         tessellator.drawTextureArray(Assets.itemTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
@@ -145,23 +145,22 @@ public final class GuiCraftingReeds extends GuiCrafting {
             int red = 255;
             int green = 255;
             int blue = 255;
-            float[] UVSamples;
             for (int face = 0; face < 6; face++) {
                 faces = model.getModelFaceOfType(face);
                 for (int j = 0; j < faces.length; j++) {
                     if (faces[j] == null) continue;
                     textureID = Block.list[this.selectableRecipes[i].blockID].getBlockTexture(this.selectableRecipes[i].blockID, face);
-                    UVSamples = face == RenderBlocks.TOP_FACE || face == RenderBlocks.BOTTOM_FACE ? RenderBlocks.autoUVTopBottom(RenderBlocks.getFaceWidth(faces[j]), RenderBlocks.getFaceHeight(faces[j])) : RenderBlocks.autoUVNSEW(RenderBlocks.getFaceWidth(faces[j]), RenderBlocks.getFaceHeight(faces[j]));
+
                     vertex1 = new Vector3f(faces[j].vertices[0].x, faces[j].vertices[0].y, faces[j].vertices[0].z).mul(38).rotateY((float) (0.25 * Math.PI)).rotateX((float) (0.20 * Math.PI)).add(position);
                     vertex2 = new Vector3f(faces[j].vertices[1].x, faces[j].vertices[1].y, faces[j].vertices[1].z).mul(38).rotateY((float) (0.25 * Math.PI)).rotateX((float) (0.20 * Math.PI)).add(position);
                     vertex3 = new Vector3f(faces[j].vertices[2].x, faces[j].vertices[2].y, faces[j].vertices[2].z).mul(38).rotateY((float) (0.25 * Math.PI)).rotateX((float) (0.20 * Math.PI)).add(position);
                     vertex4 = new Vector3f(faces[j].vertices[3].x, faces[j].vertices[3].y, faces[j].vertices[3].z).mul(38).rotateY((float) (0.25 * Math.PI)).rotateX((float) (0.20 * Math.PI)).add(position);
 
-                    tessellator.addVertexTextureArrayWithSampling(((red << 16) | (green << 8) | blue), vertex1.x, vertex1.y, vertex1.z, 3, textureID, UVSamples[0], UVSamples[1]);
-                    tessellator.addVertexTextureArrayWithSampling(((red << 16) | (green << 8) | blue), vertex2.x, vertex2.y, vertex2.z, 1, textureID, UVSamples[2], UVSamples[3]);
-                    tessellator.addVertexTextureArrayWithSampling(((red << 16) | (green << 8) | blue), vertex3.x, vertex3.y, vertex3.z, 2, textureID, UVSamples[4], UVSamples[5]);
-                    tessellator.addVertexTextureArrayWithSampling(((red << 16) | (green << 8) | blue), vertex4.x, vertex4.y, vertex4.z, 0, textureID, UVSamples[6], UVSamples[7]);
-                    tessellator.addElements();
+                    tessellator.addVertexTextureArrayWithUV(((red << 16) | (green << 8) | blue), vertex1.x, vertex1.y, vertex1.z, textureID, faces[j].UVs[0][0], faces[j].UVs[0][1]);
+                    tessellator.addVertexTextureArrayWithUV(((red << 16) | (green << 8) | blue), vertex2.x, vertex2.y, vertex2.z, textureID, faces[j].UVs[1][0], faces[j].UVs[1][1]);
+                    tessellator.addVertexTextureArrayWithUV(((red << 16) | (green << 8) | blue), vertex3.x, vertex3.y, vertex3.z, textureID, faces[j].UVs[2][0], faces[j].UVs[2][1]);
+                    tessellator.addVertexTextureArrayWithUV(((red << 16) | (green << 8) | blue), vertex4.x, vertex4.y, vertex4.z, textureID, faces[j].UVs[3][0], faces[j].UVs[3][1]);
+                    tessellator.addElementsCCW();
 
                     red -= 10;
                     green -= 10;
@@ -177,7 +176,7 @@ public final class GuiCraftingReeds extends GuiCrafting {
             tessellator.addVertex2DTexture(16777215, this.selectableRecipes[i].x + (this.selectableRecipes[i].width / 2), this.selectableRecipes[i].y + (this.selectableRecipes[i].height / 2), selectableZ, 1);
             tessellator.addVertex2DTexture(16777215, this.selectableRecipes[i].x - (this.selectableRecipes[i].width / 2), this.selectableRecipes[i].y + (this.selectableRecipes[i].height / 2), selectableZ, 2);
             tessellator.addVertex2DTexture(16777215, this.selectableRecipes[i].x + (this.selectableRecipes[i].width / 2), this.selectableRecipes[i].y - (this.selectableRecipes[i].height / 2), selectableZ, 0);
-            tessellator.addElements();
+            tessellator.addElementsCW();
         }
 
 
@@ -205,7 +204,7 @@ public final class GuiCraftingReeds extends GuiCrafting {
                 tessellator.addVertex2DTexture(0, x + width, y + height, -10, 1);
                 tessellator.addVertex2DTexture(0, x, y + height, -10, 2);
                 tessellator.addVertex2DTexture(0, x + width, y, -10, 0);
-                tessellator.addElements();
+                tessellator.addElementsCW();
                 GL46.glEnable(GL46.GL_BLEND);
                 GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
                 tessellator.drawTexture2D(this.transparentBackground, Shader.screen2DTexture, CosmicEvolution.camera);
@@ -222,11 +221,11 @@ public final class GuiCraftingReeds extends GuiCrafting {
                     x += 64 + (hoveredRecipe.requiredItemCount[i] >= 100 ? 2 * 17 : hoveredRecipe.requiredItemCount[i] >= 10 ? 17 : 0);
                     y -= 8;
                     tessellator.toggleOrtho();
-                    tessellator.addVertexTextureArray(16777215, x, y, -9, 3, Item.list[hoveredRecipe.requiredItems[i]].getTextureID(hoveredRecipe.requiredItems[i], Item.NULL_ITEM_METADATA, RenderBlocks.WEST_FACE), RenderBlocks.WEST_FACE);
-                    tessellator.addVertexTextureArray(16777215, x + 64, y + 64, -9, 1, Item.list[hoveredRecipe.requiredItems[i]].getTextureID(hoveredRecipe.requiredItems[i], Item.NULL_ITEM_METADATA, RenderBlocks.WEST_FACE), RenderBlocks.WEST_FACE);
-                    tessellator.addVertexTextureArray(16777215, x, y + 64, -9, 2, Item.list[hoveredRecipe.requiredItems[i]].getTextureID(hoveredRecipe.requiredItems[i], Item.NULL_ITEM_METADATA, RenderBlocks.WEST_FACE), RenderBlocks.WEST_FACE);
-                    tessellator.addVertexTextureArray(16777215, x + 64, y, -9, 0, Item.list[hoveredRecipe.requiredItems[i]].getTextureID(hoveredRecipe.requiredItems[i], Item.NULL_ITEM_METADATA, RenderBlocks.WEST_FACE), RenderBlocks.WEST_FACE);
-                    tessellator.addElements();
+                    tessellator.addVertexTextureArrayWithCorner(16777215, x, y, -9, 3, Item.list[hoveredRecipe.requiredItems[i]].getTextureID(hoveredRecipe.requiredItems[i], Item.NULL_ITEM_METADATA, RenderBlocks.WEST_FACE));
+                    tessellator.addVertexTextureArrayWithCorner(16777215, x + 64, y + 64, -9, 1, Item.list[hoveredRecipe.requiredItems[i]].getTextureID(hoveredRecipe.requiredItems[i], Item.NULL_ITEM_METADATA, RenderBlocks.WEST_FACE));
+                    tessellator.addVertexTextureArrayWithCorner(16777215, x, y + 64, -9, 2, Item.list[hoveredRecipe.requiredItems[i]].getTextureID(hoveredRecipe.requiredItems[i], Item.NULL_ITEM_METADATA, RenderBlocks.WEST_FACE));
+                    tessellator.addVertexTextureArrayWithCorner(16777215, x + 64, y, -9, 0, Item.list[hoveredRecipe.requiredItems[i]].getTextureID(hoveredRecipe.requiredItems[i], Item.NULL_ITEM_METADATA, RenderBlocks.WEST_FACE));
+                    tessellator.addElementsCW();
                     GL46.glEnable(GL46.GL_BLEND);
                     GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
                     tessellator.drawTextureArray(Assets.itemTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);

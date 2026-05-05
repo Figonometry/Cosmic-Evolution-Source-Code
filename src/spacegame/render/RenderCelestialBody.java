@@ -8,7 +8,6 @@ import org.lwjgl.opengl.GL46;
 import spacegame.celestial.CelestialObject;
 import spacegame.celestial.Sun;
 import spacegame.core.CosmicEvolution;
-import spacegame.gui.Gui;
 import spacegame.util.MathUtil;
 import spacegame.gui.GuiUniverseMap;
 
@@ -84,7 +83,7 @@ public final class RenderCelestialBody {
                 tessellator.addVertex2DTexture(9983, (float) (x - sizeX - (celestialObject.focalDistance * GuiUniverseMap.mapScale)), y2, z2, 1);
                 tessellator.addVertex2DTexture(9983, (float) (x + sizeX - (celestialObject.focalDistance * GuiUniverseMap.mapScale)), y2, z2, 2);
                 tessellator.addVertex2DTexture(9983, (float) (x - sizeX - (celestialObject.focalDistance * GuiUniverseMap.mapScale)), y1, z1, 0);
-                tessellator.addElements();
+                tessellator.addElementsCW();
                 GL46.glEnable(GL46.GL_BLEND);
                 GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
                 tessellator.drawTexture2D(GuiUniverseMap.orbitLine, Shader.universeShader2DTexture, GuiUniverseMap.universeCamera);
@@ -148,7 +147,7 @@ public final class RenderCelestialBody {
             tessellator.addVertex2DTexture(((Sun) celestialObject).lightColor, (float) vertex2SunFlare.x, (float) vertex2SunFlare.y, (float) vertex2SunFlare.z, 1);
             tessellator.addVertex2DTexture(((Sun) celestialObject).lightColor, (float) vertex3SunFlare.x, (float) vertex3SunFlare.y, (float) vertex3SunFlare.z, 2);
             tessellator.addVertex2DTexture(((Sun) celestialObject).lightColor, (float) vertex4SunFlare.x, (float) vertex4SunFlare.y, (float) vertex4SunFlare.z, 0);
-            tessellator.addElements();
+            tessellator.addElementsCW();
             GL46.glEnable(GL46.GL_BLEND);
             GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_COLOR);
             tessellator.drawTexture2D(Sun.sunFlare, Shader.universeShader2DTexture, GuiUniverseMap.universeCamera);

@@ -23,7 +23,7 @@ public abstract class GameSettings {
     public static boolean wavyLeaves = true;
     public static boolean wavyWater = true;
     public static boolean transparentLeaves;
-    public static String assetPackPath = "Default:";
+    public static String assetPackPath = "Default:null";
     public static boolean usingDefaultAssets;
     public static KeyBinding keyBeingModified;
     public static KeyBinding forwardKey = new KeyBinding("Forward", "W", GLFW.GLFW_KEY_W);

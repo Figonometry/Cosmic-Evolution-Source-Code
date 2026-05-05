@@ -21,31 +21,31 @@ public class Block {
     public static final int NULL_BLOCK_REFERENCE = -1;
     public static final String modelFolderPath = "src/spacegame/assets/models/blockModels/";
     public static final String blockFolderPath = "src/spacegame/assets/blockFiles/";
-    public static final ModelLoader standardBlockModel = new ModelLoader(modelFolderPath + "standardBlock.obj");
-    public static final ModelLoader torchBlockModel = new ModelLoader(modelFolderPath + "torch.obj");
-    public static final ModelLoader torchNorthBlockModel = new ModelLoader(modelFolderPath + "torchNorth.obj");
-    public static final ModelLoader torchSouthBlockModel = new ModelLoader(modelFolderPath + "torchSouth.obj");
-    public static final ModelLoader torchEastBlockModel = new ModelLoader(modelFolderPath + "torchEast.obj");
-    public static final ModelLoader torchWestBlockModel = new ModelLoader(modelFolderPath + "torchWest.obj");
-    public static final ModelLoader xCrossBlockModel = new ModelLoader(modelFolderPath + "xCrossBlock.obj");
-    public static final ModelLoader topFaceBlockModel = new ModelLoader(modelFolderPath + "topFaceBlock.obj");
-    public static final ModelLoader fireBlockModel = new ModelLoader(modelFolderPath + "fire.obj");
-    public static final ModelLoader itemStoneModel = new ModelLoader(modelFolderPath + "itemStone.obj");
-    public static final ModelLoader berryBushModel = new ModelLoader(modelFolderPath + "berryBush.obj");
-    public static final ModelLoader itemStickModel = new ModelLoader(modelFolderPath + "itemStick.obj");
-    public static final ModelLoader campFireBase = new ModelLoader(modelFolderPath + "campFireBase.obj");
-    public static final ModelLoader fireWood = new ModelLoader(modelFolderPath + "fireWood.obj");
-    public static final ModelLoader strawChestBuild0 = new ModelLoader(modelFolderPath + "strawChestBuild0.obj");
-    public static final ModelLoader strawChestBuild1 = new ModelLoader(modelFolderPath + "strawChestBuild1.obj");
-    public static final ModelLoader strawChestModel = new ModelLoader(modelFolderPath + "strawChest.obj");
-    public static final ModelLoader itemClayModel = new ModelLoader(modelFolderPath + "itemClay.obj");
-    public static final ModelLoader clayCookingPotModel = new ModelLoader(modelFolderPath + "clayCookingPot.obj");
-    public static final ModelLoader largeFireWood = new ModelLoader(modelFolderPath + "largeFireWood.obj");
-    public static final ModelLoader brick = new ModelLoader(modelFolderPath + "brick.obj");
-    public static final ModelLoader quarterBlockModel = new ModelLoader(modelFolderPath + "quarterBlock.obj");
-    public static final ModelLoader itemVoxelModel = new ModelLoader(modelFolderPath + "itemVoxel.obj");
-    public static final ModelLoader crafting3DItemVoxelModel = new ModelLoader(modelFolderPath + "crafting3DVoxel.obj");
-    public static final ModelLoader centeredVoxel = new ModelLoader(modelFolderPath + "centeredVoxel.obj").getScaledModel(0.5f);
+    public static final ModelLoader standardBlockModel = new ModelLoader(modelFolderPath + "standardBlock.obj", false);
+    public static final ModelLoader torchBlockModel = new ModelLoader(modelFolderPath + "torch.obj", false);
+    public static final ModelLoader torchNorthBlockModel = new ModelLoader(modelFolderPath + "torchNorth.obj", false);
+    public static final ModelLoader torchSouthBlockModel = new ModelLoader(modelFolderPath + "torchSouth.obj", false);
+    public static final ModelLoader torchEastBlockModel = new ModelLoader(modelFolderPath + "torchEast.obj", false);
+    public static final ModelLoader torchWestBlockModel = new ModelLoader(modelFolderPath + "torchWest.obj", false);
+    public static final ModelLoader xCrossBlockModel = new ModelLoader(modelFolderPath + "xCrossBlock.obj", false);
+    public static final ModelLoader topFaceBlockModel = new ModelLoader(modelFolderPath + "topFaceBlock.obj", false);
+    public static final ModelLoader fireBlockModel = new ModelLoader(modelFolderPath + "fire.obj", false);
+    public static final ModelLoader itemStoneModel = new ModelLoader(modelFolderPath + "itemStone.obj", false);
+    public static final ModelLoader berryBushModel = new ModelLoader(modelFolderPath + "berryBush.obj", false);
+    public static final ModelLoader itemStickModel = new ModelLoader(modelFolderPath + "itemStick.obj", false);
+    public static final ModelLoader campFireBase = new ModelLoader(modelFolderPath + "campFireBase.obj", false);
+    public static final ModelLoader fireWood = new ModelLoader(modelFolderPath + "fireWood.obj", false);
+    public static final ModelLoader strawChestModel = new ModelLoader(modelFolderPath + "strawChest.obj", false);
+    public static final ModelLoader itemClayModel = new ModelLoader(modelFolderPath + "itemClay.obj", false);
+    public static final ModelLoader clayCookingPotModel = new ModelLoader(modelFolderPath + "clayCookingPot.obj", false);
+    public static final ModelLoader largeFireWood = new ModelLoader(modelFolderPath + "largeFireWood.obj", false);
+    public static final ModelLoader brick = new ModelLoader(modelFolderPath + "brick.obj", false);
+    public static final ModelLoader quarterBlockModel = new ModelLoader(modelFolderPath + "quarterBlock.obj", false);
+    public static final ModelLoader itemVoxelModel = new ModelLoader(modelFolderPath + "itemVoxel.obj", false);
+    public static final ModelLoader crafting3DItemVoxelModel = new ModelLoader(modelFolderPath + "crafting3DVoxel.obj", false);
+    public static final ModelLoader centeredVoxel = new ModelLoader(modelFolderPath + "centeredVoxel.obj", false).getScaledModel(0.5f);
+    public static final ModelLoader primitiveDoorUpper = new ModelLoader(modelFolderPath + "primitiveDoorUpper.obj", true);
+    public static final ModelLoader primitiveDoorLower = new ModelLoader(modelFolderPath + "primitiveDoorLower.obj", true);
     public static final ModelLoader size15NormalModel = standardBlockModel.alterStandardBlockModel(1,0,1);
     public static final ModelLoader size14NormalModel = standardBlockModel.alterStandardBlockModel(2,0,2);
     public static final ModelLoader size13NormalModel = standardBlockModel.alterStandardBlockModel(3,0,3);
@@ -98,6 +98,10 @@ public class Block {
     public static final AxisAlignedBB slab = new AxisAlignedBB(0, 0, 0, 1, 0.5, 1);
     public static final AxisAlignedBB threeQuartersBlock = new AxisAlignedBB(0, 0, 0, 1, 0.75f, 1);
     public static final AxisAlignedBB oneVoxelHighBlock = new AxisAlignedBB(0, 0, 0, 1, 0.03125f, 1);
+    public static final AxisAlignedBB northDoor = new AxisAlignedBB(0, 0, 0, 0.125, 1, 1);
+    public static final AxisAlignedBB southDoor = new AxisAlignedBB(0.875,0,0, 1, 1, 1);
+    public static final AxisAlignedBB eastDoor = new AxisAlignedBB(0,0,0,1,1,0.125);
+    public static final AxisAlignedBB westDoor = new AxisAlignedBB(0, 0, 0.875, 1, 1, 1);
     public static final Block[] list = new Block[Short.MAX_VALUE];
     public static final Block air = new Block((short) 0, -1, blockFolderPath + "air.txt");
     public static final Block grass = new BlockGrass((short) 1, 2, blockFolderPath + "grass.txt");
@@ -233,6 +237,24 @@ public class Block {
     public static final Block crafting3DItem = new BlockCrafting3D((short)131, -1, blockFolderPath + "crafting3DItem.txt");
     public static final Block primitiveCraftingTable = new BlockCraftingTable((short)132, 40, blockFolderPath + "primitiveCraftingTable.txt");
     public static final Block craftingItem = new BlockCrafting((short)133, -1, blockFolderPath + "craftingItem.txt");
+    public static final Block doorPrimitiveUpper = new BlockDoor((short)134, 42, blockFolderPath + "doorPrimitive.txt"); //Contains the texture ID
+    public static final Block doorNorthDoorHingeLeftClosed = new BlockDoor((short)135, -1, blockFolderPath + "northDoorClosedHingeLeft.txt");
+    public static final Block doorNorthDoorHingeRightClosed = new BlockDoor((short)136, -1, blockFolderPath + "northDoorClosedHingeRight.txt");
+    public static final Block doorNorthDoorHingeLeftOpen = new BlockDoor((short)137, -1, blockFolderPath + "northDoorOpenHingeLeft.txt");
+    public static final Block doorNorthDoorHingeRightOpen = new BlockDoor((short)138, -1, blockFolderPath + "northDoorOpenHingeRight.txt");
+    public static final Block doorSouthDoorHingeLeftClosed = new BlockDoor((short)139, -1, blockFolderPath + "southDoorClosedHingeLeft.txt");
+    public static final Block doorSouthDoorHingeRightClosed = new BlockDoor((short)140, -1, blockFolderPath + "southDoorClosedHingeRight.txt");
+    public static final Block doorSouthDoorHingeLeftOpen = new BlockDoor((short)141, -1, blockFolderPath + "southDoorOpenHingeLeft.txt");
+    public static final Block doorSouthDoorHingeRightOpen = new BlockDoor((short)142, -1, blockFolderPath + "southDoorOpenHingeRight.txt");
+    public static final Block doorEastDoorHingeLeftClosed = new BlockDoor((short)143, -1, blockFolderPath + "eastDoorClosedHingeLeft.txt");
+    public static final Block doorEastDoorHingeRightClosed = new BlockDoor((short)144, -1, blockFolderPath + "eastDoorClosedHingeRight.txt");
+    public static final Block doorEastDoorHingeLeftOpen = new BlockDoor((short)145, -1, blockFolderPath + "eastDoorOpenHingeLeft.txt");
+    public static final Block doorEastDoorHingeRightOpen = new BlockDoor((short)146, -1, blockFolderPath + "eastDoorOpenHingeRight.txt");
+    public static final Block doorWestDoorHingeLeftClosed = new BlockDoor((short)147, -1, blockFolderPath + "westDoorClosedHingeLeft.txt");
+    public static final Block doorWestDoorHingeRightClosed = new BlockDoor((short)148, -1, blockFolderPath + "westDoorClosedHingeRight.txt");
+    public static final Block doorWestDoorHingeLeftOpen = new BlockDoor((short)149, -1, blockFolderPath + "westDoorOpenHingeLeft.txt");
+    public static final Block doorWestDoorHingeRightOpen = new BlockDoor((short)150, -1, blockFolderPath + "westDoorOpenHingeRight.txt");
+    public static final Block doorPrimitiveLower = new BlockDoor((short)151, 42, blockFolderPath + "doorPrimitive.txt");
     public final short ID;
     public final int textureID;
     public static int facingDirection;
@@ -268,6 +290,8 @@ public class Block {
     public boolean alwaysRenderFace;
     public boolean colorize;
     public boolean waterlogged;
+    public String faceDirection;
+    public boolean isDoorOpen;
 
     public Block(short ID, int textureID, String filepath) {
         if (list[ID] != null) {
@@ -360,6 +384,10 @@ public class Block {
                     case "threeQuartersBlock" -> this.standardCollisionBoundingBox = threeQuartersBlock;
                     case "fullBlock" -> this.standardCollisionBoundingBox = fullBlock;
                     case "oneVoxelHighBlock" ->  this.standardCollisionBoundingBox = oneVoxelHighBlock;
+                    case "northDoor" -> this.standardCollisionBoundingBox = northDoor;
+                    case "southDoor" -> this.standardCollisionBoundingBox = southDoor;
+                    case "eastDoor" -> this.standardCollisionBoundingBox = eastDoor;
+                    case "westDoor" -> this.standardCollisionBoundingBox = westDoor;
                 }
             }
 
@@ -378,11 +406,10 @@ public class Block {
                     case "berryBushModel" -> this.blockModel = berryBushModel;
                     case "itemStickModel" -> this.blockModel = itemStickModel;
                     case "campFireBase" -> this.blockModel = campFireBase;
-                    case "strawChestBuild0" -> this.blockModel = strawChestBuild0;
-                    case "strawChestBuild1" -> this.blockModel = strawChestBuild1;
                     case "strawChestModel" -> this.blockModel = strawChestModel;
                     case "itemClayModel" -> this.blockModel = itemClayModel;
                     case "clayCookingPotModel" -> this.blockModel = clayCookingPotModel;
+                    case "primitiveDoorUpper" -> this.blockModel = primitiveDoorUpper;
                     case "size2VoxelModel" -> this.blockModel = size2VoxelModel;
                     case "size15NormalModel" -> this.blockModel = size15NormalModel;
                     case "size14NormalModel" -> this.blockModel = size14NormalModel;
@@ -469,6 +496,14 @@ public class Block {
 
             if (properties[0].equals("itemDropChance")) {
                 this.itemDropChance = Float.parseFloat(properties[1]);
+            }
+
+            if(properties[0].equals("faceDirection")){
+                this.faceDirection = properties[1];
+            }
+
+            if(properties[0].equals("isDoorOpen")){
+                this.isDoorOpen = Boolean.parseBoolean(properties[1]);
             }
         }
         try {
@@ -719,6 +754,52 @@ public class Block {
                     return;
                 }
             }
+            case "DOOR_PRIMITIVE" -> {
+                switch (player.getPlayerCardinalFaceDirection()){
+                    case "North" -> {
+                        if(world.getBlockID(x, y, z - 1) == Block.doorSouthDoorHingeRightClosed.ID){
+                            world.setBlock(x, y, z - 1, Block.doorSouthDoorHingeLeftClosed.ID);
+                            heldBlock =  Block.doorSouthDoorHingeRightClosed.ID;
+                        } else if(world.getBlockID(x, y, z + 1) == Block.doorSouthDoorHingeRightClosed.ID){
+                            heldBlock =  Block.doorSouthDoorHingeLeftClosed.ID;
+                        } else {
+                            heldBlock =  Block.doorSouthDoorHingeRightClosed.ID;
+                        }
+                    }
+                    case "South" -> {
+                        if(world.getBlockID(x, y, z - 1) == Block.doorNorthDoorHingeRightClosed.ID){
+                            heldBlock =  Block.doorNorthDoorHingeLeftClosed.ID;
+                        } else if(world.getBlockID(x, y, z + 1) == Block.doorNorthDoorHingeRightClosed.ID){
+                            world.setBlock(x, y, z + 1, Block.doorNorthDoorHingeLeftClosed.ID);
+                            heldBlock =  Block.doorNorthDoorHingeRightClosed.ID;
+                        } else {
+                            heldBlock =  Block.doorNorthDoorHingeRightClosed.ID;
+                        }
+                    }
+                    case "East" -> {
+                        if(world.getBlockID(x + 1, y, z) == Block.doorWestDoorHingeRightClosed.ID){
+                            world.setBlock(x + 1, y, z, Block.doorWestDoorHingeLeftClosed.ID);
+                            heldBlock =  Block.doorWestDoorHingeRightClosed.ID;
+                        } else if(world.getBlockID(x - 1, y, z) == Block.doorWestDoorHingeRightClosed.ID){
+                            heldBlock =  Block.doorWestDoorHingeLeftClosed.ID;
+                        } else {
+                            heldBlock =  Block.doorWestDoorHingeRightClosed.ID;
+                        }
+                    }
+                    case "West" -> {
+                        if(world.getBlockID(x + 1, y, z) == Block.doorEastDoorHingeRightClosed.ID){
+                            heldBlock =  Block.doorEastDoorHingeLeftClosed.ID;
+                        } else if(world.getBlockID(x - 1, y, z) == Block.doorEastDoorHingeRightClosed.ID){
+                            world.setBlock(x - 1, y, z, Block.doorEastDoorHingeLeftClosed.ID);
+                            heldBlock =  Block.doorEastDoorHingeRightClosed.ID;
+                        } else {
+                            heldBlock =  Block.doorEastDoorHingeRightClosed.ID;
+                        }
+                    }
+
+                }
+                world.setBlock(x, y + 1, z, Block.doorPrimitiveUpper.ID);
+            }
         };
 
         if(list[heldBlock].requireSolidBlockBelow){
@@ -763,6 +844,15 @@ public class Block {
 
     public static int getRandomTickRate(){
         return 60;
+    }
+
+    public void adjustBoundingBox(int x, int y, int z, AxisAlignedBB boundingBox){
+        boundingBox.minX = x + this.standardCollisionBoundingBox.minX;
+        boundingBox.maxX = x + this.standardCollisionBoundingBox.maxX;
+        boundingBox.minY = y + this.standardCollisionBoundingBox.minY;
+        boundingBox.maxY = y + this.standardCollisionBoundingBox.maxY;
+        boundingBox.minZ = z + this.standardCollisionBoundingBox.minZ;
+        boundingBox.maxZ = z + this.standardCollisionBoundingBox.maxZ;
     }
 
     public String getStepSound(int x, int y, int z){

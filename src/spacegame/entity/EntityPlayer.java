@@ -7,6 +7,7 @@ import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
+import spacegame.block.BlockDoor;
 import spacegame.core.*;
 import spacegame.gui.*;
 import spacegame.item.IDecayItem;
@@ -79,6 +80,7 @@ public final class EntityPlayer extends EntityLiving {
     public boolean animate;
     public Model model;
     public int outOfWaterJumpDelay = 0;
+    public long timeStartedBreakingBlock = Long.MIN_VALUE;
 
     public EntityPlayer(CosmicEvolution cosmicEvolution, double x, double y, double z) {
         super(Integer.MAX_VALUE);
@@ -614,7 +616,7 @@ public final class EntityPlayer extends EntityLiving {
                 this.damage(5);
                 this.drowningTimer -= 60;
             }
-        } else if(Block.list[headBlock].isSolid){
+        } else if(Block.list[headBlock].isSolid && !(Block.list[headBlock] instanceof BlockDoor)){
             this.damage(0.1f);
         } else {
             Shader.worldShaderTextureArray.uploadBoolean("underwater", false);
@@ -964,7 +966,7 @@ public final class EntityPlayer extends EntityLiving {
             tessellator.addVertex2DTexture(16777215, (float) ((MathUtil.positiveMod(this.x, 32)) - (this.width / 1.5)), (float) ((MathUtil.positiveMod(this.y, 32)) - (this.height/2) + 0.01F), (float) ((MathUtil.positiveMod(this.z, 32)) + (this.width / 1.5)), 1);
             tessellator.addVertex2DTexture(16777215, (float) ((MathUtil.positiveMod(this.x, 32)) + (this.width / 1.5)), (float) ((MathUtil.positiveMod(this.y, 32)) - (this.height/2) + 0.01F), (float) ((MathUtil.positiveMod(this.z, 32)) + (this.width / 1.5)), 2);
             tessellator.addVertex2DTexture(16777215, (float) ((MathUtil.positiveMod(this.x, 32)) - (this.width / 1.5)), (float) ((MathUtil.positiveMod(this.y, 32)) - (this.height/2) + 0.01F), (float) ((MathUtil.positiveMod(this.z, 32)) - (this.width / 1.5)), 0);
-            tessellator.addElements();
+            tessellator.addElementsCW();
             GL46.glEnable(GL46.GL_BLEND);
             GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
             tessellator.drawTexture2D(shadow, Shader.worldShader2DTexture, CosmicEvolution.camera);
@@ -1068,6 +1070,24 @@ public final class EntityPlayer extends EntityLiving {
         this.model = ModelPlayer.getBaseModel();
         this.model.animate(this.animationTimer, this.animate, this);
         this.model.renderModelForShadowMap(this, sunX, sunY, sunZ);
+    }
+
+
+    public String getPlayerCardinalFaceDirection(){
+            if(this.yaw >= 225 && this.yaw <= 315){
+                return "West";
+            }
+            if(this.yaw >= 45 && this.yaw <= 135){
+                return "East";
+            }
+            if((this.yaw >= 0 && this.yaw <= 45) || (this.yaw >= 315 && this.yaw <= 359.9F)){
+                return "North";
+            }
+            if(this.yaw >= 135 && this.yaw <= 225){
+                return "South";
+            }
+
+            throw new IllegalStateException("Unknown facing direction");
     }
 
 

@@ -1,6 +1,5 @@
 package spacegame.gui;
 
-import org.lwjgl.glfw.GLFW;
 import spacegame.core.*;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
@@ -38,7 +37,7 @@ public final class TextField {
         tessellator.addVertex2DTexture(16777215, this.x + this.width/2, this.y + this.height/2, outlineZ, 1);
         tessellator.addVertex2DTexture(16777215, this.x - this.width/2, this.y + this.height/2, outlineZ, 2);
         tessellator.addVertex2DTexture(16777215, this.x + this.width/2, this.y - this.height/2, outlineZ, 0);
-        tessellator.addElements();
+        tessellator.addElementsCW();
         tessellator.drawTexture2D(textFieldOutline, Shader.screen2DTexture, CosmicEvolution.camera);
 
         if(this.typing && this.text.length() < this.lineCharLimit) {
@@ -48,7 +47,7 @@ public final class TextField {
                 tessellator.addVertex2DTexture(16777215, this.x - this.width / 2 + ((this.text.length() + 1.2F) * 17) + 9, this.y + this.height / 2 - 5, cursorZ, 1);
                 tessellator.addVertex2DTexture(16777215, this.x - this.width / 2 + ((this.text.length() + 1.2F) * 17), this.y + this.height / 2 - 5, cursorZ, 2);
                 tessellator.addVertex2DTexture(16777215, this.x - this.width / 2 + ((this.text.length() + 1.2F) * 17) + 9, this.y - this.height / 2 + 5, cursorZ, 0);
-                tessellator.addElements();
+                tessellator.addElementsCW();
                 tessellator.drawTexture2D(cursor, Shader.screen2DTexture, CosmicEvolution.camera);
             }
         }

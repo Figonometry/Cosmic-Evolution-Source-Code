@@ -1,0 +1,12 @@
+blockName:DOOR_EAST_CLOSED_HINGE_LEFT
+boundingBox:eastDoor
+blockModel:door
+stepSound:wood
+breakTimer:60
+hardness:0.05
+toolType:axe
+displayName:East Closed Door Lower
+faceDirection:East
+isDoorOpen:false
+alwaysRenderFace:true
+isSolid:false

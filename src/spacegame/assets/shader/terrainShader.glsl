@@ -210,6 +210,7 @@ vec4 setFinalColor(vec4 skyLightColor, vec4 vertexColor){
     }
 
 
+
     return finalColor;
 
     //Reconstruct the color of the grass/ whatever grayscale image needs to be colored by multiplying the vertex color by a precalculated value on the CPU side, the value's formula is 1 / vertexColor = y.

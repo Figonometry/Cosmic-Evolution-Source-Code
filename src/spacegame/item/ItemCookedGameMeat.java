@@ -2,8 +2,8 @@ package spacegame.item;
 
 import spacegame.core.Timer;
 
-public final class ItemCookedVenison extends ItemFood implements IDecayItem {
-    public ItemCookedVenison(short ID, int textureID, String filepath, float saturationIncrease) {
+public final class ItemCookedGameMeat extends ItemFood implements IDecayItem {
+    public ItemCookedGameMeat(short ID, int textureID, String filepath, float saturationIncrease) {
         super(ID, textureID, filepath, saturationIncrease);
     }
 
