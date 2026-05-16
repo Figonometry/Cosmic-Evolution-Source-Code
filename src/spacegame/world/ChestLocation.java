@@ -3,9 +3,9 @@ package spacegame.world;
 import spacegame.item.Inventory;
 
 public final class ChestLocation {
-    public short index;
+    public int index;
     public Inventory inventory;
-    public ChestLocation(short index, Inventory inventory){
+    public ChestLocation(int index, Inventory inventory){
         this.index = index;
         this.inventory = inventory;
     }

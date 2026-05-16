@@ -8,7 +8,7 @@ import spacegame.item.IHeatable;
 import spacegame.item.Item;
 
 public final class HeatableBlockLocation { //Trigger every 15 ticks, also is a "chest" slot 0 is fuel, slot 1 is input, slot 2 is output
-    public short index;
+    public int index;
     public float currentTemperature;
     public short currentFuelBurning;
     public long fuelBurnoutTime;
@@ -16,7 +16,7 @@ public final class HeatableBlockLocation { //Trigger every 15 ticks, also is a "
     public boolean heating;
     public long fuelStartTime;
     public long heatStartTime;
-    public HeatableBlockLocation(short index){
+    public HeatableBlockLocation(int index){
         this.index = index;
     }
 

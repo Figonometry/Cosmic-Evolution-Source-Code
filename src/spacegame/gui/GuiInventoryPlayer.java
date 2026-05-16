@@ -49,7 +49,7 @@ public final class GuiInventoryPlayer extends GuiInventory {
         int backgroundHeight = 1017;
         int backgroundX = 0;
         int backgroundY = 0;
-        int backgroundZ = -1000;
+        int backgroundZ = -10000;
         tessellator.addVertex2DTexture(0, backgroundX - backgroundWidth/2, backgroundY - backgroundHeight/2, backgroundZ, 3);
         tessellator.addVertex2DTexture(0, backgroundX + backgroundWidth/2, backgroundY + backgroundHeight/2, backgroundZ, 1);
         tessellator.addVertex2DTexture(0, backgroundX - backgroundWidth/2, backgroundY + backgroundHeight/2, backgroundZ, 2);
@@ -64,7 +64,7 @@ public final class GuiInventoryPlayer extends GuiInventory {
         int inventoryUIHeight = 608;
         int inventoryUIX = 5;
         int inventoryUIY = 0;
-        int inventoryUIZ = -900;
+        int inventoryUIZ = -9000;
         tessellator.addVertex2DTexture(16777215, inventoryUIX - inventoryUIWidth/2, inventoryUIY - inventoryUIHeight/2, inventoryUIZ, 3);
         tessellator.addVertex2DTexture(16777215, inventoryUIX + inventoryUIWidth/2, inventoryUIY + inventoryUIHeight/2, inventoryUIZ, 1);
         tessellator.addVertex2DTexture(16777215, inventoryUIX - inventoryUIWidth/2, inventoryUIY + inventoryUIHeight/2, inventoryUIZ, 2);

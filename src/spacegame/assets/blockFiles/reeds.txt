@@ -1,5 +1,5 @@
 blockName:REEDS
-blockModel:xCrossBlockModel
+blockModel:reedBottom
 stepSound:grass
 breakTimer:60
 hardness:0.05

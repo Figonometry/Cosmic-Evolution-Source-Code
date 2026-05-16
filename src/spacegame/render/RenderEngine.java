@@ -435,39 +435,53 @@ public final class RenderEngine {
                 case 41 -> "primitiveCraftingTableTop";
                 case 42 -> "primitiveDoorBase";
                 case 43 -> "twine";
+
+                //Items
+                case 44 -> "item-stone";
+                case 45 -> "item-berry";
+                case 46 -> "item-leaf";
+                case 47 -> "item-fireWood";
+                case 48 -> "item-rawGameMeat";
+                case 49 -> "item-cookedGameMeat";
+                case 50 -> "item-straw";
+                case 51 -> "item-twine";
+                case 52 -> "item-reedTop";
+                case 53 -> "item-clay";
+                case 54 -> "item-firedRedClay";
+                case 55 -> "item-mud";
+                case 56 -> "item-reedStalk";
+                case 57 -> "item-log";
+                case 58 -> "item-deerPeltTop";
+                case 59 -> "item-animalPeltUnder";
+                case 60 -> "item-wolfPeltTop";
+                case 61 -> "item-rot";
+                case 62 -> "item-primitiveDoorBase";
+
+
                 default -> "missing";
             };
         } else if(textureFolderpath.contains("item")){
             return switch (textureNumber) {
-                case 1 -> "torch";
+                case 0,1 -> "missing";
                 case 2 -> "stone";
-                case 3 -> "stoneFragments";
-                case 4 -> "stoneHandAxe";
-                case 5 -> "berry";
-                case 6 -> "rawStick";
-                case 7 -> "unlitTorch";
-                case 8 -> "fireWood";
-                case 9 -> "stoneHandKnife";
-                case 10 -> "stoneHandShovel";
-                case 11 -> "rawGameMeat";
-                case 12 -> "straw";
-                case 13 -> "strawBasket";
-                case 14 -> "clay";
-                case 15 -> "rawClayAdobeBrick";
-                case 16 -> "clayAdobeBrick";
-                case 17 -> "mud";
-                case 18 -> "reeds";
-                case 19 -> "berrySeed";
-                case 20 -> "cookedGameMeat";
-                case 21 -> "reedTwine";
-                case 22 -> "reedCraftingGrid";
-                case 23 -> "stoneAxe";
-                case 24 -> "stoneShovel";
-                case 25 -> "stoneKnife";
-                case 26 -> "deerPelt";
-                case 27 -> "rot";
-                case 28 -> "wolfPelt";
-                case 29 -> "primitiveDoor";
+                case 3 -> "berry";
+                case 4 -> "leaf";
+                case 5 -> "fireWood";
+                case 6 -> "rawGameMeat";
+                case 7 -> "cookedGameMeat";
+                case 8 -> "straw";
+                case 9 -> "twine";
+                case 10 -> "reedTop";
+                case 11 -> "clay";
+                case 12 -> "firedRedClay";
+                case 13 -> "mud";
+                case 14 -> "reedStalk";
+                case 15 -> "log";
+                case 16 -> "deerPeltTop";
+                case 17 -> "animalPeltUnder";
+                case 18 -> "wolfPeltTop";
+                case 19 -> "rot";
+                case 20 -> "primitiveDoorBase";
                 default -> "missing";
             };
         }

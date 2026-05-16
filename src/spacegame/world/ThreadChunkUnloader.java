@@ -112,21 +112,22 @@ public final class ThreadChunkUnloader implements Runnable {
                     entity.setInteger("entityCount", entityCount);
                 }
 
-                if (this.chunks[chunkIndex].chestLocations.size() > 0) {
+                if(this.chunks[chunkIndex].chestLocations.size() > 0){
                     ChestLocation chestLocation;
+                    ChestLocation[] chestLocations = this.chunks[chunkIndex].getAllChestLocationsInArray(this.chunks[chunkIndex].chestLocations.size());
                     int chestCount = 0;
                     NBTTagCompound[] chests = new NBTTagCompound[this.chunks[chunkIndex].chestLocations.size()];
-                    for (int i = 0; i < chests.length; i++) {
-                        chestLocation = this.chunks[chunkIndex].chestLocations.get(i);
+                    for(int i = 0; i < chests.length; i++){
+                        chestLocation = chestLocations[i];
                         chests[i] = new NBTTagCompound();
-                        chests[i].setShort("index", chestLocation.index);
+                        chests[i].setInteger("index", chestLocation.index);
                         ItemStack stack;
                         NBTTagCompound[] items = new NBTTagCompound[chestLocation.inventory.itemStacks.length];
                         NBTTagCompound inventory = new NBTTagCompound();
                         int slotNumber = 0;
-                        for (int j = 0; j < chestLocation.inventory.itemStacks.length; j++) {
+                        for(int j = 0; j < chestLocation.inventory.itemStacks.length; j++){
                             stack = chestLocation.inventory.itemStacks[j];
-                            if (stack.item != null) {
+                            if(stack.item != null) {
                                 items[j] = new NBTTagCompound();
                                 items[j].setShort("id", stack.item.ID);
                                 items[j].setByte("count", stack.count);
@@ -144,14 +145,17 @@ public final class ThreadChunkUnloader implements Runnable {
                     chest.setInteger("chestCount", chestCount);
                 }
 
-                if (this.chunks[chunkIndex].updateEvents.size() > 0) {
+
+                if(this.chunks[chunkIndex].updateEvents.size() > 0){
+                    int numberOfTimeEvents = this.chunks[chunkIndex].getNumberOfTimeEvents();
+                    TimeUpdateEvent[] updateEvents = this.chunks[chunkIndex].getAllTimeEventsInArray(numberOfTimeEvents);
                     TimeUpdateEvent timeUpdateEvent;
                     int eventCount = 0;
-                    NBTTagCompound[] events = new NBTTagCompound[this.chunks[chunkIndex].updateEvents.size()];
-                    for (int i = 0; i < events.length; i++) {
-                        timeUpdateEvent = this.chunks[chunkIndex].updateEvents.get(i);
+                    NBTTagCompound[] events = new NBTTagCompound[numberOfTimeEvents];
+                    for(int i = 0; i < events.length; i++){
+                        timeUpdateEvent = updateEvents[i];
                         events[i] = new NBTTagCompound();
-                        events[i].setShort("index", timeUpdateEvent.index);
+                        events[i].setInteger("index", timeUpdateEvent.index);
                         events[i].setLong("updateTime", timeUpdateEvent.updateTime);
                         timeEvents.setTag("event" + eventCount, events[i]);
                         eventCount++;
@@ -161,13 +165,14 @@ public final class ThreadChunkUnloader implements Runnable {
 
                 if(this.chunks[chunkIndex].heatableBlocks.size() > 0){
                     HeatableBlockLocation heatableBlockLocation;
+                    HeatableBlockLocation[] heatableBlockLocations = this.chunks[chunkIndex].getAllHeatableBlockLocationsInArray(this.chunks[chunkIndex].heatableBlocks.size());
                     int heatableBlockCount = 0;
                     NBTTagCompound[] heatableBlockTags = new NBTTagCompound[this.chunks[chunkIndex].heatableBlocks.size()];
                     for(int i = 0; i < heatableBlockTags.length; i++){
 
-                        heatableBlockLocation = this.chunks[chunkIndex].heatableBlocks.get(i);
+                        heatableBlockLocation = heatableBlockLocations[i];
                         heatableBlockTags[i] = new NBTTagCompound();
-                        heatableBlockTags[i].setShort("index", heatableBlockLocation.index);
+                        heatableBlockTags[i].setInteger("index", heatableBlockLocation.index);
                         heatableBlockTags[i].setFloat("currentTemperature", heatableBlockLocation.currentTemperature);
                         heatableBlockTags[i].setShort("currentFuelBurning", heatableBlockLocation.currentFuelBurning);
                         heatableBlockTags[i].setLong("fuelBurnoutTime", heatableBlockLocation.fuelBurnoutTime);
@@ -184,11 +189,12 @@ public final class ThreadChunkUnloader implements Runnable {
 
                 if(this.chunks[chunkIndex].crafting3DItems.size() > 0){
                     InWorld3DCraftingItem inWorld3DCraftingItem;
+                    InWorld3DCraftingItem[] inWorld3DCraftingItems = this.chunks[chunkIndex].getAll3DCraftingItemsInArray(this.chunks[chunkIndex].crafting3DItems.size());
                     int inWorldCrafting3DItemCount = 0;
                     NBTTagCompound[] inWorldCrafting3DItemTags = new NBTTagCompound[this.chunks[chunkIndex].crafting3DItems.size()];
                     for(int i = 0; i < inWorldCrafting3DItemTags.length; i++){
 
-                        inWorld3DCraftingItem = this.chunks[chunkIndex].crafting3DItems.get(i);
+                        inWorld3DCraftingItem = inWorld3DCraftingItems[i];
                         inWorldCrafting3DItemTags[i] = new NBTTagCompound();
                         inWorldCrafting3DItemTags[i].setInteger("index", inWorld3DCraftingItem.indexInChunk);
                         inWorldCrafting3DItemTags[i].setShort("materialBlockID", inWorld3DCraftingItem.materialBlockID);
@@ -205,13 +211,14 @@ public final class ThreadChunkUnloader implements Runnable {
                     crafting3DItems.setInteger("inWorldCrafting3DItemCount", inWorldCrafting3DItemCount);
                 }
 
-                if(this.chunks[chunkIndex].craftingItems.size() > 0){;
+                if(this.chunks[chunkIndex].craftingItems.size() > 0){
                     InWorldCraftingItem inWorldCraftingItem;
+                    InWorldCraftingItem[] craftingItems1 = this.chunks[chunkIndex].getAllCraftingItemsInArray(this.chunks[chunkIndex].craftingItems.size());
                     int inWorldCraftingItemCount = 0;
                     NBTTagCompound[] inWorldCraftingItemTags = new NBTTagCompound[this.chunks[chunkIndex].craftingItems.size()];
                     for(int i = 0; i < inWorldCraftingItemTags.length; i++){
 
-                        inWorldCraftingItem = this.chunks[chunkIndex].craftingItems.get(i);
+                        inWorldCraftingItem = craftingItems1[i];
                         inWorldCraftingItemTags[i] = new NBTTagCompound();
                         inWorldCraftingItemTags[i].setInteger("index", inWorldCraftingItem.indexInChunk);
                         inWorldCraftingItemTags[i].setInteger("outputRecipeID", inWorldCraftingItem.outputRecipe.ID);

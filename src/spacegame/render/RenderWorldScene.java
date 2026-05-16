@@ -397,8 +397,12 @@ public final class RenderWorldScene {
                         xOffset = (region.chunks[j].x - sunX) << 5;
                         yOffset = (region.chunks[j].y - sunY) << 5;
                         zOffset = (region.chunks[j].z - sunZ) << 5;
+
+                        if(xOffset >= 256 || yOffset >= 256 || zOffset >= 256)continue;
+
                         if (!this.doesChunkIntersectSunFrustum(frustumInt, xOffset, yOffset, zOffset, ((xOffset + 31)), ((yOffset + 31)), ((zOffset + 31))))
                             continue;
+
 
                         GL46.glBindTexture(GL46.GL_TEXTURE_2D_ARRAY, Assets.blockTextureArray);
                         region.chunks[j].renderShadowMap(sunX, sunY, sunZ);

@@ -1,13 +1,28 @@
 package spacegame.item.crafting;
 
+import spacegame.block.Block;
 import spacegame.item.Item;
 
 public final class CraftingBlockRecipes {
     public static final int TECH_LEVEL_PRIMITIVE = 1;
     public static final CraftingBlockRecipes[] list = new CraftingBlockRecipes[128];
-    public static final CraftingBlockRecipes stoneAxe = new CraftingBlockRecipes(Item.stoneAxe.ID, Item.stoneAxe.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.rawStick.ID, Item.stoneHandAxe.ID}, new int[]{1,1}, TECH_LEVEL_PRIMITIVE, new double[][]{{0.25, 0.0, 0.25},{0.25, 0.01, 0.44}}, new double[]{0, 180}, (byte)1, true, 1, 1);
-    public static final CraftingBlockRecipes stoneShovel = new CraftingBlockRecipes(Item.stoneShovel.ID, Item.stoneShovel.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.rawStick.ID, Item.stoneHandShovel.ID}, new int[]{1,1}, TECH_LEVEL_PRIMITIVE, new double[][]{{0.25, 0.0, 0.25},{0.07, 0.01, 0.44}}, new double[]{0, 270}, (byte)1, true, 1, 2);
-    public static final CraftingBlockRecipes stoneKnife = new CraftingBlockRecipes(Item.stoneKnife.ID, Item.stoneKnife.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.rawStick.ID, Item.stoneHandKnifeBlade.ID}, new int[]{1,1}, TECH_LEVEL_PRIMITIVE, new double[][]{{0.25, 0.0, 0.25},{0.05, 0.01, 0.44}}, new double[]{0, 270}, (byte)1, true, 1, 3);
+    public static final CraftingBlockRecipes stoneAxe = new CraftingBlockRecipes(Item.stoneAxe.ID, Item.stoneAxe.getDisplayName(Item.NULL_ITEM_REFERENCE),
+            new short[]{Item.block.ID, Item.stoneHandAxe.ID}, new int[]{1,1}, TECH_LEVEL_PRIMITIVE, new double[][]{{0.5, 0.0, 0.5},{0.27, 0.01, 0.44}},
+            new double[]{-45, 135}, (byte)1, true, 1, 1, new short[]{Block.itemStick.ID, Item.NULL_ITEM_METADATA});
+
+    public static final CraftingBlockRecipes stoneShovel = new CraftingBlockRecipes(Item.stoneShovel.ID, Item.stoneShovel.getDisplayName(Item.NULL_ITEM_REFERENCE),
+            new short[]{Item.block.ID, Item.stoneHandShovel.ID}, new int[]{1,1}, TECH_LEVEL_PRIMITIVE, new double[][]{{0.5, 0.0, 0.5},{0.28, 0.01, 0.28}},
+            new double[]{-45, 135}, (byte)1, true, 1, 2, new short[]{Block.itemStick.ID, Item.NULL_ITEM_METADATA});
+
+    public static final CraftingBlockRecipes stoneKnife = new CraftingBlockRecipes(Item.stoneKnife.ID, Item.stoneKnife.getDisplayName(Item.NULL_ITEM_REFERENCE),
+            new short[]{Item.block.ID, Item.stoneHandKnifeBlade.ID}, new int[]{1,1}, TECH_LEVEL_PRIMITIVE, new double[][]{{0.5, 0.0, 0.5},{0.28, 0.01, 0.28}},
+            new double[]{-45, 270}, (byte)1, true, 1, 3, new short[]{Block.itemStick.ID, Item.NULL_ITEM_METADATA});
+
+    public static final CraftingBlockRecipes primitiveDoor = new CraftingBlockRecipes(Item.primitiveDoor.ID, Item.primitiveDoor.getDisplayName(Item.NULL_ITEM_REFERENCE),
+            new short[]{Item.block.ID, Item.block.ID, Item.block.ID, Item.block.ID, Item.block.ID, Item.block.ID, Item.block.ID}, new int[]{1,1,1,1,1,1,1}, TECH_LEVEL_PRIMITIVE,
+            new double[][]{{1,0,0.5f}, {0.5f,0,0.5f}, {0,0,0.5f}, {0.75f,0,0.25f}, {0.25f,0,0.25f}, {0.75f,0,0.75f}, {0.25f,0,0.75f}}, new double[]{90,90,90,0,0,0,0}, (byte)1, true, 6, 4,
+            new short[]{Block.itemStick.ID,Block.itemStick.ID,Block.itemStick.ID,Block.itemStick.ID,Block.itemStick.ID,Block.itemStick.ID,Block.itemStick.ID});
+
     public short itemID;
     public short blockID;
     public String displayName;
@@ -16,6 +31,7 @@ public final class CraftingBlockRecipes {
     public int bindingCount;
     public byte outputItemCount;
     public short[] requiredItems;
+    public short[] requiredItemMetadata;
     public int[] requiredItemCount;
     public double[][] requiredItemPositions;
     public double[] requiredItemAngles;
@@ -26,7 +42,7 @@ public final class CraftingBlockRecipes {
     //This is to represent crafting recipes that require multiple input items and where 3d shape crafting wouldnt suffice
     public CraftingBlockRecipes(short itemID, String displayName, short[] requiredItems, int[] requiredItemCount, int techLevelRequired,
                                 double[][] requiredItemPositions, double[] requiredItemAngles, byte outputItemCount,
-                                boolean requiresBinding, int bindingCount, int ID){
+                                boolean requiresBinding, int bindingCount, int ID, short[] requiredItemMetadata){
 
         if(list[ID] != null){
             throw new RuntimeException("Crafting Recipe ID: " + ID + " ALREADY OCCUPIED WHEN ATTEMPTING TO ADD " + this + " TO THE LIST");
@@ -45,11 +61,12 @@ public final class CraftingBlockRecipes {
         this.outputItemCount = outputItemCount;
         this.requiresBinding = requiresBinding;
         this.bindingCount = bindingCount;
+        this.requiredItemMetadata = requiredItemMetadata;
         this.ID = ID;
     }
     public CraftingBlockRecipes(short itemID, short blockID, String displayName, short[] requiredItems, int[] requiredItemCount, int techLevelRequired,
                                 double[][] requiredItemPositions, double[] requiredItemAngles, byte outputItemCount,
-                                boolean requiresBinding, int bindingCount, int ID){
+                                boolean requiresBinding, int bindingCount, int ID, short[] requiredItemMetadata){
 
         if(list[ID] != null){
             throw new RuntimeException("Crafting Recipe ID: " + ID + " ALREADY OCCUPIED WHEN ATTEMPTING TO ADD " + this + " TO THE LIST");
@@ -69,6 +86,7 @@ public final class CraftingBlockRecipes {
         this.outputItemCount = outputItemCount;
         this.requiresBinding = requiresBinding;
         this.bindingCount = bindingCount;
+        this.requiredItemMetadata = requiredItemMetadata;
         this.ID = ID;
     }
 

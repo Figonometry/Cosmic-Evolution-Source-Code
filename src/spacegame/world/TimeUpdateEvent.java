@@ -1,10 +1,10 @@
 package spacegame.world;
 
 public final class TimeUpdateEvent {
-    public short index;
+    public int index;
     public long updateTime;
 
-    public TimeUpdateEvent(short index, long updateTime){
+    public TimeUpdateEvent(int index, long updateTime){
         this.index = index;
         this.updateTime = updateTime;
     }

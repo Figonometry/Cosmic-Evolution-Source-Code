@@ -46,6 +46,8 @@ public class Block {
     public static final ModelLoader centeredVoxel = new ModelLoader(modelFolderPath + "centeredVoxel.obj", false).getScaledModel(0.5f);
     public static final ModelLoader primitiveDoorUpper = new ModelLoader(modelFolderPath + "primitiveDoorUpper.obj", true);
     public static final ModelLoader primitiveDoorLower = new ModelLoader(modelFolderPath + "primitiveDoorLower.obj", true);
+    public static final ModelLoader reedTop = new ModelLoader(modelFolderPath + "reedTop.obj", true);
+    public static final ModelLoader reedBottom = new ModelLoader(modelFolderPath + "reedLower.obj", true);
     public static final ModelLoader size15NormalModel = standardBlockModel.alterStandardBlockModel(1,0,1);
     public static final ModelLoader size14NormalModel = standardBlockModel.alterStandardBlockModel(2,0,2);
     public static final ModelLoader size13NormalModel = standardBlockModel.alterStandardBlockModel(3,0,3);
@@ -410,6 +412,8 @@ public class Block {
                     case "itemClayModel" -> this.blockModel = itemClayModel;
                     case "clayCookingPotModel" -> this.blockModel = clayCookingPotModel;
                     case "primitiveDoorUpper" -> this.blockModel = primitiveDoorUpper;
+                    case "reedTop" -> this.blockModel = reedTop;
+                    case "reedBottom" -> this.blockModel = reedBottom;
                     case "size2VoxelModel" -> this.blockModel = size2VoxelModel;
                     case "size15NormalModel" -> this.blockModel = size15NormalModel;
                     case "size14NormalModel" -> this.blockModel = size14NormalModel;
@@ -553,7 +557,7 @@ public class Block {
         if(this.ID == grassWithClay.ID || this.ID == clay.ID){
             int extraClay = CosmicEvolution.globalRand.nextInt(2,4);
             for(int i = 0; i < extraClay; i++){
-                world.addEntity(new EntityItem(x + 0.5, y + 0.5, z + 0.5, Item.clay.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY, 0));
+                world.addEntity(new EntityBlock(x + 0.5, y + 0.5, z + 0.5, Block.itemClay.ID, (byte)1));
             }
         }
 
@@ -685,22 +689,26 @@ public class Block {
         short heldBlock = 0;
         if (player.isHoldingBlock()) {
             heldBlock = player.getHeldBlock();
-        } else if (heldItem == Item.torch.ID) {
+        }
+
+        if (heldBlock == torchStandard.ID) {
             if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT))return;
             heldBlock = switch (facingDirection) {
-                case 1 -> torchNorth.ID;
-                case 2 -> torchSouth.ID;
-                case 3 -> torchEast.ID;
-                case 4 -> torchWest.ID;
+                case FACE_NORTH -> torchNorth.ID;
+                case FACE_SOUTH -> torchSouth.ID;
+                case FACE_EAST -> torchEast.ID;
+                case FACE_WEST -> torchWest.ID;
+                case FACE_DOWN -> air.ID;
                 default -> torchStandard.ID;
             };
-        } else if(heldItem == Item.unlitTorch.ID){
+        } else if(heldBlock == torchStandardUnlit.ID){
             if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT))return;
             heldBlock = switch (facingDirection) {
-                case 1 -> torchNorthUnlit.ID;
-                case 2 -> torchSouthUnlit.ID;
-                case 3 -> torchEastUnlit.ID;
-                case 4 -> torchWestUnlit.ID;
+                case FACE_NORTH -> torchNorthUnlit.ID;
+                case FACE_SOUTH -> torchSouthUnlit.ID;
+                case FACE_EAST -> torchEastUnlit.ID;
+                case FACE_WEST -> torchWestUnlit.ID;
+                case FACE_DOWN -> air.ID;
                 default -> torchStandardUnlit.ID;
             };
         }
@@ -712,9 +720,6 @@ public class Block {
         }
 
         switch (Item.list[heldItem].itemName) { //Convert held item into an equivalent block id to place, if one exists, otherwise default to the held block
-            case "RAW_STONE" -> heldBlock = itemStone.ID;
-            case "RAW_STICK" -> heldBlock = itemStick.ID;
-            case "CLAY" -> heldBlock = itemClay.ID;
             case "STRAW" -> heldBlock = campFireNoFirewood.ID;
             case "FIRE_WOOD" -> {
                 if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) && KeyListener.keyReleased[GLFW.GLFW_KEY_LEFT_SHIFT] && world.getBlockID(player.blockLookingAt[0], player.blockLookingAt[1], player.blockLookingAt[2]) != logPile.ID) {;

@@ -22,9 +22,9 @@ import spacegame.render.ShouldFaceRenderSorter;
 import java.awt.*;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Random;
+import java.sql.Time;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class Chunk implements Comparable<Chunk> {
     public World parentWorld;
@@ -79,12 +79,12 @@ public final class Chunk implements Comparable<Chunk> {
     public IntBuffer tempElementBufferOpaque;
     public FloatBuffer tempVertexBufferTransparent;
     public IntBuffer tempElementBufferTransparent;
-    public ArrayList<ChestLocation> chestLocations = new ArrayList<>();
-    public ArrayList<TimeUpdateEvent> updateEvents = new ArrayList<>();
-    public ArrayList<HeatableBlockLocation> heatableBlocks = new ArrayList<>();
-    public ArrayList<InWorld3DCraftingItem> crafting3DItems = new ArrayList<>();
-    public ArrayList<InWorldCraftingItem> craftingItems = new ArrayList<>();
-    public ArrayList<DoorTransition> doorTransitions = new ArrayList<>();
+    public ConcurrentHashMap<Integer, ChestLocation> chestLocations = new ConcurrentHashMap<>();
+    public ConcurrentHashMap<Long, ConcurrentHashMap<Integer, TimeUpdateEvent>>  updateEvents = new ConcurrentHashMap<>();
+    public ConcurrentHashMap<Integer, HeatableBlockLocation> heatableBlocks = new ConcurrentHashMap<>();
+    public ConcurrentHashMap<Integer, InWorld3DCraftingItem> crafting3DItems = new ConcurrentHashMap<>();
+    public ConcurrentHashMap<Integer, InWorldCraftingItem> craftingItems = new ConcurrentHashMap<>();
+    public ConcurrentHashMap<Integer, DoorTransition> doorTransitions = new ConcurrentHashMap<>();
     public boolean updateImmediately;
     public int opaqueVBOID = -10;
     public int opaqueVAOID = -10;
@@ -1233,49 +1233,36 @@ public final class Chunk implements Comparable<Chunk> {
                     }
             }
 
-            if(this.blocks != null && this.decayableLeaves != null){
-                for(int i = 0; i < this.decayableLeaves.length; i++){
-                    if(Block.list[this.blocks[this.decayableLeaves[i]]] instanceof BlockLeaf){
+            if(this.blocks != null && this.decayableLeaves != null) {
+                for (int i = 0; i < this.decayableLeaves.length; i++) {
+                    if (Block.list[this.blocks[this.decayableLeaves[i]]] instanceof BlockLeaf) {
                         ((BlockLeaf) Block.list[this.blocks[this.decayableLeaves[i]]]).decayLeaf(this.getBlockXFromIndex(this.decayableLeaves[i]), this.getBlockYFromIndex(this.decayableLeaves[i]), this.getBlockZFromIndex(this.decayableLeaves[i]), this.parentWorld);
                     }
                 }
             }
-            //Check the time events to see if they need to execute
-            TimeUpdateEvent event;
-            for(int i = 0; i < this.updateEvents.size(); i++){
-                event = this.updateEvents.get(i);
-                if(CosmicEvolution.instance.save.time >= event.updateTime) {
-                    int x = this.getBlockXFromIndex(event.index);
-                    int y = this.getBlockYFromIndex(event.index);
-                    int z = this.getBlockZFromIndex(event.index);
-                    if (Block.list[this.blocks[event.index]] instanceof ITimeUpdate) {
-                        ((ITimeUpdate) Block.list[this.blocks[event.index]]).onTimeUpdate(x, y, z, this.parentWorld);
-                    }
-                }
-            }
+
 
             InWorld3DCraftingItem craftingBlock;
-            for(int i = 0; i < this.crafting3DItems.size(); i++){
-                craftingBlock = this.crafting3DItems.get(i);
+            for(Map.Entry<Integer, InWorld3DCraftingItem> entry : this.crafting3DItems.entrySet()){
+                craftingBlock = entry.getValue();
                 if(craftingBlock.removeObject){
-                    this.crafting3DItems.remove(craftingBlock);
+                    this.crafting3DItems.remove(craftingBlock.indexInChunk);
                 }
             }
-            this.crafting3DItems.trimToSize();
 
             InWorldCraftingItem craftingItem;
-            for(int i = 0; i < this.craftingItems.size(); i++){
-                craftingItem = this.craftingItems.get(i);
+            for(Map.Entry<Integer, InWorldCraftingItem> entry : this.craftingItems.entrySet()){
+                craftingItem = entry.getValue();
                 if(craftingItem.remove){
-                    this.craftingItems.remove(craftingItem);
+                    this.craftingItems.remove(craftingItem.indexInChunk);
                 }
             }
-            this.craftingItems.trimToSize();
+
 
 
             ChestLocation chestLocation;
-            for(int i = 0; i < this.chestLocations.size(); i++){
-                chestLocation = this.chestLocations.get(i);
+            for(Map.Entry<Integer, ChestLocation> entry : this.chestLocations.entrySet()){
+                chestLocation = entry.getValue();
                 for(int j = 0; j < chestLocation.inventory.itemStacks.length; j++){
                     if(chestLocation.inventory.itemStacks[j].item instanceof IDecayItem){
                         if(this.parentWorld.ce.save.time >= chestLocation.inventory.itemStacks[j].decayTime){
@@ -1284,14 +1271,28 @@ public final class Chunk implements Comparable<Chunk> {
                     }
                 }
             }
+
+        }
+
+        TimeUpdateEvent event;
+        ConcurrentHashMap<Integer, TimeUpdateEvent> outerMap = this.updateEvents.get(this.parentWorld.ce.save.time);
+        if(outerMap != null) {
+            for (Map.Entry<Integer, TimeUpdateEvent> entry1 : outerMap.entrySet()) {
+                event = entry1.getValue();
+                int x = this.getBlockXFromIndex(event.index);
+                int y = this.getBlockYFromIndex(event.index);
+                int z = this.getBlockZFromIndex(event.index);
+                if (Block.list[this.blocks[event.index]] instanceof ITimeUpdate) {
+                    ((ITimeUpdate) Block.list[this.blocks[event.index]]).onTimeUpdate(x, y, z, this.parentWorld);
+                }
+            }
         }
 
 
         if(this.doorTransitions.size() > 0){
             DoorTransition doorTransition;
-
-            for(int i = 0; i < this.doorTransitions.size(); i++){
-                doorTransition = this.doorTransitions.get(i);
+            for(Map.Entry<Integer, DoorTransition> entry : this.doorTransitions.entrySet()){
+                doorTransition = entry.getValue();
                 if(doorTransition.completeTime <= CosmicEvolution.instance.save.time){
                     this.removeDoorTransition(doorTransition);
                 }
@@ -1302,8 +1303,8 @@ public final class Chunk implements Comparable<Chunk> {
 
         if(CosmicEvolution.instance.save.time % 15 == 0){
             HeatableBlockLocation heatableBlockLocation;
-            for(int i = 0; i < this.heatableBlocks.size(); i++){
-                heatableBlockLocation = this.heatableBlocks.get(i);
+            for(Map.Entry<Integer, HeatableBlockLocation> entry : this.heatableBlocks.entrySet()){
+                heatableBlockLocation = entry.getValue();
                 heatableBlockLocation.heatItem(this);
             }
         }
@@ -1313,6 +1314,105 @@ public final class Chunk implements Comparable<Chunk> {
     public int compareTo(Chunk chunk) {
         return Float.compare(this.distanceFromPlayer, chunk.distanceFromPlayer);
     }
+
+    public int getNumberOfTimeEvents(){
+        int total = 0;
+        Iterator<Map.Entry<Long, ConcurrentHashMap<Integer, TimeUpdateEvent>>> outerIterator = this.updateEvents.entrySet().iterator();
+        while(outerIterator.hasNext()){
+            Map.Entry<Long, ConcurrentHashMap<Integer, TimeUpdateEvent>> entry = outerIterator.next();
+            Iterator<Map.Entry<Integer, TimeUpdateEvent>> innerIterator = entry.getValue().entrySet().iterator();
+            while(innerIterator.hasNext()){
+                Map.Entry<Integer, TimeUpdateEvent> entry1 = innerIterator.next();
+                total += entry.getValue() == null ? 0 : 1;
+            }
+        }
+        return total;
+    }
+
+    public TimeUpdateEvent[] getAllTimeEventsInArray(int numberOfTimeEvents){
+        int index = 0;
+        TimeUpdateEvent event;
+        TimeUpdateEvent[] timeUpdateEvents = new TimeUpdateEvent[numberOfTimeEvents];
+        Iterator<Map.Entry<Long, ConcurrentHashMap<Integer, TimeUpdateEvent>>> outerIterator = this.updateEvents.entrySet().iterator();
+        while(outerIterator.hasNext()){
+            Map.Entry<Long, ConcurrentHashMap<Integer, TimeUpdateEvent>> entry = outerIterator.next();
+            Iterator<Map.Entry<Integer, TimeUpdateEvent>> innerIterator = entry.getValue().entrySet().iterator();
+            while(innerIterator.hasNext()){
+                Map.Entry<Integer, TimeUpdateEvent> entry1 = innerIterator.next();
+                event = entry1.getValue();
+                if(event != null){
+                    timeUpdateEvents[index] = event;
+                    index++;
+                }
+            }
+        }
+        return timeUpdateEvents;
+    }
+
+    public InWorldCraftingItem[] getAllCraftingItemsInArray(int numberOfCraftingItems){
+        int index = 0;
+        InWorldCraftingItem craftingItem;
+        InWorldCraftingItem[] inWorldCraftingItems = new InWorldCraftingItem[numberOfCraftingItems];
+        Iterator<Map.Entry<Integer, InWorldCraftingItem>> iterator = this.craftingItems.entrySet().iterator();
+        while(iterator.hasNext()){
+            Map.Entry<Integer, InWorldCraftingItem> entry = iterator.next();
+            craftingItem = entry.getValue();
+            if(craftingItem != null){
+                inWorldCraftingItems[index] = craftingItem;
+                index++;
+            }
+        }
+        return inWorldCraftingItems;
+    }
+
+    public InWorld3DCraftingItem[] getAll3DCraftingItemsInArray(int numberOfCrafting3DItems){
+        int index = 0;
+        InWorld3DCraftingItem crafting3DItem;
+        InWorld3DCraftingItem[] inWorldCrafting3DItems = new InWorld3DCraftingItem[numberOfCrafting3DItems];
+        Iterator<Map.Entry<Integer, InWorld3DCraftingItem>> iterator = this.crafting3DItems.entrySet().iterator();
+        while(iterator.hasNext()){
+            Map.Entry<Integer, InWorld3DCraftingItem> entry = iterator.next();
+            crafting3DItem = entry.getValue();
+            if(crafting3DItem != null){
+                inWorldCrafting3DItems[index] = crafting3DItem;
+                index++;
+            }
+        }
+        return inWorldCrafting3DItems;
+    }
+
+    public HeatableBlockLocation[] getAllHeatableBlockLocationsInArray(int numberOfHeatableBlocks){
+        int index = 0;
+        HeatableBlockLocation heatableBlockLocation;
+        HeatableBlockLocation[] heatableBlockLocations = new HeatableBlockLocation[numberOfHeatableBlocks];
+        Iterator<Map.Entry<Integer, HeatableBlockLocation>> iterator = this.heatableBlocks.entrySet().iterator();
+        while(iterator.hasNext()){
+            Map.Entry<Integer, HeatableBlockLocation> entry = iterator.next();
+            heatableBlockLocation = entry.getValue();
+            if(heatableBlockLocation != null){
+                heatableBlockLocations[index] = heatableBlockLocation;
+                index++;
+            }
+        }
+        return heatableBlockLocations;
+    }
+
+    public ChestLocation[] getAllChestLocationsInArray(int numberOfChestLocations){
+        int index = 0;
+        ChestLocation chestLocation;
+        ChestLocation[] chestLocations1 = new ChestLocation[numberOfChestLocations];
+        Iterator<Map.Entry<Integer, ChestLocation>> iterator = this.chestLocations.entrySet().iterator();
+        while(iterator.hasNext()){
+            Map.Entry<Integer, ChestLocation> entry = iterator.next();
+            chestLocation = entry.getValue();
+            if(chestLocation != null){
+                chestLocations1[index] = chestLocation;
+                index++;
+            }
+        }
+        return chestLocations1;
+    }
+
 
     public void truncateTickableIndexArray(int maxLength, boolean empty){
         if(!empty) {
@@ -1371,176 +1471,122 @@ public final class Chunk implements Comparable<Chunk> {
     }
 
     public void addCraftingItem(InWorldCraftingItem craftingItem){
-        this.craftingItems.add(craftingItem);
+        this.craftingItems.put(craftingItem.indexInChunk, craftingItem);
     }
 
     public void removeCraftingItem(int x, int y, int z){
-        int index = getBlockIndexFromCoordinates(x,y,z);
-        for(int i = 0; i < this.craftingItems.size(); i++){
-            if(this.craftingItems.get(i).indexInChunk == index){
-                this.craftingItems.remove(i);
-                break;
-            }
-        }
+        this.craftingItems.remove(getBlockIndexFromCoordinates(x,y,z));
     }
 
     public InWorldCraftingItem getInWorldCraftingItem(int x, int y, int z){
-        int index = getBlockIndexFromCoordinates(x,y,z);
-        for(int i = 0; i < this.craftingItems.size(); i++){
-            if(this.craftingItems.get(i).indexInChunk == index){
-                return this.craftingItems.get(i);
-            }
-        }
-        return  null;
+        return this.craftingItems.get(getBlockIndexFromCoordinates(x,y,z));
     }
 
     public void addHeatableBlock(HeatableBlockLocation heatableBlockLocation){
-        this.heatableBlocks.add(heatableBlockLocation);
+        this.heatableBlocks.put(heatableBlockLocation.index, heatableBlockLocation);
     }
 
     public void addHeatableBlock(int x, int y, int z){
-        this.heatableBlocks.add(new HeatableBlockLocation((short) getBlockIndexFromCoordinates(x,y,z)));
+        this.addHeatableBlock(getBlockIndexFromCoordinates(x,y,z));
     }
 
-    public void addHeatableBlock(short index){
-        this.heatableBlocks.add(new HeatableBlockLocation(index));
+    public void addHeatableBlock(int index){
+        this.heatableBlocks.put(index, new HeatableBlockLocation(index));
     }
 
     public HeatableBlockLocation getHeatableBlock(int x, int y, int z){
-        int index = getBlockIndexFromCoordinates(x,y,z);
-        for(int i = 0; i < this.heatableBlocks.size(); i++){
-            if(this.heatableBlocks.get(i).index == index){
-                return this.heatableBlocks.get(i);
-            }
-        }
-        return  null;
+        return this.getHeatableBlock(getBlockIndexFromCoordinates(x,y,z));
     }
 
     public HeatableBlockLocation getHeatableBlock(int index){
-        for(int i = 0; i < this.heatableBlocks.size(); i++){
-            if(this.heatableBlocks.get(i).index == index){
-                return this.heatableBlocks.get(i);
-            }
-        }
-        return  null;
+        return this.heatableBlocks.get(index);
     }
 
     public void removeHeatableBlock(int x, int y, int z){
-        int index = getBlockIndexFromCoordinates(x,y,z);
-        for(int i = 0; i < this.heatableBlocks.size(); i++){
-            if(this.heatableBlocks.get(i).index == index){
-                this.heatableBlocks.remove(i);
-                break;
-            }
-        }
+        this.removeHeatableBlock(getBlockIndexFromCoordinates(x,y,z));
     }
 
-    public void removeHeatableBlock(short index){
-        for(int i = 0; i < this.heatableBlocks.size(); i++){
-            if(this.heatableBlocks.get(i).index == index){
-                this.heatableBlocks.remove(i);
-                break;
-            }
-        }
+    public void removeHeatableBlock(int index){
+        this.heatableBlocks.remove(index);
     }
 
     public void addInWorldCrafting3DItem(InWorld3DCraftingItem craftingBlock){
-        this.crafting3DItems.add(craftingBlock);
+       this.crafting3DItems.put(craftingBlock.indexInChunk, craftingBlock);
     }
 
     public void removeInWorldCrafting3DItem(int index){
-        for(int i = 0; i < this.crafting3DItems.size(); i++){
-            if(this.crafting3DItems.get(i).indexInChunk == index){
-                this.crafting3DItems.remove(i);
-                break;
-            }
-        }
+        this.crafting3DItems.remove(index);
     }
 
     public InWorld3DCraftingItem getInWorldCrafting3DItem(int index){
-        for(int i = 0; i < this.crafting3DItems.size(); i++){
-            if(this.crafting3DItems.get(i).indexInChunk == index){
-                return this.crafting3DItems.get(i);
-            }
-        }
-        return null;
+        return this.crafting3DItems.get(index);
     }
 
     public void addChestLocation(int x, int y, int z, Inventory inventory){
-        this.chestLocations.add(new ChestLocation((short) getBlockIndexFromCoordinates(x,y,z), inventory));
+        this.chestLocations.put(getBlockIndexFromCoordinates(x,y,z), new ChestLocation(getBlockIndexFromCoordinates(x,y,z), inventory));
     }
 
-    public void addChestLocation(short index, Inventory inventory){
-        this.chestLocations.add(new ChestLocation(index, inventory));
+    public void addChestLocation(int index, Inventory inventory){
+        this.chestLocations.put(index, new ChestLocation(index, inventory));
     }
 
     public ChestLocation getChestLocation(int x, int y, int z){
-        int index = getBlockIndexFromCoordinates(x,y,z);
-        for(int i = 0; i < this.chestLocations.size(); i++){
-            if(this.chestLocations.get(i).index == index){
-                return this.chestLocations.get(i);
-            }
-        }
-        return null;
+        return this.getChestLocation(getBlockIndexFromCoordinates(x,y,z));
     }
 
     public ChestLocation getChestLocation(int index){
-        for(int i = 0; i < this.chestLocations.size(); i++){
-            if(this.chestLocations.get(i).index == index){
-                return this.chestLocations.get(i);
-            }
-        }
-        return null;
+        return this.chestLocations.get(index);
     }
 
-    public void removeChestLocation(short index){
-        for(int i = 0; i < this.chestLocations.size(); i++){
-            if(this.chestLocations.get(i).index == index){
-                this.clearInventoryFromChest(this.chestLocations.get(i).inventory, this.chestLocations.get(i).index);
-                this.chestLocations.remove(i);
-                break;
-            }
-        }
-        this.chestLocations.trimToSize();
+    public void removeChestLocation(int index){
+        ChestLocation chestLocation = this.chestLocations.get(index);
+        this.clearInventoryFromChest(chestLocation.inventory, index);
+        this.chestLocations.remove(index);
     }
 
     public void addTimeUpdateEvent(int x, int y, int z, long updateTime){
-        this.updateEvents.add(new TimeUpdateEvent((short) getBlockIndexFromCoordinates(x,y,z), updateTime));
+        this.addTimeUpdateEvent(getBlockIndexFromCoordinates(x,y,z), updateTime);
     }
 
     public TimeUpdateEvent getTimeUpdateEvent(int x, int y, int z){
-        int index = getBlockIndexFromCoordinates(x,y,z);
-        for(int i = 0; i < this.updateEvents.size(); i++){
-            if(this.updateEvents.get(i).index == index){
-                return this.updateEvents.get(i);
+        ConcurrentHashMap<Integer, TimeUpdateEvent> updateTimes;
+        TimeUpdateEvent returnVal;
+        for(Map.Entry<Long, ConcurrentHashMap<Integer,  TimeUpdateEvent>> entry : updateEvents.entrySet()){
+            updateTimes = entry.getValue();
+            for(Map.Entry<Integer, TimeUpdateEvent> entry1 : updateTimes.entrySet()){
+                returnVal = entry1.getValue();
+                if(returnVal.index == getBlockIndexFromCoordinates(x,y,z)){
+                    return returnVal;
+                }
             }
         }
         return null;
     }
 
-    public void addTimeUpdateEvent(short index, long updateTime){
-        this.updateEvents.add(new TimeUpdateEvent(index, updateTime));
+    public void addTimeUpdateEvent(int index, long updateTime){
+        ConcurrentHashMap<Integer, TimeUpdateEvent> updateTimes = this.updateEvents.get(updateTime);
+        if(updateTimes == null){
+            updateTimes = new ConcurrentHashMap<>();
+        }
+
+        updateTimes.put(index, new TimeUpdateEvent(index, updateTime));
     }
 
     public void removeTimeUpdateEvent(int x, int y, int z){
-        int index = getBlockIndexFromCoordinates(x,y,z);
-        for(int i = 0; i < this.updateEvents.size(); i++){
-            if(this.updateEvents.get(i).index == index){
-                this.updateEvents.remove(i);
-                break;
-            }
+        ConcurrentHashMap<Integer, TimeUpdateEvent> updateTimes;
+        for(Map.Entry<Long, ConcurrentHashMap<Integer,  TimeUpdateEvent>> entry : updateEvents.entrySet()){
+            updateTimes = entry.getValue();
+            updateTimes.remove(getBlockIndexFromCoordinates(x,y,z));
+            break;
         }
-        this.updateEvents.trimToSize();
     }
 
     public void updateTimeEvent(int x, int y, int z, long updateTime){
-        int index = getBlockIndexFromCoordinates(x,y,z);
-
-        for(int i = 0; i < this.updateEvents.size(); i++){
-            if(this.updateEvents.get(i).index == index){
-                this.updateEvents.get(i).updateTime = updateTime;
-                break;
-            }
+        ConcurrentHashMap<Integer, TimeUpdateEvent> updateTimes;
+        for(Map.Entry<Long, ConcurrentHashMap<Integer,  TimeUpdateEvent>> entry : updateEvents.entrySet()){
+            updateTimes = entry.getValue();
+            updateTimes.get(getBlockIndexFromCoordinates(x,y,z)).updateTime = updateTime;
+            break;
         }
     }
 
@@ -1564,33 +1610,15 @@ public final class Chunk implements Comparable<Chunk> {
     }
 
     public void addDoorTransition(DoorTransition doorTransition){
-        this.doorTransitions.add(doorTransition);
+        this.doorTransitions.put(getBlockIndexFromCoordinates(doorTransition.x, doorTransition.y, doorTransition.z), doorTransition);
     }
 
     public void removeDoorTransition(DoorTransition doorTransition){
-
-        DoorTransition doorTransition1;
-        for(int i = 0; i < this.doorTransitions.size(); i++){
-            doorTransition1 = this.doorTransitions.get(i);
-
-            if(doorTransition.x == doorTransition1.x && doorTransition.y == doorTransition1.y && doorTransition.z == doorTransition1.z){
-                this.doorTransitions.remove(i);
-                this.doorTransitions.trimToSize();
-                break;
-            }
-        }
+        this.doorTransitions.remove(getBlockIndexFromCoordinates(doorTransition.x, doorTransition.y, doorTransition.z));
     }
 
     public DoorTransition getDoorTransition(int x, int y, int z){
-        DoorTransition doorTransition;
-        for(int i = 0; i < this.doorTransitions.size(); i++){
-            doorTransition = this.doorTransitions.get(i);
-
-            if(doorTransition.x == x && doorTransition.y == y && doorTransition.z == z){
-                return doorTransition;
-            }
-        }
-        return null;
+        return this.doorTransitions.get(getBlockIndexFromCoordinates(x,y,z));
     }
 
 

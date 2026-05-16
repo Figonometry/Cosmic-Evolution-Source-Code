@@ -15,10 +15,11 @@ public final class RecipeSelector {
     public String displayName;
     public boolean isBlock;
     public short[] requiredItems;
+    public short[] requiredItemMetadata;
     public int[] requiredItemCount;
 
 
-    public RecipeSelector(short itemID, float x, float y, float width, float height, String displayName, short[] requiredItems, int[] requiredItemCount){
+    public RecipeSelector(short itemID, float x, float y, float width, float height, String displayName, short[] requiredItems, int[] requiredItemCount, short[] requiredItemMetadata){
         this.itemID = itemID;
         this.x = x;
         this.y = y;
@@ -27,9 +28,10 @@ public final class RecipeSelector {
         this.displayName = displayName;
         this.requiredItems = requiredItems;
         this.requiredItemCount = requiredItemCount;
+        this.requiredItemMetadata = requiredItemMetadata;
     }
 
-    public RecipeSelector(short itemID, short blockTextureID, float x, float y, float width, float height, String displayName, short[] requiredItems, int[] requiredItemCount){
+    public RecipeSelector(short itemID, short blockTextureID, float x, float y, float width, float height, String displayName, short[] requiredItems, int[] requiredItemCount, short[] requiredItemMetadata){
         this.itemID = itemID;
         this.blockID = blockTextureID;
         this.x = x;
@@ -39,6 +41,7 @@ public final class RecipeSelector {
         this.displayName = displayName;
         this.requiredItems = requiredItems;
         this.requiredItemCount = requiredItemCount;
+        this.requiredItemMetadata = requiredItemMetadata;
         this.isBlock = true;
     }
 
@@ -58,7 +61,7 @@ public final class RecipeSelector {
         }
 
         for(int i = 0; i < this.requiredItemCount.length; i++){
-            if(!player.containsAmountOfItem(this.requiredItems[i], this.requiredItemCount[i]))return false;
+            if(!player.containsAmountOfItem(this.requiredItems[i], this.requiredItemCount[i], this.requiredItemMetadata[i]))return false;
         }
         return true;
     }

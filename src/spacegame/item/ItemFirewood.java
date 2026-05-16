@@ -3,8 +3,8 @@ package spacegame.item;
 import spacegame.core.Timer;
 
 public final class ItemFirewood extends Item implements IFuel {
-    public ItemFirewood(short ID, int textureID, String filepath) {
-        super(ID, textureID, filepath);
+    public ItemFirewood(short ID, String modelFilePath, String filepath) {
+        super(ID, modelFilePath, filepath);
     }
 
     @Override

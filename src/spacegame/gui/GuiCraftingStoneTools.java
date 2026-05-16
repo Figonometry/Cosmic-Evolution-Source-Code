@@ -1,10 +1,13 @@
 package spacegame.gui;
 
+import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
 import spacegame.core.CosmicEvolution;
 import spacegame.item.crafting.InWorldCraftingRecipe;
+import spacegame.render.model.ModelFace;
+import spacegame.render.model.ModelLoader;
 import spacegame.util.MathUtil;
 import spacegame.item.Item;
 import spacegame.render.Assets;
@@ -46,10 +49,10 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
 
         for(int i = 0; i < this.selectableRecipes.length; i++){
             switch (i) {
-                case 3 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneFragments.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneFragments.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.stone.ID}, new int[]{1});
-                case 0 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneHandAxe.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneHandAxe.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.stone.ID}, new int[]{1});
-                case 1 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneHandKnifeBlade.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneHandKnifeBlade.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.stone.ID}, new int[]{1});
-                case 2 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneHandShovel.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneHandShovel.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.stone.ID}, new int[]{1});
+                case 3 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneFragments.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneFragments.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.block.ID}, new int[]{1}, new short[]{Block.itemStone.ID});
+                case 0 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneHandAxe.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneHandAxe.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.block.ID}, new int[]{1}, new short[]{Block.itemStone.ID});
+                case 1 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneHandKnifeBlade.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneHandKnifeBlade.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.block.ID}, new int[]{1}, new short[]{Block.itemStone.ID});
+                case 2 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneHandShovel.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneHandShovel.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.block.ID}, new int[]{1}, new short[]{Block.itemStone.ID});
             }
             selectableX += 64;
         }
@@ -88,7 +91,7 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
         int backgroundHeight = 1017;
         int backgroundX = 0;
         int backgroundY = 0;
-        int backgroundZ = -110;
+        int backgroundZ = -1100;
         tessellator.addVertex2DTexture(0, backgroundX - (float) backgroundWidth /2, backgroundY - (float) backgroundHeight /2, backgroundZ, 3);
         tessellator.addVertex2DTexture(0, backgroundX + (float) backgroundWidth /2, backgroundY + (float) backgroundHeight /2, backgroundZ, 1);
         tessellator.addVertex2DTexture(0, backgroundX - (float) backgroundWidth /2, backgroundY + (float) backgroundHeight /2, backgroundZ, 2);
@@ -103,7 +106,7 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
         backgroundHeight = 480;
         backgroundX = 0;
         backgroundY = 0;
-        backgroundZ = -100;
+        backgroundZ = -1000;
         tessellator.addVertex2DTexture(16777215, backgroundX - (float) backgroundWidth /2, backgroundY - (float) backgroundHeight /2, backgroundZ, 3);
         tessellator.addVertex2DTexture(16777215, backgroundX + (float) backgroundWidth /2, backgroundY + (float) backgroundHeight /2, backgroundZ, 1);
         tessellator.addVertex2DTexture(16777215, backgroundX - (float) backgroundWidth /2, backgroundY + (float) backgroundHeight /2, backgroundZ, 2);
@@ -112,8 +115,8 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
         tessellator.drawTexture2D(this.backgroundTexture, Shader.screen2DTexture, CosmicEvolution.camera);
 
 
-        if(this.selectedItemID == -1){
-            float selectableZ = -90;
+        if(this.selectedItemID == Item.NULL_ITEM_REFERENCE){
+            float selectableZ = -900;
             GL46.glEnable(GL46.GL_BLEND);
             GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
             int transparentColor;
@@ -128,19 +131,66 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
 
             tessellator.drawTexture2D(this.transparentBackground, Shader.screen2DTexture, CosmicEvolution.camera);
 
-            selectableZ = -88;
-            for(int i = 0; i < this.selectableRecipes.length; i++){
-                tessellator.addVertexTextureArrayWithCorner(16777215, this.selectableRecipes[i].x - (this.selectableRecipes[i].width / 2), this.selectableRecipes[i].y - (this.selectableRecipes[i].height / 2), selectableZ, 3, Item.list[this.selectableRecipes[i].itemID].getTextureID( this.selectableRecipes[i].itemID, Item.NULL_ITEM_METADATA, RenderBlocks.WEST_FACE));
-                tessellator.addVertexTextureArrayWithCorner(16777215, this.selectableRecipes[i].x + (this.selectableRecipes[i].width / 2), this.selectableRecipes[i].y + (this.selectableRecipes[i].height / 2), selectableZ, 1, Item.list[this.selectableRecipes[i].itemID].getTextureID( this.selectableRecipes[i].itemID, Item.NULL_ITEM_METADATA, RenderBlocks.WEST_FACE));
-                tessellator.addVertexTextureArrayWithCorner(16777215, this.selectableRecipes[i].x - (this.selectableRecipes[i].width / 2), this.selectableRecipes[i].y + (this.selectableRecipes[i].height / 2), selectableZ, 2, Item.list[this.selectableRecipes[i].itemID].getTextureID( this.selectableRecipes[i].itemID, Item.NULL_ITEM_METADATA, RenderBlocks.WEST_FACE));
-                tessellator.addVertexTextureArrayWithCorner(16777215, this.selectableRecipes[i].x + (this.selectableRecipes[i].width / 2), this.selectableRecipes[i].y - (this.selectableRecipes[i].height / 2), selectableZ, 0, Item.list[this.selectableRecipes[i].itemID].getTextureID( this.selectableRecipes[i].itemID, Item.NULL_ITEM_METADATA, RenderBlocks.WEST_FACE));
-                tessellator.addElementsCW();
+            selectableZ = -880;
+            for (int i = 0; i < this.selectableRecipes.length; i++) {
+                if (this.selectableRecipes[i].isBlock) continue;
+                ModelLoader model = Item.list[this.selectableRecipes[i].itemID].itemModel.copyModel();
+                model = model.getScaledModel(76f);
+                model = model.rotateModel(45, 0, 1, 0);
+                model = model.rotateModel(36, 1, 0, 0);
+                Vector3f position = new Vector3f(this.selectableRecipes[i].x, this.selectableRecipes[i].y, -50);
+                model = model.translateModel(position.x, position.y, position.z);
+                ModelFace[] faces;
+                float textureID;
+                int colorRGB = 255;
+                int colorTop = 16777215;
+
+                int colorVal = colorRGB;
+
+                int colorBottom = ((colorVal - 10) << 16) | ((colorVal - 10) << 8) | colorVal - 10;
+                int colorNorth = ((colorVal - 20) << 16) | ((colorVal - 20) << 8) | colorVal - 20;
+                int colorSouth = ((colorVal - 30) << 16) | ((colorVal - 30) << 8) | colorVal - 30;
+                int colorEast = ((colorVal - 40) << 16) | ((colorVal - 40) << 8) | colorVal - 40;
+                int colorWest = ((colorVal - 50) << 16) | ((colorVal - 50) << 8) | colorVal - 50;
+
+                for (int face = 0; face < 6; face++) {
+                    faces = model.getModelFaceOfType(face);
+                    for (int j = 0; j < faces.length; j++) {
+                        if (faces[j] == null) continue;
+                        textureID = faces[j].texture;
+
+                        switch (faces[j].faceType){
+                            case RenderBlocks.TOP_FACE -> {
+                                colorRGB = colorTop;
+                            }
+                            case RenderBlocks.BOTTOM_FACE -> {
+                                colorRGB = colorBottom;
+                            }
+                            case RenderBlocks.NORTH_FACE -> {
+                                colorRGB = colorNorth;
+                            }
+                            case RenderBlocks.SOUTH_FACE -> {
+                                colorRGB = colorSouth;
+                            }
+                            case RenderBlocks.EAST_FACE -> {
+                                colorRGB = colorEast;
+                            }
+                            case RenderBlocks.WEST_FACE -> {
+                                colorRGB = colorWest;
+                            }
+                        }
+
+                        tessellator.addVertexTextureArrayWithUV(colorRGB, faces[j].vertices[0].x, faces[j].vertices[0].y, faces[j].vertices[0].z, textureID, faces[j].UVs[0][0], faces[j].UVs[0][1]);
+                        tessellator.addVertexTextureArrayWithUV(colorRGB, faces[j].vertices[1].x, faces[j].vertices[1].y, faces[j].vertices[1].z, textureID, faces[j].UVs[1][0], faces[j].UVs[1][1]);
+                        tessellator.addVertexTextureArrayWithUV(colorRGB, faces[j].vertices[2].x, faces[j].vertices[2].y, faces[j].vertices[2].z, textureID, faces[j].UVs[2][0], faces[j].UVs[2][1]);
+                        tessellator.addVertexTextureArrayWithUV(colorRGB, faces[j].vertices[3].x, faces[j].vertices[3].y, faces[j].vertices[3].z, textureID, faces[j].UVs[3][0], faces[j].UVs[3][1]);
+                        tessellator.addElementsCCW();
+                    }
+                }
+                tessellator.drawTextureArray(Assets.itemTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
             }
 
-
-            tessellator.drawTextureArray(Assets.itemTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
-
-            selectableZ = -87;
+            selectableZ = -870;
             for(int i = 0; i < this.selectableRecipes.length; i++){
                 tessellator.addVertex2DTexture(16777215, this.selectableRecipes[i].x - (this.selectableRecipes[i].width / 2), this.selectableRecipes[i].y - (this.selectableRecipes[i].height / 2), selectableZ, 3);
                 tessellator.addVertex2DTexture(16777215, this.selectableRecipes[i].x + (this.selectableRecipes[i].width / 2), this.selectableRecipes[i].y + (this.selectableRecipes[i].height / 2), selectableZ, 1);
@@ -157,13 +207,13 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
         tessellator.toggleOrtho();
 
 
-        if(this.selectedItemID == -1){
+        if(this.selectedItemID == Item.NULL_ITEM_REFERENCE){
             FontRenderer fontRenderer = FontRenderer.instance;
             fontRenderer.drawCenteredString("Select Recipe", 0, 128, -15, 16777215, 50, 255);
         }
 
         RecipeSelector hoveredRecipe = this.getSelectedRecipeSelector();
-        if(hoveredRecipe != null){
+        if(hoveredRecipe != null) {
             FontRenderer fontRenderer = FontRenderer.instance;
             tessellator.toggleOrtho();
             String displayedName = hoveredRecipe.displayName;
@@ -173,10 +223,10 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
             float height = font + 64 + (hoveredRecipe.requiredItemCount.length * 64);
             float width = font * ((displayedName.length() + 2) * 0.34f);
 
-            tessellator.addVertex2DTexture(0, x, y, -10, 3);
-            tessellator.addVertex2DTexture(0, x + width, y + height, -10, 1);
-            tessellator.addVertex2DTexture(0, x, y + height, -10, 2);
-            tessellator.addVertex2DTexture(0, x + width, y, -10, 0);
+            tessellator.addVertex2DTexture(0, x, y, -500, 3);
+            tessellator.addVertex2DTexture(0, x + width, y + height, -500, 1);
+            tessellator.addVertex2DTexture(0, x, y + height, -500, 2);
+            tessellator.addVertex2DTexture(0, x + width, y, -500, 0);
             tessellator.addElementsCW();
             GL46.glEnable(GL46.GL_BLEND);
             GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
@@ -185,11 +235,12 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
             tessellator.toggleOrtho();
 
             y += height - 50;
-            fontRenderer.drawString(displayedName, x, y , -9, 16777215, font, 255);
+            fontRenderer.drawString(displayedName, x, y, -9, 16777215, font, 255);
             y -= 60;
             fontRenderer.drawString("Requires", x, y, -9, 16777215, font, 255);
             y -= 64;
-            for(int i = 0; i < hoveredRecipe.requiredItems.length; i++){
+            for (int i = 0; i < hoveredRecipe.requiredItems.length; i++) {
+                if (hoveredRecipe.requiredItems[i] == Item.block.ID) continue;
                 fontRenderer.drawString(hoveredRecipe.requiredItemCount[i] + "x: ", x, y, -9, 16777215, 50, 255);
                 x += 64 + (hoveredRecipe.requiredItemCount[i] >= 100 ? 2 * 17 : hoveredRecipe.requiredItemCount[i] >= 10 ? 17 : 0);
                 y -= 8;
@@ -205,7 +256,46 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
                 GL46.glDisable(GL46.GL_BLEND);
                 tessellator.toggleOrtho();
                 y += 8;
-                x -= 64 - (hoveredRecipe.requiredItemCount[i] >= 100 ? 2 * 17 : hoveredRecipe.requiredItemCount[i] >= 10 ? 17 : 0);;
+                x -= 64 - (hoveredRecipe.requiredItemCount[i] >= 100 ? 2 * 17 : hoveredRecipe.requiredItemCount[i] >= 10 ? 17 : 0);
+                y -= 64;
+            }
+
+            for (int i = 0; i < hoveredRecipe.requiredItems.length; i++) {
+                if (hoveredRecipe.requiredItems[i] != Item.block.ID) continue;
+                fontRenderer.drawString(hoveredRecipe.requiredItemCount[i] + "x: ", x, y, -9, 16777215, 50, 255);
+                x += 64 + (hoveredRecipe.requiredItemCount[i] >= 100 ? 2 * 17 : hoveredRecipe.requiredItemCount[i] >= 10 ? 17 : 0);
+                ModelLoader model = Block.list[hoveredRecipe.requiredItemMetadata[i]].blockModel.copyModel().translateModel(-0.5f, 0, -0.5f);
+                model = model.getScaledModel(38f);
+                model = model.rotateModel(45, 0, 1, 0);
+                model = model.rotateModel(36, 1, 0, 0);
+                model = model.translateModel(0.5f, 0, 0.5f);
+                model = model.translateModel(x + 64, y + 16, -100);
+                ModelFace modelFace;
+                float textureID;
+                int red = 255;
+                int green = 255;
+                int blue = 255;
+
+                for (int face = 0; face < model.modelFaces.length; face++) {
+                    modelFace = model.modelFaces[face];
+                    if (modelFace == null) continue;
+                    textureID = Block.list[hoveredRecipe.requiredItemMetadata[i]].getBlockTexture(hoveredRecipe.requiredItemMetadata[i], modelFace.faceType);
+
+                    tessellator.addVertexTextureArrayWithUV(((red << 16) | (green << 8) | blue), modelFace.vertices[0].x, modelFace.vertices[0].y, modelFace.vertices[0].z, textureID, modelFace.UVs[0][0], modelFace.UVs[0][1]);
+                    tessellator.addVertexTextureArrayWithUV(((red << 16) | (green << 8) | blue), modelFace.vertices[1].x, modelFace.vertices[1].y, modelFace.vertices[1].z, textureID, modelFace.UVs[1][0], modelFace.UVs[1][1]);
+                    tessellator.addVertexTextureArrayWithUV(((red << 16) | (green << 8) | blue), modelFace.vertices[2].x, modelFace.vertices[2].y, modelFace.vertices[2].z, textureID, modelFace.UVs[2][0], modelFace.UVs[2][1]);
+                    tessellator.addVertexTextureArrayWithUV(((red << 16) | (green << 8) | blue), modelFace.vertices[3].x, modelFace.vertices[3].y, modelFace.vertices[3].z, textureID, modelFace.UVs[3][0], modelFace.UVs[3][1]);
+                    tessellator.addElementsCCW();
+
+                    red -= 10;
+                    green -= 10;
+                    blue -= 10;
+                }
+                tessellator.toggleOrtho();
+                tessellator.drawTextureArray(Assets.blockTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
+                tessellator.toggleOrtho();
+                y += 8;
+                x -= 64 - (hoveredRecipe.requiredItemCount[i] >= 100 ? 2 * 17 : hoveredRecipe.requiredItemCount[i] >= 10 ? 17 : 0);
                 y -= 64;
             }
         }

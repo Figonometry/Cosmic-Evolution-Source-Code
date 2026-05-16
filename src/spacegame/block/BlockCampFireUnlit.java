@@ -54,7 +54,7 @@ public final class BlockCampFireUnlit extends BlockCampFire {
         if (this.getLogCount() == 4) {
             if (playerHeldItem == Item.stoneFragments.ID) {
                 CosmicEvolution.instance.setNewGui(new GuiLightFire(CosmicEvolution.instance, x, y, z));
-            } else if(playerHeldItem == Item.torch.ID){
+            } else if(player.getHeldBlock() == Block.torchStandard.ID){
                 world.setBlockWithNotify(x,y,z, Block.campfireLit.ID, true);
                 world.addHeatableBlock(x,y,z);
             }

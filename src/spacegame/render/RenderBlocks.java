@@ -3,6 +3,7 @@ package spacegame.render;
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 import spacegame.block.*;
+import spacegame.item.ItemTool;
 import spacegame.item.crafting.InWorldCraftingItem;
 import spacegame.render.model.ModelFace;
 import spacegame.render.model.ModelLoader;
@@ -696,72 +697,29 @@ public class RenderBlocks {
         }
     }
 
-    public static int getFaceHeight(ModelFace modelFace){
-        return modelFace == null ? 0 : modelFace.getFaceHeight();
-    }
-
-    public static int getFaceWidth(ModelFace modelFace){
-        return modelFace == null ? 0 : modelFace.getFaceWidth();
-    }
-
     public void renderItemBlock(Chunk chunk, World world, short block, int index, int face){
         this.redReset = 1f;
         this.greenReset = 1f;
         this.blueReset = 1f;
         this.skyLightReset = 1f;
 
-        if(face == BOTTOM_FACE)return;
-        int[] pixels = new int[1024];
-        String filepath = "src/spacegame/assets/textures/item/" +
-                RenderEngine.getBlockName(chunk.getChestLocation(index).inventory.itemStacks[0].item.textureID, "src/spacegame/assets/textures/item/") + ".png";
-        BufferedImage image = null;
-        ModelLoader baseModel = Block.itemVoxelModel;
+        if(face != TOP_FACE)return;
 
-        try {
-            image = ImageIO.read(new File(filepath));
-            BufferedImage argbImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
-            Graphics2D g = argbImage.createGraphics();
-            g.drawImage(image, 0, 0, null);
-            g.dispose();
-            image = argbImage;
+        block = Block.itemBlock.ID;
 
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        ChestLocation chestLocation = world.getChestLocation(chunk.getBlockXFromIndex(index), chunk.getBlockYFromIndex(index), chunk.getBlockZFromIndex(index));
+        if(chestLocation == null)return;
+
+        ModelLoader model = chestLocation.inventory.itemStacks[0].item.itemModel.copyModel();
+
+        if(chestLocation.inventory.itemStacks[0].item instanceof ItemTool){
+            model = model.rotateModel(90, 0, 0, 1);
         }
 
-        image.getRGB(0, 0, 32, 32, pixels, 0, 32);
+        model = model.translateModel(0.5f, model.getModelHeight() / 2f, 0.5f);
 
-        float xShift;
-        float zShift;
-        final float voxelShift = 0.03125f;
-        for(int i = 0; i < pixels.length; i++){
-            if((pixels[i] >> 24 & 255) != 255)continue;
-
-            if(i < 992 && face == WEST_FACE) {
-                if ((pixels[i + 32] >> 24 & 255) == 255) continue;
-            }
-
-            if(i > 31 && face == EAST_FACE) {
-                if ((pixels[i - 32] >> 24 & 255) == 255) continue;
-            }
-
-            if(i < 1023 && (i % 32 != 31) && face == SOUTH_FACE){
-                if((pixels[i + 1] >> 24 & 255) == 255)continue;
-            }
-
-            if(i > 0 && (i % 32) != 0 && face == NORTH_FACE){
-                 if((pixels[i - 1] >> 24 & 255) == 255)continue;
-            }
-
-            this.redReset = MathUtil.intToFloatRGBA(pixels[i] >> 16 & 255);
-            this.greenReset = MathUtil.intToFloatRGBA(pixels[i] >> 8 & 255);
-            this.blueReset = MathUtil.intToFloatRGBA(pixels[i] & 255);
-            this.skyLightReset = Math.max(Math.max(this.redReset, this.greenReset), this.blueReset);
-
-            xShift = voxelShift * (i % 32);
-            zShift = voxelShift * (i >> 5);
-
-            renderOpaqueFace(chunk, world, block, index, face, baseModel.copyModel().translateModel(xShift, 0, zShift).getModelFace(face), new int[2]);
+        for(int i = 0; i < model.modelFaces.length; i++){
+            this.renderOpaqueFace(chunk, world, block, index, face, model.modelFaces[i], new int[2]);
         }
     }
 
@@ -861,60 +819,50 @@ public class RenderBlocks {
         this.blueReset = 1f;
         this.skyLightReset = 1f;
 
-        if(face == BOTTOM_FACE)return;
+        if(face != TOP_FACE)return;
 
-        block = Block.itemBlock.ID; //Color using  the fillable color
+        //Swap texture in the return method, pass the texture index from the item array into the method as the "face"
 
         InWorldCraftingItem craftingItem = world.getInWorldCraftingItem(chunk.getBlockXFromIndex(index), chunk.getBlockYFromIndex(index), chunk.getBlockZFromIndex(index));
 
         if(craftingItem == null)return;
 
-        double rotation;
-        double[] position; //local coordinates
-        double translateX;
-        double translateY;
-        double translateZ;
-        double voxelShift = 0.015625; // 1/32 then scaled by 1/2, any smaller is not viable due to float to half conversion
-        ModelLoader baseModel;
-        ModelFace modelFace;
-
-        //Model can only be so small before issues arise
         for(int i = 0; i < craftingItem.itemsFilled.length; i++){
+
             if(!craftingItem.itemsFilled[i])continue;
 
-            rotation = craftingItem.outputRecipe.requiredItemAngles[i];
-            position = craftingItem.outputRecipe.requiredItemPositions[i];
-
-            int[] itemPixels = GeneralUtil.getFilePixelsARGB("src/spacegame/assets/textures/item/" +
-                    RenderEngine.getBlockName(Item.list[craftingItem.outputRecipe.requiredItems[i]].textureID, "src/spacegame/assets/textures/item/") + ".png", 32, 32);
-
-            if(itemPixels == null){
-                System.out.println("Failed to get item pixels");
-                continue;
+            ModelLoader model;
+            if(craftingItem.outputRecipe.requiredItems[i] == Item.block.ID){
+                model = Block.list[craftingItem.outputRecipe.requiredItemMetadata[i]].blockModel.copyModel();
+                block = craftingItem.outputRecipe.requiredItemMetadata[i];
+            } else {
+                model = Item.list[craftingItem.outputRecipe.requiredItems[i]].itemModel.copyModel();
+                block = Block.itemBlock.ID;
             }
 
-            itemPixels = GeneralUtil.rotateImagePixels(itemPixels, rotation, 32, 32);
+            ModelFace modelFace;
+
+            model = model.getScaledModel(0.5f);
+            if(craftingItem.outputRecipe.requiredItems[i] == Item.stoneHandAxe.ID ||
+            craftingItem.outputRecipe.requiredItems[i] == Item.stoneHandShovel.ID ||
+            craftingItem.outputRecipe.requiredItems[i] == Item.stoneHandKnifeBlade.ID){
+                model = model.getScaledModel(0.75f);
+                model = model.rotateModel(90, 0, 0, 1);
+                if(craftingItem.outputRecipe.requiredItems[i] == Item.stoneHandShovel.ID){
+                    model = model.rotateModel(-90, 0, 1, 0);
+                }
+                if(craftingItem.outputRecipe.requiredItems[i] == Item.stoneHandKnifeBlade.ID){
+                    model = model.rotateModel(135f, 0, 1, 0);
+                    model = model.getScaledModel(2.1f);
+                }
+            }
+            model = model.rotateModel((float) craftingItem.outputRecipe.requiredItemAngles[i], 0, 1, 0);
+            model = model.translateModel((float) craftingItem.outputRecipe.requiredItemPositions[i][0], (float) craftingItem.outputRecipe.requiredItemPositions[i][1], (float) craftingItem.outputRecipe.requiredItemPositions[i][2]);
 
 
-            for(int j = 0; j < itemPixels.length; j++){
-                if(((itemPixels[j] >> 24) & 255) != 255)continue;
-
-                baseModel = Block.centeredVoxel.copyModel();
-
-                translateX = (voxelShift * (j % 32)) + position[0];
-                translateY = position[1];
-                translateZ = (voxelShift * (j >> 5)) + position[2];
-
-                baseModel = baseModel.translateModel((float) translateX, (float)translateY, (float) translateZ);
-                modelFace = baseModel.getModelFace(face);
-
-
-                this.redReset = MathUtil.intToFloatRGBA(itemPixels[j] >> 16 & 255);
-                this.greenReset = MathUtil.intToFloatRGBA(itemPixels[j] >> 8 & 255);
-                this.blueReset = MathUtil.intToFloatRGBA(itemPixels[j] & 255);
-                this.skyLightReset = Math.max(Math.max(this.redReset, this.greenReset), this.blueReset);
-
-                this.renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
+            for(int j = 0; j < model.modelFaces.length; j++){
+                modelFace = model.modelFaces[j];
+                this.renderOpaqueFace(chunk, world, block, index, modelFace.faceType, modelFace, new int[2]);
             }
 
 
@@ -2795,6 +2743,10 @@ public class RenderBlocks {
         int z = ((index & 1023) >> 5);
 
         float blockTextureID = blockFace.texture == RenderEngine.NULL_TEXTURE ? getBlockTextureID(block, face) : blockFace.texture;
+
+        if(block == Block.itemBlock.ID){
+            blockTextureID = Block.itemBlock.getBlockTexture(blockFace.texture);
+        }
 
         ModelLoader modelLoader = Block.list[block].blockModel;
 

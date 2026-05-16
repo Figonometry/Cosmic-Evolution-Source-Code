@@ -1,5 +1,5 @@
 blockName:LEAF
-droppedItemID:6
+itemMetadata:87
 blockModel:standardBlockModel
 stepSound:grass
 breakTimer:60

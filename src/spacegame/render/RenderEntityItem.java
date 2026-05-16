@@ -1,19 +1,14 @@
 package spacegame.render;
 
-import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
-import spacegame.render.model.ModelFace;
+import spacegame.item.ItemTool;
 import spacegame.render.model.ModelLoader;
 import spacegame.util.MathUtil;
-import spacegame.gui.GuiInGame;
 import spacegame.item.Item;
-import spacegame.world.WorldEarth;
-
-import java.awt.*;
 
 public final class RenderEntityItem {
     public final double x;
@@ -28,14 +23,14 @@ public final class RenderEntityItem {
     public float green = 1;
     public float blue = 1;
     public float alpha = 1;
-    public long currentTime;
     public double entityHeight;
     public double entityWidth;
     public int chunkX;
     public int chunkY;
     public int chunkZ;
+    public float entityYaw;
 
-    public RenderEntityItem(double x, double y, double z, ModelLoader entityModel, boolean render3D, boolean isBlock, short itemID, short itemMetadata, double entityHeight, double entityWidth){
+    public RenderEntityItem(double x, double y, double z, ModelLoader entityModel, boolean render3D, boolean isBlock, short itemID, short itemMetadata, double entityHeight, double entityWidth, float entityYaw){
         this.x = x;
         this.y = y;
         this.z = z;
@@ -46,26 +41,20 @@ public final class RenderEntityItem {
         this.blockID = itemMetadata;
         this.entityHeight = entityHeight;
         this.entityWidth = entityWidth;
+        this.entityYaw = entityYaw;
     }
 
 
     public void renderEntity(){
         if(this.render3D){
-            this.renderEntityAs3D();
-        } else {
-            this.renderEntityAsBillboard();
-        }
-    }
-
-    public void renderEntityAs3D(){
-        if(this.isBlock){
             this.renderEntityAsBlock();
         } else {
-            //Standard 3d render code, draw with Atlas with an unwrapped image
+            this.renderEntityAsItemModel();
         }
     }
 
-    public void renderEntityAsBillboard(){
+
+    public void renderEntityAsItemModel() {
         RenderEngine.WorldTessellator worldTessellator = RenderEngine.WorldTessellator.instance;
         this.chunkX = MathUtil.floorDouble(this.x) >> 5;
         this.chunkY = MathUtil.floorDouble(this.y) >> 5;
@@ -86,70 +75,70 @@ public final class RenderEntityItem {
         zOffset *= 32;
         Vector3f chunkOffset = new Vector3f(xOffset, yOffset, zOffset);
         Shader.worldShaderTextureArray.uploadVec3f("chunkOffset", chunkOffset);
-        WorldEarth worldEarth = (WorldEarth) CosmicEvolution.instance.save.activeWorld;
-        this.currentTime = CosmicEvolution.instance.save.time;
         float x = MathUtil.positiveMod(this.x, 32);
-        float y = (float) (MathUtil.positiveMod(this.y, 32) + 0.05F + (0.05F * ((MathUtil.sin((((double) this.currentTime / 120) * Math.PI * 2) - (0.5 * Math.PI)) * 0.5) + 0.5f)));
-        float z = MathUtil.positiveMod(this.z,32);
+        float y = MathUtil.positiveMod(this.y, 32);
+        float z = MathUtil.positiveMod(this.z, 32);
 
-        if(x < 0){
+        if (x < 0) {
             x += 32;
         }
 
-        if(y < 0){
+        if (y < 0) {
             y += 32;
         }
 
-        if(z < 0){
+        if (z < 0) {
             z += 32;
         }
 
-        float blockID = getItemTextureID(this.itemID, this.blockID, RenderBlocks.WEST_FACE);
+        float skyLight = getLightValueFromMap(CosmicEvolution.instance.save.activeWorld.getBlockSkyLightValue(MathUtil.floorDouble(this.x), MathUtil.floorDouble(this.y), MathUtil.floorDouble(this.z)));
 
-        Vector3d blockPosition = new Vector3d(x, (float) (y + this.entityHeight/2) + 0.125, z);
-        Vector3d vertex1 = new Vector3d(0,  -0.125, -0.125).rotateY(-Math.toRadians(CosmicEvolution.instance.save.thePlayer.yaw)).add(blockPosition);
-        Vector3d vertex2 = new Vector3d(0, 0.125, 0.125).rotateY(-Math.toRadians(CosmicEvolution.instance.save.thePlayer.yaw)).add(blockPosition);
-        Vector3d vertex3 = new Vector3d(0, 0.125, -0.125).rotateY(-Math.toRadians(CosmicEvolution.instance.save.thePlayer.yaw)).add(blockPosition);
-        Vector3d vertex4 = new Vector3d(0, -0.125, 0.125).rotateY(-Math.toRadians(CosmicEvolution.instance.save.thePlayer.yaw)).add(blockPosition);
-        Vector3d normal = new Vector3d(0, 0, 1).rotateY(-Math.toRadians(CosmicEvolution.instance.save.thePlayer.yaw));
-        this.resetLight();
-        this.setVertexLight1Arg(worldEarth.getBlockLightValue(MathUtil.floorDouble(this.chunkX * 32 + x), MathUtil.floorDouble(this.chunkY * 32 + y), MathUtil.floorDouble(this.chunkZ * 32 + z)),  x, y, z, worldEarth.getBlockLightColor(MathUtil.floorDouble(this.chunkX * 32 + x), MathUtil.floorDouble(this.chunkY * 32 + y), MathUtil.floorDouble(this.chunkZ * 32 + z)));
-        float skyLightValue = GuiInGame.getLightValueFromMap(worldEarth.getBlockSkyLightValue((int)(this.chunkX * 32 + x), (int)(this.chunkY * 32 + y), (int)(this.chunkZ * 32 + z)));
-        int colorValue = new Color(this.red, this.green, this.blue, 0).getRGB();
-        worldTessellator.addVertexTextureArray(colorValue, (float) vertex1.x, (float) vertex1.y, (float) vertex1.z, 3, blockID, (float) normal.x, (float) normal.y, (float) normal.z, skyLightValue);
-        worldTessellator.addVertexTextureArray(colorValue, (float) vertex2.x, (float) vertex2.y, (float) vertex2.z, 1, blockID, (float) normal.x, (float) normal.y, (float) normal.z, skyLightValue);
-        worldTessellator.addVertexTextureArray(colorValue, (float) vertex3.x, (float) vertex3.y, (float) vertex3.z, 2, blockID, (float) normal.x, (float) normal.y, (float) normal.z, skyLightValue);
-        worldTessellator.addVertexTextureArray(colorValue, (float) vertex4.x, (float) vertex4.y, (float) vertex4.z, 0, blockID, (float) normal.x, (float) normal.y, (float) normal.z, skyLightValue);
-        worldTessellator.addElementsCW();
+        float textureID;
+
+        int colorRGB;
+
+        ModelLoader model = Item.list[this.itemID].itemModel.copyModel();
+        if(Item.list[this.itemID] instanceof ItemTool){
+            model = model.rotateModel(90, 0, 0, 1);
+        }
+        model = model.rotateModel(this.entityYaw, 0, 1, 0);
+        model = model.translateModel(x,y,z);
+
+
+        for (int i = 0; i < model.modelFaces.length; i++) {
+            if (model.modelFaces[i] == null) continue;
+
+            textureID = model.modelFaces[i].texture;
+
+
+            for(int j = 0; j < model.modelFaces[i].vertices.length; j++){
+                this.setVertexLight1Arg(CosmicEvolution.instance.save.activeWorld.getBlockLightValue(MathUtil.floorDouble(model.modelFaces[i].vertices[j].x + (this.chunkX << 5)),
+                                MathUtil.floorDouble(model.modelFaces[i].vertices[j].y + (this.chunkY << 5)),
+                                MathUtil.floorDouble(model.modelFaces[i].vertices[j].z + (this.chunkZ << 5))),
+                        CosmicEvolution.instance.save.activeWorld.getBlockLightColor(MathUtil.floorDouble(model.modelFaces[i].vertices[j].x + (this.chunkX << 5)),
+                                MathUtil.floorDouble(model.modelFaces[i].vertices[j].y + (this.chunkY << 5)),
+                                MathUtil.floorDouble(model.modelFaces[i].vertices[j].z + (this.chunkZ << 5))));
+
+                colorRGB = MathUtil.floatToIntRGBA(this.red) << 16 | MathUtil.floatToIntRGBA(this.green) << 8 | MathUtil.floatToIntRGBA(this.blue);
+
+                worldTessellator.addVertexTextureArrayWithUV(colorRGB, model.modelFaces[i].vertices[j].x, model.modelFaces[i].vertices[j].y, model.modelFaces[i].vertices[j].z, textureID, model.modelFaces[i].normal.x, model.modelFaces[i].normal.y, model.modelFaces[i].normal.z, skyLight ,model.modelFaces[i].UVs[j][0], model.modelFaces[i].UVs[j][1]);
+            }
+
+            worldTessellator.addElementsCCW();
+        }
+
         GL46.glCullFace(GL46.GL_BACK);
-        GL46.glEnable(GL46.GL_BLEND);
-        GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
         worldTessellator.drawTextureArray(Assets.itemTextureArray, Shader.worldShaderTextureArray, CosmicEvolution.camera);
         GL46.glCullFace(GL46.GL_FRONT);
-        GL46.glDisable(GL46.GL_BLEND);
     }
 
     public void renderEntityAsBlock(){
         RenderEngine.WorldTessellator worldTessellator = RenderEngine.WorldTessellator.instance;
-        ModelFace modelFace;
-        this.currentTime = CosmicEvolution.instance.save.time;
         this.chunkX = MathUtil.floorDouble(this.x) >> 5;
         this.chunkY = MathUtil.floorDouble(this.y) >> 5;
         this.chunkZ = MathUtil.floorDouble(this.z) >> 5;
 
-        ModelLoader model = Block.list[this.blockID].blockModel.copyModel().translateModel( -0.5f, 0, -0.5f).getScaledModel(0.125f);
-        ModelFace[] faces;
-        for(int face = 0; face < 6; face++){
-            faces = model.getModelFaceOfType(face);
-            for(int i = 0; i < faces.length; i++){
-                if(faces[i] == null)continue;
-
-                this.renderOpaqueFace(worldTessellator, (WorldEarth) CosmicEvolution.instance.save.activeWorld, this.blockID, faces[i].faceType, faces[i]);
-                worldTessellator.addElementsCCW();
-
-            }
-        }
-
+        ModelLoader model = Block.list[this.blockID].blockModel.copyModel().translateModel( -0.5f, 0, -0.5f).getScaledModel(0.25f);
         Shader.worldShaderTextureArray.uploadBoolean("useFog", true);
         Shader.worldShaderTextureArray.uploadFloat("fogRed", CosmicEvolution.instance.save.activeWorld.skyColor[0]);
         Shader.worldShaderTextureArray.uploadFloat("fogGreen", CosmicEvolution.instance.save.activeWorld.skyColor[1]);
@@ -166,6 +155,53 @@ public final class RenderEntityItem {
         zOffset <<= 5;
         Vector3f chunkOffset = new Vector3f(xOffset, yOffset, zOffset);
         Shader.worldShaderTextureArray.uploadVec3f("chunkOffset", chunkOffset);
+
+        float textureID;
+        int colorRGB;
+
+        float x = MathUtil.positiveMod(this.x, 32);
+        float y = MathUtil.positiveMod(this.y, 32);
+        float z = MathUtil.positiveMod(this.z, 32);
+
+        if (x < 0) {
+            x += 32;
+        }
+
+        if (y < 0) {
+            y += 32;
+        }
+
+        if (z < 0) {
+            z += 32;
+        }
+
+        model = model.rotateModel(this.entityYaw, 0, 1, 0);
+        model = model.translateModel(x,y,z);
+
+        float skyLight = getLightValueFromMap(CosmicEvolution.instance.save.activeWorld.getBlockSkyLightValue(MathUtil.floorDouble(this.x), MathUtil.floorDouble(this.y), MathUtil.floorDouble(this.z)));
+
+        for (int i = 0; i < model.modelFaces.length; i++) {
+            if (model.modelFaces[i] == null) continue;
+
+            textureID = model.usesMultipleTextures ? model.modelFaces[i].texture : Block.list[this.blockID].getBlockTexture(this.blockID, model.modelFaces[i].faceType);
+
+
+            for(int j = 0; j < model.modelFaces[i].vertices.length; j++){
+                this.setVertexLight1Arg(CosmicEvolution.instance.save.activeWorld.getBlockLightValue(MathUtil.floorDouble(model.modelFaces[i].vertices[j].x + (this.chunkX << 5)),
+                                MathUtil.floorDouble(model.modelFaces[i].vertices[j].y + (this.chunkY << 5)),
+                                MathUtil.floorDouble(model.modelFaces[i].vertices[j].z + (this.chunkZ << 5))),
+                        CosmicEvolution.instance.save.activeWorld.getBlockLightColor(MathUtil.floorDouble(model.modelFaces[i].vertices[j].x + (this.chunkX << 5)),
+                                MathUtil.floorDouble(model.modelFaces[i].vertices[j].y + (this.chunkY << 5)),
+                                MathUtil.floorDouble(model.modelFaces[i].vertices[j].z + (this.chunkZ << 5))));
+
+                colorRGB = MathUtil.floatToIntRGBA(this.red) << 16 | MathUtil.floatToIntRGBA(this.green) << 8 | MathUtil.floatToIntRGBA(this.blue);
+
+                worldTessellator.addVertexTextureArrayWithUV(colorRGB, model.modelFaces[i].vertices[j].x, model.modelFaces[i].vertices[j].y, model.modelFaces[i].vertices[j].z, textureID, model.modelFaces[i].normal.x, model.modelFaces[i].normal.y, model.modelFaces[i].normal.z, skyLight ,model.modelFaces[i].UVs[j][0], model.modelFaces[i].UVs[j][1]);
+            }
+
+            worldTessellator.addElementsCCW();
+        }
+
         GL46.glCullFace(GL46.GL_BACK);
         worldTessellator.drawTextureArray(Assets.blockTextureArray, Shader.worldShaderTextureArray, CosmicEvolution.camera);
         GL46.glCullFace(GL46.GL_FRONT);
@@ -178,10 +214,8 @@ public final class RenderEntityItem {
         this.chunkY = MathUtil.floorDouble(this.y) >> 5;
         this.chunkZ = MathUtil.floorDouble(this.z) >> 5;
 
-        Shader.shadowMapShaderTextureArray.uploadVec3f("chunkOffset", new Vector3f((chunkX - sunX) << 5, (chunkY - sunY) << 5, (chunkZ - sunZ) << 5));
-        this.currentTime = CosmicEvolution.instance.save.time;
         float x = MathUtil.positiveMod(this.x, 32);
-        float y = (float) (MathUtil.positiveMod(this.y, 32) + 0.05F + (0.05F * ((MathUtil.sin((((double) this.currentTime / 120) * Math.PI * 2) - (0.5 * Math.PI)) * 0.5) + 0.5f)));
+        float y = MathUtil.positiveMod(this.y, 32);
         float z = MathUtil.positiveMod(this.z,32);
 
         if(x < 0){
@@ -196,44 +230,66 @@ public final class RenderEntityItem {
             z += 32;
         }
 
-        float blockID = getItemTextureID(this.itemID, this.blockID, RenderBlocks.WEST_FACE);
+        ModelLoader model = Item.list[this.itemID].itemModel.copyModel();
+        if(Item.list[this.itemID] instanceof ItemTool){
+            model = model.rotateModel(90, 0, 0, 1);
+        }
+        model = model.rotateModel(this.entityYaw, 0, 1, 0);
+        model = model.translateModel(x,y + 0.4f,z);
 
-        Vector3d blockPosition = new Vector3d(x, (float) (y + this.entityHeight/2) + 0.125, z);
-        Vector3d vertex1 = new Vector3d(0,  -0.125, -0.125).rotateY(-Math.toRadians(CosmicEvolution.instance.save.thePlayer.yaw)).add(blockPosition);
-        Vector3d vertex2 = new Vector3d(0, 0.125, 0.125).rotateY(-Math.toRadians(CosmicEvolution.instance.save.thePlayer.yaw)).add(blockPosition);
-        Vector3d vertex3 = new Vector3d(0, 0.125, -0.125).rotateY(-Math.toRadians(CosmicEvolution.instance.save.thePlayer.yaw)).add(blockPosition);
-        Vector3d vertex4 = new Vector3d(0, -0.125, 0.125).rotateY(-Math.toRadians(CosmicEvolution.instance.save.thePlayer.yaw)).add(blockPosition);
+        for (int i = 0; i < model.modelFaces.length; i++) {
+            if (model.modelFaces[i] == null) continue;
 
+            for(int j = 0; j < model.modelFaces[i].vertices.length; j++){
+                worldTessellator.addVertexTextureArrayWithUV(0, model.modelFaces[i].vertices[j].x, model.modelFaces[i].vertices[j].y, model.modelFaces[i].vertices[j].z, 0,0, 0, 0, 0 , 0,0);
+            }
 
-        worldTessellator.addVertexTextureArray(0, (float) vertex1.x, (float) vertex1.y, (float) vertex1.z, 3, blockID, 0, 0, 0, 0);
-        worldTessellator.addVertexTextureArray(0, (float) vertex2.x, (float) vertex2.y, (float) vertex2.z, 1, blockID, 0, 0, 0, 0);
-        worldTessellator.addVertexTextureArray(0, (float) vertex3.x, (float) vertex3.y, (float) vertex3.z, 2, blockID, 0, 0, 0, 0);
-        worldTessellator.addVertexTextureArray(0, (float) vertex4.x, (float) vertex4.y, (float) vertex4.z, 0, blockID, 0, 0, 0, 0);
-        worldTessellator.addElementsCCW();
-        GL46.glDisable(GL46.GL_CULL_FACE);
-        worldTessellator.drawTextureArray(Assets.itemTextureArray, Shader.shadowMapShaderTextureArray, CosmicEvolution.camera);
-        GL46.glEnable(GL46.GL_CULL_FACE);
+            worldTessellator.addElementsCCW();
+        }
+
+        Shader.shadowMapShaderTextureArray.uploadVec3f("chunkOffset", new Vector3f((chunkX - sunX) << 5, (chunkY - sunY) << 5, (chunkZ - sunZ) << 5));
+        worldTessellator.drawTextureArray(Assets.blockTextureArray, Shader.shadowMapShaderTextureArray, CosmicEvolution.camera); //For whatever reason the item texture array doesn't draw properly from this
     }
 
     public void renderBlockForShadowMap(int sunX, int sunY, int sunZ){
         RenderEngine.WorldTessellator worldTessellator = RenderEngine.WorldTessellator.instance;
-        ModelFace modelFace;
-        this.currentTime = CosmicEvolution.instance.save.time;
         this.chunkX = MathUtil.floorDouble(this.x) >> 5;
         this.chunkY = MathUtil.floorDouble(this.y) >> 5;
         this.chunkZ = MathUtil.floorDouble(this.z) >> 5;
 
-        ModelLoader model = Block.list[this.blockID].blockModel.copyModel().translateModel( -0.5f, 0, -0.5f).getScaledModel(0.125f);
-        ModelFace[] faces;
-        for(int face = 0; face < 6; face++){
-            faces = model.getModelFaceOfType(face);
-            for(int i = 0; i < faces.length; i++){
-                if(faces[i] == null)continue;
+        float x = MathUtil.positiveMod(this.x, 32);
+        float y = MathUtil.positiveMod(this.y, 32);
+        float z = MathUtil.positiveMod(this.z,32);
 
-                this.renderOpaqueFace(worldTessellator, (WorldEarth) CosmicEvolution.instance.save.activeWorld, this.blockID, faces[i].faceType, faces[i]);
-                worldTessellator.addElementsCCW();
+        if(x < 0){
+            x += 32;
+        }
 
+        if(y < 0){
+            y += 32;
+        }
+
+        if(z < 0){
+            z += 32;
+        }
+
+        ModelLoader model = Block.list[this.blockID].blockModel.copyModel().translateModel( -0.5f, 0, -0.5f).getScaledModel(0.25f);
+
+        model = model.rotateModel(this.entityYaw, 0, 1, 0);
+        model = model.translateModel(x,y + 0.4f,z);
+
+        float skyLight = getLightValueFromMap(CosmicEvolution.instance.save.activeWorld.getBlockSkyLightValue(MathUtil.floorDouble(this.x), MathUtil.floorDouble(this.y), MathUtil.floorDouble(this.z)));
+
+        for (int i = 0; i < model.modelFaces.length; i++) {
+            if (model.modelFaces[i] == null) continue;
+
+
+
+            for(int j = 0; j < model.modelFaces[i].vertices.length; j++){
+                worldTessellator.addVertexTextureArrayWithUV(0, model.modelFaces[i].vertices[j].x, model.modelFaces[i].vertices[j].y, model.modelFaces[i].vertices[j].z, 0, 0,0,0,0,0,0);
             }
+
+            worldTessellator.addElementsCCW();
         }
 
 
@@ -270,7 +326,8 @@ public final class RenderEntityItem {
         blue = 1F;
     }
 
-    private  void setVertexLight1Arg(byte light, float x, float y, float z, float[] lightColor) {
+    private  void setVertexLight1Arg(byte light, float[] lightColor) {
+        this.resetLight();
         float finalLight = getLightValueFromMap(light);
 
         red = lightColor[0];
@@ -281,142 +338,6 @@ public final class RenderEntityItem {
         green *= finalLight;
         blue *= finalLight;
     }
-
-
-    private void renderOpaqueFace(RenderEngine.WorldTessellator worldTessellator, WorldEarth worldEarth, short block, int face, ModelFace blockFace) {
-        float x = (float) (this.x % 32);
-        float y = (float) ((float) (this.y % 32) + 0.05F + (0.05F * ((MathUtil.sin((((double) this.currentTime / 120) * Math.PI * 2) - (0.5 * Math.PI)) * 0.5) + 0.5f)));
-        float z = (float) (this.z % 32);
-
-        if(x < 0){
-            x += 32;
-        }
-
-        if(y < 0){
-            y += 32;
-        }
-
-        if(z < 0){
-            z += 32;
-        }
-
-        float chunkX = this.chunkX * 32;
-        float chunkY = this.chunkY * 32;
-        float chunkZ = this.chunkZ * 32;
-
-        float blockID = RenderBlocks.getBlockTextureID(block, face);
-
-        Vector3f blockPosition = new Vector3f(x, (float) (y + this.entityHeight/2), z);
-
-        Vector3f vertex1 = new Vector3f(blockFace.vertices[0].x, blockFace.vertices[0].y, blockFace.vertices[0].z).rotateY((float) Math.toRadians(this.currentTime % 720)).add(blockPosition);
-        Vector3f vertex2 = new Vector3f(blockFace.vertices[1].x, blockFace.vertices[1].y, blockFace.vertices[1].z).rotateY((float) Math.toRadians(this.currentTime % 720)).add(blockPosition);
-        Vector3f vertex3 = new Vector3f(blockFace.vertices[2].x, blockFace.vertices[2].y, blockFace.vertices[2].z).rotateY((float) Math.toRadians(this.currentTime % 720)).add(blockPosition);
-        Vector3f vertex4 = new Vector3f(blockFace.vertices[3].x, blockFace.vertices[3].y, blockFace.vertices[3].z).rotateY((float) Math.toRadians(this.currentTime % 720)).add(blockPosition);
-        Vector3f normal = new Vector3f(blockFace.normal.x, blockFace.normal.y, blockFace.normal.z).rotateY((float) Math.toRadians(this.currentTime % 720));
-
-        float skyLightValue = this.getLightValueFromMap(worldEarth.getBlockSkyLightValue(MathUtil.floorDouble(chunkX + x), MathUtil.floorDouble(chunkY + y), MathUtil.floorDouble(chunkZ + z)));
-        this.resetLight();
-        this.setVertexLight1Arg(worldEarth.getBlockLightValue(MathUtil.floorDouble(chunkX + x), MathUtil.floorDouble(chunkY + y), MathUtil.floorDouble(chunkZ + z)), x, y, z, worldEarth.getBlockLightColor(MathUtil.floorDouble(chunkX + x), MathUtil.floorDouble(chunkY + y), MathUtil.floorDouble(chunkZ + z)));
-        int lightColor = MathUtil.RGBToInt(this.red, this.green, this.blue);
-        switch (blockFace.faceType) {
-            case RenderBlocks.TOP_FACE, RenderBlocks.TOP_FACE_UNSORTED -> {
-                worldTessellator.addVertexTextureArrayWithUV(lightColor ,vertex1.x, vertex1.y, vertex1.z, blockID, normal.x, normal.y, normal.z, skyLightValue, blockFace.UVs[0][0], blockFace.UVs[0][1]);
-                worldTessellator.addVertexTextureArrayWithUV(lightColor ,vertex2.x, vertex2.y, vertex2.z, blockID, normal.x, normal.y, normal.z, skyLightValue, blockFace.UVs[1][0], blockFace.UVs[1][1]);
-                worldTessellator.addVertexTextureArrayWithUV(lightColor ,vertex3.x, vertex3.y, vertex3.z, blockID, normal.x, normal.y, normal.z, skyLightValue, blockFace.UVs[2][0], blockFace.UVs[2][1]);
-                worldTessellator.addVertexTextureArrayWithUV(lightColor ,vertex4.x, vertex4.y, vertex4.z, blockID, normal.x, normal.y, normal.z, skyLightValue, blockFace.UVs[3][0], blockFace.UVs[3][1]);
-            }
-
-            case RenderBlocks.BOTTOM_FACE, RenderBlocks.BOTTOM_FACE_UNSORTED -> {
-                this.red -= 0.1f;
-                this.green -= 0.1;
-                this.blue -= 0.1f;
-                if(this.red < 0.1f){
-                    this.red = 0.1f;
-                }
-                if(this.green < 0.1f){
-                    this.green = 0.1f;
-                }
-                if(this.blue < 0.1f){
-                    this.blue = 0.1f;
-                }
-                lightColor = MathUtil.RGBToInt(this.red, this.green, this.blue);
-                worldTessellator.addVertexTextureArrayWithUV(lightColor ,vertex1.x, vertex1.y, vertex1.z, blockID, normal.x, normal.y, normal.z, skyLightValue, blockFace.UVs[0][0], blockFace.UVs[0][1]);
-                worldTessellator.addVertexTextureArrayWithUV(lightColor ,vertex2.x, vertex2.y, vertex2.z, blockID, normal.x, normal.y, normal.z, skyLightValue, blockFace.UVs[1][0], blockFace.UVs[1][1]);
-                worldTessellator.addVertexTextureArrayWithUV(lightColor ,vertex3.x, vertex3.y, vertex3.z, blockID, normal.x, normal.y, normal.z, skyLightValue, blockFace.UVs[2][0], blockFace.UVs[2][1]);
-                worldTessellator.addVertexTextureArrayWithUV(lightColor ,vertex4.x, vertex4.y, vertex4.z, blockID, normal.x, normal.y, normal.z, skyLightValue, blockFace.UVs[3][0], blockFace.UVs[3][1]);
-
-            }
-            case RenderBlocks.NORTH_FACE, RenderBlocks.NORTH_FACE_UNSORTED, RenderBlocks.EAST_FACE, RenderBlocks.EAST_FACE_UNSORTED, RenderBlocks.WEST_FACE, RenderBlocks.WEST_FACE_UNSORTED, RenderBlocks.SOUTH_FACE, RenderBlocks.SOUTH_FACE_UNSORTED -> {
-                switch (face){
-                    case RenderBlocks.NORTH_FACE -> {
-                        this.red -= 0.15f;
-                        this.green -= 0.15;
-                        this.blue -= 0.15f;
-                        if(this.red < 0.1f){
-                            this.red = 0.1f;
-                        }
-                        if(this.green < 0.1f){
-                            this.green = 0.1f;
-                        }
-                        if(this.blue < 0.1f){
-                            this.blue = 0.1f;
-                        }
-                    }
-                    case RenderBlocks.SOUTH_FACE -> {
-                        this.red -= 0.05f;
-                        this.green -= 0.05;
-                        this.blue -= 0.05f;
-                        if(this.red < 0.1f){
-                            this.red = 0.1f;
-                        }
-                        if(this.green < 0.1f){
-                            this.green = 0.1f;
-                        }
-                        if(this.blue < 0.1f){
-                            this.blue = 0.1f;
-                        }
-                    }
-                    case RenderBlocks.EAST_FACE -> {
-                        this.red -= 0.1f;
-                        this.green -= 0.1;
-                        this.blue -= 0.1f;
-                        if(this.red < 0.1f){
-                            this.red = 0.1f;
-                        }
-                        if(this.green < 0.1f){
-                            this.green = 0.1f;
-                        }
-                        if(this.blue < 0.1f){
-                            this.blue = 0.1f;
-                        }
-                    }
-                    case RenderBlocks.WEST_FACE -> {
-                        this.red -= 0.12f;
-                        this.green -= 0.12f;
-                        this.blue -= 0.12f;
-                        if(this.red < 0.1f){
-                            this.red = 0.1f;
-                        }
-                        if(this.green < 0.1f){
-                            this.green = 0.1f;
-                        }
-                        if(this.blue < 0.1f){
-                            this.blue = 0.1f;
-                        }
-                    }
-                }
-
-                lightColor = MathUtil.RGBToInt(this.red, this.green, this.blue);
-                worldTessellator.addVertexTextureArrayWithUV(lightColor ,vertex1.x, vertex1.y, vertex1.z, blockID, normal.x, normal.y, normal.z, skyLightValue, blockFace.UVs[0][0], blockFace.UVs[0][1]);
-                worldTessellator.addVertexTextureArrayWithUV(lightColor ,vertex2.x, vertex2.y, vertex2.z, blockID, normal.x, normal.y, normal.z, skyLightValue, blockFace.UVs[1][0], blockFace.UVs[1][1]);
-                worldTessellator.addVertexTextureArrayWithUV(lightColor ,vertex3.x, vertex3.y, vertex3.z, blockID, normal.x, normal.y, normal.z, skyLightValue, blockFace.UVs[2][0], blockFace.UVs[2][1]);
-                worldTessellator.addVertexTextureArrayWithUV(lightColor ,vertex4.x, vertex4.y, vertex4.z, blockID, normal.x, normal.y, normal.z, skyLightValue, blockFace.UVs[3][0], blockFace.UVs[3][1]);
-            }
-
-        }
-    }
-
-
 
 
     public float getItemTextureID(short ID, short metadata, int face){

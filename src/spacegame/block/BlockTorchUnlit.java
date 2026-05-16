@@ -17,7 +17,7 @@ public final class BlockTorchUnlit extends Block {
         if(!MouseListener.rightClickReleased && !KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT))return;
         short playerHeldItem = player.getHeldItem();
 
-        if(playerHeldItem != Item.torch.ID)return;
+        if(player.getHeldBlock() != Block.torchStandard.ID)return;
 
         switch (this.ID){
             case 121 -> { //Standard unlit torch

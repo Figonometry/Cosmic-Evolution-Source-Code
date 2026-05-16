@@ -1723,7 +1723,7 @@ public abstract class World {
     }
 
     public void removeChestLocation(int x, int y, int z){
-        this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).removeChestLocation((short) Chunk.getBlockIndexFromCoordinates(x,y,z));
+        this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).removeChestLocation(Chunk.getBlockIndexFromCoordinates(x,y,z));
     }
 
     public ChestLocation getChestLocation(int x, int y, int z){
@@ -2012,6 +2012,8 @@ public abstract class World {
 
         // Determine which face was hit
         int face = determineHitFace(bx, by, bz, hitX, hitY, hitZ);
+
+        Block.facingDirection = face;
 
         // Adjacent block position
         int px = bx + Block.faceOffsetX[face];

@@ -68,7 +68,7 @@ public final class ItemStack {
         RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         if(renderWithBackground) {
             tessellator.toggleOrtho();
-            int z = -80;
+            int z = -800;
             if(this.usesExclusiveItem && this.item != null){
                 tessellator.addVertex2DTexture(7500402, this.x - (float) this.width / 2, this.y - (float) this.height / 2, z - 5, 3);
                 tessellator.addVertex2DTexture(7500402, this.x + (float) this.width / 2, this.y + (float) this.height / 2, z - 5, 1);
@@ -93,6 +93,17 @@ public final class ItemStack {
             tessellator.toggleOrtho();
             if(this.item.renderItemWithBlockModel){
                 ModelLoader model = Block.list[this.metadata].blockModel.copyModel().translateModel(-0.5f, 0, -0.5f);
+                if(this.metadata == Block.itemStone.ID || this.metadata == Block.itemStick.ID){
+                    model = model.translateModel(0.5f, 0, 0.5f);
+                    model = model.getScaledModel(2f);
+                }
+                if(this.metadata == Block.itemClay.ID){
+                    model = model.getScaledModel(2f);
+                    model = model.translateModel(0, 0.25f, 0);
+                }
+                if(this.metadata == Block.treeSeed.ID || this.metadata == Block.reedSeed.ID || this.metadata == Block.berrySeed.ID){
+                    model = model.getScaledModel(5f);
+                }
                 ModelFace[] faces;
                 float textureID;
                 Vector3f vertex1;
@@ -126,17 +137,62 @@ public final class ItemStack {
                 }
                 tessellator.drawTextureArray(Assets.blockTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
             } else {
-                int z = -70;
-                GL46.glEnable(GL46.GL_BLEND);
-                GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-                tessellator.addVertexTextureArrayWithCorner(16777215, this.x - (float) this.width / 2, this.y - (float) this.height / 2, z, 3, this.item.getTextureID(this.item.ID, (byte)1, RenderBlocks.WEST_FACE));
-                tessellator.addVertexTextureArrayWithCorner(16777215, this.x + (float) this.width / 2, this.y + (float) this.height / 2, z, 1, this.item.getTextureID(this.item.ID, (byte)1, RenderBlocks.WEST_FACE));
-                tessellator.addVertexTextureArrayWithCorner(16777215, this.x - (float) this.width / 2, this.y + (float) this.height / 2, z, 2, this.item.getTextureID(this.item.ID, (byte)1, RenderBlocks.WEST_FACE));
-                tessellator.addVertexTextureArrayWithCorner(16777215, this.x + (float) this.width / 2, this.y - (float) this.height / 2, z, 0, this.item.getTextureID(this.item.ID, (byte)1, RenderBlocks.WEST_FACE));
-                tessellator.addElementsCW();
-                Shader.screenTextureArray.uploadInt("textureArray", 0);
+                ModelLoader model = this.item.itemModel.copyModel();
+                model = model.getScaledModel(39f);
+                model = model.rotateModel(45, 0, 1, 0);
+                model = model.rotateModel(36, 1, 0, 0);
+
+
+                Vector3f position = new Vector3f(this.x, this.y, -70);
+                model = model.translateModel(position.x, position.y, position.z);
+                ModelFace face;
+                float textureID;
+
+                int colorVal = 255;
+
+                int colorRGB = 0;
+
+                int colorTop = ((colorVal) << 16) | ((colorVal) << 8) | colorVal;
+                int colorBottom = ((colorVal - 10) << 16) | ((colorVal - 10) << 8) | colorVal - 10;
+                int colorNorth = ((colorVal - 20) << 16) | ((colorVal - 20) << 8) | colorVal - 20;
+                int colorSouth = ((colorVal - 30) << 16) | ((colorVal - 30) << 8) | colorVal - 30;
+                int colorEast = ((colorVal - 40) << 16) | ((colorVal - 40) << 8) | colorVal - 40;
+                int colorWest = ((colorVal - 50) << 16) | ((colorVal - 50) << 8) | colorVal - 50;
+
+                for (int i = 0; i < model.modelFaces.length; i++) {
+                    face = model.modelFaces[i];
+                    if (face == null) continue;
+                    textureID = face.texture;
+
+                    switch (face.faceType){
+                        case RenderBlocks.TOP_FACE -> {
+                            colorRGB = colorTop;
+                        }
+                        case RenderBlocks.BOTTOM_FACE -> {
+                            colorRGB = colorBottom;
+                        }
+                        case RenderBlocks.NORTH_FACE -> {
+                            colorRGB = colorNorth;
+                        }
+                        case RenderBlocks.SOUTH_FACE -> {
+                            colorRGB = colorSouth;
+                        }
+                        case RenderBlocks.EAST_FACE -> {
+                            colorRGB = colorEast;
+                        }
+                        case RenderBlocks.WEST_FACE -> {
+                            colorRGB = colorWest;
+                        }
+                    }
+
+                    tessellator.addVertexTextureArrayWithUV(colorRGB, face.vertices[0].x, face.vertices[0].y, face.vertices[0].z, textureID, face.UVs[0][0], face.UVs[0][1]);
+                    tessellator.addVertexTextureArrayWithUV(colorRGB, face.vertices[1].x, face.vertices[1].y, face.vertices[1].z, textureID, face.UVs[1][0], face.UVs[1][1]);
+                    tessellator.addVertexTextureArrayWithUV(colorRGB, face.vertices[2].x, face.vertices[2].y, face.vertices[2].z, textureID, face.UVs[2][0], face.UVs[2][1]);
+                    tessellator.addVertexTextureArrayWithUV(colorRGB, face.vertices[3].x, face.vertices[3].y, face.vertices[3].z, textureID, face.UVs[3][0], face.UVs[3][1]);
+                    tessellator.addElementsCCW();
+                }
+
                 tessellator.drawTextureArray(Assets.itemTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
-                GL46.glDisable(GL46.GL_BLEND);
             }
             tessellator.toggleOrtho();
             if(this.count > 1) {
@@ -148,65 +204,143 @@ public final class ItemStack {
         }
     }
 
-    public void renderItemStackOnHotbar(){
+    public void renderItemStackOnHotbar() {
         RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
 
-        if(this.item != null){
+        if (this.item != null) {
             tessellator.toggleOrtho();
-            if(this.item.renderItemWithBlockModel){
+            if (this.item.renderItemWithBlockModel) {
                 ModelLoader model = Block.list[this.metadata].blockModel.copyModel().translateModel(-0.5f, 0, -0.5f);
+                if (this.metadata == Block.itemStone.ID || this.metadata == Block.itemStick.ID) {
+                    model = model.translateModel(0.5f, 0, 0.5f);
+                    model = model.getScaledModel(2f);
+                }
+                if (this.metadata == Block.itemClay.ID) {
+                    model = model.getScaledModel(2f);
+                }
+                if (this.metadata == Block.treeSeed.ID || this.metadata == Block.reedSeed.ID || this.metadata == Block.berrySeed.ID) {
+                    model = model.getScaledModel(5f);
+                }
                 ModelFace[] faces;
                 float textureID;
                 Vector3f vertex1;
                 Vector3f vertex2;
                 Vector3f vertex3;
                 Vector3f vertex4;
-                Vector3f position = new Vector3f(this.x + 4, this.y - 12,-70);
-                int red = 255;
-                int green = 255;
-                int blue = 255;
-                for(int face = 0; face < 6; face++){
+                Vector3f position = new Vector3f(this.x + 4, this.y - 12, -70);
+                int colorVal = 255;
+
+                int colorRGB = 0;
+
+                int colorTop = ((colorVal) << 16) | ((colorVal) << 8) | colorVal;
+                int colorBottom = ((colorVal - 10) << 16) | ((colorVal - 10) << 8) | colorVal - 10;
+                int colorNorth = ((colorVal - 20) << 16) | ((colorVal - 20) << 8) | colorVal - 20;
+                int colorSouth = ((colorVal - 30) << 16) | ((colorVal - 30) << 8) | colorVal - 30;
+                int colorEast = ((colorVal - 40) << 16) | ((colorVal - 40) << 8) | colorVal - 40;
+                int colorWest = ((colorVal - 50) << 16) | ((colorVal - 50) << 8) | colorVal - 50;
+
+                for (int face = 0; face < 6; face++) {
                     faces = model.getModelFaceOfType(face);
-                    for(int i = 0; i < faces.length; i++){
-                        if(faces[i] == null)continue;
+                    for (int i = 0; i < faces.length; i++) {
+                        if (faces[i] == null) continue;
                         textureID = Block.list[this.metadata].getBlockTexture(this.metadata, face);
-                        vertex1 = new Vector3f(faces[i].vertices[0].x, faces[i].vertices[0].y, faces[i].vertices[0].z).mul(38).rotateY((float)(0.25 * Math.PI)).rotateX((float)(0.20 * Math.PI)).add(position);
-                        vertex2 = new Vector3f(faces[i].vertices[1].x, faces[i].vertices[1].y, faces[i].vertices[1].z).mul(38).rotateY((float)(0.25 * Math.PI)).rotateX((float)(0.20 * Math.PI)).add(position);
-                        vertex3 = new Vector3f(faces[i].vertices[2].x, faces[i].vertices[2].y, faces[i].vertices[2].z).mul(38).rotateY((float)(0.25 * Math.PI)).rotateX((float)(0.20 * Math.PI)).add(position);
-                        vertex4 = new Vector3f(faces[i].vertices[3].x, faces[i].vertices[3].y, faces[i].vertices[3].z).mul(38).rotateY((float)(0.25 * Math.PI)).rotateX((float)(0.20 * Math.PI)).add(position);
+                        vertex1 = new Vector3f(faces[i].vertices[0].x, faces[i].vertices[0].y, faces[i].vertices[0].z).mul(38).rotateY((float) (0.25 * Math.PI)).rotateX((float) (0.20 * Math.PI)).add(position);
+                        vertex2 = new Vector3f(faces[i].vertices[1].x, faces[i].vertices[1].y, faces[i].vertices[1].z).mul(38).rotateY((float) (0.25 * Math.PI)).rotateX((float) (0.20 * Math.PI)).add(position);
+                        vertex3 = new Vector3f(faces[i].vertices[2].x, faces[i].vertices[2].y, faces[i].vertices[2].z).mul(38).rotateY((float) (0.25 * Math.PI)).rotateX((float) (0.20 * Math.PI)).add(position);
+                        vertex4 = new Vector3f(faces[i].vertices[3].x, faces[i].vertices[3].y, faces[i].vertices[3].z).mul(38).rotateY((float) (0.25 * Math.PI)).rotateX((float) (0.20 * Math.PI)).add(position);
 
-                        tessellator.addVertexTextureArrayWithUV(((red << 16) | (green << 8) | blue), vertex1.x, vertex1.y, vertex1.z,textureID, faces[i].UVs[0][0], faces[i].UVs[0][1]);
-                        tessellator.addVertexTextureArrayWithUV(((red << 16) | (green << 8) | blue), vertex2.x, vertex2.y, vertex2.z,textureID, faces[i].UVs[1][0], faces[i].UVs[1][1]);
-                        tessellator.addVertexTextureArrayWithUV(((red << 16) | (green << 8) | blue), vertex3.x, vertex3.y, vertex3.z,textureID, faces[i].UVs[2][0], faces[i].UVs[2][1]);
-                        tessellator.addVertexTextureArrayWithUV(((red << 16) | (green << 8) | blue), vertex4.x, vertex4.y, vertex4.z,textureID, faces[i].UVs[3][0], faces[i].UVs[3][1]);
+                        switch (faces[i].faceType) {
+                            case RenderBlocks.TOP_FACE -> {
+                                colorRGB = colorTop;
+                            }
+                            case RenderBlocks.BOTTOM_FACE -> {
+                                colorRGB = colorBottom;
+                            }
+                            case RenderBlocks.NORTH_FACE -> {
+                                colorRGB = colorNorth;
+                            }
+                            case RenderBlocks.SOUTH_FACE -> {
+                                colorRGB = colorSouth;
+                            }
+                            case RenderBlocks.EAST_FACE -> {
+                                colorRGB = colorEast;
+                            }
+                            case RenderBlocks.WEST_FACE -> {
+                                colorRGB = colorWest;
+                            }
+                        }
+
+                        tessellator.addVertexTextureArrayWithUV(colorRGB, vertex1.x, vertex1.y, vertex1.z, textureID, faces[i].UVs[0][0], faces[i].UVs[0][1]);
+                        tessellator.addVertexTextureArrayWithUV(colorRGB, vertex2.x, vertex2.y, vertex2.z, textureID, faces[i].UVs[1][0], faces[i].UVs[1][1]);
+                        tessellator.addVertexTextureArrayWithUV(colorRGB, vertex3.x, vertex3.y, vertex3.z, textureID, faces[i].UVs[2][0], faces[i].UVs[2][1]);
+                        tessellator.addVertexTextureArrayWithUV(colorRGB, vertex4.x, vertex4.y, vertex4.z, textureID, faces[i].UVs[3][0], faces[i].UVs[3][1]);
                         tessellator.addElementsCCW();
-
-                        red -= 10;
-                        green -= 10;
-                        blue -= 10;
                     }
                 }
                 tessellator.drawTextureArray(Assets.blockTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
             } else {
-                int z = -70;
-                GL46.glEnable(GL46.GL_BLEND);
-                GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
-                tessellator.addVertexTextureArrayWithCorner(16777215, this.x - (float) this.width / 2 + 5, this.y - (float) this.height / 2 - 2, z, 3, this.item.getTextureID(this.item.ID, (byte)1, RenderBlocks.WEST_FACE));
-                tessellator.addVertexTextureArrayWithCorner(16777215, this.x + (float) this.width / 2 + 5, this.y + (float) this.height / 2 - 2, z, 1, this.item.getTextureID(this.item.ID, (byte)1, RenderBlocks.WEST_FACE));
-                tessellator.addVertexTextureArrayWithCorner(16777215, this.x - (float) this.width / 2 + 5, this.y + (float) this.height / 2 - 2, z, 2, this.item.getTextureID(this.item.ID, (byte)1, RenderBlocks.WEST_FACE));
-                tessellator.addVertexTextureArrayWithCorner(16777215, this.x + (float) this.width / 2 + 5, this.y - (float) this.height / 2 - 2, z, 0, this.item.getTextureID(this.item.ID, (byte)1, RenderBlocks.WEST_FACE));
-                tessellator.addElementsCW();
-                Shader.screenTextureArray.uploadInt("textureArray", 0);
+                ModelLoader model = this.item.itemModel.copyModel();
+                model = model.getScaledModel(57f);
+                model = model.rotateModel(45, 0, 1, 0);
+                model = model.rotateModel(36, 1, 0, 0);
+
+
+                Vector3f position = new Vector3f(this.x + 4, this.y, -70);
+                model = model.translateModel(position.x, position.y, position.z);
+                ModelFace face;
+                float textureID;
+                int colorVal = 255;
+
+                int colorRGB = 0;
+
+                int colorTop = ((colorVal) << 16) | ((colorVal) << 8) | colorVal;
+                int colorBottom = ((colorVal - 10) << 16) | ((colorVal - 10) << 8) | colorVal - 10;
+                int colorNorth = ((colorVal - 20) << 16) | ((colorVal - 20) << 8) | colorVal - 20;
+                int colorSouth = ((colorVal - 30) << 16) | ((colorVal - 30) << 8) | colorVal - 30;
+                int colorEast = ((colorVal - 40) << 16) | ((colorVal - 40) << 8) | colorVal - 40;
+                int colorWest = ((colorVal - 50) << 16) | ((colorVal - 50) << 8) | colorVal - 50;
+                for (int i = 0; i < model.modelFaces.length; i++) {
+                    face = model.modelFaces[i];
+                    if (face == null) continue;
+                    textureID = face.texture;
+
+                    switch (face.faceType) {
+                        case RenderBlocks.TOP_FACE -> {
+                            colorRGB = colorTop;
+                        }
+                        case RenderBlocks.BOTTOM_FACE -> {
+                            colorRGB = colorBottom;
+                        }
+                        case RenderBlocks.NORTH_FACE -> {
+                            colorRGB = colorNorth;
+                        }
+                        case RenderBlocks.SOUTH_FACE -> {
+                            colorRGB = colorSouth;
+                        }
+                        case RenderBlocks.EAST_FACE -> {
+                            colorRGB = colorEast;
+                        }
+                        case RenderBlocks.WEST_FACE -> {
+                            colorRGB = colorWest;
+                        }
+
+                    }
+                    tessellator.addVertexTextureArrayWithUV(colorRGB, face.vertices[0].x, face.vertices[0].y, face.vertices[0].z, textureID, face.UVs[0][0], face.UVs[0][1]);
+                    tessellator.addVertexTextureArrayWithUV(colorRGB, face.vertices[1].x, face.vertices[1].y, face.vertices[1].z, textureID, face.UVs[1][0], face.UVs[1][1]);
+                    tessellator.addVertexTextureArrayWithUV(colorRGB, face.vertices[2].x, face.vertices[2].y, face.vertices[2].z, textureID, face.UVs[2][0], face.UVs[2][1]);
+                    tessellator.addVertexTextureArrayWithUV(colorRGB, face.vertices[3].x, face.vertices[3].y, face.vertices[3].z, textureID, face.UVs[3][0], face.UVs[3][1]);
+                    tessellator.addElementsCCW();
+                }
+
                 tessellator.drawTextureArray(Assets.itemTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
-                GL46.glDisable(GL46.GL_BLEND);
             }
             tessellator.toggleOrtho();
-            if(this.count > 1) {
-                FontRenderer fontRenderer = FontRenderer.instance;
-                fontRenderer.drawString(Byte.toString(this.count), (int) this.x - 48, (int) (this.y - 48),-15, 16777215, 50, 255);
-            }
-            this.renderDurabilityBar();
         }
+        if (this.count > 1) {
+            FontRenderer fontRenderer = FontRenderer.instance;
+            fontRenderer.drawString(Byte.toString(this.count), (int) this.x - 48, (int) (this.y - 48), -15, 16777215, 50, 255);
+        }
+        this.renderDurabilityBar();
     }
 
     public void adjustStackPosition(float x, float y){
@@ -247,14 +381,15 @@ public final class ItemStack {
     }
 
     private void renderDurabilityBar(){
+        if(this.item == null)return;
         float ratio = (float) this.durability / Item.list[this.item.ID].durability;
         if(ratio > 1 || ratio < 0){return;}
         if(ratio == 1 || this.durability <= 0){return;}
         int texID = 0;
-        if(CosmicEvolution.instance.currentGui instanceof GuiInGame){
-            texID = GuiInGame.fillableColor;
-        } else if(CosmicEvolution.instance.currentGui instanceof GuiInventory){
+         if(CosmicEvolution.instance.currentGui instanceof GuiInventory){
             texID = GuiInventory.fillableColor;
+        } else {
+            texID = GuiInGame.fillableColor;
         }
         float x = this.x - 32;
         float y = this.y - 32;

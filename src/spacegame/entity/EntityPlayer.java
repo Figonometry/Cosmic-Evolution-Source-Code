@@ -255,11 +255,11 @@ public final class EntityPlayer extends EntityLiving {
         return 0;
     }
 
-    public boolean containsAmountOfItem(short item, int count){
+    public boolean containsAmountOfItem(short item, int count, short requiredMetadata){
         for(int i = 0; i < this.inventory.itemStacks.length; i++){
             if(this.inventory.itemStacks[i].item == null)continue;
 
-            if(this.inventory.itemStacks[i].item.ID == item && this.inventory.itemStacks[i].count >= count){
+            if(this.inventory.itemStacks[i].item.ID == item && this.inventory.itemStacks[i].count >= count && this.inventory.itemStacks[i].metadata == requiredMetadata){
                 return true;
             }
         }

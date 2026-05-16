@@ -9,8 +9,8 @@ import spacegame.world.World;
 public class ItemFood extends Item {
     public float saturationIncrease;
 
-    public ItemFood(short ID, int textureID, String filepath, float saturationIncrease) { //nom nom
-        super(ID, textureID, filepath);
+    public ItemFood(short ID, String modelFilePath, String filepath, float saturationIncrease) { //nom nom
+        super(ID, modelFilePath, filepath);
         this.saturationIncrease = saturationIncrease;
     }
 

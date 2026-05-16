@@ -15,8 +15,8 @@ public final class BlockItemStone extends Block {
 
     public void handleSpecialRightClickFunctions(int x, int y, int z, World world, EntityPlayer player) {
         if (!MouseListener.rightClickReleased) return;
-        short playerHeldItem = player.getHeldItem();
-        if (playerHeldItem == Item.stone.ID) {
+        short playerHeldBlock = player.getHeldBlock();
+        if (playerHeldBlock == Block.itemStone.ID) {
             CosmicEvolution.instance.setNewGui(new GuiCraftingStoneTools(CosmicEvolution.instance, x, y, z));
             MouseListener.rightClickReleased = false;
         }

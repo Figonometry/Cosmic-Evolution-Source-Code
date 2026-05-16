@@ -3,8 +3,8 @@ package spacegame.item;
 import spacegame.core.Timer;
 
 public final class ItemRawGameMeat extends ItemFood implements IHeatable, IDecayItem {
-    public ItemRawGameMeat(short ID, int textureID, String filepath, float saturationIncrease) {
-        super(ID, textureID, filepath, saturationIncrease);
+    public ItemRawGameMeat(short ID, String modelFilePath, String filepath, float saturationIncrease) {
+        super(ID, modelFilePath, filepath, saturationIncrease);
     }
 
     @Override

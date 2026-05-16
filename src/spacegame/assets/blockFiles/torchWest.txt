@@ -1,4 +1,4 @@
-droppedItemID:1
+itemMetadata:2
 isSolid:false
 isLightBlock:true
 lightBlockValue:12

@@ -34,12 +34,12 @@ public final class BlockCampFireLit extends BlockCampFire implements ITickable, 
     @Override
     public void handleSpecialRightClickFunctions(int x, int y, int z, World world, EntityPlayer player){
         if(!MouseListener.rightClickReleased)return;
-        short playerHeldItem = player.getHeldItem();
+        short playerHeldBlock = player.getHeldBlock();
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) && KeyListener.keyReleased[GLFW.GLFW_KEY_LEFT_SHIFT] && playerHeldItem == Item.unlitTorch.ID) {
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) && KeyListener.keyReleased[GLFW.GLFW_KEY_LEFT_SHIFT] && playerHeldBlock == Block.torchStandardUnlit.ID) {
             CosmicEvolution.instance.save.thePlayer.removeItemFromInventory();
-            if (!CosmicEvolution.instance.save.thePlayer.addItemToInventory(Item.torch.ID, Item.NULL_ITEM_METADATA, (byte) 1, Item.NULL_ITEM_DURABILITY, 0)) {
-                world.addEntity(new EntityItem(CosmicEvolution.instance.save.thePlayer.x, CosmicEvolution.instance.save.thePlayer.y, CosmicEvolution.instance.save.thePlayer.z, Item.torch.ID, Item.NULL_ITEM_METADATA, (byte) 1, Item.NULL_ITEM_DURABILITY, 0));
+            if (!CosmicEvolution.instance.save.thePlayer.addItemToInventory(Item.block.ID, Block.torchStandard.ID, (byte) 1, Item.NULL_ITEM_DURABILITY, 0)) {
+                world.addEntity(new EntityItem(CosmicEvolution.instance.save.thePlayer.x, CosmicEvolution.instance.save.thePlayer.y, CosmicEvolution.instance.save.thePlayer.z, Item.block.ID, Block.torchStandard.ID, (byte) 1, Item.NULL_ITEM_DURABILITY, 0));
             }
             KeyListener.setKeyReleased(GLFW.GLFW_KEY_LEFT_SHIFT);
         }

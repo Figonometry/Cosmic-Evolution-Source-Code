@@ -358,6 +358,27 @@ public class ModelLoader{
     }
 
 
+    public float getModelHeight(){
+        float highest = 0f;
+        float lowest = 0f;
+
+        for(int i = 0; i < this.modelFaces.length; i++){
+            for(int j = 0; j < this.modelFaces[i].vertices.length; j++){
+                if(this.modelFaces[i].vertices[j].y < lowest){
+                    lowest = this.modelFaces[i].vertices[j].y;
+                }
+
+                if(this.modelFaces[i].vertices[j].y > highest){
+                    highest = this.modelFaces[i].vertices[j].y;
+                }
+            }
+        }
+
+
+        return highest - lowest;
+    }
+
+
     public ModelLoader getScaledModel(float scaleFactor){
         ModelLoader scaledModel = new ModelLoader();
         ModelFace scaledFace;

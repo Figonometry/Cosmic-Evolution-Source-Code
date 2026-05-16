@@ -2,46 +2,47 @@ package spacegame.item;
 
 import spacegame.block.Block;
 import spacegame.entity.EntityPlayer;
+import spacegame.render.model.ModelLoader;
 import spacegame.world.World;
 
 import java.io.*;
 
 public class Item {
+    public static String modelFolderPath = "src/spacegame/assets/models/itemModels/";
     public static final Item[] list = new Item[Short.MAX_VALUE];
-    public static final Item block = new ItemBlock((short)0, -1, "src/spacegame/assets/itemFiles/block.txt");
-    public static final Item torch = new Item((short)1, 1, "src/spacegame/assets/itemFiles/torch.txt");
-    public static final Item stone = new Item((short)2, 2, "src/spacegame/assets/itemFiles/stone.txt"); //Remove
-    public static final Item stoneFragments = new ItemStoneFragments((short)3, 3, "src/spacegame/assets/itemFiles/stoneFragments.txt");
-    public static final Item stoneHandAxe = new ItemAxe((short)4, 4, "src/spacegame/assets/itemFiles/stoneHandAxe.txt", Material.RAW_STONE);
-    public static final Item berry = new ItemBerry((short)5, 5, "src/spacegame/assets/itemFiles/berry.txt", 50f);
-    public static final Item rawStick = new Item((short)6, 6, "src/spacegame/assets/itemFiles/rawStick.txt"); //Remove
-    public static final Item unlitTorch = new Item((short)7, 7, "src/spacegame/assets/itemFiles/unlitTorch.txt");
-    public static final Item fireWood = new ItemFirewood((short)8, 8, "src/spacegame/assets/itemFiles/fireWood.txt");
-    public static final Item stoneHandKnifeBlade = new ItemKnife((short)9, 9, "src/spacegame/assets/itemFiles/stoneHandKnifeBlade.txt", Material.RAW_STONE);
-    public static final Item stoneHandShovel = new ItemShovel((short)10, 10, "src/spacegame/assets/itemFiles/stoneHandShovel.txt", Material.RAW_STONE);
-    public static final Item rawGameMeat = new ItemRawGameMeat((short)11, 11, "src/spacegame/assets/itemFiles/rawGameMeat.txt", 5f);
-    public static final Item straw = new Item((short)12, 12, "src/spacegame/assets/itemFiles/straw.txt");
-    public static final Item reedBasket = new Item((short)13, 13, "src/spacegame/assets/itemFiles/reedBasket.txt");
-    public static final Item clay = new Item((short)14, 14, "src/spacegame/assets/itemFiles/clay.txt"); //Remove
-    public static final Item rawClayAdobeBrick = new Item((short)15, 15, "src/spacegame/assets/itemFiles/rawClayAdobeBrick.txt");
-    public static final Item firedRedClayAdobeBrick = new Item((short)16, 16, "src/spacegame/assets/itemFiles/firedRedClayAdobeBrick.txt");
-    public static final Item mud = new Item((short)17, 17, "src/spacegame/assets/itemFiles/mud.txt");
-    public static final Item reeds = new ItemReed((short)18, 18, "src/spacegame/assets/itemFiles/reeds.txt");
-    public static final Item berrySeed = new Item((short)19, 19, "src/spacegame/assets/itemFiles/berrySeed.txt");
-    public static final Item reedSeed = new Item((short)20, 19, "src/spacegame/assets/itemFiles/reedSeed.txt");
-    public static final Item treeSeed = new Item((short)21, 19, "src/spacegame/assets/itemFiles/treeSeed.txt");
-    public static final Item cookedGameMeat = new ItemCookedGameMeat((short)22, 20, "src/spacegame/assets/itemFiles/cookedGameMeat.txt", 300f);
-    public static final Item reedTwine = new Item((short)23, 21, "src/spacegame/assets/itemFiles/reedTwine.txt");
-    public static final Item reedCraftingGridTop = new Item((short)24, 22, "src/spacegame/assets/itemFiles/reedCraftingGridTop.txt");
-    public static final Item stoneAxe = new ItemAxe((short)25, 23, "src/spacegame/assets/itemFiles/stoneAxe.txt", Material.STONE);
-    public static final Item stoneShovel = new ItemShovel((short)26, 24, "src/spacegame/assets/itemFiles/stoneShovel.txt", Material.STONE);
-    public static final Item stoneKnife = new ItemKnife((short)27, 25, "src/spacegame/assets/itemFiles/stoneKnife.txt", Material.STONE);
-    public static final Item deerPelt = new Item((short)28, 26, "src/spacegame/assets/itemFiles/deerPelt.txt");
-    public static final Item rot = new Item((short)29, 27, "src/spacegame/assets/itemFiles/rot.txt");
-    public static final Item wolfPelt = new Item((short)30, 28, "src/spacegame/assets/itemFiles/wolfPelt.txt");
-    public static final Item primitiveDoor = new Item((short)31, 29, "src/spacegame/assets/itemFiles/primitiveDoor.txt");
+    public static final Item block = new Item((short)0, null, "src/spacegame/assets/itemFiles/block.txt");
+    public static final Item old_torch = null; //1
+    public static final Item old_stone = null; //2
+    public static final Item stoneFragments = new Item((short)3,  modelFolderPath + "stoneFragments.obj", "src/spacegame/assets/itemFiles/stoneFragments.txt");
+    public static final Item stoneHandAxe = new ItemAxe((short)4, modelFolderPath + "stoneHandAxe.obj", "src/spacegame/assets/itemFiles/stoneHandAxe.txt", Material.RAW_STONE);
+    public static final Item berry = new ItemBerry((short)5, modelFolderPath + "berry.obj", "src/spacegame/assets/itemFiles/berry.txt", 50f);
+    public static final Item old_stick = null; //6
+    public static final Item old_unlitTorch = null; //7
+    public static final Item fireWood = new ItemFirewood((short)8, modelFolderPath + "firewood.obj", "src/spacegame/assets/itemFiles/fireWood.txt");
+    public static final Item stoneHandKnifeBlade = new ItemKnife((short)9, modelFolderPath + "stoneKnifeBlade.obj", "src/spacegame/assets/itemFiles/stoneHandKnifeBlade.txt", Material.RAW_STONE);
+    public static final Item stoneHandShovel = new ItemShovel((short)10, modelFolderPath + "stoneHandShovel.obj", "src/spacegame/assets/itemFiles/stoneHandShovel.txt", Material.RAW_STONE);
+    public static final Item rawGameMeat = new ItemRawGameMeat((short)11, modelFolderPath + "rawGameMeat.obj", "src/spacegame/assets/itemFiles/rawGameMeat.txt", 5f);
+    public static final Item straw = new Item((short)12, modelFolderPath + "straw.obj", "src/spacegame/assets/itemFiles/straw.txt");
+    public static final Item reedBasket = new Item((short)13, modelFolderPath + "reedBasket.obj", "src/spacegame/assets/itemFiles/reedBasket.txt");
+    public static final Item old_clay = null; //14
+    public static final Item rawClayAdobeBrick = new Item((short)15, modelFolderPath + "rawRedClayBrick.obj", "src/spacegame/assets/itemFiles/rawClayAdobeBrick.txt");
+    public static final Item firedRedClayAdobeBrick = new Item((short)16, modelFolderPath + "redClayBrick.obj", "src/spacegame/assets/itemFiles/firedRedClayAdobeBrick.txt");
+    public static final Item mud = new Item((short)17, modelFolderPath + "mud.obj", "src/spacegame/assets/itemFiles/mud.txt");
+    public static final Item reeds = new ItemReed((short)18, modelFolderPath + "reeds.obj", "src/spacegame/assets/itemFiles/reeds.txt");
+    public static final Item old_berrySeed = null; //19
+    public static final Item old_reedSeed = null; //20
+    public static final Item old_treeSeed = null; //21
+    public static final Item cookedGameMeat = new ItemCookedGameMeat((short)22, modelFolderPath + "cookedGameMeat.obj", "src/spacegame/assets/itemFiles/cookedGameMeat.txt", 300f);
+    public static final Item reedTwine = new Item((short)23, modelFolderPath + "twine.obj", "src/spacegame/assets/itemFiles/reedTwine.txt");
+    public static final Item reedCraftingGridTop = new Item((short)24, modelFolderPath + "craftingGridTop.obj", "src/spacegame/assets/itemFiles/reedCraftingGridTop.txt");
+    public static final Item stoneAxe = new ItemAxe((short)25, modelFolderPath + "stoneAxe.obj", "src/spacegame/assets/itemFiles/stoneAxe.txt", Material.STONE);
+    public static final Item stoneShovel = new ItemShovel((short)26, modelFolderPath + "stoneShovel.obj", "src/spacegame/assets/itemFiles/stoneShovel.txt", Material.STONE);
+    public static final Item stoneKnife = new ItemKnife((short)27, modelFolderPath + "stoneKnife.obj", "src/spacegame/assets/itemFiles/stoneKnife.txt", Material.STONE);
+    public static final Item deerPelt = new Item((short)28, modelFolderPath + "deerPelt.obj", "src/spacegame/assets/itemFiles/deerPelt.txt");
+    public static final Item rot = new Item((short)29, modelFolderPath + "rot.obj", "src/spacegame/assets/itemFiles/rot.txt");
+    public static final Item wolfPelt = new Item((short)30, modelFolderPath + "wolfPelt.obj", "src/spacegame/assets/itemFiles/wolfPelt.txt");
+    public static final Item primitiveDoor = new Item((short)31, modelFolderPath + "primitiveDoor.obj", "src/spacegame/assets/itemFiles/primitiveDoor.txt");
     public final short ID;
-    public final int textureID;
     public float hardness = 0;
     public boolean canPlaceAsItemBlock;
     public boolean renderItemWithBlockModel;
@@ -54,6 +55,7 @@ public class Item {
     private String displayName = "Undefined Name";
     public String itemType;
     public int storageLevel;
+    public ModelLoader itemModel;
     public static final short NULL_ITEM_REFERENCE = -1;
     public static final short NULL_ITEM_DURABILITY = -1;
     public static final short NULL_ITEM_METADATA = 0;
@@ -73,18 +75,22 @@ public class Item {
     public short durability = NULL_ITEM_DURABILITY;   //If this is -1 that means the item has no durability and should never render a durability bar
     public short metadata = NULL_ITEM_METADATA;
 
-    public Item(short ID, int textureID, String filepath){
+    public Item(short ID, String modelFilePath, String filepath){
         if (list[ID] != null) {
             throw new RuntimeException("Block ID: " + ID + " ALREADY OCCUPIED WHEN ATTEMPTING TO ADD " + this + " TO THE LIST");
         }
         list[ID] = this;
         this.ID = ID;
-        this.textureID = textureID;
 
         File itemFile = new File(filepath);
         if(!itemFile.exists()){
             throw new RuntimeException("Missing item file at " + filepath);
         }
+
+        if(modelFilePath == null)modelFilePath = modelFolderPath + "defaultItem.obj"; //If the passed in model doesnt yet exist assign the default item model
+        this.itemModel = new ModelLoader(modelFilePath, true);
+
+
         BufferedReader reader = null;
         try {
             reader = new BufferedReader(new FileReader(itemFile));
@@ -160,7 +166,7 @@ public class Item {
     }
 
     public float getTextureID(short ID, short metadata, int face){
-        return list[ID].textureID;
+        return ID == block.ID ?  Block.list[metadata].getBlockTexture(metadata, face) : 0;
     }
 
     public void onLeftClick(int x, int y, int z, World world, EntityPlayer player){

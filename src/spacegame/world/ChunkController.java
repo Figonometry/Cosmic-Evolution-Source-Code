@@ -752,7 +752,7 @@ public final class ChunkController {
                             for (int i = 0; i < chestCount; i++) {
                                 chestLoadedTag = chest.getCompoundTag("chest" + i);
                                 NBTTagCompound inventory = chestLoadedTag.getCompoundTag("Inventory");
-                                short index = chestLoadedTag.getShort("index");
+                                int index = chestLoadedTag.getInteger("index");
                                 NBTTagCompound item;
                                 if(!(Block.list[chunk.blocks[index]] instanceof BlockContainer))continue;
                                 Inventory chestInventory = new Inventory(((BlockContainer) (Block.list[chunk.blocks[index]])).inventoryWidth, ((BlockContainer) (Block.list[chunk.blocks[index]])).inventoryHeight);
@@ -776,8 +776,11 @@ public final class ChunkController {
                             NBTTagCompound eventLoadedTag;
                             for (int i = 0; i < eventCount; i++) {
                                 eventLoadedTag = timeEvents.getCompoundTag("event" + i);
-                                short index = eventLoadedTag.getShort("index");
+                                int index = eventLoadedTag.getInteger("index");
                                 long updateTime = eventLoadedTag.getLong("updateTime");
+                                if(updateTime <= CosmicEvolution.instance.save.time){
+                                    updateTime = CosmicEvolution.instance.save.time += 120;
+                                }
                                 chunk.addTimeUpdateEvent(index, updateTime);
                             }
                         }
@@ -789,7 +792,7 @@ public final class ChunkController {
                             HeatableBlockLocation heatableBlockLocation;
                             for(int i = 0; i < heatableBlockCount; i++){
                                 heatableBlockLoadedTag = heatableBlocks.getCompoundTag("heatableBlock" + i);
-                                short index = heatableBlockLoadedTag.getShort("index");
+                                int index = heatableBlockLoadedTag.getInteger("index");
                                 float currentTemperature = heatableBlockLoadedTag.getFloat("currentTemperature");
                                 short currentFuelBurning = heatableBlockLoadedTag.getShort("currentFuelBurning");
                                 long fuelBurnoutTime = heatableBlockLoadedTag.getLong("fuelBurnoutTime");
@@ -826,7 +829,7 @@ public final class ChunkController {
                                     inWorld3DCraftingItem.subVoxelIndices[j] = inWorldCrafting3DItemLoadedTag.getIntArray("craftingLayer" + j);
                                 }
 
-                                chunk.crafting3DItems.add(inWorld3DCraftingItem);
+                                chunk.addInWorldCrafting3DItem(inWorld3DCraftingItem);
                             }
                         }
 
@@ -851,7 +854,7 @@ public final class ChunkController {
                                 }
 
 
-                                chunk.craftingItems.add(inWorldCraftingItem);
+                                chunk.addCraftingItem(inWorldCraftingItem);
                             }
                         }
 

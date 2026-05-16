@@ -54,7 +54,7 @@ public class BlockPitKilnUnlit extends BlockContainer {
         }
 
 
-        if(this.ID == Block.pitKilnUnlit.ID && playerHeldItem == Item.torch.ID && KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT)){
+        if(this.ID == Block.pitKilnUnlit.ID && player.getHeldBlock() == Block.torchStandard.ID && KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT)){
             world.setBlockWithNotify(x,y,z, Block.pitKilnLit.ID, false);
 
             world.addTimeEvent(x,y,z, CosmicEvolution.instance.save.time + ((ITimeUpdate) Block.pitKilnLit).getUpdateTime());

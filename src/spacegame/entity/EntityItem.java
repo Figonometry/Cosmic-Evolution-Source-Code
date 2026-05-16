@@ -37,6 +37,7 @@ public final class EntityItem extends EntityNonLiving {
         this.itemDurability = itemDurability;
         this.decayTime = decayTime;
         this.despawnTime = CosmicEvolution.instance.save.time + 54000;
+        this.yaw = CosmicEvolution.globalRand.nextInt(360);
     }
 
     private void setEntityState() {
@@ -67,7 +68,7 @@ public final class EntityItem extends EntityNonLiving {
 
     @Override
     public void render() {
-        new RenderEntityItem(this.x, this.y, this.z, null, false, false, this.item, this.itemMetadata, this.height, this.width).renderEntity();
+        new RenderEntityItem(this.x, this.y, this.z, null, false, false, this.item, this.itemMetadata, this.height, this.width, this.yaw).renderEntity();
         if(Block.list[CosmicEvolution.instance.save.activeWorld.getBlockID(MathUtil.floorDouble(this.x), MathUtil.floorDouble(this.y - 0.1), MathUtil.floorDouble(this.z))].isSolid) {
             this.renderShadow();
         }
@@ -75,7 +76,7 @@ public final class EntityItem extends EntityNonLiving {
 
     @Override
     public void renderForShadowMap(int sunX, int sunY, int sunZ){
-        new RenderEntityItem(this.x, this.y, this.z, null, false, false, this.item, this.itemMetadata, this.height, this.width).renderItemForShadowMap(sunX,sunY,sunZ);
+        new RenderEntityItem(this.x, this.y, this.z, null, false, false, this.item, this.itemMetadata, this.height, this.width, this.yaw).renderItemForShadowMap(sunX,sunY,sunZ);
     }
 
 

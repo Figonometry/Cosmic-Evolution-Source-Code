@@ -15,9 +15,9 @@ public final class BlockItemClay extends Block {
     @Override
     public void handleSpecialRightClickFunctions(int x, int y, int z, World world, EntityPlayer player){
         if(!MouseListener.rightClickReleased)return;
-        short playerHeldItem = player.getHeldItem();
+        short playerHeldBlock = player.getHeldBlock();
 
-        if(playerHeldItem == Item.clay.ID){
+        if(playerHeldBlock == Block.itemClay.ID){
             CosmicEvolution.instance.setNewGui(new GuiCraftingPottery(CosmicEvolution.instance, x, y, z));
             MouseListener.rightClickReleased = false;
         }

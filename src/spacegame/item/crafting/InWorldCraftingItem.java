@@ -33,6 +33,7 @@ public final class InWorldCraftingItem {
         for(int i = 0; i < this.itemsFilled.length; i++) {
             if (this.itemsFilled[i]) continue;
             if (this.outputRecipe.requiredItems[i] != inputItem) continue;
+            if(this.outputRecipe.requiredItems[i] == Item.block.ID && this.outputRecipe.requiredItemMetadata[i] != CosmicEvolution.instance.save.thePlayer.getHeldBlock())continue;
 
 
             this.itemsFilled[i] = true;
