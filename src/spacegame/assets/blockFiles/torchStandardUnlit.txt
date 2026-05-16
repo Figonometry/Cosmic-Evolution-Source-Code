@@ -1,0 +1,7 @@
+itemMetadata:121
+isSolid:false
+blockName:TORCH_UNLIT
+requireSolidBlockBelow:true
+blockModel:torchBlockModel
+alwaysRenderFace:true
+displayName:Torch (Unlit)

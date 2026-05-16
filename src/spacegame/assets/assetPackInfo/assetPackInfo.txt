@@ -1,0 +1,19 @@
+Hello!
+
+As of v0.42 asset packs are now supported in game, these will replace textures or sounds with custom ones.
+
+In order to make an asset pack simply place a folder in  the folder titled "assetPacks" in your game's directory, i.e. appdata on windows etc
+
+Assets will only be overidden by the pack if they are provied, with the exception of blocks and items, all textures must be provided otherwise they will be error textures. 
+The internal path must be the exact same as the default assets
+
+So for example if you were to replace the earth image from the title screen you would create an image in your folder with the path 
+
+"textures/gui/guiMainMenu/earth.png"
+
+I've also provided a sample info file for the in game menu so you know the format to use.
+
+In order to have an icon show up simply place an image called icon.png into the asset pack folder.
+
+
+
