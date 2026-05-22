@@ -379,130 +379,62 @@ public class ModelLoader{
     }
 
 
-    public ModelLoader getScaledModel(float scaleFactor){
-        ModelLoader scaledModel = new ModelLoader();
-        ModelFace scaledFace;
+    public ModelLoader scaleModel(float scaleFactor){
         for(int i = 0; i < this.modelFaces.length; i++){
             if(this.modelFaces[i] != null){
-                scaledFace = new ModelFace(this.modelFaces[i].faceType);
-                for(int j = 0; j < scaledFace.vertices.length; j++){
-                    scaledFace.vertices[j].x = this.modelFaces[i].vertices[j].x * scaleFactor;
-                    scaledFace.vertices[j].y = this.modelFaces[i].vertices[j].y * scaleFactor;
-                    scaledFace.vertices[j].z = this.modelFaces[i].vertices[j].z * scaleFactor;
-
-                    scaledFace.UVs[j][0] = this.modelFaces[i].UVs[j][0];
-                    scaledFace.UVs[j][1] = this.modelFaces[i].UVs[j][1];
+                for(int j = 0; j < this.modelFaces[i].vertices.length; j++){
+                    this.modelFaces[i].vertices[j].x = this.modelFaces[i].vertices[j].x * scaleFactor;
+                    this.modelFaces[i].vertices[j].y = this.modelFaces[i].vertices[j].y * scaleFactor;
+                    this.modelFaces[i].vertices[j].z = this.modelFaces[i].vertices[j].z * scaleFactor;
                 }
-                scaledFace.setNormal(this.modelFaces[i].normal.x, this.modelFaces[i].normal.y, this.modelFaces[i].normal.z);
-                scaledFace.texture = this.modelFaces[i].texture;
-                scaledModel.addModelFace(scaledFace);
             }
         }
-
-        int modelFacesSize = 0;
-        for (int i = 0; i < scaledModel.modelFaces.length; i++) {
-            if (scaledModel.modelFaces[i] != null) {
-                modelFacesSize++;
-            }
-        }
-
-        ModelFace[] newModelFaces = new ModelFace[modelFacesSize];
-        for (int i = 0; i < newModelFaces.length; i++) {
-            newModelFaces[i] = scaledModel.modelFaces[i];
-        }
-
-        scaledModel.modelFaces = newModelFaces;
-        return scaledModel;
+        return this;
     }
 
     public ModelLoader translateModel(float x, float y, float z){
-        ModelLoader translatedModel = new ModelLoader();
-        ModelFace translatedFace;
         for(int i = 0; i < this.modelFaces.length; i++){
             if(this.modelFaces[i] != null){
-                translatedFace = new ModelFace(this.modelFaces[i].faceType);
-                for(int j = 0; j < translatedFace.vertices.length; j++){
-                    translatedFace.vertices[j].x = this.modelFaces[i].vertices[j].x + x;
-                    translatedFace.vertices[j].y = this.modelFaces[i].vertices[j].y + y;
-                    translatedFace.vertices[j].z = this.modelFaces[i].vertices[j].z + z;
-
-                    translatedFace.UVs[j][0] = this.modelFaces[i].UVs[j][0];
-                    translatedFace.UVs[j][1] = this.modelFaces[i].UVs[j][1];
+                for(int j = 0; j < this.modelFaces[i].vertices.length; j++){
+                    this.modelFaces[i].vertices[j].x = this.modelFaces[i].vertices[j].x + x;
+                    this.modelFaces[i].vertices[j].y = this.modelFaces[i].vertices[j].y + y;
+                    this.modelFaces[i].vertices[j].z = this.modelFaces[i].vertices[j].z + z;
                 }
-                translatedFace.setNormal(this.modelFaces[i].normal.x, this.modelFaces[i].normal.y, this.modelFaces[i].normal.z);
-                translatedFace.texture = this.modelFaces[i].texture;
-                translatedModel.addModelFace(translatedFace);
             }
         }
-
-        int modelFacesSize = 0;
-        for(int i = 0; i < translatedModel.modelFaces.length; i++){
-            if(translatedModel.modelFaces[i] != null){
-                modelFacesSize++;
-            }
-        }
-
-        ModelFace[] newModelFaces = new ModelFace[modelFacesSize];
-        for(int i = 0; i < newModelFaces.length; i++){
-            newModelFaces[i] = translatedModel.modelFaces[i];
-        }
-        translatedModel.modelFaces = newModelFaces;
-        return translatedModel;
+        return this;
     }
 
     public ModelLoader rotateModel(float deg, float x, float y, float z){
         float rad = (float) Math.toRadians(deg);
-        ModelLoader rotatedModel = new ModelLoader();
-        ModelFace rotatedFace;
         for(int i = 0; i < this.modelFaces.length; i++){
             if(this.modelFaces[i] != null){
-                rotatedFace = new ModelFace(this.modelFaces[i].faceType);
-                for(int j = 0; j < rotatedFace.vertices.length; j++){
-                    rotatedFace.vertices[j].x = this.modelFaces[i].vertices[j].x;
-                    rotatedFace.vertices[j].y = this.modelFaces[i].vertices[j].y;
-                    rotatedFace.vertices[j].z = this.modelFaces[i].vertices[j].z;
-
-                    rotatedFace.UVs[j][0] = this.modelFaces[i].UVs[j][0];
-                    rotatedFace.UVs[j][1] = this.modelFaces[i].UVs[j][1];
+                for(int j = 0; j < this.modelFaces[i].vertices.length; j++){
 
                     if(x == 1){
-                        rotatedFace.vertices[j].rotateX(rad);
+                        this.modelFaces[i].vertices[j].rotateX(rad);
                     }
                     if(y == 1) {
-                        rotatedFace.vertices[j].rotateY(rad);
+                        this.modelFaces[i].vertices[j].rotateY(rad);
                     }
                     if(z == 1){
-                        rotatedFace.vertices[j].rotateZ(rad);
+                        this.modelFaces[i].vertices[j].rotateZ(rad);
                     }
+
                 }
-                rotatedFace.setNormal(this.modelFaces[i].normal.x, this.modelFaces[i].normal.y, this.modelFaces[i].normal.z);
-                rotatedFace.texture = this.modelFaces[i].texture;
+
                 if(x == 1){
-                    rotatedFace.normal.rotateX(rad);
+                    this.modelFaces[i].normal.rotateX(rad);
                 }
                 if(y == 1) {
-                    rotatedFace.normal.rotateY(rad);
+                    this.modelFaces[i].normal.rotateY(rad);
                 }
                 if(z == 1){
-                    rotatedFace.normal.rotateZ(rad);
+                    this.modelFaces[i].normal.rotateZ(rad);
                 }
-                rotatedModel.addModelFace(rotatedFace);
             }
         }
-
-        int modelFacesSize = 0;
-        for(int i = 0; i < rotatedModel.modelFaces.length; i++){
-            if(rotatedModel.modelFaces[i] != null){
-                modelFacesSize++;
-            }
-        }
-
-        ModelFace[] newModelFaces = new ModelFace[modelFacesSize];
-        for(int i = 0; i < newModelFaces.length; i++){
-            newModelFaces[i] = rotatedModel.modelFaces[i];
-        }
-        rotatedModel.modelFaces = newModelFaces;
-        return rotatedModel;
+        return this;
     }
 
     public ModelLoader alterStandardBlockModel(int xFactor, int yFactor, int zFactor) {
@@ -510,6 +442,7 @@ public class ModelLoader{
         final float center = 0.5f;
 
         ModelLoader out = new ModelLoader();
+        out.usesMultipleTextures = this.usesMultipleTextures;
         for (int i = 0; i < this.modelFaces.length; i++) {
             ModelFace src = this.modelFaces[i];
             if (src == null) continue;
@@ -931,6 +864,7 @@ public class ModelLoader{
     public ModelLoader copyModel(){
         ModelLoader returnModel = new ModelLoader();
         returnModel.modelFaces = new ModelFace[this.modelFaces.length];
+        returnModel.usesMultipleTextures = this.usesMultipleTextures;
 
         for(int i = 0; i < this.modelFaces.length; i++){
 

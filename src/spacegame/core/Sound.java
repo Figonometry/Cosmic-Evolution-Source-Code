@@ -33,6 +33,9 @@ public final class Sound {
     public static String wolfAttack = "src/spacegame/assets/sound/wolfAttack.ogg";
     public static String doorOpen = "src/spacegame/assets/sound/doorOpen.ogg";
     public static String crunch = "src/spacegame/assets/sound/crunch.ogg";
+    public static String itemThrow = "src/spacegame/assets/sound/itemThrow.ogg";
+    public static String twineBind = "src/spacegame/assets/sound/twineBind.ogg";
+    public static String itemClunk = "src/spacegame/assets/sound/itemClunk.ogg";
     public static boolean canPlaySound = true;
     public String filepath;
     public int bufferID;

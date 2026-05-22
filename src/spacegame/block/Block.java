@@ -43,11 +43,15 @@ public class Block {
     public static final ModelLoader quarterBlockModel = new ModelLoader(modelFolderPath + "quarterBlock.obj", false);
     public static final ModelLoader itemVoxelModel = new ModelLoader(modelFolderPath + "itemVoxel.obj", false);
     public static final ModelLoader crafting3DItemVoxelModel = new ModelLoader(modelFolderPath + "crafting3DVoxel.obj", false);
-    public static final ModelLoader centeredVoxel = new ModelLoader(modelFolderPath + "centeredVoxel.obj", false).getScaledModel(0.5f);
+    public static final ModelLoader centeredVoxel = new ModelLoader(modelFolderPath + "centeredVoxel.obj", false).scaleModel(0.5f);
     public static final ModelLoader primitiveDoorUpper = new ModelLoader(modelFolderPath + "primitiveDoorUpper.obj", true);
     public static final ModelLoader primitiveDoorLower = new ModelLoader(modelFolderPath + "primitiveDoorLower.obj", true);
     public static final ModelLoader reedTop = new ModelLoader(modelFolderPath + "reedTop.obj", true);
     public static final ModelLoader reedBottom = new ModelLoader(modelFolderPath + "reedLower.obj", true);
+    public static final ModelLoader leafModel = new ModelLoader(modelFolderPath + "leafModel.obj", false);
+    public static final ModelLoader seedModel = new ModelLoader(modelFolderPath + "seed.obj", true);
+    public static final ModelLoader saplingModel = new ModelLoader(modelFolderPath + "sapling.obj", true);
+    public static final ModelLoader primitiveCraftingTableModel = new ModelLoader(modelFolderPath + "primitiveCraftingTable.obj", true);
     public static final ModelLoader size15NormalModel = standardBlockModel.alterStandardBlockModel(1,0,1);
     public static final ModelLoader size14NormalModel = standardBlockModel.alterStandardBlockModel(2,0,2);
     public static final ModelLoader size13NormalModel = standardBlockModel.alterStandardBlockModel(3,0,3);
@@ -93,7 +97,7 @@ public class Block {
     public static final ModelLoader size3EastWestModel = standardBlockModel.alterStandardBlockModel(13,13,0);
     public static final ModelLoader size2EastWestModel = standardBlockModel.alterStandardBlockModel(14,14,0);
     public static final ModelLoader size1EastWestModel = standardBlockModel.alterStandardBlockModel(15,15,0);
-    public static final ModelLoader size2VoxelModel = itemVoxelModel.copyModel().getScaledModel(2).translateModel(0.46875f, 0, 0.46875f);
+    public static final ModelLoader size2VoxelModel = itemVoxelModel.copyModel().scaleModel(2).translateModel(0.46875f, 0, 0.46875f);
     public static final AxisAlignedBB standardBlock = new AxisAlignedBB(0,0,0,1,1,1);
     public static final AxisAlignedBB fullBlock = new AxisAlignedBB(0, 0, 0, 1, 1, 1);
     public static final AxisAlignedBB quarterBlock = new AxisAlignedBB(0, 0, 0, 1, 0.25f, 1);
@@ -414,6 +418,10 @@ public class Block {
                     case "primitiveDoorUpper" -> this.blockModel = primitiveDoorUpper;
                     case "reedTop" -> this.blockModel = reedTop;
                     case "reedBottom" -> this.blockModel = reedBottom;
+                    case "leafModel" -> this.blockModel = leafModel;
+                    case "seedModel" -> this.blockModel = seedModel;
+                    case "saplingModel" -> this.blockModel = saplingModel;
+                    case "primitiveCraftingTable" -> this.blockModel = primitiveCraftingTableModel;
                     case "size2VoxelModel" -> this.blockModel = size2VoxelModel;
                     case "size15NormalModel" -> this.blockModel = size15NormalModel;
                     case "size14NormalModel" -> this.blockModel = size14NormalModel;

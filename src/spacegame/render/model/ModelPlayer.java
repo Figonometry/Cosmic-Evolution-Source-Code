@@ -1,10 +1,15 @@
 package spacegame.render.model;
 
 import org.joml.Vector3f;
+import org.lwjgl.opengl.GL46;
 import spacegame.core.CosmicEvolution;
 import spacegame.entity.Entity;
 import spacegame.entity.EntityModelTest;
 import spacegame.entity.EntityPlayer;
+import spacegame.item.Item;
+import spacegame.item.ItemStack;
+import spacegame.render.Assets;
+import spacegame.render.RenderBlocks;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
 import spacegame.util.MathUtil;
@@ -43,8 +48,8 @@ public final class ModelPlayer extends Model {
 
     @Override
     public void animate(int stepInCycle, boolean continueAnimation, Entity entity){
-        this.animateWalkCycle(stepInCycle, continueAnimation, (EntityPlayer) entity);
-        this.animatePunching((EntityPlayer) entity);
+        this.animateWalkCycle(stepInCycle, continueAnimation, CosmicEvolution.instance.save.thePlayer);
+        this.animatePunching(CosmicEvolution.instance.save.thePlayer);
     }
 
     private void animateWalkCycle(int stepInCycle, boolean continueAnimation, EntityPlayer thePlayer){
@@ -55,15 +60,19 @@ public final class ModelPlayer extends Model {
         float angleRightArm = 0;
         if(!thePlayer.stopRightLeg) {
             angleRightLeg = (float) (MathUtil.sin((stepInCycle / 4.775)) * legAngleMax);
+            thePlayer.angleRightLeg = angleRightLeg;
         }
         if(!thePlayer.stopLeftArm) {
             angleLeftArm = (float) (MathUtil.sin(((stepInCycle - 7.5) / 4.775)) * legAngleMax);
+            thePlayer.angleLeftArm = angleLeftArm;
         }
         if(!thePlayer.stopLeftLeg) {
             angleLeftLeg = (float) (MathUtil.sin(((stepInCycle - 15) / 4.775)) * legAngleMax);
+            thePlayer.angleLeftLeg = angleLeftLeg;
         }
         if(!thePlayer.stopRightArm) {
             angleRightArm = (float) (MathUtil.sin(((stepInCycle - 22.5) / 4.775)) * legAngleMax);
+            thePlayer.angleRightArm = angleRightArm;
         }
 
         if(!continueAnimation){
@@ -258,6 +267,202 @@ public final class ModelPlayer extends Model {
         Shader.worldShader2DTexture.uploadBoolean("performNormals", true);
         worldTessellator.drawTexture2D(EntityModelTest.texture, Shader.worldShader2DTexture, CosmicEvolution.camera);
         Shader.worldShader2DTexture.uploadBoolean("performNormals", false);
+
+        this.renderArmorAndClothingOnPlayer(associatedEntity);
+    }
+
+    private void renderArmorAndClothingOnPlayer(Entity associatedEntity) {
+        EntityPlayer player = CosmicEvolution.instance.save.thePlayer; //  (EntityPlayer)associatedEntity;
+        Vector3f position;
+        for (int i = 0; i < this.segments.length; i++) {
+            position = new Vector3f();
+            if (!this.segments[i].isRoot) {
+                ModelSegment workingSegment = this.segments[i];
+                while (!workingSegment.isRoot) {
+                    position.add(workingSegment.position);
+                    workingSegment = workingSegment.parentSegment;
+                }
+            }
+
+            position.y += 0.23f; //This is a magic number, I can't figure out why exactly it's 0.23,
+            // my original assumption was that it was half the body's height since that's the root part and it's definitely not the collision system
+
+
+            switch (i){
+                case 0 ->{
+                    if(player.isPlayerWearingArmorOrClothingOfType(Item.ITEM_TYPE_CLOTHING_TORSO)){
+                        this.renderClothingOnTorso(associatedEntity, position);
+                    }
+                    if(player.isPlayerWearingArmorOrClothingOfType(Item.ITEM_TYPE_ARMOR_TORSO)){
+                        this.renderArmorOnTorso(associatedEntity, position);
+                    }
+                }
+                case 1 ->{
+                    if(player.isPlayerWearingArmorOrClothingOfType(Item.ITEM_TYPE_CLOTHING_HEAD)){
+                        this.renderClothingOnHead(associatedEntity, position);
+                    }
+                    if(player.isPlayerWearingArmorOrClothingOfType(Item.ITEM_TYPE_ARMOR_HEAD)){
+                        this.renderArmorOnHead(associatedEntity, position);
+                    }
+                }
+                case 2 ->{
+                    if(player.isPlayerWearingArmorOrClothingOfType(Item.ITEM_TYPE_CLOTHING_LEGS)){
+                        this.renderClothingOnLeftLeg(associatedEntity, position);
+                    }
+                    if(player.isPlayerWearingArmorOrClothingOfType(Item.ITEM_TYPE_ARMOR_LEGS)){
+                        this.renderArmorOnLeftLeg(associatedEntity, position);
+                    }
+                    if(player.isPlayerWearingArmorOrClothingOfType(Item.ITEM_TYPE_CLOTHING_FEET)){
+                        this.renderClothingOnLeftFoot(associatedEntity, position);
+                    }
+                    if(player.isPlayerWearingArmorOrClothingOfType(Item.ITEM_TYPE_ARMOR_FEET)){
+                        this.renderArmorOnLeftFoot(associatedEntity, position);
+                    }
+                }
+                case 3 ->{
+                    if(player.isPlayerWearingArmorOrClothingOfType(Item.ITEM_TYPE_CLOTHING_LEGS)){
+                        this.renderClothingOnRightLeg(associatedEntity, position);
+                    }
+                    if(player.isPlayerWearingArmorOrClothingOfType(Item.ITEM_TYPE_ARMOR_LEGS)){
+                        this.renderArmorOnRightLeg(associatedEntity, position);
+                    }
+                    if(player.isPlayerWearingArmorOrClothingOfType(Item.ITEM_TYPE_CLOTHING_FEET)){
+                        this.renderClothingOnRightFoot(associatedEntity, position);
+                    }
+                    if(player.isPlayerWearingArmorOrClothingOfType(Item.ITEM_TYPE_ARMOR_FEET)){
+                        this.renderArmorOnRightFoot(associatedEntity, position);
+                    }
+                }
+                case 4 -> {
+                    if (player.isPlayerWearingArmorOrClothingOfType(Item.ITEM_TYPE_CLOTHING_TORSO)) {
+                        this.renderClothingOnLeftArm(associatedEntity, position);
+                    }
+                    if (player.isPlayerWearingArmorOrClothingOfType(Item.ITEM_TYPE_ARMOR_TORSO)) {
+                        this.renderArmorOnLeftArm(associatedEntity, position);
+                    }
+                }
+                case 5 -> {
+                    if(player.isPlayerWearingArmorOrClothingOfType(Item.ITEM_TYPE_CLOTHING_TORSO)){
+                        this.renderClothingOnRightArm(associatedEntity, position);
+                    }
+                    if(player.isPlayerWearingArmorOrClothingOfType(Item.ITEM_TYPE_ARMOR_TORSO)){
+                        this.renderArmorOnRightArm(associatedEntity, position);
+                    }
+                }
+            }
+        }
+    }
+
+    private void renderClothingOnTorso(Entity player, Vector3f position){
+        RenderEngine.WorldTessellator worldTessellator = RenderEngine.WorldTessellator.instance;
+
+        ItemStack wornItem = CosmicEvolution.instance.save.thePlayer.getItemStackOfType(Item.ITEM_TYPE_CLOTHING_TORSO);
+
+        if(wornItem == null)return;
+        if(wornItem.item == null)return;
+
+
+        ModelLoader model = wornItem.item.itemModel.copyModel();
+
+        float entityModX = MathUtil.positiveMod(player.x, 32);
+        float entityModY = MathUtil.positiveMod(player.y, 32);
+        float entityModZ = MathUtil.positiveMod(player.z, 32);
+
+        model.rotateModel(90, 0, 1, 0);
+        model.rotateModel(player.yaw, 0, 1, 0);
+        model.translateModel(position.x, position.y, position.z);
+        model.translateModel(entityModX, entityModY, entityModZ);
+
+        float textureID;
+        for(int i = 0; i < model.modelFaces.length; i++){
+            textureID = model.modelFaces[i].texture;
+            for(int j = 0; j < model.modelFaces[i].vertices.length; j++){
+                worldTessellator.addVertexTextureArrayWithUV(this.calculateVertexLightColor(model.modelFaces[i].vertices[j], player), model.modelFaces[i].vertices[j].x, model.modelFaces[i].vertices[j].y,
+                        model.modelFaces[i].vertices[j].z, textureID, model.modelFaces[i].normal.x, model.modelFaces[i].normal.y, model.modelFaces[i].normal.z, this.skyLightValue
+                         ,model.modelFaces[i].UVs[j][0], model.modelFaces[i].UVs[j][1]);
+            }
+            worldTessellator.addElementsCCW();
+        }
+
+        int playerChunkX = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x) >> 5;
+        int playerChunkY = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.y) >> 5;
+        int playerChunkZ = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z) >> 5;
+
+        int chunkX = MathUtil.floorDouble(player.x) >> 5;
+        int chunkY = MathUtil.floorDouble(player.y) >> 5;
+        int chunkZ = MathUtil.floorDouble(player.z) >> 5;
+
+        int offsetX = (chunkX - playerChunkX) << 5;
+        int offsetY = (chunkY - playerChunkY) << 5;
+        int offsetZ = (chunkZ - playerChunkZ) << 5;
+
+        Shader.worldShaderTextureArray.uploadVec3f("chunkOffset", new Vector3f(offsetX, offsetY, offsetZ));
+        Shader.worldShaderTextureArray.uploadBoolean("performNormals", true);
+        GL46.glEnable(GL46.GL_CULL_FACE);
+        GL46.glCullFace(GL46.GL_BACK);
+        worldTessellator.drawTextureArray(Assets.itemTextureArray, Shader.worldShaderTextureArray, CosmicEvolution.camera);
+        GL46.glDisable(GL46.GL_CULL_FACE);
+        Shader.worldShaderTextureArray.uploadBoolean("performNormals", false);
+    }
+
+    private void renderArmorOnTorso(Entity associatedEntity, Vector3f position){
+
+    }
+
+    private void renderClothingOnLeftArm(Entity associatedEntity, Vector3f position){
+
+    }
+
+    private void renderArmorOnLeftArm(Entity associatedEntity, Vector3f position){
+
+    }
+
+    private void renderClothingOnRightArm(Entity associatedEntity, Vector3f position){
+
+    }
+
+    private void renderArmorOnRightArm(Entity associatedEntity, Vector3f position){
+
+    }
+
+    private void renderClothingOnLeftLeg(Entity associatedEntity, Vector3f position){
+
+    }
+
+    private void renderArmorOnLeftLeg(Entity associatedEntity, Vector3f position){
+
+    }
+
+    private void renderClothingOnRightLeg(Entity associatedEntity, Vector3f position){
+
+    }
+
+    private void renderArmorOnRightLeg(Entity associatedEntity, Vector3f position){
+
+    }
+
+    private void renderClothingOnLeftFoot(Entity associatedEntity, Vector3f position){
+
+    }
+
+    private void renderArmorOnLeftFoot(Entity associatedEntity, Vector3f position){
+
+    }
+
+    private void renderClothingOnRightFoot(Entity associatedEntity, Vector3f position){
+
+    }
+
+    private void renderArmorOnRightFoot(Entity associatedEntity, Vector3f position){
+
+    }
+
+    private void renderClothingOnHead(Entity associatedEntity, Vector3f position){
+
+    }
+
+    private void renderArmorOnHead(Entity associatedEntity, Vector3f position){
+
     }
 
     @Override
@@ -693,6 +898,227 @@ public final class ModelPlayer extends Model {
         tessellator.toggleOrtho();
         tessellator.drawTexture2D(texture, Shader.screen2DTexture, CosmicEvolution.camera);
         tessellator.toggleOrtho();
+
+        this.renderArmorAndClothingOnPlayerInventory(xPos, yPos, zPos, associatedEntity);
+    }
+
+    private void renderArmorAndClothingOnPlayerInventory(float xPos, float yPos, float zPos, Entity associatedEntity) {
+        Vector3f position;
+
+        EntityPlayer player = CosmicEvolution.instance.save.thePlayer;
+
+
+        float angleDeg = associatedEntity.yaw;
+        for (int i = 0; i < this.segments.length; i++) {
+            position = new Vector3f();
+            if (!this.segments[i].isRoot) {
+                ModelSegment workingSegment = this.segments[i];
+                while (!workingSegment.isRoot) {
+                    position.add(workingSegment.position);
+                    workingSegment = workingSegment.parentSegment;
+                }
+            }
+
+            position.x += xPos;
+            position.y += yPos;
+            position.z += zPos;
+
+            switch (i){
+                case 0 ->{
+                    if(player.isPlayerWearingArmorOrClothingOfType(Item.ITEM_TYPE_CLOTHING_TORSO)){
+                        this.renderClothingOnTorsoInventory(associatedEntity, position);
+                    }
+                    if(player.isPlayerWearingArmorOrClothingOfType(Item.ITEM_TYPE_ARMOR_TORSO)){
+                        this.renderArmorOnTorsoInventory(associatedEntity, position);
+                    }
+                }
+                case 1 ->{
+                    if(player.isPlayerWearingArmorOrClothingOfType(Item.ITEM_TYPE_CLOTHING_HEAD)){
+                        this.renderClothingOnHeadInventory(associatedEntity, position);
+                    }
+                    if(player.isPlayerWearingArmorOrClothingOfType(Item.ITEM_TYPE_ARMOR_HEAD)){
+                        this.renderArmorOnHeadInventory(associatedEntity, position);
+                    }
+                }
+                case 2 ->{
+                    if(player.isPlayerWearingArmorOrClothingOfType(Item.ITEM_TYPE_CLOTHING_LEGS)){
+                        this.renderClothingOnLeftLegInventory(associatedEntity, position);
+                    }
+                    if(player.isPlayerWearingArmorOrClothingOfType(Item.ITEM_TYPE_ARMOR_LEGS)){
+                        this.renderArmorOnLeftLegInventory(associatedEntity, position);
+                    }
+                    if(player.isPlayerWearingArmorOrClothingOfType(Item.ITEM_TYPE_CLOTHING_FEET)){
+                        this.renderClothingOnLeftFootInventory(associatedEntity, position);
+                    }
+                    if(player.isPlayerWearingArmorOrClothingOfType(Item.ITEM_TYPE_ARMOR_FEET)){
+                        this.renderArmorOnLeftFootInventory(associatedEntity, position);
+                    }
+                }
+                case 3 ->{
+                    if(player.isPlayerWearingArmorOrClothingOfType(Item.ITEM_TYPE_CLOTHING_LEGS)){
+                        this.renderClothingOnRightLegInventory(associatedEntity, position);
+                    }
+                    if(player.isPlayerWearingArmorOrClothingOfType(Item.ITEM_TYPE_ARMOR_LEGS)){
+                        this.renderArmorOnRightLegInventory(associatedEntity, position);
+                    }
+                    if(player.isPlayerWearingArmorOrClothingOfType(Item.ITEM_TYPE_CLOTHING_FEET)){
+                        this.renderClothingOnRightFootInventory(associatedEntity, position);
+                    }
+                    if(player.isPlayerWearingArmorOrClothingOfType(Item.ITEM_TYPE_ARMOR_FEET)){
+                        this.renderArmorOnRightFootInventory(associatedEntity, position);
+                    }
+                }
+                case 4 -> {
+                    if (player.isPlayerWearingArmorOrClothingOfType(Item.ITEM_TYPE_CLOTHING_TORSO)) {
+                        this.renderClothingOnLeftArmInventory(associatedEntity, position);
+                    }
+                    if (player.isPlayerWearingArmorOrClothingOfType(Item.ITEM_TYPE_ARMOR_TORSO)) {
+                        this.renderArmorOnLeftArmInventory(associatedEntity, position);
+                    }
+                }
+                case 5 -> {
+                    if(player.isPlayerWearingArmorOrClothingOfType(Item.ITEM_TYPE_CLOTHING_TORSO)){
+                        this.renderClothingOnRightArmInventory(associatedEntity, position);
+                    }
+                    if(player.isPlayerWearingArmorOrClothingOfType(Item.ITEM_TYPE_ARMOR_TORSO)){
+                        this.renderArmorOnRightArmInventory(associatedEntity, position);
+                    }
+                }
+            }
+        }
+
+
+    }
+
+    private void renderClothingOnTorsoInventory(Entity player, Vector3f position){
+        RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
+
+        ItemStack wornItem = CosmicEvolution.instance.save.thePlayer.getItemStackOfType(Item.ITEM_TYPE_CLOTHING_TORSO);
+
+        if(wornItem == null)return;
+        if(wornItem.item == null)return;
+
+
+
+        ModelLoader model = wornItem.item.itemModel.copyModel();
+
+        model.scaleModel(150f);
+        model.rotateModel(90, 0, 1, 0);
+        model.rotateModel(this.segments[BODY].rotationY, 0, 1, 0);
+        model.rotateModel(this.segments[BODY].rotationX, 1, 0, 0);
+        model.translateModel(position.x, position.y, position.z);
+
+        int colorVal = 255;
+
+        int colorRGB = 0;
+
+        int colorTop = ((colorVal) << 16) | ((colorVal) << 8) | colorVal;
+        int colorBottom = ((colorVal - 10) << 16) | ((colorVal - 10) << 8) | colorVal - 10;
+        int colorNorth = ((colorVal - 20) << 16) | ((colorVal - 20) << 8) | colorVal - 20;
+        int colorSouth = ((colorVal - 30) << 16) | ((colorVal - 30) << 8) | colorVal - 30;
+        int colorEast = ((colorVal - 40) << 16) | ((colorVal - 40) << 8) | colorVal - 40;
+        int colorWest = ((colorVal - 50) << 16) | ((colorVal - 50) << 8) | colorVal - 50;
+
+
+        float textureID;
+        for(int i = 0; i < model.modelFaces.length; i++){
+            textureID = model.modelFaces[i].texture;
+            switch (model.modelFaces[i].faceType){
+                case RenderBlocks.TOP_FACE -> {
+                    colorRGB = colorTop;
+                }
+                case RenderBlocks.BOTTOM_FACE -> {
+                    colorRGB = colorBottom;
+                }
+                case RenderBlocks.NORTH_FACE -> {
+                    colorRGB = colorNorth;
+                }
+                case RenderBlocks.SOUTH_FACE -> {
+                    colorRGB = colorSouth;
+                }
+                case RenderBlocks.EAST_FACE -> {
+                    colorRGB = colorEast;
+                }
+                case RenderBlocks.WEST_FACE -> {
+                    colorRGB = colorWest;
+                }
+            }
+
+            for(int j = 0; j < model.modelFaces[i].vertices.length; j++){
+                tessellator.addVertexTextureArrayWithUV(colorRGB, model.modelFaces[i].vertices[j].x, model.modelFaces[i].vertices[j].y,
+                        model.modelFaces[i].vertices[j].z, textureID
+                        ,model.modelFaces[i].UVs[j][0], model.modelFaces[i].UVs[j][1]);
+            }
+            tessellator.addElementsCCW();
+        }
+
+
+        GL46.glEnable(GL46.GL_CULL_FACE);
+        GL46.glCullFace(GL46.GL_BACK);
+        tessellator.toggleOrtho();
+        tessellator.drawTextureArray(Assets.itemTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
+        tessellator.toggleOrtho();
+        GL46.glDisable(GL46.GL_CULL_FACE);
+    }
+
+    private void renderArmorOnTorsoInventory(Entity associatedEntity, Vector3f position){
+
+    }
+
+    private void renderClothingOnLeftArmInventory(Entity associatedEntity, Vector3f position){
+
+    }
+
+    private void renderArmorOnLeftArmInventory(Entity associatedEntity, Vector3f position){
+
+    }
+
+    private void renderClothingOnRightArmInventory(Entity associatedEntity, Vector3f position){
+
+    }
+
+    private void renderArmorOnRightArmInventory(Entity associatedEntity, Vector3f position){
+
+    }
+
+    private void renderClothingOnLeftLegInventory(Entity associatedEntity, Vector3f position){
+
+    }
+
+    private void renderArmorOnLeftLegInventory(Entity associatedEntity, Vector3f position){
+
+    }
+
+    private void renderClothingOnRightLegInventory(Entity associatedEntity, Vector3f position){
+
+    }
+
+    private void renderArmorOnRightLegInventory(Entity associatedEntity, Vector3f position){
+
+    }
+
+    private void renderClothingOnLeftFootInventory(Entity associatedEntity, Vector3f position){
+
+    }
+
+    private void renderArmorOnLeftFootInventory(Entity associatedEntity, Vector3f position){
+
+    }
+
+    private void renderClothingOnRightFootInventory(Entity associatedEntity, Vector3f position){
+
+    }
+
+    private void renderArmorOnRightFootInventory(Entity associatedEntity, Vector3f position){
+
+    }
+
+    private void renderClothingOnHeadInventory(Entity associatedEntity, Vector3f position){
+
+    }
+
+    private void renderArmorOnHeadInventory(Entity associatedEntity, Vector3f position){
+
     }
 
 

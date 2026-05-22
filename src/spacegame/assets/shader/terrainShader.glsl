@@ -30,6 +30,8 @@ out vec4 fragPosInLightSpace;
 out vec3 fragPosInWorldSpace;
 flat out int isInShadowRange;
 out vec3 fPlayerPositionInChunk;
+out vec3 fNormal;
+out vec3 lightDir;
 
 float sinX(float x, float y, float z){
     float actualTime = float(time);
@@ -161,9 +163,9 @@ bool isTexIDColorCorrected(int texID){
         return true;
         case 2: //Grass Side
         return true;
-        case 10: //Leaf Transparent
+        case 10: //Leaf Opaque
         return true;
-        case 24: //Leaf Opaque
+        case 24: //Leaf Transparent
         return true;
         case 30: //Tall Grass
         return true;
@@ -258,21 +260,29 @@ void main()
                 correctPos.x = sinX(correctPos.x, correctPos.y, correctPos.z);
             }
             break;
+            case 24://leaves transparent
+            if(wavyLeaves){
+                correctPos.x = sinX(correctPos.x, correctPos.y, correctPos.z);
+            }
+            break;
             case 18://fire
             fTexCoords.xy += vec2(sin(correctPos.x * 2.0 + float(time) * 0.1) * 0.05, cos(correctPos.y * 3.0 + float(time) * 0.15)  * 0.20);
             fTexCoords.y = clamp(fTexCoords.y, 0.0, 1.0);
             break;
 
         }
-   // float maxCameraDifference = distanceFromCamera(correctPos);
 
     vec3 normal = decompressNormal(normalAndSkyLightValue);
+
+    fNormal = normal;
 
     vec4 skyLightColor = performLightingNormals(decompressSkyLightValue(normalAndSkyLightValue), normal);
 
     fColor = setFinalColor(skyLightColor, color);
 
-    isInShadowRange = distance(correctPos, playerPositionInChunk) < 256.0 ? 1 : 0; //This value should be the size of the shadowmap's orthographic projection
+    lightDir = normalizedLightVector;
+
+    isInShadowRange = distance(correctPos, playerPositionInChunk) < 64.0 ? 1 : 0; //This value should be the size of the shadowmap's orthographic projection
 
     fPlayerPositionInChunk = playerPositionInChunk;
     fragPosInWorldSpace = correctPos;
@@ -296,6 +306,8 @@ in vec4 fragPosInLightSpace;
 flat in int isInShadowRange;
 in vec3 fragPosInWorldSpace;
 in vec3 fPlayerPositionInChunk;
+in vec3 fNormal;
+in vec3 lightDir;
 
 uniform sampler2DArray textureArray;
 uniform sampler2D shadowMap;
@@ -307,6 +319,7 @@ uniform bool shadowMapSetting;
 uniform bool raining;
 uniform double playerAbsoluteHeight;
 uniform float rainFogFactor;
+uniform bool isHoldingLight;
 
 uniform float fogRed;
 uniform float fogGreen;
@@ -398,26 +411,59 @@ vec4 setFogUnderwater(vec4 color){
     return color;
 }
 
-float getShadowFactor(vec4 fragPosInLightSpace){
+float getShadowFactor(vec4 fragPosInLightSpace)
+{
     vec3 projCoords = fragPosInLightSpace.xyz / fragPosInLightSpace.w;
     projCoords = projCoords * 0.5 + 0.5;
-    projCoords.xy = clamp(projCoords.xy, 0.0, 1.0);
-    if(projCoords.z > 1.0)return 1.0;
 
-    float closestDepth = texture(shadowMap, projCoords.xy).r;
+    if (projCoords.z > 1.0)
+    return 1.0;
+
     float currentDepth = projCoords.z;
+    float texelSize = 1.0 / 8192.0;
+
+    // Slope-scaled bias (fixes streaks on slopes)
+    float bias = max(0.0005 * (1.0 - dot(normalize(fNormal), normalize(lightDir))),
+    0.0005);
 
 
-    float bias = 0.0005;
-    return currentDepth - bias > closestDepth ? 0.7 : 1.0;
+    float shadow = 0.0;
+    int samples = 0;
 
+    for (int x = -1; x <= 1; x++)
+    {
+        for (int y = -1; y <= 1; y++)
+        {
+            vec2 shadowCoords = projCoords.xy + vec2(x, y) * texelSize;
+
+            // Skip invalid samples instead of returning early
+            if (shadowCoords.x < 0.0 || shadowCoords.x > 1.0 ||
+            shadowCoords.y < 0.0 || shadowCoords.y > 1.0)
+            continue;
+
+            float pcfDepth = texture(shadowMap, shadowCoords).r;
+            shadow += (currentDepth - bias > pcfDepth) ? 0.5 : 1.0;
+            samples++;
+        }
+    }
+
+    // Normalize by number of valid samples
+    if (samples > 0)
+    shadow /= float(samples);
+    else
+    shadow = 1.0;
+
+    return shadow;
 }
+
+
 
 
 void main()
 {
     float id = fTexId;
-    color = fColor * texture(textureArray, vec3(fTexCoords, id));
+    vec4 textureColor = texture(textureArray, vec3(fTexCoords, id));
+    color = fColor * textureColor;
     if (color.w > 0){
         if (renderShadows && isInShadowRange == 1 && shadowMapSetting){
             float shadow = getShadowFactor(fragPosInLightSpace);
@@ -434,13 +480,43 @@ void main()
     }
 
 
+    if(isHoldingLight){
+        float origR = color.x;
+        float origG = color.y;
+        float origB = color.z;
 
+        float r = fColor.x;
+        float g = fColor.y;
+        float b = fColor.z;
 
-   // float maxDynamicLightDistance = 16.0;
-   // float distanceFromPlayer = distance(fragPosInWorldSpace, fPlayerPositionInChunk);
-   // if(distanceFromPlayer < maxDynamicLightDistance){
-   //     color.x *= 10.0 * ((maxDynamicLightDistance - distanceFromPlayer) / maxDynamicLightDistance);
-   //     color.y *= 10.0 * ((maxDynamicLightDistance - distanceFromPlayer) / maxDynamicLightDistance);
-   //     color.z *= 10.0 * ((maxDynamicLightDistance - distanceFromPlayer) / maxDynamicLightDistance);
-   // }
+        float highestChannel = max(r, g);
+        highestChannel = max(highestChannel, b);
+
+        float lightMultiplier = 1.0f / highestChannel;
+
+        lightMultiplier = max(lightMultiplier, 0.1f);
+
+        float maxDynamicLightDistance = 16.0;
+        float distanceFromPlayer = distance(fragPosInWorldSpace, fPlayerPositionInChunk);
+        if (distanceFromPlayer < maxDynamicLightDistance){
+            color.x *= lightMultiplier * ((maxDynamicLightDistance - distanceFromPlayer) / maxDynamicLightDistance);
+            color.y *= lightMultiplier * ((maxDynamicLightDistance - distanceFromPlayer) / maxDynamicLightDistance);
+            color.z *= lightMultiplier * ((maxDynamicLightDistance - distanceFromPlayer) / maxDynamicLightDistance);
+
+            color.y *= 0.9f;
+            color.z *= 0.9f;
+
+            if (color.x < origR){
+                color.x = origR;
+            }
+
+            if (color.y < origG){
+                color.y = origG;
+            }
+
+            if (color.z < origB){
+                color.z = origB;
+            }
+        }
+    }
 }

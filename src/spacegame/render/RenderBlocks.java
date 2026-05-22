@@ -3,11 +3,12 @@ package spacegame.render;
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 import spacegame.block.*;
+import spacegame.core.GameSettings;
 import spacegame.item.ItemTool;
 import spacegame.item.crafting.InWorldCraftingItem;
 import spacegame.render.model.ModelFace;
 import spacegame.render.model.ModelLoader;
-import spacegame.util.GeneralUtil;
+import spacegame.util.LongHasher;
 import spacegame.util.MathUtil;
 import spacegame.item.Item;
 import spacegame.world.ChestLocation;
@@ -16,11 +17,6 @@ import spacegame.item.crafting.InWorld3DCraftingItem;
 import spacegame.world.DoorTransition;
 import spacegame.world.World;
 
-import javax.imageio.ImageIO;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
@@ -113,7 +109,9 @@ public class RenderBlocks {
 
         this.renderCampFireUnlit(chunk, world, block, index, face);
 
-        ModelLoader shrunkBlock = Block.fireBlockModel.getScaledModel(0.4f).translateModel(0.3f, 0f, 0.3f);
+        ModelLoader shrunkBlock = Block.fireBlockModel.copyModel();
+        shrunkBlock.scaleModel(0.4f);
+        shrunkBlock.translateModel(0.3f, 0f, 0.3f);
         ModelFace[] modelFace = shrunkBlock.getModelFaceOfType(face);
         for(int i = 0; i < modelFace.length; i++){
             this.renderTransparentFace(chunk, world, Block.fire.ID, index, face, modelFace[i], new int[2]);
@@ -175,10 +173,10 @@ public class RenderBlocks {
         switch (logCount) { //This switch statement is not supposed to have case labels, I'm intentionally using the follow through of a default switch statement to reduce LOC, this is also why it's in reverse order
             case 4:
                 ModelLoader log4 = baseModel.copyModel();
-                log4 = log4.rotateModel(log4XRot, 1, 0, 0);
-                log4 = log4.rotateModel(log4YRot, 0, 1, 0);
-                log4 = log4.rotateModel(log4ZRot, 0, 0, 1);
-                log4 = log4.translateModel(translationVectorLog4.x, translationVectorLog4.y, translationVectorLog4.z);
+                log4.rotateModel(log4XRot, 1, 0, 0);
+                log4.rotateModel(log4YRot, 0, 1, 0);
+                log4.rotateModel(log4ZRot, 0, 0, 1);
+                log4.translateModel(translationVectorLog4.x, translationVectorLog4.y, translationVectorLog4.z);
 
 
                 modelFace = log4.getModelFace(face);
@@ -186,30 +184,30 @@ public class RenderBlocks {
             case 3:
                 ModelLoader log3 = baseModel.copyModel();
 
-                log3 = log3.rotateModel(log3XRot, 1, 0, 0);
-                log3 = log3.rotateModel(log3YRot, 0, 1, 0);
-                log3 = log3.rotateModel(log3ZRot, 0, 0, 1);
-                log3 = log3.translateModel(translationVectorLog3.x, translationVectorLog3.y, translationVectorLog3.z);
+                log3.rotateModel(log3XRot, 1, 0, 0);
+                log3.rotateModel(log3YRot, 0, 1, 0);
+                log3.rotateModel(log3ZRot, 0, 0, 1);
+                log3.translateModel(translationVectorLog3.x, translationVectorLog3.y, translationVectorLog3.z);
 
                 modelFace = log3.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 2:
                 ModelLoader log2 = baseModel.copyModel();
 
-                log2 = log2.rotateModel(log2XRot, 1, 0, 0);
-                log2 = log2.rotateModel(log2YRot, 0, 1, 0);
-                log2 = log2.rotateModel(log2ZRot, 0, 0, 1);
-                log2 = log2.translateModel(translationVectorLog2.x, translationVectorLog2.y, translationVectorLog2.z);
+                log2.rotateModel(log2XRot, 1, 0, 0);
+                log2.rotateModel(log2YRot, 0, 1, 0);
+                log2.rotateModel(log2ZRot, 0, 0, 1);
+                log2.translateModel(translationVectorLog2.x, translationVectorLog2.y, translationVectorLog2.z);
 
                 modelFace = log2.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 1:
                 ModelLoader log1 = baseModel.copyModel();
 
-                log1 = log1.rotateModel(log1XRot, 1, 0, 0);
-                log1 = log1.rotateModel(log1YRot, 0, 1, 0);
-                log1 = log1.rotateModel(log1ZRot, 0, 0, 1);
-                log1 = log1.translateModel(translationVectorLog1.x, translationVectorLog1.y, translationVectorLog1.z);
+                log1.rotateModel(log1XRot, 1, 0, 0);
+                log1.rotateModel(log1YRot, 0, 1, 0);
+                log1.rotateModel(log1ZRot, 0, 0, 1);
+                log1.translateModel(translationVectorLog1.x, translationVectorLog1.y, translationVectorLog1.z);
 
                 modelFace = log1.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
@@ -258,7 +256,10 @@ public class RenderBlocks {
         this.skyLightReset = 1f;
 
         if(face == TOP_FACE){
-            renderOpaqueFace(chunk, world, block, index, face, Block.list[block].blockModel.copyModel().translateModel(0, -1 + (0.109375f * ((BlockPitKilnUnlit)Block.list[block]).getStrawHeight()), 0).getModelFace(face) , new int[2]);
+            ModelLoader model = Block.list[block].blockModel.copyModel();
+            model.translateModel(0, -1 + (0.109375f * ((BlockPitKilnUnlit)Block.list[block]).getStrawHeight()), 0);
+
+            renderOpaqueFace(chunk, world, block, index, face, model.getModelFace(face) , new int[2]);
         } else {
             renderOpaqueFace(chunk, world, block, index, face, Block.list[block].blockModel.getModelFace(face), new int[2]);
         }
@@ -269,16 +270,24 @@ public class RenderBlocks {
         ModelFace modelFace;
         switch (numberOfLogs){
             case 4:
-                modelFace = baseModel.copyModel().translateModel(0.5f, 1, 0.875f).getModelFace(face);
+                baseModel = Block.largeFireWood.copyModel();
+                baseModel.translateModel(0.5f, 1, 0.875f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 3:
-                modelFace = baseModel.copyModel().translateModel(0.5f, 1, 0.625f).getModelFace(face);
+                baseModel = Block.largeFireWood.copyModel();
+                baseModel.translateModel(0.5f, 1, 0.625f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 2:
-                modelFace = baseModel.copyModel().translateModel(0.5f, 1, 0.375f).getModelFace(face);
+                baseModel = Block.largeFireWood.copyModel();
+                baseModel.translateModel(0.5f, 1, 0.375f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 1:
-                modelFace = baseModel.copyModel().translateModel(0.5f, 1, 0.125f).getModelFace(face);
+                baseModel = Block.largeFireWood.copyModel();
+                baseModel.translateModel(0.5f, 1, 0.125f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
         }
 
@@ -321,52 +330,84 @@ public class RenderBlocks {
         ModelFace modelFace;
         switch (numberOfLogs){
             case 16:
-                modelFace = baseModel.copyModel().translateModel(0.5f, 0.875f, 0.875f).getModelFace(face);
+                baseModel = Block.largeFireWood.copyModel();
+                baseModel.translateModel(0.5f, 0.875f, 0.875f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 15:
-                modelFace = baseModel.copyModel().translateModel(0.5f, 0.875f, 0.625f).getModelFace(face);
+                baseModel = Block.largeFireWood.copyModel();
+                baseModel.translateModel(0.5f, 0.875f, 0.625f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 14:
-                modelFace = baseModel.copyModel().translateModel(0.5f, 0.875f, 0.375f).getModelFace(face);
+                baseModel = Block.largeFireWood.copyModel();
+                baseModel.translateModel(0.5f, 0.875f, 0.375f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 13:
-                modelFace = baseModel.copyModel().translateModel(0.5f, 0.875f, 0.125f).getModelFace(face);
+                baseModel = Block.largeFireWood.copyModel();
+                baseModel.translateModel(0.5f, 0.875f, 0.125f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 12:
-                modelFace = baseModel.copyModel().translateModel(0.5f, 0.625f, 0.875f).getModelFace(face);
+                baseModel = Block.largeFireWood.copyModel();
+                baseModel.translateModel(0.5f, 0.625f, 0.875f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 11:
-                modelFace = baseModel.copyModel().translateModel(0.5f, 0.625f, 0.625f).getModelFace(face);
+                baseModel = Block.largeFireWood.copyModel();
+                baseModel.translateModel(0.5f, 0.625f, 0.625f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 10:
-                modelFace = baseModel.copyModel().translateModel(0.5f, 0.625f, 0.375f).getModelFace(face);
+                baseModel = Block.largeFireWood.copyModel();
+                baseModel.translateModel(0.5f, 0.625f, 0.375f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 9:
-                modelFace = baseModel.copyModel().translateModel(0.5f, 0.625f, 0.125f).getModelFace(face);
+                baseModel = Block.largeFireWood.copyModel();
+                baseModel.translateModel(0.5f, 0.625f, 0.125f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 8:
-                modelFace = baseModel.copyModel().translateModel(0.5f, 0.375f, 0.875f).getModelFace(face);
+                baseModel = Block.largeFireWood.copyModel();
+                baseModel.translateModel(0.5f, 0.375f, 0.875f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 7:
-                modelFace = baseModel.copyModel().translateModel(0.5f, 0.375f, 0.625f).getModelFace(face);
+                baseModel = Block.largeFireWood.copyModel();
+                baseModel.translateModel(0.5f, 0.375f, 0.625f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 6:
-                modelFace = baseModel.copyModel().translateModel(0.5f, 0.375f, 0.375f).getModelFace(face);
+                baseModel = Block.largeFireWood.copyModel();
+                baseModel.translateModel(0.5f, 0.375f, 0.375f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 5:
-                modelFace = baseModel.copyModel().translateModel(0.5f, 0.375f, 0.125f).getModelFace(face);
+                baseModel = Block.largeFireWood.copyModel();
+                baseModel.translateModel(0.5f, 0.375f, 0.125f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 4:
-                modelFace = baseModel.copyModel().translateModel(0.5f, 0.125f, 0.875f).getModelFace(face);
+                baseModel = Block.largeFireWood.copyModel();
+                baseModel.translateModel(0.5f, 0.125f, 0.875f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 3:
-                modelFace = baseModel.copyModel().translateModel(0.5f, 0.125f, 0.625f).getModelFace(face);
+                baseModel = Block.largeFireWood.copyModel();
+                baseModel.translateModel(0.5f, 0.125f, 0.625f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 2:
-                modelFace = baseModel.copyModel().translateModel(0.5f, 0.125f, 0.375f).getModelFace(face);
+                baseModel = Block.largeFireWood.copyModel();
+                baseModel.translateModel(0.5f, 0.125f, 0.375f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 1:
-                modelFace = baseModel.copyModel().translateModel(0.5f, 0.125f, 0.125f).getModelFace(face);
+                baseModel = Block.largeFireWood.copyModel();
+                baseModel.translateModel(0.5f, 0.125f, 0.125f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
         }
     }
@@ -407,159 +448,279 @@ public class RenderBlocks {
         }
 
         ModelLoader baseModel = Block.brick;
-        ModelFace modelFace = baseModel.getModelFace(face);
+        ModelFace modelFace;
 
         switch (numberOfBricks){ //alternate pushing the stacks inwards by 1 voxel to give depth to the stack
             case 48:
-                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.15625f, 0.9375f, 0.75f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.rotateModel(90,0, 1, 0);
+                baseModel.translateModel(0.15625f, 0.9375f, 0.75f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 47:
-                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.5f, 0.9375f, 0.75f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.rotateModel(90,0, 1, 0);
+                baseModel.translateModel(0.5f, 0.9375f, 0.75f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 46:
-                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.84375f, 0.9375f, 0.75f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.rotateModel(90,0, 1, 0);
+                baseModel.translateModel(0.84375f, 0.9375f, 0.75f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 45:
-                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.15625f, 0.9375f, 0.25f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.rotateModel(90,0, 1, 0);
+                baseModel.translateModel(0.15625f, 0.9375f, 0.25f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 44:
-                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.5f, 0.9375f, 0.25f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.rotateModel(90,0, 1, 0);
+                baseModel.translateModel(0.5f, 0.9375f, 0.25f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 43:
-                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.84375f, 0.9375f, 0.25f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.rotateModel(90,0, 1, 0);
+                baseModel.translateModel(0.84375f, 0.9375f, 0.25f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
 
             case 42:
-                modelFace = baseModel.copyModel().translateModel(0.78125f, 0.8125f, 0.875f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.translateModel(0.78125f, 0.8125f, 0.875f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 41:
-                modelFace = baseModel.copyModel().translateModel(0.78125f, 0.8125f, 0.5f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.translateModel(0.78125f, 0.8125f, 0.5f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 40:
-                modelFace = baseModel.copyModel().translateModel(0.78125f, 0.8125f, 0.125f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.translateModel(0.78125f, 0.8125f, 0.125f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 39:
-                modelFace = baseModel.copyModel().translateModel(0.21875f, 0.8125f, 0.875f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.translateModel(0.21875f, 0.8125f, 0.875f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 38:
-                modelFace = baseModel.copyModel().translateModel(0.21875f, 0.8125f, 0.5f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.translateModel(0.21875f, 0.8125f, 0.5f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 37:
-                modelFace = baseModel.copyModel().translateModel(0.21875f, 0.8125f, 0.125f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.translateModel(0.21875f, 0.8125f, 0.125f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
 
             case 36:
-                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.15625f, 0.6875f, 0.75f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.rotateModel(90,0, 1, 0);
+                baseModel.translateModel(0.15625f, 0.6875f, 0.75f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 35:
-                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.5f, 0.6875f, 0.75f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.rotateModel(90,0, 1, 0);
+                baseModel.translateModel(0.5f, 0.6875f, 0.75f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 34:
-                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.84375f, 0.6875f, 0.75f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.rotateModel(90,0, 1, 0);
+                baseModel.translateModel(0.84375f, 0.6875f, 0.75f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 33:
-                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.15625f, 0.6875f, 0.25f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.rotateModel(90,0, 1, 0);
+                baseModel.translateModel(0.15625f, 0.6875f, 0.25f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 32:
-                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.5f, 0.6875f, 0.25f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.rotateModel(90,0, 1, 0);
+                baseModel.translateModel(0.5f, 0.6875f, 0.25f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 31:
-                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.84375f, 0.6875f, 0.25f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.rotateModel(90,0, 1, 0);
+                baseModel.translateModel(0.84375f, 0.6875f, 0.25f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
 
             case 30:
-                modelFace = baseModel.copyModel().translateModel(0.78125f, 0.5625f, 0.875f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.translateModel(0.78125f, 0.5625f, 0.875f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 29:
-                modelFace = baseModel.copyModel().translateModel(0.78125f, 0.5625f, 0.5f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.translateModel(0.78125f, 0.5625f, 0.5f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 28:
-                modelFace = baseModel.copyModel().translateModel(0.78125f, 0.5625f, 0.125f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.translateModel(0.78125f, 0.5625f, 0.125f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 27:
-                modelFace = baseModel.copyModel().translateModel(0.21875f, 0.5625f, 0.875f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.translateModel(0.21875f, 0.5625f, 0.875f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 26:
-                modelFace = baseModel.copyModel().translateModel(0.21875f, 0.5625f, 0.5f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.translateModel(0.21875f, 0.5625f, 0.5f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 25:
-                modelFace = baseModel.copyModel().translateModel(0.21875f, 0.5625f, 0.125f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.translateModel(0.21875f, 0.5625f, 0.125f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
 
             case 24:
-                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.15625f, 0.4375f, 0.75f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.rotateModel(90,0, 1, 0);
+                baseModel.translateModel(0.15625f, 0.4375f, 0.75f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 23:
-                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.5f, 0.4375f, 0.75f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.rotateModel(90,0, 1, 0);
+                baseModel.translateModel(0.5f, 0.4375f, 0.75f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 22:
-                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.84375f, 0.4375f, 0.75f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.rotateModel(90,0, 1, 0);
+                baseModel.translateModel(0.84375f, 0.4375f, 0.75f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 21:
-                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.15625f, 0.4375f, 0.25f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.rotateModel(90,0, 1, 0);
+                baseModel.translateModel(0.15625f, 0.4375f, 0.25f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 20:
-                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.5f, 0.4375f, 0.25f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.rotateModel(90,0, 1, 0);
+                baseModel.translateModel(0.5f, 0.4375f, 0.25f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 19:
-                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.84375f, 0.4375f, 0.25f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.rotateModel(90,0, 1, 0);
+                baseModel.translateModel(0.84375f, 0.4375f, 0.25f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
 
             case 18:
-                modelFace = baseModel.copyModel().translateModel(0.78125f, 0.3125f, 0.875f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.translateModel(0.78125f, 0.3125f, 0.875f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 17:
-                modelFace = baseModel.copyModel().translateModel(0.78125f, 0.3125f, 0.5f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.translateModel(0.78125f, 0.3125f, 0.5f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 16:
-                modelFace = baseModel.copyModel().translateModel(0.78125f, 0.3125f, 0.125f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.translateModel(0.78125f, 0.3125f, 0.125f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 15:
-                modelFace = baseModel.copyModel().translateModel(0.21875f, 0.3125f, 0.875f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.translateModel(0.21875f, 0.3125f, 0.875f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 14:
-                modelFace = baseModel.copyModel().translateModel(0.21875f, 0.3125f, 0.5f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.translateModel(0.21875f, 0.3125f, 0.5f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 13:
-                modelFace = baseModel.copyModel().translateModel(0.21875f, 0.3125f, 0.125f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.translateModel(0.21875f, 0.3125f, 0.125f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
 
             case 12:
-                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.15625f, 0.1875f, 0.75f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.rotateModel(90,0, 1, 0);
+                baseModel.translateModel(0.15625f, 0.1875f, 0.75f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 11:
-                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.5f, 0.1875f, 0.75f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.rotateModel(90,0, 1, 0);
+                baseModel.translateModel(0.5f, 0.1875f, 0.75f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 10:
-                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.84375f, 0.1875f, 0.75f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.rotateModel(90,0, 1, 0);
+                baseModel.translateModel(0.84375f, 0.1875f, 0.75f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 9:
-                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.15625f, 0.1875f, 0.25f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.rotateModel(90,0, 1, 0);
+                baseModel.translateModel(0.15625f, 0.1875f, 0.25f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 8:
-                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.5f, 0.1875f, 0.25f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.rotateModel(90,0, 1, 0);
+                baseModel.translateModel(0.5f, 0.1875f, 0.25f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 7:
-                modelFace = baseModel.copyModel().rotateModel(90,0, 1, 0).translateModel(0.84375f, 0.1875f, 0.25f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.rotateModel(90,0, 1, 0);
+                baseModel.translateModel(0.84375f, 0.1875f, 0.25f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
 
             case 6:
-                modelFace = baseModel.copyModel().translateModel(0.78125f, 0.0625f, 0.875f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.translateModel(0.78125f, 0.0625f, 0.875f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 5:
-                modelFace = baseModel.copyModel().translateModel(0.78125f, 0.0625f, 0.5f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.translateModel(0.78125f, 0.0625f, 0.5f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 4:
-                modelFace = baseModel.copyModel().translateModel(0.78125f, 0.0625f, 0.125f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.translateModel(0.78125f, 0.0625f, 0.125f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 3:
-                modelFace = baseModel.copyModel().translateModel(0.21875f, 0.0625f, 0.875f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.translateModel(0.21875f, 0.0625f, 0.875f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 2:
-                modelFace = baseModel.copyModel().translateModel(0.21875f, 0.0625f, 0.5f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.translateModel(0.21875f, 0.0625f, 0.5f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 1:
-                modelFace = baseModel.copyModel().translateModel(0.21875f, 0.0625f, 0.125f).getModelFace(face);
+                baseModel = Block.brick.copyModel();
+                baseModel.translateModel(0.21875f, 0.0625f, 0.125f);
+                modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
         }
     }
@@ -713,10 +874,10 @@ public class RenderBlocks {
         ModelLoader model = chestLocation.inventory.itemStacks[0].item.itemModel.copyModel();
 
         if(chestLocation.inventory.itemStacks[0].item instanceof ItemTool){
-            model = model.rotateModel(90, 0, 0, 1);
+            model.rotateModel(90, 0, 0, 1);
         }
 
-        model = model.translateModel(0.5f, model.getModelHeight() / 2f, 0.5f);
+        model.translateModel(0.5f, model.getModelHeight() / 2f, 0.5f);
 
         for(int i = 0; i < model.modelFaces.length; i++){
             this.renderOpaqueFace(chunk, world, block, index, face, model.modelFaces[i], new int[2]);
@@ -736,8 +897,11 @@ public class RenderBlocks {
         float scaleFactor = ((BlockBerryBushGrowing)Block.list[block]).getBerryBushScale();
 
         float translateVal = ((BlockBerryBushGrowing)Block.list[block]).getBerryBushTranslation();
+        baseModel.scaleModel(scaleFactor);
+        baseModel.translateModel(translateVal, 0, translateVal);
 
-        ModelFace modelFace = baseModel.getScaledModel(scaleFactor).translateModel(translateVal, 0, translateVal).getModelFace(face);
+
+        ModelFace modelFace = baseModel.getModelFace(face);
 
 
         renderTransparentFace(chunk, world, block, index, face, modelFace, new int[2]);
@@ -755,7 +919,10 @@ public class RenderBlocks {
 
         float translateVal = ((BlockReedGrowing)Block.list[block]).getReedTranslation();
 
-        ModelFace modelFace = baseModel.getScaledModel(scaleFactor).translateModel(translateVal, 0, translateVal).getModelFace(face);
+        baseModel.scaleModel(scaleFactor);
+        baseModel.translateModel(translateVal, 0, translateVal);
+
+        ModelFace modelFace = baseModel.getModelFace(face);
 
         this.handleWaterLoggedBlocks(chunk, world, block, index, face);
 
@@ -775,7 +942,7 @@ public class RenderBlocks {
 
         InWorld3DCraftingItem craftingBlock = world.getInWorldCrafting3DItem(chunk.getBlockXFromIndex(index), chunk.getBlockYFromIndex(index), chunk.getBlockZFromIndex(index));
 
-        block = craftingBlock.materialBlockID;
+        block = craftingBlock.materialBlockID != RenderEngine.NULL_TEXTURE ? craftingBlock.materialBlockID : Block.crafting3DItem.ID;
 
         Vector3f translationVector = new Vector3f();
         for(int i = 0; i < 16; i++){
@@ -789,7 +956,8 @@ public class RenderBlocks {
 
                 translationVector.x = ((j % 12) * 0.0625f) + 0.125f;
                 translationVector.z = ((j / 12) * 0.0625f) + 0.125f; //0.046875 is the portion of the used block space divided by 16 for each voxel
-                blockModel = Block.crafting3DItemVoxelModel.copyModel().translateModel(translationVector.x, translationVector.y, translationVector.z);
+                blockModel = Block.crafting3DItemVoxelModel.copyModel();
+                blockModel.translateModel(translationVector.x, translationVector.y, translationVector.z);
                 modelFace = blockModel.getModelFace(face);
                 modelFace = modelFace.copyFace();
 
@@ -842,22 +1010,22 @@ public class RenderBlocks {
 
             ModelFace modelFace;
 
-            model = model.getScaledModel(0.5f);
+            model.scaleModel(0.5f);
             if(craftingItem.outputRecipe.requiredItems[i] == Item.stoneHandAxe.ID ||
             craftingItem.outputRecipe.requiredItems[i] == Item.stoneHandShovel.ID ||
             craftingItem.outputRecipe.requiredItems[i] == Item.stoneHandKnifeBlade.ID){
-                model = model.getScaledModel(0.75f);
-                model = model.rotateModel(90, 0, 0, 1);
+                model.scaleModel(0.75f);
+                model.rotateModel(90, 0, 0, 1);
                 if(craftingItem.outputRecipe.requiredItems[i] == Item.stoneHandShovel.ID){
-                    model = model.rotateModel(-90, 0, 1, 0);
+                    model.rotateModel(-90, 0, 1, 0);
                 }
                 if(craftingItem.outputRecipe.requiredItems[i] == Item.stoneHandKnifeBlade.ID){
-                    model = model.rotateModel(135f, 0, 1, 0);
-                    model = model.getScaledModel(2.1f);
+                    model.rotateModel(135f, 0, 1, 0);
+                    model.scaleModel(2.1f);
                 }
             }
-            model = model.rotateModel((float) craftingItem.outputRecipe.requiredItemAngles[i], 0, 1, 0);
-            model = model.translateModel((float) craftingItem.outputRecipe.requiredItemPositions[i][0], (float) craftingItem.outputRecipe.requiredItemPositions[i][1], (float) craftingItem.outputRecipe.requiredItemPositions[i][2]);
+            model.rotateModel((float) craftingItem.outputRecipe.requiredItemAngles[i], 0, 1, 0);
+            model.translateModel((float) craftingItem.outputRecipe.requiredItemPositions[i][0], (float) craftingItem.outputRecipe.requiredItemPositions[i][1], (float) craftingItem.outputRecipe.requiredItemPositions[i][2]);
 
 
             for(int j = 0; j < model.modelFaces.length; j++){
@@ -876,24 +1044,24 @@ public class RenderBlocks {
                     float ratio = (float)(world.ce.save.time - doorTransition.timeStarted) / DoorTransition.timeToComplete;
                     float degrees = -90 * ratio;
 
-                    upperModel = upperModel.copyModel().translateModel(0, 0, -0.4375f);
-                    upperModel = upperModel.copyModel().rotateModel(degrees, 0, 1, 0);
-                    upperModel = upperModel.copyModel().translateModel(0, 0, 0.4375f);
+                    upperModel.copyModel().translateModel(0, 0, -0.4375f);
+                    upperModel.copyModel().rotateModel(degrees, 0, 1, 0);
+                    upperModel.copyModel().translateModel(0, 0, 0.4375f);
 
-                    upperModel = upperModel.copyModel().translateModel(0.0625f, 0, 0.5f);
+                    upperModel.copyModel().translateModel(0.0625f, 0, 0.5f);
 
-                    lowerModel = lowerModel.copyModel().translateModel(0, 0, -0.4375f);
-                    lowerModel = lowerModel.copyModel().rotateModel(degrees, 0, 1, 0);
-                    lowerModel = lowerModel.copyModel().translateModel(0, 0, 0.4375f);
+                    lowerModel.copyModel().translateModel(0, 0, -0.4375f);
+                    lowerModel.copyModel().rotateModel(degrees, 0, 1, 0);
+                    lowerModel.copyModel().translateModel(0, 0, 0.4375f);
 
-                    lowerModel = lowerModel.copyModel().translateModel(0.0625f, 0, 0.5f);
+                    lowerModel.copyModel().translateModel(0.0625f, 0, 0.5f);
                 }
             } else {
-                upperModel = upperModel.copyModel().rotateModel(-90, 0, 1, 0);
-                upperModel = upperModel.copyModel().translateModel(0.5f, 0, 0.9375f);
+                upperModel.copyModel().rotateModel(-90, 0, 1, 0);
+                upperModel.copyModel().translateModel(0.5f, 0, 0.9375f);
 
-                lowerModel = lowerModel.copyModel().rotateModel(-90, 0, 1, 0);
-                lowerModel = lowerModel.copyModel().translateModel(0.5f, 0, 0.9375f);
+                lowerModel.copyModel().rotateModel(-90, 0, 1, 0);
+                lowerModel.copyModel().translateModel(0.5f, 0, 0.9375f);
             }
         } else if(doorOpen && lowerBlock == Block.doorNorthDoorHingeRightOpen.ID){
             if(doorTransition != null){
@@ -901,69 +1069,69 @@ public class RenderBlocks {
                     float ratio = (float)(world.ce.save.time - doorTransition.timeStarted) / DoorTransition.timeToComplete;
                     float degrees = 90 * ratio;
 
-                    upperModel = upperModel.copyModel().translateModel(0, 0, 0.4375f);
-                    upperModel = upperModel.copyModel().rotateModel(degrees, 0, 1, 0);
-                    upperModel = upperModel.copyModel().translateModel(0, 0, -0.4375f);
+                    upperModel.copyModel().translateModel(0, 0, 0.4375f);
+                    upperModel.copyModel().rotateModel(degrees, 0, 1, 0);
+                    upperModel.copyModel().translateModel(0, 0, -0.4375f);
 
-                    upperModel = upperModel.copyModel().translateModel(0.0625f, 0, 0.5f);
+                    upperModel.copyModel().translateModel(0.0625f, 0, 0.5f);
 
-                    lowerModel = lowerModel.copyModel().translateModel(0, 0, 0.4375f);
-                    lowerModel = lowerModel.copyModel().rotateModel(degrees, 0, 1, 0);
-                    lowerModel = lowerModel.copyModel().translateModel(0, 0, -0.4375f);
+                    lowerModel.copyModel().translateModel(0, 0, 0.4375f);
+                    lowerModel.copyModel().rotateModel(degrees, 0, 1, 0);
+                    lowerModel.copyModel().translateModel(0, 0, -0.4375f);
 
-                    lowerModel = lowerModel.copyModel().translateModel(0.0625f, 0, 0.5f);
+                    lowerModel.copyModel().translateModel(0.0625f, 0, 0.5f);
                 }
             } else {
-                upperModel = upperModel.copyModel().rotateModel(90, 0, 1, 0);
-                upperModel = upperModel.copyModel().translateModel(0.5f, 0, 0.0625f);
+                upperModel.copyModel().rotateModel(90, 0, 1, 0);
+                upperModel.copyModel().translateModel(0.5f, 0, 0.0625f);
 
-                lowerModel = lowerModel.copyModel().rotateModel(90, 0, 1, 0);
-                lowerModel = lowerModel.copyModel().translateModel(0.5f, 0, 0.0625f);
+                lowerModel.copyModel().rotateModel(90, 0, 1, 0);
+                lowerModel.copyModel().translateModel(0.5f, 0, 0.0625f);
             }
         } else if(!doorOpen && lowerBlock == Block.doorNorthDoorHingeLeftClosed.ID){
             if(doorTransition != null){
                 float ratio = (float)(world.ce.save.time - doorTransition.timeStarted) / DoorTransition.timeToComplete;
                 float degrees = -90 *  (1 -ratio);
 
-                upperModel = upperModel.copyModel().translateModel(0, 0, -0.4375f);
-                upperModel = upperModel.copyModel().rotateModel(degrees, 0, 1, 0);
-                upperModel = upperModel.copyModel().translateModel(0, 0, 0.4375f);
+                upperModel.copyModel().translateModel(0, 0, -0.4375f);
+                upperModel.copyModel().rotateModel(degrees, 0, 1, 0);
+                upperModel.copyModel().translateModel(0, 0, 0.4375f);
 
-                upperModel = upperModel.copyModel().translateModel(0.0625f, 0, 0.5f);
+                upperModel.copyModel().translateModel(0.0625f, 0, 0.5f);
 
-                lowerModel = lowerModel.copyModel().translateModel(0, 0, -0.4375f);
-                lowerModel = lowerModel.copyModel().rotateModel(degrees, 0, 1, 0);
-                lowerModel = lowerModel.copyModel().translateModel(0, 0, 0.4375f);
+                lowerModel.copyModel().translateModel(0, 0, -0.4375f);
+                lowerModel.copyModel().rotateModel(degrees, 0, 1, 0);
+                lowerModel.copyModel().translateModel(0, 0, 0.4375f);
 
-                lowerModel = lowerModel.copyModel().translateModel(0.0625f, 0, 0.5f);
+                lowerModel.copyModel().translateModel(0.0625f, 0, 0.5f);
             } else {
-                upperModel = upperModel.copyModel().translateModel(0.0625f, 0, 0.5f);
-                lowerModel = lowerModel.copyModel().translateModel(0.0625f, 0, 0.5f);
+                upperModel.copyModel().translateModel(0.0625f, 0, 0.5f);
+                lowerModel.copyModel().translateModel(0.0625f, 0, 0.5f);
             }
         } else if(!doorOpen && lowerBlock == Block.doorNorthDoorHingeRightClosed.ID){
             if(doorTransition != null){
                 float ratio = (float)(world.ce.save.time - doorTransition.timeStarted) / DoorTransition.timeToComplete;
                 float degrees = 90 * (1 - ratio);
 
-                upperModel = upperModel.copyModel().translateModel(0, 0, 0.4375f);
-                upperModel = upperModel.copyModel().rotateModel(degrees, 0, 1, 0);
-                upperModel = upperModel.copyModel().translateModel(0, 0, -0.4375f);
+                upperModel.copyModel().translateModel(0, 0, 0.4375f);
+                upperModel.copyModel().rotateModel(degrees, 0, 1, 0);
+                upperModel.copyModel().translateModel(0, 0, -0.4375f);
 
-                upperModel = upperModel.copyModel().translateModel(0.0625f, 0, 0.5f);
+                upperModel.copyModel().translateModel(0.0625f, 0, 0.5f);
 
-                lowerModel = lowerModel.copyModel().translateModel(0, 0, 0.4375f);
-                lowerModel = lowerModel.copyModel().rotateModel(degrees, 0, 1, 0);
-                lowerModel = lowerModel.copyModel().translateModel(0, 0, -0.4375f);
+                lowerModel.copyModel().translateModel(0, 0, 0.4375f);
+                lowerModel.copyModel().rotateModel(degrees, 0, 1, 0);
+                lowerModel.copyModel().translateModel(0, 0, -0.4375f);
 
-                lowerModel = lowerModel.copyModel().translateModel(0.0625f, 0, 0.5f);
+                lowerModel.copyModel().translateModel(0.0625f, 0, 0.5f);
             } else {
-                upperModel = upperModel.copyModel().translateModel(0.0625f, 0, 0.5f);
-                lowerModel = lowerModel.copyModel().translateModel(0.0625f, 0, 0.5f);
+                upperModel.copyModel().translateModel(0.0625f, 0, 0.5f);
+                lowerModel.copyModel().translateModel(0.0625f, 0, 0.5f);
             }
         } else { //Closed state
-            upperModel = upperModel.copyModel().translateModel(0.0625f, 0, 0.5f);
+            upperModel.copyModel().translateModel(0.0625f, 0, 0.5f);
 
-            lowerModel = lowerModel.copyModel().translateModel(0.0625f, 0, 0.5f);
+            lowerModel.copyModel().translateModel(0.0625f, 0, 0.5f);
         }
 
         return new ModelLoader[]{upperModel, lowerModel};
@@ -978,26 +1146,26 @@ public class RenderBlocks {
                     ratio = Math.min(ratio, 1);
                     float degrees = -90 * ratio;
 
-                    upperModel = upperModel.copyModel().rotateModel(180, 0, 1, 0);
-                    lowerModel = lowerModel.copyModel().rotateModel(180, 0, 1, 0);
+                    upperModel.copyModel().rotateModel(180, 0, 1, 0);
+                    lowerModel.copyModel().rotateModel(180, 0, 1, 0);
 
-                    upperModel = upperModel.copyModel().translateModel(0, 0, 0.4375f);
-                    upperModel = upperModel.copyModel().rotateModel(degrees, 0, 1, 0);
-                    upperModel = upperModel.copyModel().translateModel(0, 0, -0.4375f);
+                    upperModel.copyModel().translateModel(0, 0, 0.4375f);
+                    upperModel.copyModel().rotateModel(degrees, 0, 1, 0);
+                    upperModel.copyModel().translateModel(0, 0, -0.4375f);
 
-                    lowerModel = lowerModel.copyModel().translateModel(0, 0, 0.4375f);
-                    lowerModel = lowerModel.copyModel().rotateModel(degrees, 0, 1, 0);
-                    lowerModel = lowerModel.copyModel().translateModel(0, 0, -0.4375f);
+                    lowerModel.copyModel().translateModel(0, 0, 0.4375f);
+                    lowerModel.copyModel().rotateModel(degrees, 0, 1, 0);
+                    lowerModel.copyModel().translateModel(0, 0, -0.4375f);
 
-                    upperModel = upperModel.copyModel().translateModel(0.9375f, 0, 0.5f);
-                    lowerModel = lowerModel.copyModel().translateModel(0.9375f, 0, 0.5f);
+                    upperModel.copyModel().translateModel(0.9375f, 0, 0.5f);
+                    lowerModel.copyModel().translateModel(0.9375f, 0, 0.5f);
                 }
             } else {
-                upperModel = upperModel.copyModel().rotateModel(90, 0, 1, 0);
-                upperModel = upperModel.copyModel().translateModel(0.5f, 0, 0.0625f);
+                upperModel.copyModel().rotateModel(90, 0, 1, 0);
+                upperModel.copyModel().translateModel(0.5f, 0, 0.0625f);
 
-                lowerModel = lowerModel.copyModel().rotateModel(90, 0, 1, 0);
-                lowerModel = lowerModel.copyModel().translateModel(0.5f, 0, 0.0625f);
+                lowerModel.copyModel().rotateModel(90, 0, 1, 0);
+                lowerModel.copyModel().translateModel(0.5f, 0, 0.0625f);
             }
         } else if(doorOpen && lowerBlock == Block.doorSouthDoorHingeRightOpen.ID){
             if(doorTransition != null){
@@ -1006,26 +1174,26 @@ public class RenderBlocks {
                     ratio = Math.min(ratio, 1);
                     float degrees = 90 * ratio;
 
-                    upperModel = upperModel.copyModel().rotateModel(180, 0, 1, 0);
-                    lowerModel = lowerModel.copyModel().rotateModel(180, 0, 1, 0);
+                    upperModel.copyModel().rotateModel(180, 0, 1, 0);
+                    lowerModel.copyModel().rotateModel(180, 0, 1, 0);
 
-                    upperModel = upperModel.copyModel().translateModel(0, 0, -0.4375f);
-                    upperModel = upperModel.copyModel().rotateModel(degrees, 0, 1, 0);
-                    upperModel = upperModel.copyModel().translateModel(0, 0, 0.4375f);
+                    upperModel.copyModel().translateModel(0, 0, -0.4375f);
+                    upperModel.copyModel().rotateModel(degrees, 0, 1, 0);
+                    upperModel.copyModel().translateModel(0, 0, 0.4375f);
 
-                    lowerModel = lowerModel.copyModel().translateModel(0, 0, -0.4375f);
-                    lowerModel = lowerModel.copyModel().rotateModel(degrees, 0, 1, 0);
-                    lowerModel = lowerModel.copyModel().translateModel(0, 0, 0.4375f);
+                    lowerModel.copyModel().translateModel(0, 0, -0.4375f);
+                    lowerModel.copyModel().rotateModel(degrees, 0, 1, 0);
+                    lowerModel.copyModel().translateModel(0, 0, 0.4375f);
 
-                    upperModel = upperModel.copyModel().translateModel(0.9375f, 0, 0.5f);
-                    lowerModel = lowerModel.copyModel().translateModel(0.9375f, 0, 0.5f);
+                    upperModel.copyModel().translateModel(0.9375f, 0, 0.5f);
+                    lowerModel.copyModel().translateModel(0.9375f, 0, 0.5f);
                 }
             } else {
-                upperModel = upperModel.copyModel().rotateModel(270, 0, 1, 0);
-                upperModel = upperModel.copyModel().translateModel(0.5f, 0, 0.9375f);
+                upperModel.copyModel().rotateModel(270, 0, 1, 0);
+                upperModel.copyModel().translateModel(0.5f, 0, 0.9375f);
 
-                lowerModel = lowerModel.copyModel().rotateModel(270, 0, 1, 0);
-                lowerModel = lowerModel.copyModel().translateModel(0.5f, 0, 0.9375f);
+                lowerModel.copyModel().rotateModel(270, 0, 1, 0);
+                lowerModel.copyModel().translateModel(0.5f, 0, 0.9375f);
             }
         } else if(!doorOpen && lowerBlock == Block.doorSouthDoorHingeLeftClosed.ID){
             if(doorTransition != null){
@@ -1034,26 +1202,26 @@ public class RenderBlocks {
                     ratio = Math.min(ratio, 1);
                     float degrees = -90 * (1 - ratio);
 
-                    upperModel = upperModel.copyModel().rotateModel(180, 0, 1, 0);
-                    lowerModel = lowerModel.copyModel().rotateModel(180, 0, 1, 0);
+                    upperModel.copyModel().rotateModel(180, 0, 1, 0);
+                    lowerModel.copyModel().rotateModel(180, 0, 1, 0);
 
-                    upperModel = upperModel.copyModel().translateModel(0, 0, 0.4375f);
-                    upperModel = upperModel.copyModel().rotateModel(degrees, 0, 1, 0);
-                    upperModel = upperModel.copyModel().translateModel(0, 0, -0.4375f);
+                    upperModel.copyModel().translateModel(0, 0, 0.4375f);
+                    upperModel.copyModel().rotateModel(degrees, 0, 1, 0);
+                    upperModel.copyModel().translateModel(0, 0, -0.4375f);
 
-                    lowerModel = lowerModel.copyModel().translateModel(0, 0, 0.4375f);
-                    lowerModel = lowerModel.copyModel().rotateModel(degrees, 0, 1, 0);
-                    lowerModel = lowerModel.copyModel().translateModel(0, 0, -0.4375f);
+                    lowerModel.copyModel().translateModel(0, 0, 0.4375f);
+                    lowerModel.copyModel().rotateModel(degrees, 0, 1, 0);
+                    lowerModel.copyModel().translateModel(0, 0, -0.4375f);
 
-                    upperModel = upperModel.copyModel().translateModel(0.9375f, 0, 0.5f);
-                    lowerModel = lowerModel.copyModel().translateModel(0.9375f, 0, 0.5f);
+                    upperModel.copyModel().translateModel(0.9375f, 0, 0.5f);
+                    lowerModel.copyModel().translateModel(0.9375f, 0, 0.5f);
                 }
             } else {
-                upperModel = upperModel.copyModel().rotateModel(180, 0, 1, 0);
-                upperModel = upperModel.copyModel().translateModel(0.9375f, 0, 0.5f);
+                upperModel.copyModel().rotateModel(180, 0, 1, 0);
+                upperModel.copyModel().translateModel(0.9375f, 0, 0.5f);
 
-                lowerModel = lowerModel.copyModel().rotateModel(180, 0, 1, 0);
-                lowerModel = lowerModel.copyModel().translateModel(0.9375f, 0, 0.5f);
+                lowerModel.copyModel().rotateModel(180, 0, 1, 0);
+                lowerModel.copyModel().translateModel(0.9375f, 0, 0.5f);
             }
         } else if(!doorOpen && lowerBlock == Block.doorSouthDoorHingeRightClosed.ID){
             if(doorTransition != null){
@@ -1062,33 +1230,33 @@ public class RenderBlocks {
                     ratio = Math.min(ratio, 1);
                     float degrees = 90 * (1 - ratio);
 
-                    upperModel = upperModel.copyModel().rotateModel(180, 0, 1, 0);
-                    lowerModel = lowerModel.copyModel().rotateModel(180, 0, 1, 0);
+                    upperModel.copyModel().rotateModel(180, 0, 1, 0);
+                    lowerModel.copyModel().rotateModel(180, 0, 1, 0);
 
-                    upperModel = upperModel.copyModel().translateModel(0, 0, -0.4375f);
-                    upperModel = upperModel.copyModel().rotateModel(degrees, 0, 1, 0);
-                    upperModel = upperModel.copyModel().translateModel(0, 0, 0.4375f);
+                    upperModel.copyModel().translateModel(0, 0, -0.4375f);
+                    upperModel.copyModel().rotateModel(degrees, 0, 1, 0);
+                    upperModel.copyModel().translateModel(0, 0, 0.4375f);
 
-                    lowerModel = lowerModel.copyModel().translateModel(0, 0, -0.4375f);
-                    lowerModel = lowerModel.copyModel().rotateModel(degrees, 0, 1, 0);
-                    lowerModel = lowerModel.copyModel().translateModel(0, 0, 0.4375f);
+                    lowerModel.copyModel().translateModel(0, 0, -0.4375f);
+                    lowerModel.copyModel().rotateModel(degrees, 0, 1, 0);
+                    lowerModel.copyModel().translateModel(0, 0, 0.4375f);
 
-                    upperModel = upperModel.copyModel().translateModel(0.9375f, 0, 0.5f);
-                    lowerModel = lowerModel.copyModel().translateModel(0.9375f, 0, 0.5f);
+                    upperModel.copyModel().translateModel(0.9375f, 0, 0.5f);
+                    lowerModel.copyModel().translateModel(0.9375f, 0, 0.5f);
                 }
             } else {
-                upperModel = upperModel.copyModel().rotateModel(180, 0, 1, 0);
-                upperModel = upperModel.copyModel().translateModel(0.9375f, 0, 0.5f);
+                upperModel.copyModel().rotateModel(180, 0, 1, 0);
+                upperModel.copyModel().translateModel(0.9375f, 0, 0.5f);
 
-                lowerModel = lowerModel.copyModel().rotateModel(180, 0, 1, 0);
-                lowerModel = lowerModel.copyModel().translateModel(0.9375f, 0, 0.5f);
+                lowerModel.copyModel().rotateModel(180, 0, 1, 0);
+                lowerModel.copyModel().translateModel(0.9375f, 0, 0.5f);
             }
         } else {
-            upperModel = upperModel.copyModel().rotateModel(180, 0, 1, 0);
-            upperModel = upperModel.copyModel().translateModel(0.9375f, 0, 0.5f);
+            upperModel.copyModel().rotateModel(180, 0, 1, 0);
+            upperModel.copyModel().translateModel(0.9375f, 0, 0.5f);
 
-            lowerModel = lowerModel.copyModel().rotateModel(180, 0, 1, 0);
-            lowerModel = lowerModel.copyModel().translateModel(0.9375f, 0, 0.5f);
+            lowerModel.copyModel().rotateModel(180, 0, 1, 0);
+            lowerModel.copyModel().translateModel(0.9375f, 0, 0.5f);
         }
         return new ModelLoader[]{upperModel, lowerModel};
     }
@@ -1101,26 +1269,26 @@ public class RenderBlocks {
                     ratio = Math.min(ratio, 1);
                     float degrees = -90 * ratio;
 
-                    upperModel = upperModel.copyModel().rotateModel(270, 0, 1, 0);
-                    lowerModel = lowerModel.copyModel().rotateModel(270, 0, 1, 0);
+                    upperModel.copyModel().rotateModel(270, 0, 1, 0);
+                    lowerModel.copyModel().rotateModel(270, 0, 1, 0);
 
-                    upperModel = upperModel.copyModel().translateModel(0.4375f, 0, 0);
-                    upperModel = upperModel.copyModel().rotateModel(degrees, 0, 1, 0);
-                    upperModel = upperModel.copyModel().translateModel(-0.4375f, 0, 0);
+                    upperModel.copyModel().translateModel(0.4375f, 0, 0);
+                    upperModel.copyModel().rotateModel(degrees, 0, 1, 0);
+                    upperModel.copyModel().translateModel(-0.4375f, 0, 0);
 
-                    lowerModel = lowerModel.copyModel().translateModel(0.4375f, 0, 0);
-                    lowerModel = lowerModel.copyModel().rotateModel(degrees, 0, 1, 0);
-                    lowerModel = lowerModel.copyModel().translateModel(-0.4375f, 0, 0);
+                    lowerModel.copyModel().translateModel(0.4375f, 0, 0);
+                    lowerModel.copyModel().rotateModel(degrees, 0, 1, 0);
+                    lowerModel.copyModel().translateModel(-0.4375f, 0, 0);
 
-                    upperModel = upperModel.copyModel().translateModel(0.5f, 0, 0.0625f);
-                    lowerModel = lowerModel.copyModel().translateModel(0.5f, 0, 0.0625f);
+                    upperModel.copyModel().translateModel(0.5f, 0, 0.0625f);
+                    lowerModel.copyModel().translateModel(0.5f, 0, 0.0625f);
                 }
             } else {
-                upperModel = upperModel.copyModel().rotateModel(180, 0, 1, 0);
-                upperModel = upperModel.copyModel().translateModel(0.0625f, 0, 0.5f);
+                upperModel.copyModel().rotateModel(180, 0, 1, 0);
+                upperModel.copyModel().translateModel(0.0625f, 0, 0.5f);
 
-                lowerModel = lowerModel.copyModel().rotateModel(180, 0, 1, 0);
-                lowerModel = lowerModel.copyModel().translateModel(0.0625f, 0, 0.5f);
+                lowerModel.copyModel().rotateModel(180, 0, 1, 0);
+                lowerModel.copyModel().translateModel(0.0625f, 0, 0.5f);
             }
         } else if(doorOpen && lowerBlock == Block.doorEastDoorHingeRightOpen.ID){
             if(doorTransition != null){
@@ -1129,23 +1297,23 @@ public class RenderBlocks {
                     ratio = Math.min(ratio, 1);
                     float degrees = 90 * ratio;
 
-                    upperModel = upperModel.copyModel().rotateModel(270, 0, 1, 0);
-                    lowerModel = lowerModel.copyModel().rotateModel(270, 0, 1, 0);
+                    upperModel.copyModel().rotateModel(270, 0, 1, 0);
+                    lowerModel.copyModel().rotateModel(270, 0, 1, 0);
 
-                    upperModel = upperModel.copyModel().translateModel(-0.4375f, 0, 0);
-                    upperModel = upperModel.copyModel().rotateModel(degrees, 0, 1, 0);
-                    upperModel = upperModel.copyModel().translateModel(0.4375f, 0, 0);
+                    upperModel.copyModel().translateModel(-0.4375f, 0, 0);
+                    upperModel.copyModel().rotateModel(degrees, 0, 1, 0);
+                    upperModel.copyModel().translateModel(0.4375f, 0, 0);
 
-                    lowerModel = lowerModel.copyModel().translateModel(-0.4375f, 0, 0);
-                    lowerModel = lowerModel.copyModel().rotateModel(degrees, 0, 1, 0);
-                    lowerModel = lowerModel.copyModel().translateModel(0.4375f, 0, 0);
+                    lowerModel.copyModel().translateModel(-0.4375f, 0, 0);
+                    lowerModel.copyModel().rotateModel(degrees, 0, 1, 0);
+                    lowerModel.copyModel().translateModel(0.4375f, 0, 0);
 
-                    upperModel = upperModel.copyModel().translateModel(0.5f, 0, 0.0625f);
-                    lowerModel = lowerModel.copyModel().translateModel(0.5f, 0, 0.0625f);
+                    upperModel.copyModel().translateModel(0.5f, 0, 0.0625f);
+                    lowerModel.copyModel().translateModel(0.5f, 0, 0.0625f);
                 }
             } else {
-                upperModel = upperModel.copyModel().translateModel(0.9375f, 0, 0.5f);
-                lowerModel = lowerModel.copyModel().translateModel(0.9375f, 0, 0.5f);
+                upperModel.copyModel().translateModel(0.9375f, 0, 0.5f);
+                lowerModel.copyModel().translateModel(0.9375f, 0, 0.5f);
             }
         } else if(!doorOpen && lowerBlock == Block.doorEastDoorHingeLeftClosed.ID){
             if(doorTransition != null){
@@ -1154,26 +1322,26 @@ public class RenderBlocks {
                     ratio = Math.min(ratio, 1);
                     float degrees = -90 * (1 - ratio);
 
-                    upperModel = upperModel.copyModel().rotateModel(270, 0, 1, 0);
-                    lowerModel = lowerModel.copyModel().rotateModel(270, 0, 1, 0);
+                    upperModel.copyModel().rotateModel(270, 0, 1, 0);
+                    lowerModel.copyModel().rotateModel(270, 0, 1, 0);
 
-                    upperModel = upperModel.copyModel().translateModel(0.4375f, 0, 0);
-                    upperModel = upperModel.copyModel().rotateModel(degrees, 0, 1, 0);
-                    upperModel = upperModel.copyModel().translateModel(-0.4375f, 0, 0);
+                    upperModel.copyModel().translateModel(0.4375f, 0, 0);
+                    upperModel.copyModel().rotateModel(degrees, 0, 1, 0);
+                    upperModel.copyModel().translateModel(-0.4375f, 0, 0);
 
-                    lowerModel = lowerModel.copyModel().translateModel(0.4375f, 0, 0);
-                    lowerModel = lowerModel.copyModel().rotateModel(degrees, 0, 1, 0);
-                    lowerModel = lowerModel.copyModel().translateModel(-0.4375f, 0, 0);
+                    lowerModel.copyModel().translateModel(0.4375f, 0, 0);
+                    lowerModel.copyModel().rotateModel(degrees, 0, 1, 0);
+                    lowerModel.copyModel().translateModel(-0.4375f, 0, 0);
 
-                    upperModel = upperModel.copyModel().translateModel(0.5f, 0, 0.0625f);
-                    lowerModel = lowerModel.copyModel().translateModel(0.5f, 0, 0.0625f);
+                    upperModel.copyModel().translateModel(0.5f, 0, 0.0625f);
+                    lowerModel.copyModel().translateModel(0.5f, 0, 0.0625f);
                 }
             } else {
-                upperModel = upperModel.copyModel().rotateModel(270, 0, 1, 0);
-                upperModel = upperModel.copyModel().translateModel(0.5f, 0, 0.0625f);
+                upperModel.copyModel().rotateModel(270, 0, 1, 0);
+                upperModel.copyModel().translateModel(0.5f, 0, 0.0625f);
 
-                lowerModel = lowerModel.copyModel().rotateModel(270, 0, 1, 0);
-                lowerModel = lowerModel.copyModel().translateModel(0.5f, 0, 0.0625f);
+                lowerModel.copyModel().rotateModel(270, 0, 1, 0);
+                lowerModel.copyModel().translateModel(0.5f, 0, 0.0625f);
             }
         } else if(!doorOpen && lowerBlock == Block.doorEastDoorHingeRightClosed.ID){
             if(doorTransition != null){
@@ -1182,33 +1350,33 @@ public class RenderBlocks {
                     ratio = Math.min(ratio, 1);
                     float degrees = 90 * (1 - ratio);
 
-                    upperModel = upperModel.copyModel().rotateModel(270, 0, 1, 0);
-                    lowerModel = lowerModel.copyModel().rotateModel(270, 0, 1, 0);
+                    upperModel.copyModel().rotateModel(270, 0, 1, 0);
+                    lowerModel.copyModel().rotateModel(270, 0, 1, 0);
 
-                    upperModel = upperModel.copyModel().translateModel(-0.4375f, 0, 0);
-                    upperModel = upperModel.copyModel().rotateModel(degrees, 0, 1, 0);
-                    upperModel = upperModel.copyModel().translateModel(0.4375f, 0, 0);
+                    upperModel.copyModel().translateModel(-0.4375f, 0, 0);
+                    upperModel.copyModel().rotateModel(degrees, 0, 1, 0);
+                    upperModel.copyModel().translateModel(0.4375f, 0, 0);
 
-                    lowerModel = lowerModel.copyModel().translateModel(-0.4375f, 0, 0);
-                    lowerModel = lowerModel.copyModel().rotateModel(degrees, 0, 1, 0);
-                    lowerModel = lowerModel.copyModel().translateModel(0.4375f, 0, 0);
+                    lowerModel.copyModel().translateModel(-0.4375f, 0, 0);
+                    lowerModel.copyModel().rotateModel(degrees, 0, 1, 0);
+                    lowerModel.copyModel().translateModel(0.4375f, 0, 0);
 
-                    upperModel = upperModel.copyModel().translateModel(0.5f, 0, 0.0625f);
-                    lowerModel = lowerModel.copyModel().translateModel(0.5f, 0, 0.0625f);
+                    upperModel.copyModel().translateModel(0.5f, 0, 0.0625f);
+                    lowerModel.copyModel().translateModel(0.5f, 0, 0.0625f);
                 }
             } else {
-                upperModel = upperModel.copyModel().rotateModel(270, 0, 1, 0);
-                upperModel = upperModel.copyModel().translateModel(0.5f, 0, 0.0625f);
+                upperModel.copyModel().rotateModel(270, 0, 1, 0);
+                upperModel.copyModel().translateModel(0.5f, 0, 0.0625f);
 
-                lowerModel = lowerModel.copyModel().rotateModel(270, 0, 1, 0);
-                lowerModel = lowerModel.copyModel().translateModel(0.5f, 0, 0.0625f);
+                lowerModel.copyModel().rotateModel(270, 0, 1, 0);
+                lowerModel.copyModel().translateModel(0.5f, 0, 0.0625f);
             }
         } else {
-            upperModel = upperModel.copyModel().rotateModel(270, 0, 1, 0);
-            upperModel = upperModel.copyModel().translateModel(0.5f, 0, 0.0625f);
+            upperModel.copyModel().rotateModel(270, 0, 1, 0);
+            upperModel.copyModel().translateModel(0.5f, 0, 0.0625f);
 
-            lowerModel = lowerModel.copyModel().rotateModel(270, 0, 1, 0);
-            lowerModel = lowerModel.copyModel().translateModel(0.5f, 0, 0.0625f);
+            lowerModel.copyModel().rotateModel(270, 0, 1, 0);
+            lowerModel.copyModel().translateModel(0.5f, 0, 0.0625f);
         }
 
 
@@ -1223,23 +1391,23 @@ public class RenderBlocks {
                     ratio = Math.min(ratio, 1);
                     float degrees = -90 * ratio;
 
-                    upperModel = upperModel.copyModel().rotateModel(90, 0, 1, 0);
-                    lowerModel = lowerModel.copyModel().rotateModel(90, 0, 1, 0);
+                    upperModel.copyModel().rotateModel(90, 0, 1, 0);
+                    lowerModel.copyModel().rotateModel(90, 0, 1, 0);
 
-                    upperModel = upperModel.copyModel().translateModel(-0.4375f, 0, 0);
-                    upperModel = upperModel.copyModel().rotateModel(degrees, 0, 1, 0);
-                    upperModel = upperModel.copyModel().translateModel(0.4375f, 0, 0);
+                    upperModel.copyModel().translateModel(-0.4375f, 0, 0);
+                    upperModel.copyModel().rotateModel(degrees, 0, 1, 0);
+                    upperModel.copyModel().translateModel(0.4375f, 0, 0);
 
-                    lowerModel = lowerModel.copyModel().translateModel(-0.4375f, 0, 0);
-                    lowerModel = lowerModel.copyModel().rotateModel(degrees, 0, 1, 0);
-                    lowerModel = lowerModel.copyModel().translateModel(0.4375f, 0, 0);
+                    lowerModel.copyModel().translateModel(-0.4375f, 0, 0);
+                    lowerModel.copyModel().rotateModel(degrees, 0, 1, 0);
+                    lowerModel.copyModel().translateModel(0.4375f, 0, 0);
 
-                    upperModel = upperModel.copyModel().translateModel(0.5f, 0, 0.9375f);
-                    lowerModel = lowerModel.copyModel().translateModel(0.5f, 0, 0.9375f);
+                    upperModel.copyModel().translateModel(0.5f, 0, 0.9375f);
+                    lowerModel.copyModel().translateModel(0.5f, 0, 0.9375f);
                 }
             } else {
-                upperModel = upperModel.copyModel().translateModel(0.9375f, 0, 0.5f);
-                lowerModel = lowerModel.copyModel().translateModel(0.9375f, 0, 0.5f);
+                upperModel.copyModel().translateModel(0.9375f, 0, 0.5f);
+                lowerModel.copyModel().translateModel(0.9375f, 0, 0.5f);
             }
         } else if(doorOpen && lowerBlock == Block.doorWestDoorHingeRightOpen.ID){
             if(doorTransition != null){
@@ -1247,26 +1415,26 @@ public class RenderBlocks {
                     float ratio = (float)(world.ce.save.time - doorTransition.timeStarted) / DoorTransition.timeToComplete;
                     ratio = Math.min(ratio, 1);
                     float degrees = 90 * ratio;
-                    upperModel = upperModel.copyModel().rotateModel(90, 0, 1, 0);
-                    lowerModel = lowerModel.copyModel().rotateModel(90, 0, 1, 0);
+                    upperModel.copyModel().rotateModel(90, 0, 1, 0);
+                    lowerModel.copyModel().rotateModel(90, 0, 1, 0);
 
-                    upperModel = upperModel.copyModel().translateModel(0.4375f, 0, 0);
-                    upperModel = upperModel.copyModel().rotateModel(degrees, 0, 1, 0);
-                    upperModel = upperModel.copyModel().translateModel(-0.4375f, 0, 0);
+                    upperModel.copyModel().translateModel(0.4375f, 0, 0);
+                    upperModel.copyModel().rotateModel(degrees, 0, 1, 0);
+                    upperModel.copyModel().translateModel(-0.4375f, 0, 0);
 
-                    lowerModel = lowerModel.copyModel().translateModel(0.4375f, 0, 0);
-                    lowerModel = lowerModel.copyModel().rotateModel(degrees, 0, 1, 0);
-                    lowerModel = lowerModel.copyModel().translateModel(-0.4375f, 0, 0);
+                    lowerModel.copyModel().translateModel(0.4375f, 0, 0);
+                    lowerModel.copyModel().rotateModel(degrees, 0, 1, 0);
+                    lowerModel.copyModel().translateModel(-0.4375f, 0, 0);
 
-                    upperModel = upperModel.copyModel().translateModel(0.5f, 0, 0.9375f);
-                    lowerModel = lowerModel.copyModel().translateModel(0.5f, 0, 0.9375f);
+                    upperModel.copyModel().translateModel(0.5f, 0, 0.9375f);
+                    lowerModel.copyModel().translateModel(0.5f, 0, 0.9375f);
                 }
             } else {
-                upperModel = upperModel.copyModel().rotateModel(180, 0, 1, 0);
-                upperModel = upperModel.copyModel().translateModel(0.0625f, 0, 0.5f);
+                upperModel.copyModel().rotateModel(180, 0, 1, 0);
+                upperModel.copyModel().translateModel(0.0625f, 0, 0.5f);
 
-                lowerModel = lowerModel.copyModel().rotateModel(180, 0, 1, 0);
-                lowerModel = lowerModel.copyModel().translateModel(0.0625f, 0, 0.5f);
+                lowerModel.copyModel().rotateModel(180, 0, 1, 0);
+                lowerModel.copyModel().translateModel(0.0625f, 0, 0.5f);
             }
         } else if(!doorOpen && lowerBlock == Block.doorWestDoorHingeLeftClosed.ID){
             if(doorTransition != null){
@@ -1275,26 +1443,26 @@ public class RenderBlocks {
                     ratio = Math.min(ratio, 1);
                     float degrees = -90 * (1 - ratio);
 
-                    upperModel = upperModel.copyModel().rotateModel(90, 0, 1, 0);
-                    lowerModel = lowerModel.copyModel().rotateModel(90, 0, 1, 0);
+                    upperModel.copyModel().rotateModel(90, 0, 1, 0);
+                    lowerModel.copyModel().rotateModel(90, 0, 1, 0);
 
-                    upperModel = upperModel.copyModel().translateModel(-0.4375f, 0, 0);
-                    upperModel = upperModel.copyModel().rotateModel(degrees, 0, 1, 0);
-                    upperModel = upperModel.copyModel().translateModel(0.4375f, 0, 0);
+                    upperModel.copyModel().translateModel(-0.4375f, 0, 0);
+                    upperModel.copyModel().rotateModel(degrees, 0, 1, 0);
+                    upperModel.copyModel().translateModel(0.4375f, 0, 0);
 
-                    lowerModel = lowerModel.copyModel().translateModel(-0.4375f, 0, 0);
-                    lowerModel = lowerModel.copyModel().rotateModel(degrees, 0, 1, 0);
-                    lowerModel = lowerModel.copyModel().translateModel(0.4375f, 0, 0);
+                    lowerModel.copyModel().translateModel(-0.4375f, 0, 0);
+                    lowerModel.copyModel().rotateModel(degrees, 0, 1, 0);
+                    lowerModel.copyModel().translateModel(0.4375f, 0, 0);
 
-                    upperModel = upperModel.copyModel().translateModel(0.5f, 0, 0.9375f);
-                    lowerModel = lowerModel.copyModel().translateModel(0.5f, 0, 0.9375f);
+                    upperModel.copyModel().translateModel(0.5f, 0, 0.9375f);
+                    lowerModel.copyModel().translateModel(0.5f, 0, 0.9375f);
                 }
             } else {
-                upperModel = upperModel.copyModel().rotateModel(90, 0, 1, 0);
-                upperModel = upperModel.copyModel().translateModel(0.5f, 0, 0.9375f);
+                upperModel.copyModel().rotateModel(90, 0, 1, 0);
+                upperModel.copyModel().translateModel(0.5f, 0, 0.9375f);
 
-                lowerModel = lowerModel.copyModel().rotateModel(90, 0, 1, 0);
-                lowerModel = lowerModel.copyModel().translateModel(0.5f, 0, 0.9375f);
+                lowerModel.copyModel().rotateModel(90, 0, 1, 0);
+                lowerModel.copyModel().translateModel(0.5f, 0, 0.9375f);
             }
         } else if(!doorOpen && lowerBlock == Block.doorWestDoorHingeRightClosed.ID){
             if(doorTransition != null){
@@ -1302,33 +1470,33 @@ public class RenderBlocks {
                     float ratio = (float)(world.ce.save.time - doorTransition.timeStarted) / DoorTransition.timeToComplete;
                     ratio = Math.min(ratio, 1);
                     float degrees = 90 * (1- ratio);
-                    upperModel = upperModel.copyModel().rotateModel(90, 0, 1, 0);
-                    lowerModel = lowerModel.copyModel().rotateModel(90, 0, 1, 0);
+                    upperModel.copyModel().rotateModel(90, 0, 1, 0);
+                    lowerModel.copyModel().rotateModel(90, 0, 1, 0);
 
-                    upperModel = upperModel.copyModel().translateModel(0.4375f, 0, 0);
-                    upperModel = upperModel.copyModel().rotateModel(degrees, 0, 1, 0);
-                    upperModel = upperModel.copyModel().translateModel(-0.4375f, 0, 0);
+                    upperModel.copyModel().translateModel(0.4375f, 0, 0);
+                    upperModel.copyModel().rotateModel(degrees, 0, 1, 0);
+                    upperModel.copyModel().translateModel(-0.4375f, 0, 0);
 
-                    lowerModel = lowerModel.copyModel().translateModel(0.4375f, 0, 0);
-                    lowerModel = lowerModel.copyModel().rotateModel(degrees, 0, 1, 0);
-                    lowerModel = lowerModel.copyModel().translateModel(-0.4375f, 0, 0);
+                    lowerModel.copyModel().translateModel(0.4375f, 0, 0);
+                    lowerModel.copyModel().rotateModel(degrees, 0, 1, 0);
+                    lowerModel.copyModel().translateModel(-0.4375f, 0, 0);
 
-                    upperModel = upperModel.copyModel().translateModel(0.5f, 0, 0.9375f);
-                    lowerModel = lowerModel.copyModel().translateModel(0.5f, 0, 0.9375f);
+                    upperModel.copyModel().translateModel(0.5f, 0, 0.9375f);
+                    lowerModel.copyModel().translateModel(0.5f, 0, 0.9375f);
                 }
             } else {
-                upperModel = upperModel.copyModel().rotateModel(90, 0, 1, 0);
-                upperModel = upperModel.copyModel().translateModel(0.5f, 0, 0.9375f);
+                upperModel.copyModel().rotateModel(90, 0, 1, 0);
+                upperModel.copyModel().translateModel(0.5f, 0, 0.9375f);
 
-                lowerModel = lowerModel.copyModel().rotateModel(90, 0, 1, 0);
-                lowerModel = lowerModel.copyModel().translateModel(0.5f, 0, 0.9375f);
+                lowerModel.copyModel().rotateModel(90, 0, 1, 0);
+                lowerModel.copyModel().translateModel(0.5f, 0, 0.9375f);
             }
         } else {
-            upperModel = upperModel.copyModel().rotateModel(90, 0, 1, 0);
-            upperModel = upperModel.copyModel().translateModel(0.5f, 0, 0.9375f);
+            upperModel.copyModel().rotateModel(90, 0, 1, 0);
+            upperModel.copyModel().translateModel(0.5f, 0, 0.9375f);
 
-            lowerModel = lowerModel.copyModel().rotateModel(90, 0, 1, 0);
-            lowerModel = lowerModel.copyModel().translateModel(0.5f, 0, 0.9375f);
+            lowerModel.copyModel().rotateModel(90, 0, 1, 0);
+            lowerModel.copyModel().translateModel(0.5f, 0, 0.9375f);
         }
 
 
@@ -1395,6 +1563,71 @@ public class RenderBlocks {
         }
     }
 
+    public void renderLeaf(Chunk chunk, World world, short block, int index, int face){
+        if(face != TOP_FACE)return;
+
+        ModelLoader model;
+
+        int x = chunk.getBlockXFromIndex(index);
+        int y = chunk.getBlockYFromIndex(index);
+        int z = chunk.getBlockZFromIndex(index);
+
+        if(world.getBlockID(x - 1, y, z) == Block.leaf.ID && world.getBlockID(x + 1, y, z) == Block.leaf.ID &&
+        world.getBlockID(x, y - 1, z) == Block.leaf.ID && world.getBlockID(x, y + 1, z) == Block.leaf.ID &&
+        world.getBlockID(x, y, z - 1) == Block.leaf.ID && world.getBlockID(x, y, z + 1) == Block.leaf.ID){
+            model = Block.standardBlockModel.copyModel();
+        } else {
+
+            Random rand = new Random(new LongHasher().hash(index, String.valueOf(chunk.x + chunk.y + chunk.z)));
+
+            float xOffset = rand.nextFloat(-0.25f, 0.25f);
+            float zOffset = rand.nextFloat(-0.25f, 0.25f);
+            float yaw = rand.nextFloat(360f);
+
+            model = Block.list[block].blockModel.copyModel();
+
+            model.translateModel(-0.5f, 0, -0.5f);
+            model.rotateModel(yaw, 0, 1, 0);
+            model.translateModel(0.5f, 0, 0.5f);
+            model.translateModel(xOffset, 0, zOffset);
+        }
+
+        ModelFace modelFace;
+
+        for(int i = 0; i < model.modelFaces.length; i++){
+            modelFace = model.modelFaces[i];
+            if(GameSettings.transparentLeaves){
+                this.renderTransparentFace(chunk, world, block, index, face, modelFace, new int[2]);
+            } else {
+                this.renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
+            }
+        }
+    }
+
+    public void renderSapling(Chunk chunk, World world, short block, int index, int face){
+        if(face != TOP_FACE)return;
+
+
+        Random rand = new Random((new LongHasher().hash(index, String.valueOf(chunk.x + chunk.y + chunk.z))));
+
+        float yaw = rand.nextFloat(360f);
+
+        ModelLoader model = Block.list[block].blockModel.copyModel();
+
+        model.translateModel(-0.5f, 0, -0.5f);
+        model.rotateModel(yaw, 0, 1, 0);
+        model.translateModel(0.5f, 0, 0.5f);
+
+        for(int i = 0; i < model.modelFaces.length; i++){
+            if(model.modelFaces[i].texture == 24){
+               this.renderTransparentFace(chunk, world, block, index, face, model.modelFaces[i], new int[2]);  //Leaves
+            } else {
+                this.renderOpaqueFace(chunk, world, block, index, face, model.modelFaces[i], new int[2]);  //Trunk
+            }
+        }
+    }
+
+
 
 
 
@@ -1420,7 +1653,7 @@ public class RenderBlocks {
         };
     }
 
-    private void setPlantColorValues(int x, int y, int z, World world, short blockID){
+    private void setPlantColorValues(int x, int y, int z, World world, short blockID, int textureID){
         if(blockID == Block.itemBlock.ID){
             float highestChannel = 0;
             highestChannel = Math.max(this.red, this.green);
@@ -1428,10 +1661,16 @@ public class RenderBlocks {
 
             this.highestChannel = highestChannel != 0.0 ? highestChannel : 0.01f;
         }
+        if(blockID == Block.sapling.ID && textureID != 24)return; //24 is the ID for transparent leaves
         if(!Block.list[blockID].colorize)return;
 
 
-        int color = blockID == Block.grass.ID  || blockID == Block.tallGrass.ID || blockID == Block.grassWithClay.ID ? PlantColorizer.getGrassColor(world.getTemperature(x,y,z), world.getRainfall(x,z)) : PlantColorizer.getOakLeafColor(world.getTemperature(x,y,z), world.getRainfall(x,z));
+        int color =
+                blockID == Block.grass.ID  ||
+                blockID == Block.tallGrass.ID ||
+                blockID == Block.grassWithClay.ID ?
+                PlantColorizer.getGrassColor(world.getTemperature(x,y,z), world.getRainfall(x,z)) :
+                PlantColorizer.getOakLeafColor(world.getTemperature(x,y,z), world.getRainfall(x,z));
         this.red = ((color >> 16) & 255) / 255f;
         this.green = ((color >> 8) & 255) / 255f;
         this.blue = (color & 255) / 255f;
@@ -1455,12 +1694,12 @@ public class RenderBlocks {
        this.grayScaleImageMultiplier = MathUtil.floatToHalf(this.highestChannel / highestChannel); //This division gives the number to multiply the vertex color by in the terrain shader to restore to the normal fully lit grass color
     }
 
-    private  void setLight(float x, float y, float z, float xMin, float yMin, float zMin, float xMax, float yMax, float zMax, int index, int face, Chunk chunk, World world, int[] greedyMeshSize, short blockID) {
+    private  void setLight(float x, float y, float z, float xMin, float yMin, float zMin, float xMax, float yMax, float zMax, int index, int face, Chunk chunk, World world, int[] greedyMeshSize, short blockID, int textureID) {
         int xBlock = chunk.getBlockXFromIndex(index);
         int yBlock = chunk.getBlockYFromIndex(index);
         int zBlock = chunk.getBlockZFromIndex(index);
 
-        this.setPlantColorValues(xBlock, yBlock, zBlock, world, blockID);
+        this.setPlantColorValues(xBlock, yBlock, zBlock, world, blockID, textureID);
 
         if(blockID == Block.itemBlock.ID){
             this.setVertexLight1Arg(world.getBlockLightValue(xBlock, yBlock , zBlock), world.getBlockLightColor(xBlock, yBlock, zBlock));
@@ -2748,6 +2987,12 @@ public class RenderBlocks {
             blockTextureID = Block.itemBlock.getBlockTexture(blockFace.texture);
         }
 
+        if(block == Block.crafting3DItem.ID){
+            InWorld3DCraftingItem craftingItem = world.getInWorldCrafting3DItem(chunk.getBlockXFromIndex(index), chunk.getBlockYFromIndex(index), chunk.getBlockZFromIndex(index));
+            if(craftingItem == null)return;
+            blockTextureID = craftingItem.itemTextureID;
+        }
+
         ModelLoader modelLoader = Block.list[block].blockModel;
 
         Vector3f minVertex = new Vector3f(x,y,z);
@@ -2801,7 +3046,7 @@ public class RenderBlocks {
             resetLight();
             setLight(wx, wy, wz, minVertex.x, minVertex.y, minVertex.z,
                     maxVertex.x, maxVertex.y, maxVertex.z, index, face,
-                    chunk, world, greedyMeshSize, block);
+                    chunk, world, greedyMeshSize, block, (int) blockTextureID);
 
             addVertexFloatOpaque(chunk, compressPosXY(wx, wy));
             addVertexFloatOpaque(chunk, compressColor(red, green, blue));
@@ -2843,7 +3088,7 @@ public class RenderBlocks {
             resetLight();
             setLight(wx, wy, wz, minVertex.x, minVertex.y, minVertex.z,
                     maxVertex.x, maxVertex.y, maxVertex.z, index, face,
-                    chunk, world, greedyMeshSize, block);
+                    chunk, world, greedyMeshSize, block, (int) blockID);
 
             addVertexFloatTransparent(chunk, compressPosXY(wx, wy));
             addVertexFloatTransparent(chunk, compressColor(red, green, blue));

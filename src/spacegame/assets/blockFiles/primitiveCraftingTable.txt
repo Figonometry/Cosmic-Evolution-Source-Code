@@ -1,6 +1,6 @@
 blockName:PRIMITIVE_CRAFTING_TABLE
 itemMetadata:7
-blockModel:standardBlockModel
+blockModel:primitiveCraftingTable
 stepSound:wood
 breakTimer:120
 hardness:0.05

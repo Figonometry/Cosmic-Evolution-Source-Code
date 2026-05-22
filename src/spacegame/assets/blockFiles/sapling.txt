@@ -1,5 +1,6 @@
 blockName:SAPLING
-blockModel:xCrossBlockModel
+blockModel:saplingModel
+colorize:true
 stepSound:grass
 breakTimer:60
 hardness:0.05

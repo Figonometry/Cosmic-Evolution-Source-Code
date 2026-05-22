@@ -242,11 +242,11 @@ public final class GuiCraftingTableRecipeSelection extends GuiCrafting {
             for (int i = 0; i < this.selectableRecipes.length; i++) {
                 if (this.selectableRecipes[i].isBlock) continue;
                 ModelLoader model = Item.list[this.selectableRecipes[i].itemID].itemModel.copyModel();
-                model = model.getScaledModel(38f);
-                model = model.rotateModel(45, 0, 1, 0);
-                model = model.rotateModel(36, 1, 0, 0);
+                model.scaleModel(38f);
+                model.rotateModel(45, 0, 1, 0);
+                model.rotateModel(36, 1, 0, 0);
                 Vector3f position = new Vector3f(this.selectableRecipes[i].x, this.selectableRecipes[i].y, -50);
-                model = model.translateModel(position.x, position.y, position.z);
+                model.translateModel(position.x, position.y, position.z);
                 ModelFace[] faces;
                 float textureID;
                 int colorRGB = 255;
@@ -299,13 +299,14 @@ public final class GuiCraftingTableRecipeSelection extends GuiCrafting {
 
             for (int i = 0; i < this.selectableRecipes.length; i++) {
                 if (!this.selectableRecipes[i].isBlock) continue;
-                ModelLoader model = Block.list[this.selectableRecipes[i].blockID].blockModel.copyModel().translateModel(-0.5f, 0, -0.5f);
-                model = model.getScaledModel(38f);
-                model = model.rotateModel(45, 0, 1, 0);
-                model = model.rotateModel(36, 1, 0, 0);
-                model = model.translateModel(0.5f, 0, 0.5f);
+                ModelLoader model = Block.list[this.selectableRecipes[i].blockID].blockModel.copyModel();
+                model.translateModel(-0.5f, 0, -0.5f);
+                model.scaleModel(38f);
+                model.rotateModel(45, 0, 1, 0);
+                model.rotateModel(36, 1, 0, 0);
+                model.translateModel(0.5f, 0, 0.5f);
                 Vector3f position = new Vector3f(this.selectableRecipes[i].x, this.selectableRecipes[i].y - 16, -50);
-                model = model.translateModel(position.x, position.y, position.z);
+               model.translateModel(position.x, position.y, position.z);
                 ModelFace[] faces;
                 float textureID;
                 int colorRGB = 255;
@@ -410,11 +411,11 @@ public final class GuiCraftingTableRecipeSelection extends GuiCrafting {
                 x += 64 + (hoveredRecipe.requiredItemCount[i] >= 100 ? 2 * 17 : hoveredRecipe.requiredItemCount[i] >= 10 ? 17 : 0);
                 y -= 8;
                 ModelLoader model = Item.list[hoveredRecipe.requiredItems[i]].itemModel.copyModel();
-                model = model.getScaledModel(76f);
-                model = model.rotateModel(45, 0, 1, 0);
-                model = model.rotateModel(36, 1, 0, 0);
+                model.scaleModel(76f);
+                model.rotateModel(45, 0, 1, 0);
+                model.rotateModel(36, 1, 0, 0);
                 Vector3f position = new Vector3f(x + 32, y + 32, -200);
-                model = model.translateModel(position.x, position.y, position.z);
+                model.translateModel(position.x, position.y, position.z);
                 ModelFace[] faces;
                 float textureID;
                 int colorRGB = 255;
@@ -474,12 +475,13 @@ public final class GuiCraftingTableRecipeSelection extends GuiCrafting {
                 if (hoveredRecipe.requiredItems[i] != Item.block.ID) continue;
                 fontRenderer.drawString(hoveredRecipe.requiredItemCount[i] + "x: ", x, y, -9, 16777215, 50, 255);
                 x += 64 + (hoveredRecipe.requiredItemCount[i] >= 100 ? 2 * 17 : hoveredRecipe.requiredItemCount[i] >= 10 ? 17 : 0);
-                ModelLoader model = Block.list[hoveredRecipe.requiredItemMetadata[i]].blockModel.copyModel().translateModel(-0.5f, 0, -0.5f);
-                model = model.getScaledModel(76f);
-                model = model.rotateModel(45, 0, 1, 0);
-                model = model.rotateModel(36, 1, 0, 0);
-                model = model.translateModel(0.5f, 0, 0.5f);
-                model = model.translateModel(x + 96, y + 16, -200);
+                ModelLoader model = Block.list[hoveredRecipe.requiredItemMetadata[i]].blockModel.copyModel();
+                model.translateModel(-0.5f, 0, -0.5f);
+                model.scaleModel(76f);
+                model.rotateModel(45, 0, 1, 0);
+                model.rotateModel(36, 1, 0, 0);
+                model.translateModel(0.5f, 0, 0.5f);
+                model.translateModel(x + 96, y + 16, -200);
                 ModelFace modelFace;
                 float textureID;
                 int colorRGB = 0;

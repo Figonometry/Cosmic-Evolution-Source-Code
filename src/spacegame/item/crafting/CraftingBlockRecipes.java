@@ -7,20 +7,20 @@ public final class CraftingBlockRecipes {
     public static final int TECH_LEVEL_PRIMITIVE = 1;
     public static final CraftingBlockRecipes[] list = new CraftingBlockRecipes[128];
     public static final CraftingBlockRecipes stoneAxe = new CraftingBlockRecipes(Item.stoneAxe.ID, Item.stoneAxe.getDisplayName(Item.NULL_ITEM_REFERENCE),
-            new short[]{Item.block.ID, Item.stoneHandAxe.ID}, new int[]{1,1}, TECH_LEVEL_PRIMITIVE, new double[][]{{0.5, 0.0, 0.5},{0.27, 0.01, 0.44}},
+            new short[]{Item.block.ID, Item.stoneHandAxe.ID}, new int[]{1,1}, TECH_LEVEL_PRIMITIVE, new double[][]{{0.5, 0.0625, 0.5},{0.27, 0.0626, 0.44}},
             new double[]{-45, 135}, (byte)1, true, 1, 1, new short[]{Block.itemStick.ID, Item.NULL_ITEM_METADATA});
 
     public static final CraftingBlockRecipes stoneShovel = new CraftingBlockRecipes(Item.stoneShovel.ID, Item.stoneShovel.getDisplayName(Item.NULL_ITEM_REFERENCE),
-            new short[]{Item.block.ID, Item.stoneHandShovel.ID}, new int[]{1,1}, TECH_LEVEL_PRIMITIVE, new double[][]{{0.5, 0.0, 0.5},{0.28, 0.01, 0.28}},
+            new short[]{Item.block.ID, Item.stoneHandShovel.ID}, new int[]{1,1}, TECH_LEVEL_PRIMITIVE, new double[][]{{0.5, 0.0625, 0.5},{0.28, 0.0626, 0.28}},
             new double[]{-45, 135}, (byte)1, true, 1, 2, new short[]{Block.itemStick.ID, Item.NULL_ITEM_METADATA});
 
     public static final CraftingBlockRecipes stoneKnife = new CraftingBlockRecipes(Item.stoneKnife.ID, Item.stoneKnife.getDisplayName(Item.NULL_ITEM_REFERENCE),
-            new short[]{Item.block.ID, Item.stoneHandKnifeBlade.ID}, new int[]{1,1}, TECH_LEVEL_PRIMITIVE, new double[][]{{0.5, 0.0, 0.5},{0.28, 0.01, 0.28}},
+            new short[]{Item.block.ID, Item.stoneHandKnifeBlade.ID}, new int[]{1,1}, TECH_LEVEL_PRIMITIVE, new double[][]{{0.5, 0.0625, 0.5},{0.28, 0.0626, 0.28}},
             new double[]{-45, 270}, (byte)1, true, 1, 3, new short[]{Block.itemStick.ID, Item.NULL_ITEM_METADATA});
 
     public static final CraftingBlockRecipes primitiveDoor = new CraftingBlockRecipes(Item.primitiveDoor.ID, Item.primitiveDoor.getDisplayName(Item.NULL_ITEM_REFERENCE),
             new short[]{Item.block.ID, Item.block.ID, Item.block.ID, Item.block.ID, Item.block.ID, Item.block.ID, Item.block.ID}, new int[]{1,1,1,1,1,1,1}, TECH_LEVEL_PRIMITIVE,
-            new double[][]{{1,0,0.5f}, {0.5f,0,0.5f}, {0,0,0.5f}, {0.75f,0,0.25f}, {0.25f,0,0.25f}, {0.75f,0,0.75f}, {0.25f,0,0.75f}}, new double[]{90,90,90,0,0,0,0}, (byte)1, true, 6, 4,
+            new double[][]{{1,0.0625,0.5f}, {0.5f,0.0625,0.5f}, {0,0.0625,0.5f}, {0.75f,0.0625,0.25f}, {0.25f,0.0625,0.25f}, {0.75f,0.0625,0.75f}, {0.25f,0.0625,0.75f}}, new double[]{90,90,90,0,0,0,0}, (byte)1, true, 6, 4,
             new short[]{Block.itemStick.ID,Block.itemStick.ID,Block.itemStick.ID,Block.itemStick.ID,Block.itemStick.ID,Block.itemStick.ID,Block.itemStick.ID});
 
     public short itemID;

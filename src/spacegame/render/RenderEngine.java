@@ -431,8 +431,8 @@ public final class RenderEngine {
                 case 37 -> "sapling";
                 case 38 -> "torchUnlit";
                 case 39 -> "torchBurnedOut";
-                case 40 -> "primitiveCraftingTableSide";
-                case 41 -> "primitiveCraftingTableTop";
+                case 40 -> "primitiveCraftingTable";
+                case 41 -> "UNUSED";
                 case 42 -> "primitiveDoorBase";
                 case 43 -> "twine";
 

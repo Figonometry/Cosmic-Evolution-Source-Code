@@ -16,7 +16,6 @@ import spacegame.render.model.ModelFace;
 import spacegame.render.model.ModelLoader;
 import spacegame.render.model.ModelPlayer;
 import spacegame.render.model.ModelSegment;
-import spacegame.util.GeneralUtil;
 import spacegame.util.MathUtil;
 import spacegame.core.Timer;
 import spacegame.entity.EntityPlayer;
@@ -27,11 +26,6 @@ import spacegame.world.Chunk;
 import spacegame.item.crafting.InWorld3DCraftingItem;
 import spacegame.world.TimeUpdateEvent;
 
-import javax.imageio.ImageIO;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.lang.Math;
 import java.util.Random;
 
@@ -295,10 +289,10 @@ public final class GuiInGame extends Gui {
                 y -= 30;
 
                 ModelLoader model = Item.list[craftingItem.outputRecipe.requiredItems[i]].itemModel.copyModel();
-                model = model.getScaledModel(76f);
-                model = model.rotateModel(45, 0, 1, 0);
-                model = model.rotateModel(36, 1, 0, 0);
-                model = model.translateModel(x, y, -200);
+                model.scaleModel(76f);
+                model.rotateModel(45, 0, 1, 0);
+                model.rotateModel(36, 1, 0, 0);
+                model.translateModel(x, y, -200);
 
                 ModelFace face;
                 float textureID;
@@ -355,12 +349,13 @@ public final class GuiInGame extends Gui {
             if(!craftingItem.itemsFilled[i] && craftingItem.outputRecipe.requiredItems[i] == Item.block.ID) {
                 y -= 30;
 
-                ModelLoader model = Block.list[craftingItem.outputRecipe.requiredItemMetadata[i]].blockModel.copyModel().translateModel(-0.5f, 0, -0.5f);
-                model = model.getScaledModel(76f);
-                model = model.rotateModel(45, 0, 1, 0);
-                model = model.rotateModel(36, 1, 0, 0);
-                model = model.translateModel(0.5f, 0, 0.5f);
-                model = model.translateModel(x, y, -200);
+                ModelLoader model = Block.list[craftingItem.outputRecipe.requiredItemMetadata[i]].blockModel.copyModel();
+                model.translateModel(-0.5f, 0, -0.5f);
+                model.scaleModel(76f);
+                model.rotateModel(45, 0, 1, 0);
+                model.rotateModel(36, 1, 0, 0);
+                model.translateModel(0.5f, 0, 0.5f);
+                model.translateModel(x, y, -200);
 
                 ModelFace face;
                 float textureID;
@@ -686,14 +681,17 @@ public final class GuiInGame extends Gui {
                     lightLevelFloat = 0.1f;
                 }
                 int channelVal = MathUtil.floatToIntRGBA(lightLevelFloat);
+                if(heldBlock == Block.torchStandard.ID){
+                    channelVal = 255;
+                }
                 int colorRGB = channelVal << 16 | channelVal << 8 | channelVal;
 
                 RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
                 ModelLoader model = Block.list[heldBlock].blockModel.copyModel();
                 model.translateModel(-0.5f, 0, -0.5f);
                 if(heldBlock == Block.itemStone.ID){
-                    model = model.translateModel(0.5f, 0, 0.5f);
-                    model = model.getScaledModel(2f);
+                    model.translateModel(0.5f, 0, 0.5f);
+                    model.scaleModel(2f);
                 }
 
                 int colorVal;
@@ -909,7 +907,7 @@ public final class GuiInGame extends Gui {
 
 
                 ModelLoader model = Item.list[itemID].itemModel.copyModel();
-                model = model.getScaledModel(2);
+                model.scaleModel(2);
 
                 Vector3f vertex1;
                 Vector3f vertex2;
@@ -1070,53 +1068,65 @@ public final class GuiInGame extends Gui {
                         if(Block.list[block].ID == Block.doorPrimitiveUpper.ID || (block >= Block.doorNorthDoorHingeLeftClosed.ID && block <= Block.doorWestDoorHingeRightOpen.ID)){
                             short lowerBlock = Block.list[block].ID == Block.doorPrimitiveUpper.ID ?  CosmicEvolution.instance.save.activeWorld.getBlockID(locationX, locationY - 1, locationZ) : block;
 
-                            modelLoader = (block >= Block.doorNorthDoorHingeLeftClosed.ID && block <= Block.doorWestDoorHingeRightOpen.ID) ? Block.primitiveDoorLower : modelLoader;
+                           ModelLoader baseModel = (block >= Block.doorNorthDoorHingeLeftClosed.ID && block <= Block.doorWestDoorHingeRightOpen.ID) ? Block.primitiveDoorLower : modelLoader;
 
                             boolean doorOpen = Block.list[lowerBlock].isDoorOpen;
                             switch (Block.list[lowerBlock].faceDirection){
                                 case "North" -> {
                                     if(doorOpen && lowerBlock == Block.doorNorthDoorHingeLeftOpen.ID){
-                                        modelLoader = modelLoader.copyModel().rotateModel(270, 0, 1, 0);
-                                        modelLoader = modelLoader.copyModel().translateModel(0.5f, 0, 0.9375f);
+                                        modelLoader = baseModel.copyModel();
+                                        modelLoader.rotateModel(270, 0, 1, 0);
+                                        modelLoader.translateModel(0.5f, 0, 0.9375f);
                                     } else if(doorOpen && lowerBlock == Block.doorNorthDoorHingeRightOpen.ID){
-                                        modelLoader = modelLoader.copyModel().rotateModel(90, 0, 1, 0);
-                                        modelLoader = modelLoader.copyModel().translateModel(0.5f, 0, 0.0625f);
+                                        modelLoader = baseModel.copyModel();
+                                        modelLoader.rotateModel(90, 0, 1, 0);
+                                        modelLoader.translateModel(0.5f, 0, 0.0625f);
                                     } else {
-                                        modelLoader = modelLoader.copyModel().translateModel(0.0625f, 0, 0.5f);
+                                        modelLoader = baseModel.copyModel();
+                                        modelLoader.translateModel(0.0625f, 0, 0.5f);
                                     }
                                 }
                                 case "South" -> {
                                     if(doorOpen && lowerBlock == Block.doorSouthDoorHingeLeftOpen.ID){
-                                        modelLoader = modelLoader.copyModel().rotateModel(90, 0, 1, 0);
-                                        modelLoader = modelLoader.copyModel().translateModel(0.5f, 0, 0.0625f);
+                                        modelLoader = baseModel.copyModel();
+                                        modelLoader.rotateModel(90, 0, 1, 0);
+                                        modelLoader.translateModel(0.5f, 0, 0.0625f);
                                     } else if(doorOpen && lowerBlock == Block.doorSouthDoorHingeRightOpen.ID){
-                                        modelLoader = modelLoader.copyModel().rotateModel(270, 0, 1, 0);
-                                        modelLoader = modelLoader.copyModel().translateModel(0.5f, 0, 0.9375f);
+                                        modelLoader = baseModel.copyModel();
+                                        modelLoader.rotateModel(270, 0, 1, 0);
+                                        modelLoader.translateModel(0.5f, 0, 0.9375f);
                                     } else {
-                                        modelLoader = modelLoader.copyModel().rotateModel(180, 0, 1, 0);
-                                        modelLoader = modelLoader.copyModel().translateModel(0.9375f, 0, 0.5f);
+                                        modelLoader = baseModel.copyModel();
+                                        modelLoader.rotateModel(180, 0, 1, 0);;
+                                        modelLoader.translateModel(0.9375f, 0, 0.5f);
                                     }
                                 }
                                 case "East" -> {
                                     if(doorOpen && lowerBlock == Block.doorEastDoorHingeLeftOpen.ID){
-                                        modelLoader = modelLoader.copyModel().rotateModel(180, 0, 1, 0);
-                                        modelLoader = modelLoader.copyModel().translateModel(0.0625f, 0, 0.5f);
+                                        modelLoader = baseModel.copyModel();
+                                        modelLoader.rotateModel(180, 0, 1, 0);
+                                        modelLoader.translateModel(0.0625f, 0, 0.5f);
                                     } else if(doorOpen && lowerBlock == Block.doorEastDoorHingeRightOpen.ID){
-                                        modelLoader = modelLoader.copyModel().translateModel(0.9375f, 0, 0.5f);
+                                        modelLoader = baseModel.copyModel();
+                                        modelLoader.translateModel(0.9375f, 0, 0.5f);
                                     } else {
-                                        modelLoader = modelLoader.copyModel().rotateModel(270, 0, 1, 0);
-                                        modelLoader = modelLoader.copyModel().translateModel(0.5f, 0, 0.0625f);
+                                        modelLoader = baseModel.copyModel();
+                                        modelLoader.rotateModel(270, 0, 1, 0);
+                                        modelLoader.translateModel(0.5f, 0, 0.0625f);
                                     }
                                 }
                                 case "West" -> {
                                     if(doorOpen && lowerBlock == Block.doorWestDoorHingeLeftOpen.ID){
-                                        modelLoader = modelLoader.copyModel().translateModel(0.9375f, 0, 0.5f);
+                                        modelLoader = baseModel.copyModel();
+                                        modelLoader.translateModel(0.9375f, 0, 0.5f);
                                     } else if(doorOpen && lowerBlock == Block.doorWestDoorHingeRightOpen.ID){
-                                        modelLoader = modelLoader.copyModel().rotateModel(180, 0, 1, 0);
-                                        modelLoader = modelLoader.copyModel().translateModel(0.0625f, 0, 0.5f);
+                                        modelLoader = baseModel.copyModel();
+                                        modelLoader.rotateModel(180, 0, 1, 0);
+                                        modelLoader.translateModel(0.0625f, 0, 0.5f);
                                     } else {
-                                        modelLoader = modelLoader.copyModel().rotateModel(90, 0, 1, 0);
-                                        modelLoader = modelLoader.copyModel().translateModel(0.5f, 0, 0.9375f);
+                                        modelLoader = baseModel.copyModel();
+                                        modelLoader.rotateModel(90, 0, 1, 0);
+                                        modelLoader.translateModel(0.5f, 0, 0.9375f);
                                     }
                                 }
                                 default -> {
@@ -1141,7 +1151,9 @@ public final class GuiInGame extends Gui {
                             }
 
                             if(Block.list[block].ID == Block.itemStick.ID){
-                                modelFace = Block.list[block].blockModel.copyModel().getScaledModel(stickScale).modelFaces[i];
+                                ModelLoader model =  Block.list[block].blockModel.copyModel();
+                                model.scaleModel(stickScale);
+                                modelFace = model.modelFaces[i];
                                 modelFace.normal.rotateY(rotation);
                                 for(int j = 0; j < modelFace.vertices.length; j++){
                                     modelFace.vertices[j].rotateY(rotation);
@@ -1155,6 +1167,7 @@ public final class GuiInGame extends Gui {
                             renderSpecialFace(tessellator, 16777215, Chunk.getBlockIndexFromCoordinates(locationX, locationY, locationZ),textureID, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, chunk, blockBreakingAtlas.getTexture(textureID), 0, 0, 0, 0);
                             tessellator.addElementsCCW();
                         }
+
                         GL46.glEnable(GL46.GL_CULL_FACE);
                         GL46.glCullFace(GL46.GL_BACK);
                         GL46.glEnable(GL46.GL_BLEND);
@@ -1240,53 +1253,65 @@ public final class GuiInGame extends Gui {
                     if(Block.list[block].ID == Block.doorPrimitiveUpper.ID || (block >= Block.doorNorthDoorHingeLeftClosed.ID && block <= Block.doorWestDoorHingeRightOpen.ID)){
                         short lowerBlock = Block.list[block].ID == Block.doorPrimitiveUpper.ID ?  CosmicEvolution.instance.save.activeWorld.getBlockID(locationX, locationY - 1, locationZ) : block;
 
-                        modelLoader = (block >= Block.doorNorthDoorHingeLeftClosed.ID && block <= Block.doorWestDoorHingeRightOpen.ID) ? Block.primitiveDoorLower : modelLoader;
+                        ModelLoader baseModel = (block >= Block.doorNorthDoorHingeLeftClosed.ID && block <= Block.doorWestDoorHingeRightOpen.ID) ? Block.primitiveDoorLower : modelLoader;
 
                         boolean doorOpen = Block.list[lowerBlock].isDoorOpen;
                         switch (Block.list[lowerBlock].faceDirection){
                             case "North" -> {
                                 if(doorOpen && lowerBlock == Block.doorNorthDoorHingeLeftOpen.ID){
-                                    modelLoader = modelLoader.copyModel().rotateModel(270, 0, 1, 0);
-                                    modelLoader = modelLoader.copyModel().translateModel(0.5f, 0, 0.9375f);
+                                    modelLoader = baseModel.copyModel();
+                                    modelLoader.rotateModel(270, 0, 1, 0);
+                                    modelLoader.translateModel(0.5f, 0, 0.9375f);
                                 } else if(doorOpen && lowerBlock == Block.doorNorthDoorHingeRightOpen.ID){
-                                    modelLoader = modelLoader.copyModel().rotateModel(90, 0, 1, 0);
-                                    modelLoader = modelLoader.copyModel().translateModel(0.5f, 0, 0.0625f);
+                                    modelLoader = baseModel.copyModel();
+                                    modelLoader.rotateModel(90, 0, 1, 0);
+                                    modelLoader.translateModel(0.5f, 0, 0.0625f);
                                 } else {
-                                    modelLoader = modelLoader.copyModel().translateModel(0.0625f, 0, 0.5f);
+                                    modelLoader = baseModel.copyModel();
+                                    modelLoader.translateModel(0.0625f, 0, 0.5f);
                                 }
                             }
                             case "South" -> {
                                 if(doorOpen && lowerBlock == Block.doorSouthDoorHingeLeftOpen.ID){
-                                    modelLoader = modelLoader.copyModel().rotateModel(90, 0, 1, 0);
-                                    modelLoader = modelLoader.copyModel().translateModel(0.5f, 0, 0.0625f);
+                                    modelLoader = baseModel.copyModel();
+                                    modelLoader.rotateModel(90, 0, 1, 0);
+                                    modelLoader.translateModel(0.5f, 0, 0.0625f);
                                 } else if(doorOpen && lowerBlock == Block.doorSouthDoorHingeRightOpen.ID){
-                                    modelLoader = modelLoader.copyModel().rotateModel(270, 0, 1, 0);
-                                    modelLoader = modelLoader.copyModel().translateModel(0.5f, 0, 0.9375f);
+                                    modelLoader = baseModel.copyModel();
+                                    modelLoader.rotateModel(270, 0, 1, 0);
+                                    modelLoader.translateModel(0.5f, 0, 0.9375f);
                                 } else {
-                                    modelLoader = modelLoader.copyModel().rotateModel(180, 0, 1, 0);
-                                    modelLoader = modelLoader.copyModel().translateModel(0.9375f, 0, 0.5f);
+                                    modelLoader = baseModel.copyModel();
+                                    modelLoader.rotateModel(180, 0, 1, 0);
+                                    modelLoader.translateModel(0.9375f, 0, 0.5f);
                                 }
                             }
                             case "East" -> {
                                 if(doorOpen && lowerBlock == Block.doorEastDoorHingeLeftOpen.ID){
-                                    modelLoader = modelLoader.copyModel().rotateModel(180, 0, 1, 0);
-                                    modelLoader = modelLoader.copyModel().translateModel(0.0625f, 0, 0.5f);
+                                    modelLoader = baseModel.copyModel();
+                                    modelLoader.rotateModel(180, 0, 1, 0);
+                                    modelLoader.translateModel(0.0625f, 0, 0.5f);
                                 } else if(doorOpen && lowerBlock == Block.doorEastDoorHingeRightOpen.ID){
-                                    modelLoader = modelLoader.copyModel().translateModel(0.9375f, 0, 0.5f);
+                                    modelLoader = baseModel.copyModel();
+                                    modelLoader.translateModel(0.9375f, 0, 0.5f);
                                 } else {
-                                    modelLoader = modelLoader.copyModel().rotateModel(270, 0, 1, 0);
-                                    modelLoader = modelLoader.copyModel().translateModel(0.5f, 0, 0.0625f);
+                                    modelLoader = baseModel.copyModel();
+                                    modelLoader.rotateModel(270, 0, 1, 0);
+                                    modelLoader.translateModel(0.5f, 0, 0.0625f);
                                 }
                             }
                             case "West" -> {
                                 if(doorOpen && lowerBlock == Block.doorWestDoorHingeLeftOpen.ID){
-                                    modelLoader = modelLoader.copyModel().translateModel(0.9375f, 0, 0.5f);
+                                    modelLoader = baseModel.copyModel();
+                                    modelLoader.translateModel(0.9375f, 0, 0.5f);
                                 } else if(doorOpen && lowerBlock == Block.doorWestDoorHingeRightOpen.ID){
-                                    modelLoader = modelLoader.copyModel().rotateModel(180, 0, 1, 0);
-                                    modelLoader = modelLoader.copyModel().translateModel(0.0625f, 0, 0.5f);
+                                    modelLoader = baseModel.copyModel();
+                                    modelLoader.rotateModel(180, 0, 1, 0);
+                                    modelLoader.translateModel(0.0625f, 0, 0.5f);
                                 } else {
-                                    modelLoader = modelLoader.copyModel().rotateModel(90, 0, 1, 0);
-                                    modelLoader = modelLoader.copyModel().translateModel(0.5f, 0, 0.9375f);
+                                    modelLoader = baseModel.copyModel();
+                                    modelLoader.rotateModel(90, 0, 1, 0);
+                                    modelLoader.translateModel(0.5f, 0, 0.9375f);
                                 }
                             }
                             default -> {
@@ -1310,7 +1335,9 @@ public final class GuiInGame extends Gui {
                         }
 
                         if(Block.list[block].ID == Block.itemStick.ID){
-                            modelFace = Block.list[block].blockModel.copyModel().getScaledModel(stickScale).modelFaces[i];
+                            ModelLoader model = Block.list[block].blockModel.copyModel();
+                            model.scaleModel(stickScale);
+                            modelFace = model.modelFaces[i];
                             modelFace.normal.rotateY(rotation);
                             for(int j = 0; j < modelFace.vertices.length; j++){
                                 modelFace.vertices[j].rotateY(rotation);
@@ -1377,24 +1404,24 @@ public final class GuiInGame extends Gui {
 
             ModelFace face;
 
-            model = model.getScaledModel(0.5f);
+            model.scaleModel(0.5f);
             if(craftingItem.outputRecipe.requiredItems[i] == Item.stoneHandAxe.ID ||
                     craftingItem.outputRecipe.requiredItems[i] == Item.stoneHandShovel.ID ||
                     craftingItem.outputRecipe.requiredItems[i] == Item.stoneHandKnifeBlade.ID){
-                model = model.getScaledModel(0.75f);
-                model = model.rotateModel(90, 0, 0, 1);
+                model.scaleModel(0.75f);
+                model.rotateModel(90, 0, 0, 1);
                 if(craftingItem.outputRecipe.requiredItems[i] == Item.stoneHandShovel.ID){
-                    model = model.rotateModel(-90, 0, 1, 0);
+                    model.rotateModel(-90, 0, 1, 0);
                 }
                 if(craftingItem.outputRecipe.requiredItems[i] == Item.stoneHandKnifeBlade.ID){
-                    model = model.rotateModel(135f, 0, 1, 0);
-                    model = model.getScaledModel(2.1f);
+                    model.rotateModel(135f, 0, 1, 0);
+                    model.scaleModel(2.1f);
                 }
             }
 
-            model = model.rotateModel((float) craftingItem.outputRecipe.requiredItemAngles[i], 0, 1, 0);
-            model = model.translateModel(x & 31,y & 31, z & 31);
-            model = model.translateModel((float) craftingItem.outputRecipe.requiredItemPositions[i][0], (float) craftingItem.outputRecipe.requiredItemPositions[i][1], (float) craftingItem.outputRecipe.requiredItemPositions[i][2]);
+            model.rotateModel((float) craftingItem.outputRecipe.requiredItemAngles[i], 0, 1, 0);
+            model.translateModel(x & 31,y & 31, z & 31);
+            model.translateModel((float) craftingItem.outputRecipe.requiredItemPositions[i][0], (float) craftingItem.outputRecipe.requiredItemPositions[i][1], (float) craftingItem.outputRecipe.requiredItemPositions[i][2]);
 
             sameItem = craftingItem.outputRecipe.requiredItems[i] == CosmicEvolution.instance.save.thePlayer.getHeldItem();
             float blockLight = getLightValueFromMap(CosmicEvolution.instance.save.activeWorld.getBlockLightValue(x, y, z));
@@ -1574,6 +1601,7 @@ public final class GuiInGame extends Gui {
         int blue = 52735;
         int index = Chunk.getBlockIndexFromCoordinates(x,y,z);
         InWorld3DCraftingItem craftingBlock = chunk.getInWorldCrafting3DItem(index);
+        if(craftingBlock == null)return;
         RenderEngine.WorldTessellator tessellator = RenderEngine.WorldTessellator.instance;
 
         Vector3f translationVector = new Vector3f();
@@ -1592,7 +1620,8 @@ public final class GuiInGame extends Gui {
 
             translationVector.x = ((i % 12) * 0.0625f) + 0.125f;
             translationVector.z = ((i / 12) * 0.0625f) + 0.125f;
-            blockModel = Block.crafting3DItemVoxelModel.copyModel().translateModel(translationVector.x, translationVector.y, translationVector.z);
+            blockModel = Block.crafting3DItemVoxelModel.copyModel();
+            blockModel.translateModel(translationVector.x, translationVector.y, translationVector.z);
             for(int face = 0; face < 6; face++) {
                 modelFace = blockModel.getModelFace(face);
                 renderSpecialFace(tessellator, isPlayerLookingAtIndex ? blue : craftingBlock.craftingRecipe.recipeIndices[craftingBlock.activeCraftingLayer][i] == 1 && craftingBlock.subVoxelIndices[craftingBlock.activeCraftingLayer][i] == 0 ? red : green, index, 0, modelFace, 0,0,0,0,0,0,0,0, 3,1,2,0, chunk,null, modelFace.normal.x, modelFace.normal.y, modelFace.normal.z, chunk.getSkyLightValue(x,y,z));

@@ -1,6 +1,6 @@
 blockName:LEAF
 itemMetadata:87
-blockModel:standardBlockModel
+blockModel:leafModel
 stepSound:grass
 breakTimer:60
 hardness:0.05

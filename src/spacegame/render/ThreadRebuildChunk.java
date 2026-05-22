@@ -24,6 +24,7 @@ public final class ThreadRebuildChunk implements Runnable {
             this.rebuildChunk();
         } catch (Throwable e){
             new Logger(e);
+            this.workingChunk.markDirty();
         } finally {
             CosmicEvolution.threadJobs.decrementAndGet();
             ChunkJobThreadScheduler.activeRebuilds.decrementAndGet();
@@ -201,8 +202,9 @@ public final class ThreadRebuildChunk implements Runnable {
 
     private void addBlockToRenderData(short block, int index, int face, int[] greedyMeshSize, RenderBlocks renderBlocks) {
         switch (Block.list[block].blockName) {
-            case "WATER", "TALL_GRASS", "SAPLING" ->
+            case "WATER", "TALL_GRASS" ->
                     renderBlocks.renderTransparentBlock(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);
+            case "SAPLING" -> renderBlocks.renderSapling(this.workingChunk, this.parentWorld, block, index, face);
             case "CAMPFIRE_LIT" -> {
                 renderBlocks.renderCampFire(this.workingChunk, this.parentWorld, block, index, face);
                 renderBlocks.renderLogOnCampfire(this.workingChunk, this.parentWorld, block, index, face);
@@ -224,13 +226,7 @@ public final class ThreadRebuildChunk implements Runnable {
             case "REEDS_GROWTH" -> renderBlocks.renderReedGrowing(this.workingChunk, this.parentWorld, block, index, face);
             case "CRAFTING_ITEM_3D" -> renderBlocks.render3DCraftingItem(this.workingChunk, this.parentWorld, block, index, face);
             case "CRAFTING_ITEM" -> renderBlocks.renderCraftingItem(this.workingChunk, this.parentWorld, block, index, face);
-            case "LEAF" -> {
-                if(GameSettings.transparentLeaves){
-                    renderBlocks.renderTransparentBlock(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);
-                } else {
-                    renderBlocks.renderStandardBlock(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);
-                }
-            }
+            case "LEAF" -> renderBlocks.renderLeaf(this.workingChunk, this.parentWorld, block, index, face);
             case "DOOR_EAST_CLOSED_HINGE_LEFT", "DOOR_EAST_CLOSED_HINGE_RIGHT", "DOOR_EAST_OPEN_HINGE_LEFT", "DOOR_EAST_OPEN_HINGE_RIGHT",
                     "DOOR_NORTH_CLOSED_HINGE_LEFT", "DOOR_NORTH_CLOSED_HINGE_RIGHT", "DOOR_NORTH_OPEN_HINGE_LEFT", "DOOR_NORTH_OPEN_HINGE_RIGHT",
                     "DOOR_SOUTH_CLOSED_HINGE_LEFT", "DOOR_SOUTH_CLOSED_HINGE_RIGHT", "DOOR_SOUTH_OPEN_HINGE_LEFT", "DOOR_SOUTH_OPEN_HINGE_RIGHT",

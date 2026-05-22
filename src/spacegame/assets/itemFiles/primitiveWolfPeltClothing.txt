@@ -1,0 +1,4 @@
+itemName:PRIMITIVE_CLOTHING_WOLF_PELT
+stackLimit:1
+displayName:Wolf Pelt Clothing
+itemType:clothingTorso

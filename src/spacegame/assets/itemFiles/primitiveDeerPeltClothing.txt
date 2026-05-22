@@ -1,0 +1,4 @@
+itemName:PRIMITIVE_CLOTHING_DEER_PELT
+stackLimit:1
+displayName:Deer Pelt Clothing
+itemType:clothingTorso

@@ -197,6 +197,7 @@ public final class ThreadChunkSave implements Runnable {
                     inWorldCrafting3DItemTags[i] = new NBTTagCompound();
                     inWorldCrafting3DItemTags[i].setInteger("index", inWorld3DCraftingItem.indexInChunk);
                     inWorldCrafting3DItemTags[i].setShort("materialBlockID", inWorld3DCraftingItem.materialBlockID);
+                    inWorldCrafting3DItemTags[i].setShort("itemTextureID", inWorld3DCraftingItem.itemTextureID);
                     inWorldCrafting3DItemTags[i].setInteger("activeCraftingLayer", inWorld3DCraftingItem.activeCraftingLayer);
                     inWorldCrafting3DItemTags[i].setString("craftingRecipeName", inWorld3DCraftingItem.craftingRecipe.recipeName);
 

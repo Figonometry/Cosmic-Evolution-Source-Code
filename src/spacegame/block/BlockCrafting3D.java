@@ -29,5 +29,10 @@ public final class BlockCrafting3D extends Block {
         return Item.list[craftingBlock.craftingRecipe.outputItemID].getDisplayName(craftingBlock.craftingRecipe.outputBlockID) + " (Crafting)";
     }
 
+    @Override
+    public int getBlockTexture(int face) {
+        return this.textureID;
+    }
+
 
 }

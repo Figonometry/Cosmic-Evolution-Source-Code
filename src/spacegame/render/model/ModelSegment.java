@@ -12,6 +12,9 @@ public final class ModelSegment {
     public ModelSegment[] childrenSegments;
     public Vector3f rotationPoint;
     public Vector3f position;
+    public float rotationX;
+    public float rotationY;
+    public float rotationZ;
     public Vector3f[] topFace = new Vector3f[5];
     public Vector3f[] bottomFace = new Vector3f[5];
     public Vector3f[] northFace = new Vector3f[5];
@@ -203,6 +206,13 @@ public final class ModelSegment {
     }
 
     public void rotateSegmentX(float angleDeg, boolean performTranslation){
+        this.rotationX += angleDeg;
+        if (this.rotationX < 0) {
+            this.rotationX += 360;
+        }
+        if (this.rotationX >= 360) {
+            this.rotationX %= 360;
+        }
         float angleRad = (float) Math.toRadians(angleDeg);
         if(performTranslation) {
             this.translatePreRotation();
@@ -227,6 +237,13 @@ public final class ModelSegment {
     }
 
     public void rotateSegmentY(float angleDeg, boolean performTranslation){
+        this.rotationY += angleDeg;
+        if (this.rotationY < 0) {
+            this.rotationY += 360;
+        }
+        if (this.rotationY >= 360) {
+            this.rotationY %= 360;
+        }
         float angleRad = (float) Math.toRadians(angleDeg);
         if(performTranslation) {
             this.translatePreRotation();
@@ -251,6 +268,13 @@ public final class ModelSegment {
     }
 
     public void rotateSegmentZ(float angleDeg, boolean performTranslation){
+        this.rotationZ += angleDeg;
+        if (this.rotationZ < 0) {
+            this.rotationZ += 360;
+        }
+        if (this.rotationZ >= 360) {
+            this.rotationZ %= 360;
+        }
         float angleRad = (float) Math.toRadians(angleDeg);
         if(performTranslation) {
             this.translatePreRotation();

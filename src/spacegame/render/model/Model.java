@@ -3,6 +3,7 @@ package spacegame.render.model;
 import org.joml.Vector3f;
 import spacegame.core.CosmicEvolution;
 import spacegame.entity.Entity;
+import spacegame.entity.EntityModelTest;
 import spacegame.gui.GuiInGame;
 import spacegame.util.MathUtil;
 
@@ -95,10 +96,11 @@ public abstract class Model {
         float[] lightColor =  !associatedEntity.canDamage ? new float[]{1,0.65f,0.65f}  : CosmicEvolution.instance.save.activeWorld.getBlockLightColor(xInt, yInt, zInt);
 
         byte lightVal = CosmicEvolution.instance.save.activeWorld.getBlockLightValue(xInt, yInt, zInt);
-        byte skyLightVal = CosmicEvolution.instance.save.activeWorld.getBlockSkyLightValue(xInt, yInt, zInt);
 
-        this.setVertexLight1Arg(lightVal > skyLightVal ? lightVal : skyLightVal, x, y, z, lightColor);
+        this.setVertexLight1Arg(lightVal, x, y, z, lightColor);
         this.skyLightValue = GuiInGame.getLightValueFromMap(CosmicEvolution.instance.save.activeWorld.getBlockSkyLightValue(xInt, yInt, zInt));
+
+
         return MathUtil.floatToIntRGBA(red) << 16 | MathUtil.floatToIntRGBA(green) << 8 | MathUtil.floatToIntRGBA(blue);
     }
 }

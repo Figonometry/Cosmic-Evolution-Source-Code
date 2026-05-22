@@ -160,7 +160,8 @@ public final class EntityParticle extends EntityNonLiving {
 
             float skyLightValue = this.getLightValueFromMap(world.getBlockSkyLightValue(MathUtil.floorDouble(this.x), MathUtil.floorDouble(this.y), MathUtil.floorDouble(this.z)));
 
-            blockModel =  Block.grass.blockModel.copyModel().getScaledModel(this.size);
+            blockModel =  Block.grass.blockModel.copyModel();
+            blockModel.scaleModel(this.size);
 
             float shiftXLow = this.shiftX * 0.03125f;
             float shiftYLow = this.shiftY * 0.03125f;
@@ -247,7 +248,8 @@ public final class EntityParticle extends EntityNonLiving {
             Vector3d vertex5;
 
 
-           ModelLoader blockModel =  Block.grass.blockModel.copyModel().getScaledModel(this.size);
+           ModelLoader blockModel =  Block.grass.blockModel.copyModel();
+           blockModel.scaleModel(this.size);
 
             float shiftXLow = this.shiftX * 0.03125f;
             float shiftYLow = this.shiftY * 0.03125f;

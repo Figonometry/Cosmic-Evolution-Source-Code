@@ -1960,13 +1960,25 @@ public abstract class World {
             }
 
 
+            //The only reason this isnt in a separate method is that the loop must break when the output is completed in order to prevent the player from opening the menu up again
             if(block.ID == Block.craftingItem.ID && !isLeftClick){
-                double[] hit = AxisAlignedBB.intersectRayWithBlockAABB(px, py, pz, dir, bx, by, bz);
+                InWorldCraftingItem craftingItem = this.getInWorldCraftingItem(bx, by, bz);
 
-                if(hit != null){
-                    this.handleIntersectForInWorldCraftingItem(hit[0], hit[1], hit[2],
-                            dir,
-                            this.getInWorldCraftingItem(bx, by, bz), bx, by, bz);
+                long now = System.currentTimeMillis();
+                if (now - MouseListener.lastTimeClicked < 250) {
+                    return;
+                }
+                MouseListener.lastTimeClicked = now;
+
+                short playerHeldItem = this.ce.save.thePlayer.getHeldItem();
+
+                if(playerHeldItem == Item.NULL_ITEM_REFERENCE)return;
+
+                if(craftingItem.canItemBePlaced(playerHeldItem)){
+                    craftingItem.checkOutputComplete();
+                    this.findChunkFromChunkCoordinates(bx >> 5, by >> 5, bz >> 5).markDirty();
+                    this.delayWhenExitingUI = 60;
+                    return;
                 }
             }
 
@@ -2180,56 +2192,6 @@ public abstract class World {
         }
     }
 
-    public void handleIntersectForInWorldCraftingItem(double worldX, double worldY, double worldZ, Vector3d dir, InWorldCraftingItem craftingItem, int bx, int by, int bz) {
-
-        long now = System.currentTimeMillis();
-        if (now - MouseListener.lastTimeClicked < 250) {
-            return;
-        }
-        MouseListener.lastTimeClicked = now;
-
-
-        // --- 2. Local coords ---
-        double lx = worldX - bx;
-        double ly = worldY - by;
-        double lz = worldZ - bz;
-
-        // --- 4. Ray stepping parameters ---
-        double step = 0.001;     // high precision
-        double maxDist = 2.5;    // enough to reach far side at shallow angles
-
-        double targetY = 0.03125;
-
-        double tol = 0.0;
-
-
-        // --- 5. Step along ray and find FIRST valid voxel ---
-        for (double t = 0.0; t <= maxDist; t += step) {
-
-            double x = lx + dir.x * t;
-            double y = ly + dir.y * t;
-            double z = lz + dir.z * t;
-
-            // Only break if we leave the block vertically
-            if (y < 0 || y > 1) break;
-
-
-            // Ignore X/Z out of bounds — DO NOT break
-            if (x < 0 || x > 1 || z < 0 || z > 1 || y >= targetY) continue;
-
-
-            short playerHeldItem = this.ce.save.thePlayer.getHeldItem();
-
-            if(playerHeldItem == Item.NULL_ITEM_REFERENCE)break;
-
-            if(craftingItem.canItemBePlaced(x,y,z, playerHeldItem)){
-                craftingItem.checkOutputComplete();
-                this.findChunkFromChunkCoordinates(bx >> 5, by >> 5, bz >> 5).markDirty();
-                break;
-            }
-        }
-    }
-
 
 
 
@@ -2386,7 +2348,7 @@ public abstract class World {
         int chunkY = MathUtil.floorDouble(originatingEntity.y) >> 5;
         int chunkZ = MathUtil.floorDouble(originatingEntity.z) >> 5;
 
-        Chunk chunkEntityIsIn = this.findChunkFromChunkCoordinates(chunkX, chunkY, chunkY);
+        Chunk chunkEntityIsIn = this.findChunkFromChunkCoordinates(chunkX, chunkY, chunkZ);
         Chunk[] surroundingChunks = this.getSurroundingChunks(chunkX, chunkY, chunkZ);
 
         EntityDeer deer;

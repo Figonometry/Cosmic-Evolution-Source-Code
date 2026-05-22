@@ -38,10 +38,12 @@ public class Item {
     public static final Item stoneAxe = new ItemAxe((short)25, modelFolderPath + "stoneAxe.obj", "src/spacegame/assets/itemFiles/stoneAxe.txt", Material.STONE);
     public static final Item stoneShovel = new ItemShovel((short)26, modelFolderPath + "stoneShovel.obj", "src/spacegame/assets/itemFiles/stoneShovel.txt", Material.STONE);
     public static final Item stoneKnife = new ItemKnife((short)27, modelFolderPath + "stoneKnife.obj", "src/spacegame/assets/itemFiles/stoneKnife.txt", Material.STONE);
-    public static final Item deerPelt = new Item((short)28, modelFolderPath + "deerPelt.obj", "src/spacegame/assets/itemFiles/deerPelt.txt");
+    public static final Item deerPelt = new ItemPelt((short)28, modelFolderPath + "deerPelt.obj", "src/spacegame/assets/itemFiles/deerPelt.txt");
     public static final Item rot = new Item((short)29, modelFolderPath + "rot.obj", "src/spacegame/assets/itemFiles/rot.txt");
-    public static final Item wolfPelt = new Item((short)30, modelFolderPath + "wolfPelt.obj", "src/spacegame/assets/itemFiles/wolfPelt.txt");
+    public static final Item wolfPelt = new ItemPelt((short)30, modelFolderPath + "wolfPelt.obj", "src/spacegame/assets/itemFiles/wolfPelt.txt");
     public static final Item primitiveDoor = new Item((short)31, modelFolderPath + "primitiveDoor.obj", "src/spacegame/assets/itemFiles/primitiveDoor.txt");
+    public static final Item primitiveDeerPeltClothing = new ItemClothing((short)32, modelFolderPath + "primitiveDeerPeltClothing.obj", "src/spacegame/assets/itemFiles/primitiveDeerPeltClothing.txt");
+    public static final Item primitiveWolfPeltClothing = new ItemClothing((short)33, modelFolderPath + "primitiveWolfPeltClothing.obj", "src/spacegame/assets/itemFiles/primitiveWolfPeltClothing.txt");
     public final short ID;
     public float hardness = 0;
     public boolean canPlaceAsItemBlock;

@@ -5,6 +5,7 @@ import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
+import spacegame.item.ItemClothing;
 import spacegame.item.ItemTool;
 import spacegame.render.model.ModelLoader;
 import spacegame.util.MathUtil;
@@ -98,11 +99,15 @@ public final class RenderEntityItem {
         int colorRGB;
 
         ModelLoader model = Item.list[this.itemID].itemModel.copyModel();
-        if(Item.list[this.itemID] instanceof ItemTool){
-            model = model.rotateModel(90, 0, 0, 1);
+        if(Item.list[this.itemID] instanceof ItemTool || this.itemID == Item.primitiveDoor.ID){
+           model.rotateModel(90, 0, 0, 1);
         }
-        model = model.rotateModel(this.entityYaw, 0, 1, 0);
-        model = model.translateModel(x,y,z);
+        if(Item.list[this.itemID] instanceof ItemClothing){
+            model.rotateModel(90, 1, 0, 0);
+            model.translateModel(0, 0.175f, 0);
+        }
+        model.rotateModel(this.entityYaw, 0, 1, 0);
+        model.translateModel(x,y,z);
 
 
         for (int i = 0; i < model.modelFaces.length; i++) {
@@ -138,7 +143,9 @@ public final class RenderEntityItem {
         this.chunkY = MathUtil.floorDouble(this.y) >> 5;
         this.chunkZ = MathUtil.floorDouble(this.z) >> 5;
 
-        ModelLoader model = Block.list[this.blockID].blockModel.copyModel().translateModel( -0.5f, 0, -0.5f).getScaledModel(0.25f);
+        ModelLoader model = Block.list[this.blockID].blockModel.copyModel();
+        model.translateModel( -0.5f, 0, -0.5f);
+        model.scaleModel(0.25f);
         Shader.worldShaderTextureArray.uploadBoolean("useFog", true);
         Shader.worldShaderTextureArray.uploadFloat("fogRed", CosmicEvolution.instance.save.activeWorld.skyColor[0]);
         Shader.worldShaderTextureArray.uploadFloat("fogGreen", CosmicEvolution.instance.save.activeWorld.skyColor[1]);
@@ -175,8 +182,8 @@ public final class RenderEntityItem {
             z += 32;
         }
 
-        model = model.rotateModel(this.entityYaw, 0, 1, 0);
-        model = model.translateModel(x,y,z);
+        model.rotateModel(this.entityYaw, 0, 1, 0);
+        model.translateModel(x,y,z);
 
         float skyLight = getLightValueFromMap(CosmicEvolution.instance.save.activeWorld.getBlockSkyLightValue(MathUtil.floorDouble(this.x), MathUtil.floorDouble(this.y), MathUtil.floorDouble(this.z)));
 
@@ -231,11 +238,11 @@ public final class RenderEntityItem {
         }
 
         ModelLoader model = Item.list[this.itemID].itemModel.copyModel();
-        if(Item.list[this.itemID] instanceof ItemTool){
-            model = model.rotateModel(90, 0, 0, 1);
+        if(Item.list[this.itemID] instanceof ItemTool || this.itemID == Item.primitiveDoor.ID){
+           model.rotateModel(90, 0, 0, 1);
         }
-        model = model.rotateModel(this.entityYaw, 0, 1, 0);
-        model = model.translateModel(x,y + 0.4f,z);
+        model.rotateModel(this.entityYaw, 0, 1, 0);
+        model.translateModel(x,y + 0.4f,z);
 
         for (int i = 0; i < model.modelFaces.length; i++) {
             if (model.modelFaces[i] == null) continue;
@@ -273,10 +280,12 @@ public final class RenderEntityItem {
             z += 32;
         }
 
-        ModelLoader model = Block.list[this.blockID].blockModel.copyModel().translateModel( -0.5f, 0, -0.5f).getScaledModel(0.25f);
+        ModelLoader model = Block.list[this.blockID].blockModel.copyModel();
+        model.translateModel( -0.5f, 0, -0.5f);
+        model.scaleModel(0.25f);
 
-        model = model.rotateModel(this.entityYaw, 0, 1, 0);
-        model = model.translateModel(x,y + 0.4f,z);
+        model.rotateModel(this.entityYaw, 0, 1, 0);
+        model.translateModel(x,y + 0.4f,z);
 
         float skyLight = getLightValueFromMap(CosmicEvolution.instance.save.activeWorld.getBlockSkyLightValue(MathUtil.floorDouble(this.x), MathUtil.floorDouble(this.y), MathUtil.floorDouble(this.z)));
 

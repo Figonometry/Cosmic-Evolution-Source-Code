@@ -56,7 +56,28 @@ vec4 performLightingNormals(vec4 skyLightColor, vec3 vertexNormal){
 }
 
 vec4 setFinalColor(vec4 skyLightColor, vec4 vertexColor){
-    return vec4(vertexColor.rgb * skyLightColor.rgb, vertexColor.a);
+    vec4 finalColor = vec4(1.0, 1.0, 1.0, 1.0);
+
+
+    if(skyLightColor.x > vertexColor.x){
+        finalColor.x = skyLightColor.x;
+    } else {
+        finalColor.x = vertexColor.x;
+    }
+
+    if(skyLightColor.y > vertexColor.y){
+        finalColor.y = skyLightColor.y;
+    } else {
+        finalColor.y = vertexColor.y;
+    }
+
+    if(skyLightColor.z > vertexColor.z){
+        finalColor.z = skyLightColor.z;
+    } else {
+        finalColor.z = vertexColor.z;
+    }
+
+    return finalColor;
 }
 
 
@@ -162,6 +183,7 @@ uniform bool useFog;
 uniform bool raining;
 uniform double playerAbsoluteHeight;
 uniform float rainFogFactor;
+uniform bool isHoldingLight;
 
 uniform bool blendColorForSkyTransition;
 uniform float blendColorRatio;
@@ -256,19 +278,35 @@ vec4 setFogUnderwater(vec4 color){
     return color;
 }
 
-float getShadowFactor(vec4 fragPosInLightSpace){
+float getShadowFactor(vec4 fragPosInLightSpace)
+{
     vec3 projCoords = fragPosInLightSpace.xyz / fragPosInLightSpace.w;
     projCoords = projCoords * 0.5 + 0.5;
-    projCoords.xy = clamp(projCoords.xy, 0.0, 1.0);
-    if(projCoords.z > 1.0)return 1.0;
 
-    float closestDepth = texture(shadowMap, projCoords.xy).r;
+    if (projCoords.z > 1.0)
+    return 1.0;
+
     float currentDepth = projCoords.z;
 
+    // texel size based on shadow map resolution
+    float texelSize = 1.0 / 8192;
 
-    float bias = 0.0005;
-    return currentDepth - bias > closestDepth ? 0.7 : 1.0;
+    float bias = 0.0008; // slightly larger for PCF
 
+    float shadow = 0.0;
+
+    // 3×3 PCF kernel
+    for (int x = -1; x <= 1; x++)
+    {
+        for (int y = -1; y <= 1; y++)
+        {
+            float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r;
+            shadow += (currentDepth - bias > pcfDepth) ? 0.5 : 1.0;
+        }
+    }
+
+    shadow /= 9.0;
+    return shadow;
 }
 
 
@@ -291,6 +329,46 @@ void main()
             color = setFogUnderwater(color);
         } else {
             color = setFog(color);
+        }
+    }
+
+    if(isHoldingLight){
+        float origR = color.x;
+        float origG = color.y;
+        float origB = color.z;
+
+        float r = fColor.x;
+        float g = fColor.y;
+        float b = fColor.z;
+
+        float highestChannel = max(r, g);
+        highestChannel = max(highestChannel, b);
+
+        float lightMultiplier = 1.0f / highestChannel;
+
+        lightMultiplier = max(lightMultiplier, 0.1f);
+
+        float maxDynamicLightDistance = 16.0;
+        float distanceFromPlayer = distance(fragPosInWorldSpace, fPlayerPositionInChunk);
+        if (distanceFromPlayer < maxDynamicLightDistance){
+            color.x *= lightMultiplier * ((maxDynamicLightDistance - distanceFromPlayer) / maxDynamicLightDistance);
+            color.y *= lightMultiplier * ((maxDynamicLightDistance - distanceFromPlayer) / maxDynamicLightDistance);
+            color.z *= lightMultiplier * ((maxDynamicLightDistance - distanceFromPlayer) / maxDynamicLightDistance);
+
+            color.y *= 0.9f;
+            color.z *= 0.9f;
+
+            if (color.x < origR){
+                color.x = origR;
+            }
+
+            if (color.y < origG){
+                color.y = origG;
+            }
+
+            if (color.z < origB){
+                color.z = origB;
+            }
         }
     }
 }

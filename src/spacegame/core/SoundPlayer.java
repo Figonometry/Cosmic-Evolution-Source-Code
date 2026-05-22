@@ -7,7 +7,7 @@ import java.util.ArrayList;
 public final class SoundPlayer {
     public CosmicEvolution ce;
     public static final double MAX_SOUND_DISTANCE = 32D;
-    private static ArrayList<Sound> sounds = new ArrayList<Sound>();
+    private static ArrayList<Sound> sounds = new ArrayList<>();
 
     public SoundPlayer(CosmicEvolution cosmicEvolution){
         this.ce = cosmicEvolution;
@@ -35,7 +35,6 @@ public final class SoundPlayer {
     public void playSound(double x, double y, double z, Sound sound, float pitch) {
         if(!Sound.canPlaySound)return;
         if (sound == null) {return;}
-        //AL11.alSourcef(sound.sourceID, AL11.AL_GAIN, 3);
         AL11.alSourcef(sound.sourceID, AL11.AL_GAIN, calculateGain(distanceFromCameraToSound(x,y,z), sound.soundMultiplier));
         AL11.alSourcef(sound.sourceID, AL11.AL_PITCH, pitch);
         AL11.alSourcePlay(sound.sourceID);

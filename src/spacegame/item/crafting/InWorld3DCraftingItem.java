@@ -5,15 +5,21 @@ import spacegame.core.CosmicEvolution;
 import spacegame.core.Sound;
 import spacegame.entity.EntityItem;
 import spacegame.item.Item;
+import spacegame.render.RenderEngine;
 import spacegame.world.Chunk;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Random;
 
 public final class InWorld3DCraftingItem {
     public int[][] subVoxelIndices = new int[16][144];
     public int indexInChunk;
-    public short materialBlockID; //Used for texture lookup
+    public short materialBlockID = RenderEngine.NULL_TEXTURE; //Used for texture lookup on blocks
+    public short itemTextureID = RenderEngine.NULL_TEXTURE;
     public int activeCraftingLayer;
     public InWorldCraftingRecipe craftingRecipe;
     public Chunk chunk;
@@ -22,6 +28,14 @@ public final class InWorld3DCraftingItem {
     public InWorld3DCraftingItem(int index, short materialBlockID, InWorldCraftingRecipe craftingRecipe, Chunk chunk){
         this.indexInChunk = index;
         this.materialBlockID = materialBlockID;
+        this.craftingRecipe = craftingRecipe;
+        this.activeCraftingLayer = 0;
+        this.chunk = chunk;
+    }
+
+    public InWorld3DCraftingItem(int index, InWorldCraftingRecipe craftingRecipe, Chunk chunk, short itemTextureID){
+        this.indexInChunk = index;
+        this.itemTextureID = itemTextureID;
         this.craftingRecipe = craftingRecipe;
         this.activeCraftingLayer = 0;
         this.chunk = chunk;
@@ -67,7 +81,7 @@ public final class InWorld3DCraftingItem {
         } else {
             this.subVoxelIndices[this.activeCraftingLayer][index] = 0;
         }
-        CosmicEvolution.instance.soundPlayer.playSound(CosmicEvolution.instance.save.thePlayer.x, CosmicEvolution.instance.save.thePlayer.y, CosmicEvolution.instance.save.thePlayer.z, new Sound(Block.list[this.materialBlockID].getStepSound(this.chunk.getBlockXFromIndex(this.indexInChunk), this.chunk.getBlockYFromIndex(this.indexInChunk), this.chunk.getBlockZFromIndex(this.indexInChunk)), false, 1f),new Random().nextFloat(0.6F, 1));
+        CosmicEvolution.instance.soundPlayer.playSound(CosmicEvolution.instance.save.thePlayer.x, CosmicEvolution.instance.save.thePlayer.y, CosmicEvolution.instance.save.thePlayer.z, new Sound(Block.list[this.materialBlockID != RenderEngine.NULL_TEXTURE ? this.materialBlockID : this.itemTextureID].getStepSound(this.chunk.getBlockXFromIndex(this.indexInChunk), this.chunk.getBlockYFromIndex(this.indexInChunk), this.chunk.getBlockZFromIndex(this.indexInChunk)), false, 1f),new Random().nextFloat(0.6F, 1));
         this.checkCurrentCraftingLayerForCompletion();
         this.chunk.markDirty();
     }
@@ -78,7 +92,7 @@ public final class InWorld3DCraftingItem {
 
         this.subVoxelIndices[this.activeCraftingLayer][index] = 1;
         this.checkCurrentCraftingLayerForCompletion();
-        CosmicEvolution.instance.soundPlayer.playSound(CosmicEvolution.instance.save.thePlayer.x, CosmicEvolution.instance.save.thePlayer.y, CosmicEvolution.instance.save.thePlayer.z, new Sound(Block.list[this.materialBlockID].getStepSound(this.chunk.getBlockXFromIndex(this.indexInChunk), this.chunk.getBlockYFromIndex(this.indexInChunk), this.chunk.getBlockZFromIndex(this.indexInChunk)), false, 1f),new Random().nextFloat(0.6F, 1));
+        CosmicEvolution.instance.soundPlayer.playSound(CosmicEvolution.instance.save.thePlayer.x, CosmicEvolution.instance.save.thePlayer.y, CosmicEvolution.instance.save.thePlayer.z, new Sound(Block.list[this.materialBlockID != RenderEngine.NULL_TEXTURE ? this.materialBlockID : this.itemTextureID].getStepSound(this.chunk.getBlockXFromIndex(this.indexInChunk), this.chunk.getBlockYFromIndex(this.indexInChunk), this.chunk.getBlockZFromIndex(this.indexInChunk)), false, 1f),new Random().nextFloat(0.6F, 1));
         this.chunk.markDirty();
     }
 
@@ -86,6 +100,27 @@ public final class InWorld3DCraftingItem {
     public void activateCraftingLayer(int layerNumber){
         for(int i = 0; i < 144; i++){
             this.subVoxelIndices[layerNumber][i] = 1;
+        }
+    }
+
+    public void activateIndicesFromImage(String filepath, int layerNumber){
+        File file = new File(filepath);
+
+        if(!file.exists())return;
+
+        int[] pixels = new int[144];
+        BufferedImage image;
+        try {
+            image = ImageIO.read(file);
+            image.getRGB(0, 0, 12, 12, pixels, 0,12);
+
+            for(int i = 0; i < pixels.length; i++){
+                this.subVoxelIndices[layerNumber][i] = ((pixels[i] >> 16) & 255) == 0 && ((pixels[i] >> 8) & 255) == 0 && (pixels[i] & 255) == 0 ? 1 : 0;
+            }
+
+        } catch (Exception e){
+            e.printStackTrace();
+            return;
         }
     }
 

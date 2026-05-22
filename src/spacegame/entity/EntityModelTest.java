@@ -33,7 +33,7 @@ public final class EntityModelTest extends Entity {
 
 
     public void loadTexture(){
-        texture = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/entity/wolf.png", RenderEngine.TEXTURE_TYPE_2D, 0 , true);
+        texture = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/entity/player.png", RenderEngine.TEXTURE_TYPE_2D, 0 , true);
     }
 
 
@@ -43,7 +43,7 @@ public final class EntityModelTest extends Entity {
         if(texture == RenderEngine.NULL_TEXTURE){
             this.loadTexture();
         }
-        this.model = ModelWolf.getBaseModel();
+        this.model = ModelPlayer.getBaseModel();
         this.model.animate(this.animationTimer, this.animate, this);
         this.model.renderModel(this);
         ticksSinceLastRender = 0;

@@ -92,17 +92,15 @@ public final class ItemStack {
         if(this.item != null){
             tessellator.toggleOrtho();
             if(this.item.renderItemWithBlockModel){
-                ModelLoader model = Block.list[this.metadata].blockModel.copyModel().translateModel(-0.5f, 0, -0.5f);
+                ModelLoader model = Block.list[this.metadata].blockModel.copyModel();
+                model.translateModel(-0.5f, 0, -0.5f);
                 if(this.metadata == Block.itemStone.ID || this.metadata == Block.itemStick.ID){
-                    model = model.translateModel(0.5f, 0, 0.5f);
-                    model = model.getScaledModel(2f);
+                   model.translateModel(0.5f, 0, 0.5f);
+                   model.scaleModel(2f);
                 }
                 if(this.metadata == Block.itemClay.ID){
-                    model = model.getScaledModel(2f);
-                    model = model.translateModel(0, 0.25f, 0);
-                }
-                if(this.metadata == Block.treeSeed.ID || this.metadata == Block.reedSeed.ID || this.metadata == Block.berrySeed.ID){
-                    model = model.getScaledModel(5f);
+                    model.scaleModel(2f);
+                    model.translateModel(0, 0.25f, 0);
                 }
                 ModelFace[] faces;
                 float textureID;
@@ -138,13 +136,13 @@ public final class ItemStack {
                 tessellator.drawTextureArray(Assets.blockTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
             } else {
                 ModelLoader model = this.item.itemModel.copyModel();
-                model = model.getScaledModel(39f);
-                model = model.rotateModel(45, 0, 1, 0);
-                model = model.rotateModel(36, 1, 0, 0);
+                model.scaleModel(39f);
+                model.rotateModel(45, 0, 1, 0);
+                model.rotateModel(36, 1, 0, 0);
 
 
                 Vector3f position = new Vector3f(this.x, this.y, -70);
-                model = model.translateModel(position.x, position.y, position.z);
+                model.translateModel(position.x, position.y, position.z);
                 ModelFace face;
                 float textureID;
 
@@ -210,16 +208,14 @@ public final class ItemStack {
         if (this.item != null) {
             tessellator.toggleOrtho();
             if (this.item.renderItemWithBlockModel) {
-                ModelLoader model = Block.list[this.metadata].blockModel.copyModel().translateModel(-0.5f, 0, -0.5f);
+                ModelLoader model = Block.list[this.metadata].blockModel.copyModel();
+                model.translateModel(-0.5f, 0, -0.5f);
                 if (this.metadata == Block.itemStone.ID || this.metadata == Block.itemStick.ID) {
-                    model = model.translateModel(0.5f, 0, 0.5f);
-                    model = model.getScaledModel(2f);
+                   model.translateModel(0.5f, 0, 0.5f);
+                   model.scaleModel(2f);
                 }
                 if (this.metadata == Block.itemClay.ID) {
-                    model = model.getScaledModel(2f);
-                }
-                if (this.metadata == Block.treeSeed.ID || this.metadata == Block.reedSeed.ID || this.metadata == Block.berrySeed.ID) {
-                    model = model.getScaledModel(5f);
+                   model.scaleModel(2f);
                 }
                 ModelFace[] faces;
                 float textureID;
@@ -280,13 +276,13 @@ public final class ItemStack {
                 tessellator.drawTextureArray(Assets.blockTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
             } else {
                 ModelLoader model = this.item.itemModel.copyModel();
-                model = model.getScaledModel(57f);
-                model = model.rotateModel(45, 0, 1, 0);
-                model = model.rotateModel(36, 1, 0, 0);
+               model.scaleModel(57f);
+               model.rotateModel(45, 0, 1, 0);
+               model.rotateModel(36, 1, 0, 0);
 
 
                 Vector3f position = new Vector3f(this.x + 4, this.y, -70);
-                model = model.translateModel(position.x, position.y, position.z);
+                model.translateModel(position.x, position.y, position.z);
                 ModelFace face;
                 float textureID;
                 int colorVal = 255;

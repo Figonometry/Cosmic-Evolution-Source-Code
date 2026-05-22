@@ -9,6 +9,7 @@ import spacegame.item.crafting.CraftingBlockRecipes;
 import spacegame.item.crafting.InWorld3DCraftingItem;
 import spacegame.item.crafting.InWorldCraftingItem;
 import spacegame.item.crafting.InWorldCraftingRecipe;
+import spacegame.render.RenderEngine;
 import spacegame.util.Logger;
 import spacegame.item.Inventory;
 import spacegame.nbt.NBTIO;
@@ -83,10 +84,12 @@ public final class ThreadChunkColumnLoader implements Runnable {
                                 switch (entityLoadedTag.getString("entityType")) {
                                     case "EntityBlock" -> {
                                         entityLoaded = new EntityBlock(entityLoadedTag.getDouble("x"), entityLoadedTag.getDouble("y"), entityLoadedTag.getDouble("z"), entityLoadedTag.getShort("blockType"), entityLoadedTag.getByte("count"));
+                                        entityLoaded.y += 0.1;
                                         chunk.addEntityToList(entityLoaded);
                                     }
                                     case "EntityItem" -> {
                                         entityLoaded = new EntityItem(entityLoadedTag.getDouble("x"), entityLoadedTag.getDouble("y"), entityLoadedTag.getDouble("z"), entityLoadedTag.getShort("itemType"), (byte) 1, entityLoadedTag.getByte("count"), entityLoadedTag.getShort("durability"), 0);
+                                        entityLoaded.y += 0.1;
                                         chunk.addEntityToList(entityLoaded);
                                     }
                                     case "EntityDeer" -> {
@@ -180,13 +183,21 @@ public final class ThreadChunkColumnLoader implements Runnable {
                         if(crafting3DItems != null){
                             int crafting3DItemCount = crafting3DItems.getInteger("inWorldCrafting3DItemCount");
                             NBTTagCompound inWorldCrafting3DItemLoadedTag;
-                            InWorld3DCraftingItem inWorld3DCraftingItem;
+                            InWorld3DCraftingItem inWorld3DCraftingItem = null;
                             for(int i = 0; i < crafting3DItemCount; i++){
                                 inWorldCrafting3DItemLoadedTag = crafting3DItems.getCompoundTag("inWorldCrafting3DItem" + i);
                                 int index = inWorldCrafting3DItemLoadedTag.getInteger("index");
                                 short materialBlockID = inWorldCrafting3DItemLoadedTag.getShort("materialBlockID");
+                                short itemTextureID = inWorldCrafting3DItemLoadedTag.getShort("itemTextureID");
 
-                                inWorld3DCraftingItem = new InWorld3DCraftingItem(index, materialBlockID, InWorldCraftingRecipe.findInWorldCraftingRecipeFromName(inWorldCrafting3DItemLoadedTag.getString("craftingRecipeName")), chunk);
+                                if(materialBlockID != RenderEngine.NULL_TEXTURE) {
+                                    inWorld3DCraftingItem = new InWorld3DCraftingItem(index, materialBlockID,
+                                            InWorldCraftingRecipe.findInWorldCraftingRecipeFromName(inWorldCrafting3DItemLoadedTag.getString("craftingRecipeName")), chunk);
+                                } else if(itemTextureID != RenderEngine.NULL_TEXTURE){
+                                    inWorld3DCraftingItem = new InWorld3DCraftingItem(index,
+                                            InWorldCraftingRecipe.findInWorldCraftingRecipeFromName(inWorldCrafting3DItemLoadedTag.getString("craftingRecipeName")), chunk, itemTextureID);
+                                }
+
                                 inWorld3DCraftingItem.activeCraftingLayer = inWorldCrafting3DItemLoadedTag.getInteger("activeCraftingLayer");
 
                                 for(int j = 0; j < 16; j++){

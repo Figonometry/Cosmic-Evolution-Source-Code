@@ -25,7 +25,8 @@ public final class EntityBlock extends EntityNonLiving {
         this.width = 0.125F;
         this.height = 0.125F;
         this.depth = 0.125f;
-        this.entityModel = Entity.standardBlock.getScaledModel(0.125F);
+        this.entityModel = Entity.standardBlock.copyModel();
+        this.entityModel.scaleModel(0.125f);
         this.block = block;
         this.speed = 0.1;
         this.count = count;

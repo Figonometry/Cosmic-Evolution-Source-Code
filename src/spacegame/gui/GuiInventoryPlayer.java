@@ -2,9 +2,16 @@ package spacegame.gui;
 
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
+import spacegame.block.Block;
 import spacegame.core.CosmicEvolution;
+import spacegame.entity.EntityPlayer;
 import spacegame.item.Inventory;
+import spacegame.item.Item;
 import spacegame.item.ItemStack;
+import spacegame.item.ItemTool;
+import spacegame.render.Assets;
+import spacegame.render.RenderBlocks;
+import spacegame.render.model.ModelLoader;
 import spacegame.render.model.ModelPlayer;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
@@ -115,9 +122,150 @@ public final class GuiInventoryPlayer extends GuiInventory {
 
         modelPlayer.renderModelFromInventory(CosmicEvolution.instance.save.thePlayer, xCenter, yCenter, -180, this.playerTexture);
 
+        this.renderPlayerHeldItemOnModel(xCenter, yCenter, -180);
+
 
         this.associatedInventory.renderInventory();
         this.renderHoveredItemStackName(this.getHoveredItemStack());
+    }
+
+    private void renderPlayerHeldItemOnModel(float xPos, float yPos, float zPos){
+        ModelLoader model = null;
+
+        EntityPlayer thePlayer = CosmicEvolution.instance.save.thePlayer;
+
+        if(thePlayer.isHoldingBlock()){
+            model = Block.list[thePlayer.getHeldBlock()].blockModel.copyModel();
+            model.rotateModel(45, 0, 1, 0);
+            model.rotateModel(-26, 1, 0, 0);
+            model.scaleModel(0.25f);
+        } else if(thePlayer.getHeldItem() != Item.NULL_ITEM_REFERENCE && thePlayer.getHeldItem() != Item.block.ID){
+            model = Item.list[thePlayer.getHeldItem()].itemModel.copyModel(); //Texture is -1 for some reason
+        }
+
+
+        if(model == null)return;
+
+       model.scaleModel(150f);
+
+
+       if(thePlayer.getHeldItem() != Item.NULL_ITEM_REFERENCE){
+           if(Item.list[thePlayer.getHeldItem()] instanceof ItemTool){
+               model.rotateModel(180, 0, 1, 0);
+               model.rotateModel(90, 1, 0, 0);
+           } else {
+               model.rotateModel(180, 0, 1, 0);
+           }
+       }
+
+       if(thePlayer.isHoldingBlock()){
+           model.translateModel(0, -10, 0);
+       }
+
+        model.rotateModel(-thePlayer.angleRightArm, 1, 0, 0);
+
+        float x = MathUtil.getOpenGLMouseX();
+        float y = MathUtil.getOpenGLMouseY();
+
+
+        xPos -= 56;
+        yPos -= 32;
+        zPos += 20;
+        if(thePlayer.isHoldingBlock()){
+            xPos += 24;
+            yPos -= 16;
+            zPos += 20;
+        }
+
+
+        float xDif = x - xPos;
+        float yDif = y - yPos;
+
+        float angle = 10f;
+
+        float xRatio = xDif / 100f;
+        float yRatio = yDif / 100f;
+
+        if(xRatio < -1){
+            xRatio = -1.0f;
+        }
+
+        if(xRatio > 1){
+            xRatio = 1.0f;
+        }
+
+        if(yRatio < -1){
+            yRatio = -1.0f;
+        }
+
+        if(yRatio > 1){
+            yRatio = 1.0f;
+        }
+
+        model.rotateModel(angle * xRatio, 0, 1, 0);
+        model.rotateModel(angle * -yRatio, 1, 0, 0);
+
+        model.translateModel(xPos , yPos , zPos);
+
+        int colorVal = 255;
+
+        int colorRGB = 0;
+
+        int colorTop = ((colorVal) << 16) | ((colorVal) << 8) | colorVal;
+        int colorBottom = ((colorVal - 10) << 16) | ((colorVal - 10) << 8) | colorVal - 10;
+        int colorNorth = ((colorVal - 20) << 16) | ((colorVal - 20) << 8) | colorVal - 20;
+        int colorSouth = ((colorVal - 30) << 16) | ((colorVal - 30) << 8) | colorVal - 30;
+        int colorEast = ((colorVal - 40) << 16) | ((colorVal - 40) << 8) | colorVal - 40;
+        int colorWest = ((colorVal - 50) << 16) | ((colorVal - 50) << 8) | colorVal - 50;
+
+
+        RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
+
+        float textureID;
+
+
+        for(int i = 0; i < model.modelFaces.length; i++) {
+            if(model.usesMultipleTextures){
+                textureID = model.modelFaces[i].texture;
+            } else {
+                textureID = Block.list[thePlayer.getHeldBlock()].getBlockTexture(thePlayer.getHeldBlock(), model.modelFaces[i].faceType);
+            }
+            switch (model.modelFaces[i].faceType){
+                case RenderBlocks.TOP_FACE -> {
+                    colorRGB = colorTop;
+                }
+                case RenderBlocks.BOTTOM_FACE -> {
+                    colorRGB = colorBottom;
+                }
+                case RenderBlocks.NORTH_FACE -> {
+                    colorRGB = colorNorth;
+                }
+                case RenderBlocks.SOUTH_FACE -> {
+                    colorRGB = colorSouth;
+                }
+                case RenderBlocks.EAST_FACE -> {
+                    colorRGB = colorEast;
+                }
+                case RenderBlocks.WEST_FACE -> {
+                    colorRGB = colorWest;
+                }
+            }
+            for (int j = 0; j < model.modelFaces[i].vertices.length; j++) {
+
+
+                tessellator.addVertexTextureArrayWithUV(colorRGB, model.modelFaces[i].vertices[j].x,
+                        model.modelFaces[i].vertices[j].y,
+                        model.modelFaces[i].vertices[j].z, textureID, model.modelFaces[i].UVs[j][0], model.modelFaces[i].UVs[j][1]);
+            }
+            tessellator.addElementsCCW();
+        }
+
+        tessellator.toggleOrtho();
+        GL46.glEnable(GL46.GL_CULL_FACE);
+        GL46.glCullFace(GL46.GL_BACK);
+        tessellator.drawTextureArray(thePlayer.isHoldingBlock() ? Assets.blockTextureArray : Assets.itemTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
+        GL46.glDisable(GL46.GL_CULL_FACE);
+        tessellator.toggleOrtho();
     }
 
     @Override

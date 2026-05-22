@@ -10,13 +10,11 @@ import spacegame.block.Block;
 import spacegame.block.BlockDoor;
 import spacegame.core.*;
 import spacegame.gui.*;
-import spacegame.item.IDecayItem;
-import spacegame.item.Inventory;
-import spacegame.item.Item;
-import spacegame.item.ItemStack;
+import spacegame.item.*;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.render.model.Model;
+import spacegame.render.model.ModelLoader;
 import spacegame.render.model.ModelPlayer;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
@@ -75,6 +73,10 @@ public final class EntityPlayer extends EntityLiving {
     public boolean stopRightArm;
     public boolean stopLeftLeg;
     public boolean stopRightLeg;
+    public float angleLeftArm;
+    public float angleRightArm;
+    public float angleLeftLeg;
+    public float angleRightLeg;
     public int animationTimer = 0;
     public int texture = RenderEngine.NULL_TEXTURE;
     public boolean animate;
@@ -402,6 +404,7 @@ public final class EntityPlayer extends EntityLiving {
                 difVector.normalize();
                 droppedBlock.setMovementVector(new Vector3f((float) difVector.x, (float) difVector.y, (float) difVector.z));
                 this.ce.save.activeWorld.findChunkFromChunkCoordinates(this.chunkX, this.chunkY, this.chunkZ).addEntityToList(droppedBlock);
+                this.ce.soundPlayer.playSound(this.x, this.y, this.z, new Sound(Sound.itemThrow, false, 1f), CosmicEvolution.globalRand.nextFloat(0.75f, 1f));
             }
         } else if(itemID != Item.NULL_ITEM_REFERENCE) {
             EntityItem droppedItem = new EntityItem(this.x, this.y, this.z, itemID, Item.NULL_ITEM_METADATA, (byte) 1, this.getHeldItemDurability(), this.getHeldItemDecayTime());
@@ -411,6 +414,7 @@ public final class EntityPlayer extends EntityLiving {
             difVector.normalize();
             droppedItem.setMovementVector(new Vector3f((float) difVector.x, (float) difVector.y, (float) difVector.z));
             this.ce.save.activeWorld.findChunkFromChunkCoordinates(this.chunkX, this.chunkY, this.chunkZ).addEntityToList(droppedItem);
+            this.ce.soundPlayer.playSound(this.x, this.y, this.z, new Sound(Sound.itemThrow, false, 1f), CosmicEvolution.globalRand.nextFloat(0.75f, 1f));
         }
     }
 
@@ -1032,6 +1036,15 @@ public final class EntityPlayer extends EntityLiving {
         }
     }
 
+    public void clearInventory(){
+        for(int i = 0; i < this.inventory.itemStacks.length; i++) {
+            this.inventory.itemStacks[i].item = null;
+            this.inventory.itemStacks[i].count = 0;
+            this.inventory.itemStacks[i].durability = 0;
+            this.inventory.itemStacks[i].metadata = 0;
+        }
+    }
+
     public void reduceHeldItemDurability(){
         if(this.inventory.itemStacks[selectedInventorySlot].item == null)return;
 
@@ -1070,6 +1083,99 @@ public final class EntityPlayer extends EntityLiving {
         this.model = ModelPlayer.getBaseModel();
         this.model.animate(this.animationTimer, this.animate, this);
         this.model.renderModelForShadowMap(this, sunX, sunY, sunZ);
+
+        this.renderHeldItemForShadowMap(sunX, sunY, sunZ);
+    }
+
+    private void renderHeldItemForShadowMap(int sunX, int sunY, int sunZ){
+        ModelLoader model = null;
+
+        if(this.isHoldingBlock()){
+            model = Block.list[this.getHeldBlock()].blockModel.copyModel();
+            model.translateModel(-0.5f, 0, -0.5f);
+            model.scaleModel(0.25f);
+        } else if(this.getHeldItem() != Item.NULL_ITEM_REFERENCE){
+            model = Item.list[this.getHeldItem()].itemModel.copyModel();
+        }
+
+        if(model == null)return;
+
+        float x = MathUtil.positiveMod(this.x, 32);
+        float y = MathUtil.positiveMod(this.y, 32);
+        float z = MathUtil.positiveMod(this.z, 32);
+
+        if(this.getHeldItem() != Item.NULL_ITEM_REFERENCE){
+            if(Item.list[this.getHeldItem()] instanceof ItemTool){
+                model.rotateModel(-90, 1, 0, 0);
+                model.rotateModel(90, 0, 0, 1);
+            }
+        }
+
+        int phase = (this.swingTimer * 3) / 16;
+
+        float phaseRatio = ((this.swingTimer * 3) % 16) / 16f;
+
+        phase++;
+
+        float phase1TargetX = -20;
+        float phase1TargetZ = 70;
+
+        float phase2TargetX = 0;
+        float phase2TargetZ = 70;
+
+        float phase3TargetX = 0;
+        float phase3TargetZ = 0;
+
+        float angleX = 0;
+        float angleZ = 0;
+
+        float angleDifX = 0;
+        float angleDifZ = 0;
+
+        switch (phase){
+            case 1 ->{
+                angleDifX = (phase1TargetX - phase3TargetX) * phaseRatio;
+                angleDifZ = (phase1TargetZ - phase3TargetZ) * phaseRatio;
+                angleX = phase3TargetX + angleDifX;
+                angleZ = phase3TargetZ + angleDifZ;
+            }
+            case 2 ->{
+                angleDifX = (phase2TargetX - phase1TargetX) * phaseRatio;
+                angleDifZ = (phase2TargetZ - phase1TargetZ) * phaseRatio;
+                angleX = phase1TargetX + angleDifX;
+                angleZ = phase1TargetZ + angleDifZ;
+            }
+            case 3 ->{
+                angleDifX = (phase3TargetX - phase2TargetX) * phaseRatio;
+                angleDifZ = (phase3TargetZ - phase2TargetZ) * phaseRatio;
+                angleX = phase2TargetX + angleDifX;
+                angleZ = phase2TargetZ + angleDifZ;
+            }
+        }
+
+        model.rotateModel(90, 0, 1, 0);
+        model.translateModel(-0.25f,0,-0.375f);
+        model.rotateModel(angleX, 0,0,1);
+        model.rotateModel(angleZ, 0, 1, 0);
+        model.rotateModel(-this.yaw, 0, 1, 0);
+        model.translateModel(x,y,z);
+
+
+        RenderEngine.WorldTessellator worldTessellator = RenderEngine.WorldTessellator.instance;
+
+        Shader.shadowMapShaderTextureArray.uploadVec3f("chunkOffset", new Vector3f((chunkX - sunX) << 5, (chunkY - sunY) << 5, (chunkZ - sunZ) << 5));
+
+        for(int i = 0; i < model.modelFaces.length; i++) {
+            for (int j = 0; j < model.modelFaces[i].vertices.length; j++) {
+                worldTessellator.addVertexTextureArray(0, model.modelFaces[i].vertices[j].x,
+                        model.modelFaces[i].vertices[j].y,
+                        model.modelFaces[i].vertices[j].z, 1,
+                        0, 0, 0, 0, 0);
+            }
+            worldTessellator.addElementsCW();
+        }
+
+        worldTessellator.drawTextureArray(0, Shader.shadowMapShaderTextureArray, CosmicEvolution.camera);
     }
 
 
@@ -1120,6 +1226,28 @@ public final class EntityPlayer extends EntityLiving {
                 }
             }
         }
+    }
+
+    public boolean isPlayerWearingArmorOrClothingOfType(String type){
+        for(int i = 0; i < this.inventory.itemStacks.length; i++){
+            if(this.inventory.itemStacks[i].usesExclusiveItem) {
+                if (this.inventory.itemStacks[i].exclusiveItemType.equals(type) && this.inventory.itemStacks[i].item != null) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public ItemStack getItemStackOfType(String type){
+        for(int i = 0; i < this.inventory.itemStacks.length; i++) {
+            if (this.inventory.itemStacks[i].usesExclusiveItem) {
+                if (this.inventory.itemStacks[i].exclusiveItemType.equals(type)) {
+                    return this.inventory.itemStacks[i];
+                }
+            }
+        }
+        return null;
     }
 
 

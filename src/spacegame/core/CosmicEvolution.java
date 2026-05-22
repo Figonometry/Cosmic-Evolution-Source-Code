@@ -59,7 +59,7 @@ public final class CosmicEvolution implements Runnable {
     public Universe everything;
     public RenderEngine renderEngine = new RenderEngine();
     public SoundPlayer soundPlayer = new SoundPlayer(this);
-    private EntityWolf modelTest;
+    private EntityModelTest modelTest;
     public static ExecutorService threadPool;
     public static final AtomicInteger threadJobs = new AtomicInteger();
     public Thread dirtyChunksSchedulerThread;
@@ -112,7 +112,7 @@ public final class CosmicEvolution implements Runnable {
         threadPool = new ThreadPoolExecutor(workerCount, workerCount, 0L, TimeUnit.MILLISECONDS, new PriorityBlockingQueue<>());
         this.dirtyChunksSchedulerThread = new Thread(new ChunkJobThreadScheduler());
         this.dirtyChunksSchedulerThread.start();
-        this.title = "Cosmic Evolution Alpha v0.46";
+        this.title = "Cosmic Evolution Alpha v0.47";
         GameSettings.loadOptionsFromFile(this.launcherDirectory);
         this.clearLogFiles(new File(this.launcherDirectory + "/crashReports"));
         this.initLWJGL();
@@ -158,6 +158,8 @@ public final class CosmicEvolution implements Runnable {
         GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GLFW.GLFW_FALSE);
         GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_TRUE);
         GLFW.glfwWindowHint(GLFW.GLFW_MAXIMIZED, GLFW.GLFW_TRUE);
+        GLFW.glfwWindowHint(GLFW.GLFW_SAMPLES, 4); // or 8
+
 
         imageFallbackPath = "src/spacegame/assets/textures/fallback.png";
         File imageFallback = new File(imageFallbackPath);
@@ -415,15 +417,14 @@ public final class CosmicEvolution implements Runnable {
 
 
                 if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_G) && KeyListener.keyReleased[GLFW.GLFW_KEY_G]){
-                    //  if(this.modelTest == null){
-                    //      this.modelTest = new EntityWolf(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, false, true);
-                    //     // this.modelTest.health = 0.1f;
-                    //   //   this.modelTest.isAIEnabled = false;
-                    //      this.save.activeWorld.addEntity(this.modelTest);
-                    //  } else {
-                    //      this.save.activeWorld.findChunkFromChunkCoordinates(MathUtil.floorDouble(this.modelTest.x) >> 5, MathUtil.floorDouble(this.modelTest.y) >> 5, MathUtil.floorDouble(this.modelTest.z) >> 5).removeEntity(this.modelTest);
-                    //      this.modelTest = null;
-                    //  }
+                   //  if(this.modelTest == null){
+                   //      this.modelTest = new EntityModelTest(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z);
+                   //      this.save.activeWorld.addEntity(this.modelTest);
+                   //  } else {
+                   //      this.save.activeWorld.findChunkFromChunkCoordinates(MathUtil.floorDouble(this.modelTest.x) >> 5, MathUtil.floorDouble(this.modelTest.y) >> 5, MathUtil.floorDouble(this.modelTest.z) >> 5).removeEntity(this.modelTest);
+                   //      this.modelTest = null;
+                   //  }
+                  //  Shader.terrainShader = this.renderEngine.reloadShader(Shader.terrainShader);
                     KeyListener.setKeyReleased(GLFW.GLFW_KEY_G);
                 }
             }

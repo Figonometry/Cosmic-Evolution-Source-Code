@@ -121,6 +121,13 @@ public final class RenderWorldScene {
         float rainFogFactor = this.controller.parentWorld.raining ? ((CosmicEvolution.instance.save.time - this.controller.parentWorld.timeStartedRaining) / 60f) * 0.75f : 0.75f - (((CosmicEvolution.instance.save.time - this.controller.parentWorld.timeStartedRaining) / 60f) * 0.75f);
         Shader.terrainShader.uploadFloat("rainFogFactor", rainFogFactor);
 
+        boolean isPlayerHoldingLight = CosmicEvolution.instance.save.thePlayer.getHeldBlock() == Block.torchStandard.ID;
+        Shader.terrainShader.uploadBoolean("isHoldingLight", isPlayerHoldingLight);
+        Shader.worldShaderTextureArray.uploadBoolean("isHoldingLight", isPlayerHoldingLight);
+        Shader.worldShader2DTexture.uploadBoolean("isHoldingLight", isPlayerHoldingLight);
+        Shader.worldShader2DTextureWithAtlas.uploadBoolean("isHoldingLight", isPlayerHoldingLight);
+
+
         Shader.worldShader2DTexture.uploadBoolean("raining", this.controller.parentWorld.raining);
         Shader.worldShader2DTexture.uploadDouble("playerAbsoluteHeight", CosmicEvolution.instance.save.thePlayer.y);
         Shader.worldShader2DTexture.uploadFloat("rainFogFactor", rainFogFactor);
@@ -207,10 +214,18 @@ public final class RenderWorldScene {
         GL46.glEnable(GL46.GL_CULL_FACE);
         GL46.glCullFace(GL46.GL_BACK);
 
+
+        GL46.glEnable(GL46.GL_MULTISAMPLE);
+        GL46.glEnable(GL46.GL_SAMPLE_ALPHA_TO_COVERAGE);
+        GL46.glDisable(GL46.GL_BLEND);
+
         for (Chunk transparentChunk : chunksToRender) {
             this.controller.drawCalls++;
             transparentChunk.renderTransparent(this.sunX,this.sunY,this.sunZ);
         }
+
+        GL46.glDisable(GL46.GL_MULTISAMPLE);
+        GL46.glDisable(GL46.GL_SAMPLE_ALPHA_TO_COVERAGE);
 
         GL46.glDisable(GL46.GL_ALPHA_TEST);
         GL46.glDisable(GL46.GL_BLEND);
@@ -237,6 +252,27 @@ public final class RenderWorldScene {
 
         this.renderClouds();
         this.renderRain();
+    }
+
+    private  float getLightValueFromMap(byte lightValue) {
+        return switch (lightValue) {
+            case 0, 1 -> 0.1F;
+            case 2 -> 0.11F;
+            case 3 -> 0.13F;
+            case 4 -> 0.16F;
+            case 5 -> 0.2F;
+            case 6 -> 0.24F;
+            case 7 -> 0.29F;
+            case 8 -> 0.35F;
+            case 9 -> 0.42F;
+            case 10 -> 0.5F;
+            case 11 -> 0.58F;
+            case 12 -> 0.67F;
+            case 13 -> 0.77F;
+            case 14 -> 0.88F;
+            case 15 -> 1.0F;
+            default -> 0.1F;
+        };
     }
 
 
@@ -336,8 +372,8 @@ public final class RenderWorldScene {
             Shader.worldShader2DTexture.uploadVec3f("normalizedLightVector", dir);
             Shader.worldShaderTextureArray.uploadVec3f("normalizedLightVector", dir);
             if (GameSettings.shadowMap) {
-                float lightDist = 256;
-                float orthoSize = 256;
+                float lightDist = 128;
+                float orthoSize = 64;
                 Matrix4f sunProjectionMatrix = new Matrix4f().setOrtho(-orthoSize, orthoSize, -orthoSize, orthoSize, 1, 1024);
                 Matrix4f sunViewMatrix = new Matrix4f();
                 Vector3d sunPosition = new Vector3d(normalizedDir.x, normalizedDir.y, normalizedDir.z);

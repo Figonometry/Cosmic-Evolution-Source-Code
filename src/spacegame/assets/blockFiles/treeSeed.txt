@@ -1,5 +1,5 @@
 blockName:TREE_SEED
-blockModel:size2VoxelModel
+blockModel:seedModel
 stepSound:grass
 canGreedyMesh:false
 breakTimer:60

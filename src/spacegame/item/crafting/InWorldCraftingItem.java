@@ -2,6 +2,7 @@ package spacegame.item.crafting;
 
 import spacegame.block.Block;
 import spacegame.core.CosmicEvolution;
+import spacegame.core.Sound;
 import spacegame.entity.EntityBlock;
 import spacegame.entity.EntityItem;
 import spacegame.item.Item;
@@ -25,7 +26,7 @@ public final class InWorldCraftingItem {
     }
 
 
-    public boolean canItemBePlaced(double x, double y, double z, short inputItem){
+    public boolean canItemBePlaced(short inputItem){
         if(inputItem == Item.reedTwine.ID && this.outputRecipe.requiresBinding){
             return this.bind();
         }
@@ -38,6 +39,9 @@ public final class InWorldCraftingItem {
 
             this.itemsFilled[i] = true;
             CosmicEvolution.instance.save.thePlayer.removeItemFromInventory();
+            CosmicEvolution.instance.soundPlayer.playSound(this.chunk.getBlockXFromIndex(this.indexInChunk),
+                    this.chunk.getBlockYFromIndex(this.indexInChunk),
+                    this.chunk.getBlockZFromIndex(this.indexInChunk), new Sound(Sound.itemClunk, false, 1f), 1f);
             return true;
 
         }
@@ -53,6 +57,10 @@ public final class InWorldCraftingItem {
         this.hasBeenBound = true;
 
         CosmicEvolution.instance.save.thePlayer.removeItemFromInventory();
+
+        CosmicEvolution.instance.soundPlayer.playSound(this.chunk.getBlockXFromIndex(this.indexInChunk),
+                this.chunk.getBlockYFromIndex(this.indexInChunk),
+                this.chunk.getBlockZFromIndex(this.indexInChunk), new Sound(Sound.twineBind, false, 1f), 1f);
 
         return true;
     }

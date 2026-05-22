@@ -19,7 +19,6 @@ public final class ItemBerry extends ItemFood implements IDecayItem {
         
         world.addEntity(new EntityBlock(x + 0.5, y + 0.5, z + 0.5, Block.berrySeed.ID, (byte)1));
         world.clearChestLocation(x,y,z);
-        world.removeChestLocation(x,y,z);
         world.setBlockWithNotify(x,y,z, Block.air.ID, false);
     }
 

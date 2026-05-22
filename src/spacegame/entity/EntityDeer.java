@@ -129,7 +129,7 @@ public final class EntityDeer extends EntityLiving implements IDecayable, IHarve
             this.isOnGround = false;
         }
 
-        this.swimming = this.inWater || this.prevInWater; //Seems counterintuitive but it's needed to trigger the jump out of the water
+        this.swimming = (this.inWater || this.prevInWater) && !this.isDead; //Seems counterintuitive but it's needed to trigger the jump out of the water
 
         if(this.swimming && this.outOfWaterJumpDelay <= 0){
             this.isOnGround = false;
@@ -303,7 +303,7 @@ public final class EntityDeer extends EntityLiving implements IDecayable, IHarve
     @Override
     public void dropItems(double x, double y, double z, World world, EntityPlayer player) {
 
-        if(!player.addItemToInventory(Item.rawGameMeat.ID, Item.NULL_ITEM_METADATA, (byte) CosmicEvolution.globalRand.nextInt(1,5), Item.NULL_ITEM_DURABILITY, 0)){
+        if(!player.addItemToInventory(Item.rawGameMeat.ID, Item.NULL_ITEM_METADATA, (byte) CosmicEvolution.globalRand.nextInt(1,5), Item.NULL_ITEM_DURABILITY, world.ce.save.time + ((IDecayItem)Item.rawGameMeat).getDecayTime())){
            world.addEntity(new EntityItem(this.x, this.y, this.z, Item.rawGameMeat.ID, Item.NULL_ITEM_METADATA, (byte) CosmicEvolution.globalRand.nextInt(1, 5), Item.NULL_ITEM_DURABILITY, world.ce.save.time + ((IDecayItem)Item.rawGameMeat).getDecayTime()));
         }
 

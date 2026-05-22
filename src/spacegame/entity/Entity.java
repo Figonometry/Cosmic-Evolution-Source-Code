@@ -43,7 +43,7 @@ public abstract class Entity {
     public boolean moveEntityUp;
     public double height;
     public double depth;
-    public boolean canDamage;
+    public boolean canDamage = true;
     public double acceleration = 0.01D;
     public double speed = 0.1D;
     public boolean inWater;

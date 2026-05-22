@@ -74,6 +74,7 @@ uniform bool underwater;
 uniform bool raining;
 uniform double playerAbsoluteHeight;
 uniform float rainFogFactor;
+uniform bool isHoldingLight;
 
 uniform float fogRed;
 uniform float fogGreen;
@@ -175,6 +176,46 @@ void main()
             color = setFogUnderwater(color);
         } else {
             color = setFog(color);
+        }
+    }
+
+    if(isHoldingLight){
+        float origR = color.x;
+        float origG = color.y;
+        float origB = color.z;
+
+        float r = fColor.x;
+        float g = fColor.y;
+        float b = fColor.z;
+
+        float highestChannel = max(r, g);
+        highestChannel = max(highestChannel, b);
+
+        float lightMultiplier = 1.0f / highestChannel;
+
+        lightMultiplier = max(lightMultiplier, 0.1f);
+
+        float maxDynamicLightDistance = 16.0;
+        float distanceFromPlayer = distance(fragPosInWorldSpace, fPlayerPositionInChunk);
+        if (distanceFromPlayer < maxDynamicLightDistance){
+            color.x *= lightMultiplier * ((maxDynamicLightDistance - distanceFromPlayer) / maxDynamicLightDistance);
+            color.y *= lightMultiplier * ((maxDynamicLightDistance - distanceFromPlayer) / maxDynamicLightDistance);
+            color.z *= lightMultiplier * ((maxDynamicLightDistance - distanceFromPlayer) / maxDynamicLightDistance);
+
+            color.y *= 0.9f;
+            color.z *= 0.9f;
+
+            if (color.x < origR){
+                color.x = origR;
+            }
+
+            if (color.y < origG){
+                color.y = origG;
+            }
+
+            if (color.z < origB){
+                color.z = origB;
+            }
         }
     }
 }
