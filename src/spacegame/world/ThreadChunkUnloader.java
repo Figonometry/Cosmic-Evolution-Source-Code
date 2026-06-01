@@ -2,12 +2,15 @@ package spacegame.world;
 
 import spacegame.core.CosmicEvolution;
 import spacegame.entity.*;
-import spacegame.item.crafting.InWorld3DCraftingItem;
-import spacegame.item.crafting.InWorldCraftingItem;
+import spacegame.world.blockstate.InWorld3DCraftingItem;
+import spacegame.world.blockstate.InWorldCraftingItem;
 import spacegame.util.Logger;
 import spacegame.item.ItemStack;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
+import spacegame.world.blockstate.HeatableBlockLocation;
+import spacegame.world.blockstate.TimeUpdateEvent;
+import spacegame.world.blockstateio.*;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -45,6 +48,9 @@ public final class ThreadChunkUnloader implements Runnable {
                 NBTTagCompound heatableBlocks = new NBTTagCompound();
                 NBTTagCompound crafting3DItems = new NBTTagCompound();
                 NBTTagCompound craftingItems = new NBTTagCompound();
+                NBTTagCompound cropStates = new NBTTagCompound();
+                NBTTagCompound tilledSoilStates = new NBTTagCompound();
+
                 chunkTag.setTag("Chunk", chunkData);
                 chunkData.setTag("Entity", entity);
                 chunkData.setTag("Chest", chest);
@@ -52,6 +58,8 @@ public final class ThreadChunkUnloader implements Runnable {
                 chunkData.setTag("HeatableBlocks", heatableBlocks);
                 chunkData.setTag("Crafting3DItems", crafting3DItems);
                 chunkData.setTag("CraftingItems", craftingItems);
+                chunkData.setTag("CropStates", cropStates);
+                chunkData.setTag("TilledSoilStates", tilledSoilStates);
 
                 chunkData.setInteger("x", this.chunks[chunkIndex].x);
                 chunkData.setInteger("y", this.chunks[chunkIndex].y);
@@ -73,173 +81,36 @@ public final class ThreadChunkUnloader implements Runnable {
 
 
                 if (this.chunks[chunkIndex].entities.size() > 0) {
-                    Entity savingEntity;
-                    int entityCount = 0;
-                    NBTTagCompound[] entities = new NBTTagCompound[this.chunks[chunkIndex].entities.size()];
-                    for (int i = 0; i < entities.length; i++) {
-                        savingEntity = this.chunks[chunkIndex].entities.get(i);
-                        entities[i] = new NBTTagCompound();
-                        entities[i].setDouble("x", savingEntity.x);
-                        entities[i].setDouble("y", savingEntity.y);
-                        entities[i].setDouble("z", savingEntity.z);
-                        if (savingEntity instanceof EntityBlock) {
-                            entities[i].setString("entityType", "EntityBlock");
-                            entities[i].setShort("blockType", ((EntityBlock) savingEntity).block);
-                            entities[i].setByte("count", ((EntityBlock) savingEntity).count);
-                        } else if (savingEntity instanceof EntityItem) {
-                            entities[i].setString("entityType", "EntityItem");
-                            entities[i].setShort("itemType", ((EntityItem) savingEntity).item);
-                            entities[i].setByte("count", ((EntityItem) savingEntity).count);
-                            entities[i].setShort("durability", ((EntityItem)savingEntity).itemDurability);
-                        } else if (savingEntity instanceof EntityDeer) {
-                            entities[i].setString("entityType", "EntityDeer");
-                            entities[i].setLong("despawnTime", savingEntity.despawnTime);
-                            entities[i].setByte("count", (byte) 1);
-                            entities[i].setBoolean("isDead", ((EntityLiving)savingEntity).isDead);
-                            entities[i].setBoolean("isAIEnabled", ((EntityLiving)savingEntity).isAIEnabled);
-                            entities[i].setLong("timeDied", ((EntityLiving)savingEntity).timeDied);
-                        } else if(savingEntity instanceof EntityWolf){
-                            entities[i].setString("entityType", "EntityWolf");
-                            entities[i].setLong("despawnTime", savingEntity.despawnTime);
-                            entities[i].setByte("count", (byte)1);
-                            entities[i].setBoolean("isDead", ((EntityLiving)savingEntity).isDead);
-                            entities[i].setBoolean("isAIEnabled", ((EntityLiving)savingEntity).isAIEnabled);
-                            entities[i].setLong("timeDied", ((EntityLiving)savingEntity).timeDied);
-                        }
-                        entity.setTag("entity" + entityCount, entities[i]);
-                        entityCount++;
-                    }
-                    entity.setInteger("entityCount", entityCount);
+                    new ChunkEntitiesIO().saveEntities(this.chunks[chunkIndex], entity);
                 }
 
                 if(this.chunks[chunkIndex].chestLocations.size() > 0){
-                    ChestLocation chestLocation;
-                    ChestLocation[] chestLocations = this.chunks[chunkIndex].getAllChestLocationsInArray(this.chunks[chunkIndex].chestLocations.size());
-                    int chestCount = 0;
-                    NBTTagCompound[] chests = new NBTTagCompound[this.chunks[chunkIndex].chestLocations.size()];
-                    for(int i = 0; i < chests.length; i++){
-                        chestLocation = chestLocations[i];
-                        chests[i] = new NBTTagCompound();
-                        chests[i].setInteger("index", chestLocation.index);
-                        ItemStack stack;
-                        NBTTagCompound[] items = new NBTTagCompound[chestLocation.inventory.itemStacks.length];
-                        NBTTagCompound inventory = new NBTTagCompound();
-                        int slotNumber = 0;
-                        for(int j = 0; j < chestLocation.inventory.itemStacks.length; j++){
-                            stack = chestLocation.inventory.itemStacks[j];
-                            if(stack.item != null) {
-                                items[j] = new NBTTagCompound();
-                                items[j].setShort("id", stack.item.ID);
-                                items[j].setByte("count", stack.count);
-                                items[j].setShort("metadata", stack.metadata);
-                                items[j].setShort("durability", stack.durability);
-                                items[j].setLong("decayTime", stack.decayTime);
-                                inventory.setTag("slot " + slotNumber, items[j]);
-                            }
-                            slotNumber++;
-                        }
-                        chests[i].setTag("Inventory", inventory);
-                        chest.setTag("chest" + chestCount, chests[i]);
-                        chestCount++;
-                    }
-                    chest.setInteger("chestCount", chestCount);
+                    new ChestLocationIO().saveChestLocations(this.chunks[chunkIndex], chest);
                 }
 
-
                 if(this.chunks[chunkIndex].updateEvents.size() > 0){
-                    int numberOfTimeEvents = this.chunks[chunkIndex].getNumberOfTimeEvents();
-                    TimeUpdateEvent[] updateEvents = this.chunks[chunkIndex].getAllTimeEventsInArray(numberOfTimeEvents);
-                    TimeUpdateEvent timeUpdateEvent;
-                    int eventCount = 0;
-                    NBTTagCompound[] events = new NBTTagCompound[numberOfTimeEvents];
-                    for(int i = 0; i < events.length; i++){
-                        timeUpdateEvent = updateEvents[i];
-                        events[i] = new NBTTagCompound();
-                        events[i].setInteger("index", timeUpdateEvent.index);
-                        events[i].setLong("updateTime", timeUpdateEvent.updateTime);
-                        timeEvents.setTag("event" + eventCount, events[i]);
-                        eventCount++;
-                    }
-                    timeEvents.setInteger("eventCount", eventCount);
+                    new TimeUpdateIO().saveTimeEvents(this.chunks[chunkIndex], timeEvents);
                 }
 
                 if(this.chunks[chunkIndex].heatableBlocks.size() > 0){
-                    HeatableBlockLocation heatableBlockLocation;
-                    HeatableBlockLocation[] heatableBlockLocations = this.chunks[chunkIndex].getAllHeatableBlockLocationsInArray(this.chunks[chunkIndex].heatableBlocks.size());
-                    int heatableBlockCount = 0;
-                    NBTTagCompound[] heatableBlockTags = new NBTTagCompound[this.chunks[chunkIndex].heatableBlocks.size()];
-                    for(int i = 0; i < heatableBlockTags.length; i++){
-
-                        heatableBlockLocation = heatableBlockLocations[i];
-                        heatableBlockTags[i] = new NBTTagCompound();
-                        heatableBlockTags[i].setInteger("index", heatableBlockLocation.index);
-                        heatableBlockTags[i].setFloat("currentTemperature", heatableBlockLocation.currentTemperature);
-                        heatableBlockTags[i].setShort("currentFuelBurning", heatableBlockLocation.currentFuelBurning);
-                        heatableBlockTags[i].setLong("fuelBurnoutTime", heatableBlockLocation.fuelBurnoutTime);
-                        heatableBlockTags[i].setLong("heatingFinishTime", heatableBlockLocation.heatingFinishTime);
-                        heatableBlockTags[i].setBoolean("heating", heatableBlockLocation.heating);
-                        heatableBlockTags[i].setLong("heatStartTime", heatableBlockLocation.heatStartTime);
-                        heatableBlockTags[i].setLong("fuelStartTime", heatableBlockLocation.fuelStartTime);
-
-                        heatableBlocks.setTag("heatableBlock" + heatableBlockCount, heatableBlockTags[i]);
-                        heatableBlockCount++;
-                    }
-                    heatableBlocks.setInteger("heatableBlockCount", heatableBlockCount);
+                    new HeatableBlockIO().saveHeatableBlocks(this.chunks[chunkIndex], heatableBlocks);
                 }
 
                 if(this.chunks[chunkIndex].crafting3DItems.size() > 0){
-                    InWorld3DCraftingItem inWorld3DCraftingItem;
-                    InWorld3DCraftingItem[] inWorld3DCraftingItems = this.chunks[chunkIndex].getAll3DCraftingItemsInArray(this.chunks[chunkIndex].crafting3DItems.size());
-                    int inWorldCrafting3DItemCount = 0;
-                    NBTTagCompound[] inWorldCrafting3DItemTags = new NBTTagCompound[this.chunks[chunkIndex].crafting3DItems.size()];
-                    for(int i = 0; i < inWorldCrafting3DItemTags.length; i++){
-
-                        inWorld3DCraftingItem = inWorld3DCraftingItems[i];
-                        inWorldCrafting3DItemTags[i] = new NBTTagCompound();
-                        inWorldCrafting3DItemTags[i].setInteger("index", inWorld3DCraftingItem.indexInChunk);
-                        inWorldCrafting3DItemTags[i].setShort("materialBlockID", inWorld3DCraftingItem.materialBlockID);
-                        inWorldCrafting3DItemTags[i].setShort("itemTextureID", inWorld3DCraftingItem.itemTextureID);
-                        inWorldCrafting3DItemTags[i].setInteger("activeCraftingLayer", inWorld3DCraftingItem.activeCraftingLayer);
-                        inWorldCrafting3DItemTags[i].setString("craftingRecipeName", inWorld3DCraftingItem.craftingRecipe.recipeName);
-
-                        for(int j = 0; j < 16; j++){
-                            inWorldCrafting3DItemTags[i].setIntArray("craftingLayer" + j, inWorld3DCraftingItem.subVoxelIndices[j]);
-                        }
-
-                        crafting3DItems.setTag("inWorldCrafting3DItem" + inWorldCrafting3DItemCount, inWorldCrafting3DItemTags[i]);
-                        inWorldCrafting3DItemCount++;
-                    }
-                    crafting3DItems.setInteger("inWorldCrafting3DItemCount", inWorldCrafting3DItemCount);
+                    new Crafting3DItemsIO().saveCrafting3DItems(this.chunks[chunkIndex], crafting3DItems);
                 }
 
                 if(this.chunks[chunkIndex].craftingItems.size() > 0){
-                    InWorldCraftingItem inWorldCraftingItem;
-                    InWorldCraftingItem[] craftingItems1 = this.chunks[chunkIndex].getAllCraftingItemsInArray(this.chunks[chunkIndex].craftingItems.size());
-                    int inWorldCraftingItemCount = 0;
-                    NBTTagCompound[] inWorldCraftingItemTags = new NBTTagCompound[this.chunks[chunkIndex].craftingItems.size()];
-                    for(int i = 0; i < inWorldCraftingItemTags.length; i++){
-
-                        inWorldCraftingItem = craftingItems1[i];
-                        inWorldCraftingItemTags[i] = new NBTTagCompound();
-                        inWorldCraftingItemTags[i].setInteger("index", inWorldCraftingItem.indexInChunk);
-                        inWorldCraftingItemTags[i].setInteger("outputRecipeID", inWorldCraftingItem.outputRecipe.ID);
-                        inWorldCraftingItemTags[i].setBoolean("hasBeenBound", inWorldCraftingItem.hasBeenBound);
-
-                        int filledItemIndex = 0;
-                        for(int j = 0; j < inWorldCraftingItem.itemsFilled.length; j++){
-                            inWorldCraftingItemTags[i].setBoolean("item" + j + "Filled", inWorldCraftingItem.itemsFilled[j]);
-                            filledItemIndex++;
-                        }
-
-                        inWorldCraftingItemTags[i].setInteger("filledItemIndex", filledItemIndex);
-
-                        craftingItems.setTag("inWorldCraftingItem" + inWorldCraftingItemCount, inWorldCraftingItemTags[i]);
-                        inWorldCraftingItemCount++;
-                    }
-                    craftingItems.setInteger("inWorldCraftingItemCount", inWorldCraftingItemCount);
+                    new CraftingItemsIO().saveCraftingItems(this.chunks[chunkIndex], craftingItems);
                 }
 
+                if(this.chunks[chunkIndex].cropStates.size() > 0){
+                    new CropStateIO().saveCropStates(this.chunks[chunkIndex], cropStates);
+                }
 
+                if(this.chunks[chunkIndex].tilledSoilStates.size() > 0){
+                    new TilledSoilStateIO().saveTilledSoilStates(this.chunks[chunkIndex], tilledSoilStates);
+                }
 
                 NBTIO.writeCompressed(chunkTag, outputStream);
                 outputStream.close();

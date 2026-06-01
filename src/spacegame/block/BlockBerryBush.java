@@ -23,7 +23,7 @@ public final class BlockBerryBush extends Block implements ITimeUpdate {
         if(playerHeldItem != Item.block.ID && player.getHeldBlock() != Block.torchStandard.ID){
             if(world.getBlockID(x,y,z) == Block.berryBush.ID){
                 world.setBlockWithNotify(x,y,z, Block.berryBushNoBerries.ID, false);
-                world.addEntity(new EntityItem(x + CosmicEvolution.globalRand.nextFloat(), y + 0.5, z + CosmicEvolution.globalRand.nextFloat(), Item.berry.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY, world.ce.save.time + ((IDecayItem)Item.berry).getDecayTime()));
+                world.addEntity(new EntityItem(x + CosmicEvolution.globalRand.nextFloat(), y + 0.5, z + CosmicEvolution.globalRand.nextFloat(), Item.berry.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY, world.ce.save.time + ((IDecayItem)Item.berry).getDecayTime(), null));
                 world.addTimeEvent(x,y,z,CosmicEvolution.instance.save.time + this.getUpdateTime());
             }
             MouseListener.rightClickReleased = false;

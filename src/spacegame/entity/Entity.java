@@ -5,6 +5,7 @@ import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
+import spacegame.nbt.NBTTagCompound;
 import spacegame.util.MathUtil;
 import spacegame.render.model.ModelLoader;
 import spacegame.render.RenderEngine;
@@ -272,6 +273,14 @@ public abstract class Entity {
 
     public static void initShadow(){
         shadow = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/item/shadow.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
+    }
+
+    public String getEntityType(){
+        return "Entity";
+    }
+
+    public void saveToNBT(NBTTagCompound nbtTagCompound){
+
     }
 
 }

@@ -1,16 +1,16 @@
-package spacegame.item.crafting;
+package spacegame.world.blockstate;
 
 import spacegame.block.Block;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.Sound;
 import spacegame.entity.EntityItem;
 import spacegame.item.Item;
+import spacegame.item.crafting.InWorldCraftingRecipe;
 import spacegame.render.RenderEngine;
 import spacegame.world.Chunk;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Random;
@@ -57,8 +57,8 @@ public final class InWorld3DCraftingItem {
             if(this.craftingRecipe.outputBlockID != Block.NULL_BLOCK_REFERENCE){
                 this.chunk.setBlockWithNotify(this.chunk.getBlockXFromIndex(this.indexInChunk), this.chunk.getBlockYFromIndex(this.indexInChunk), this.chunk.getBlockZFromIndex(this.indexInChunk), this.craftingRecipe.outputBlockID);
             } else {
-                if (!CosmicEvolution.instance.save.thePlayer.addItemToInventory(this.craftingRecipe.outputItemID, Item.list[this.craftingRecipe.outputItemID].metadata, (byte) this.craftingRecipe.outputCount, Item.list[this.craftingRecipe.outputItemID].durability, 0)) {
-                    CosmicEvolution.instance.save.activeWorld.addEntity(new EntityItem(this.chunk.getBlockXFromIndex(this.indexInChunk) + 0.5, this.chunk.getBlockYFromIndex(this.indexInChunk) + 0.25, this.chunk.getBlockZFromIndex(this.indexInChunk) + 0.5, this.craftingRecipe.outputItemID, Item.list[this.craftingRecipe.outputItemID].metadata, (byte) this.craftingRecipe.outputCount, Item.list[this.craftingRecipe.outputItemID].durability, 0));
+                if (!CosmicEvolution.instance.save.thePlayer.addItemToInventory(this.craftingRecipe.outputItemID, Item.list[this.craftingRecipe.outputItemID].metadata, (byte) this.craftingRecipe.outputCount, Item.list[this.craftingRecipe.outputItemID].durability, 0, null)) {
+                    CosmicEvolution.instance.save.activeWorld.addEntity(new EntityItem(this.chunk.getBlockXFromIndex(this.indexInChunk) + 0.5, this.chunk.getBlockYFromIndex(this.indexInChunk) + 0.25, this.chunk.getBlockZFromIndex(this.indexInChunk) + 0.5, this.craftingRecipe.outputItemID, Item.list[this.craftingRecipe.outputItemID].metadata, (byte) this.craftingRecipe.outputCount, Item.list[this.craftingRecipe.outputItemID].durability, 0, null));
                 }
 
                 this.chunk.blocks[this.indexInChunk] = Block.air.ID;

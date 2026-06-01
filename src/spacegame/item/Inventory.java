@@ -1,6 +1,8 @@
 package spacegame.item;
 
 import spacegame.entity.EntityPlayer;
+import spacegame.item.itemstate.ItemState;
+import spacegame.item.itemstate.SeedState;
 
 public final class Inventory {
     public ItemStack[] itemStacks;
@@ -82,27 +84,48 @@ public final class Inventory {
         }
     }
 
-    public void loadItemToInventory(short itemID, short metadata, byte count, short durability, int slot, long decayTime){
+    public void loadItemToInventory(short itemID, short metadata, byte count, short durability, int slot, long decayTime, ItemState itemState){
         this.itemStacks[slot].item = Item.list[itemID];
         this.itemStacks[slot].metadata = metadata;
         this.itemStacks[slot].durability = durability;
         this.itemStacks[slot].count = count;
         this.itemStacks[slot].decayTime = decayTime;
+        this.itemStacks[slot].itemState = itemState;
     }
 
-    public boolean addItemToInventory(short itemID, short metadata, byte count, short durability, long decayTime){
+    public boolean addItemToInventory(short itemID, short metadata, byte count, short durability, long decayTime, ItemState itemState){
         ItemStack stack;
         for(int i = 0; i < this.itemStacks.length; i++) {
             stack = this.itemStacks[i];
             if (stack.item != null) {
-                if (stack.item.ID == itemID && stack.metadata == metadata && stack.durability == durability) {
-                    if (stack.count + count <= Item.list[itemID].stackLimit) {
-                        stack.count += count;
-                        return true;
-                    } else {
-                        while (stack.count != Item.list[itemID].stackLimit) {
-                            stack.count++;
-                            count--;
+
+                SeedState seedStateInSlot = (SeedState)this.itemStacks[i].itemState;
+                if(itemState instanceof SeedState incomingSeedState && seedStateInSlot != null){
+                    if(incomingSeedState.canMutate == seedStateInSlot.canMutate && incomingSeedState.targetCrop.equals(seedStateInSlot.targetCrop)) {
+
+                        if (stack.item.ID == itemID && stack.metadata == metadata && stack.durability == durability) {
+                            if (stack.count + count <= Item.list[itemID].stackLimit) {
+                                stack.count += count;
+                                return true;
+                            } else {
+                                while (stack.count != Item.list[itemID].stackLimit) {
+                                    stack.count++;
+                                    count--;
+                                }
+                            }
+                        }
+                    }
+
+                } else {
+                    if (stack.item.ID == itemID && stack.metadata == metadata && stack.durability == durability) {
+                        if (stack.count + count <= Item.list[itemID].stackLimit) {
+                            stack.count += count;
+                            return true;
+                        } else {
+                            while (stack.count != Item.list[itemID].stackLimit) {
+                                stack.count++;
+                                count--;
+                            }
                         }
                     }
                 }
@@ -117,6 +140,7 @@ public final class Inventory {
                 stack.setMetadata(metadata);
                 stack.durability = durability;
                 stack.decayTime = decayTime;
+                stack.itemState = itemState;
                 return true;
             }
         }

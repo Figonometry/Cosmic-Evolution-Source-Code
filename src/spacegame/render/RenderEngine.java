@@ -395,7 +395,7 @@ public final class RenderEngine {
                 case 1 -> "dirt";
                 case 2 -> "grassSideTop";
                 case 3 -> "torch";
-                case 4 -> "water";
+                case 4 -> "water"; //Top
                 case 5 -> "sand";
                 case 6 -> "snow";
                 case 7 -> "stone";
@@ -435,7 +435,6 @@ public final class RenderEngine {
                 case 41 -> "UNUSED";
                 case 42 -> "primitiveDoorBase";
                 case 43 -> "twine";
-
                 //Items
                 case 44 -> "item-stone";
                 case 45 -> "item-berry";
@@ -456,7 +455,29 @@ public final class RenderEngine {
                 case 60 -> "item-wolfPeltTop";
                 case 61 -> "item-rot";
                 case 62 -> "item-primitiveDoorBase";
-
+                case 63 -> "waterSide"; //Side
+                case 64 -> "water"; //Bottom
+                case 65 -> "water"; //northFlow
+                case 66 -> "water"; //southFlow
+                case 67 -> "water"; //eastFlow
+                case 68 -> "water"; //westFlow
+                case 69 -> "waterSide";
+                case 70 -> "tilledSoil";
+                case 71 -> "item-seedWheatFamily";
+                case 72 -> "item-bone";
+                case 73 -> "item-boneMeal";
+                case 74 -> "wildGrass";
+                case 75 -> "einkornWheat-1";
+                case 76 -> "cropSeed";
+                case 77 -> "fertilizer";
+                case 78 -> "einkornWheat-2";
+                case 79 -> "einkornWheat-3";
+                case 80 -> "einkornWheat-4";
+                case 81 -> "einkornWheat-5";
+                case 82 -> "einkornWheat-6";
+                case 83 -> "einkornWheat-7";
+                case 84 -> "einkornWheat-8";
+                case 85 -> "item-einkornWheat";
 
                 default -> "missing";
             };
@@ -482,6 +503,10 @@ public final class RenderEngine {
                 case 18 -> "wolfPeltTop";
                 case 19 -> "rot";
                 case 20 -> "primitiveDoorBase";
+                case 21 -> "seedWheatFamily";
+                case 22 -> "bone";
+                case 23 -> "boneMeal";
+                case 24 -> "einkornWheat";
                 default -> "missing";
             };
         }

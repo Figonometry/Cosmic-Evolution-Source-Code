@@ -4,14 +4,12 @@ package spacegame.gui;
 import org.joml.*;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
-import spacegame.block.Block;
-import spacegame.block.BlockDoor;
-import spacegame.block.BlockTorch;
-import spacegame.block.ITimeUpdate;
+import spacegame.block.*;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
 import spacegame.entity.Entity;
-import spacegame.item.crafting.InWorldCraftingItem;
+import spacegame.item.ItemHoe;
+import spacegame.world.blockstate.InWorldCraftingItem;
 import spacegame.render.model.ModelFace;
 import spacegame.render.model.ModelLoader;
 import spacegame.render.model.ModelPlayer;
@@ -23,8 +21,8 @@ import spacegame.item.Item;
 import spacegame.render.*;
 import spacegame.world.AxisAlignedBB;
 import spacegame.world.Chunk;
-import spacegame.item.crafting.InWorld3DCraftingItem;
-import spacegame.world.TimeUpdateEvent;
+import spacegame.world.blockstate.InWorld3DCraftingItem;
+import spacegame.world.blockstate.TimeUpdateEvent;
 
 import java.lang.Math;
 import java.util.Random;
@@ -139,7 +137,7 @@ public final class GuiInGame extends Gui {
 
         if(!CosmicEvolution.instance.save.thePlayer.freeMove) {
             short blockPlayerHeadIsIn = CosmicEvolution.instance.save.activeWorld.getBlockID(MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x), MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.y + CosmicEvolution.instance.save.thePlayer.height / 2), MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z));
-            if (blockPlayerHeadIsIn == Block.water.ID) {
+            if (Block.list[blockPlayerHeadIsIn] instanceof BlockWater) {
                 GL46.glEnable(GL46.GL_BLEND);
                 GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
                 tessellator.toggleOrtho();
@@ -182,7 +180,7 @@ public final class GuiInGame extends Gui {
 
     public static void renderBlockLookingAtName(){
         short blockID = CosmicEvolution.instance.save.thePlayer.getPlayerLookingAtBlockID();
-        if(blockID == Block.air.ID || blockID == Block.water.ID)return;
+        if(blockID == Block.air.ID || Block.list[blockID] instanceof BlockWater)return;
         if(blockID == Block.craftingItem.ID) {
             int[] coords = CosmicEvolution.instance.save.thePlayer.getPlayerLookingAtBlockCoords();
             renderCraftingItemInfoOverlay(coords[0], coords[1], coords[2]);
@@ -197,7 +195,7 @@ public final class GuiInGame extends Gui {
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
         int[] blockCoordinates = CosmicEvolution.instance.save.thePlayer.getPlayerLookingAtBlockCoords();
-        if(Block.list[blockID] instanceof ITimeUpdate && !(Block.list[blockID] instanceof BlockTorch)) {
+        if(Block.list[blockID] instanceof ITimeUpdate && !(Block.list[blockID] instanceof BlockTorch) && !(Block.list[blockID] instanceof BlockSoil && !(Block.list[blockID] instanceof BlockCrop))) {
             StringBuilder stringBuilder = new StringBuilder();
             TimeUpdateEvent updateEvent = CosmicEvolution.instance.save.activeWorld.getTimeEvent(blockCoordinates[0], blockCoordinates[1], blockCoordinates[2]);
             if(updateEvent != null) {
@@ -213,7 +211,7 @@ public final class GuiInGame extends Gui {
                 if (hoursUntil != 0 || (minutesUntil != 0 && daysUntil != 0)) {
                     stringBuilder.append(hoursUntil).append(hoursUntil != 1 ? " Hours " : " Hour ");
                 }
-                if (minutesUntil != 0) {
+                if (minutesUntil > 0) {
                     stringBuilder.append(minutesUntil).append(minutesUntil != 1 ? " Minutes" : " Minute");
                 }
             }
@@ -646,10 +644,11 @@ public final class GuiInGame extends Gui {
 
 
     public static void renderHeldItem() {
-        final short heldBlock = CosmicEvolution.instance.save.thePlayer.getHeldBlock();
-        if(CosmicEvolution.instance.save.thePlayer.isHoldingBlock()) {
+        EntityPlayer player = CosmicEvolution.instance.save.thePlayer;
+        final short heldBlock = player.getHeldBlock();
+        if(player.isHoldingBlock()) {
             if (heldBlock != Block.air.ID) {
-                float x = 2f;
+                float x = 3f;
                 float y = -2.5f;
                 float z = -3f;
                 if(heldBlock == Block.itemStone.ID || heldBlock == Block.itemClay.ID || heldBlock == Block.treeSeed.ID || heldBlock == Block.berrySeed.ID || heldBlock == Block.reedSeed.ID){
@@ -660,23 +659,23 @@ public final class GuiInGame extends Gui {
                     y += 0.5f;
                 }
                 if(GameSettings.viewBob) {
-                    x -= 0.5f * ((MathUtil.sin((float) (((CosmicEvolution.instance.save.thePlayer.viewBobTimer / 60f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
-                    y -= 0.25f * ((MathUtil.sin((float) (((CosmicEvolution.instance.save.thePlayer.viewBobTimer / 60f) - 0.125f) * (Math.PI * 4f))) * 0.5) + 0.5f);
+                    x -= 0.5f * ((MathUtil.sin((float) (((player.viewBobTimer / 60f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
+                    y -= 0.25f * ((MathUtil.sin((float) (((player.viewBobTimer / 60f) - 0.125f) * (Math.PI * 4f))) * 0.5) + 0.5f);
                 }
-                z -= 1f * ((MathUtil.sin((float) ((((float)CosmicEvolution.instance.save.thePlayer.swingTimer / (float)CosmicEvolution.instance.save.thePlayer.maxSwingTimer) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
+                z -= 1f * ((MathUtil.sin((float) ((((float)player.swingTimer / (float)player.maxSwingTimer) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
                 Vector3f position = new Vector3f(x,y,z);
                 Matrix3f rotationMatrix = new Matrix3f();
                 rotationMatrix.rotateY((float) (0.25 * Math.PI));
-                double sine = (MathUtil.sin((float) ((((double) CosmicEvolution.instance.save.thePlayer.swingTimer / CosmicEvolution.instance.save.thePlayer.maxSwingTimer) * Math.PI * 2) - (0.5 * Math.PI))) * 0.5) + 0.5f;
+                double sine = (MathUtil.sin((float) ((((double) player.swingTimer / player.maxSwingTimer) * Math.PI * 2) - (0.5 * Math.PI))) * 0.5) + 0.5f;
                 rotationMatrix.rotateLocalX((float) ((float) -(0.25 * Math.PI) * sine));
                 Quaternionf rotation = rotationMatrix.getUnnormalizedRotation(new Quaternionf());
-                int playerX = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x);
-                int playerY = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.y);
-                int playerZ = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z);
+                int playerX = MathUtil.floorDouble(player.x);
+                int playerY = MathUtil.floorDouble(player.y);
+                int playerZ = MathUtil.floorDouble(player.z);
                 float blockLight = getLightValueFromMap(CosmicEvolution.instance.save.activeWorld.getBlockLightValue(playerX, playerY, playerZ));
                 float lightLevelFloat = CosmicEvolution.instance.save.activeWorld.chunkController.renderWorldScene.baseLight > blockLight ? CosmicEvolution.instance.save.activeWorld.chunkController.renderWorldScene.baseLight : blockLight;
-                lightLevelFloat -=  0.1 * (MathUtil.sin(CosmicEvolution.instance.save.thePlayer.yaw / 45) + 1);
-                lightLevelFloat -=  0.1 * (MathUtil.sin(CosmicEvolution.instance.save.thePlayer.pitch / 45) + 1);
+                lightLevelFloat -=  0.1 * (MathUtil.sin(player.yaw / 45) + 1);
+                lightLevelFloat -=  0.1 * (MathUtil.sin(player.pitch / 45) + 1);
                 if(lightLevelFloat < 0.1){
                     lightLevelFloat = 0.1f;
                 }
@@ -765,7 +764,7 @@ public final class GuiInGame extends Gui {
                 CosmicEvolution.camera.viewMatrix = preservedViewMatrix;
             }
         } else {
-            short itemID = CosmicEvolution.instance.save.thePlayer.getHeldItem();
+            short itemID = player.getHeldItem();
             if(itemID == Item.NULL_ITEM_REFERENCE) {
                 RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
                 ModelSegment arm = ModelPlayer.getBaseModel().segments[ModelPlayer.LEFT_ARM];
@@ -774,24 +773,24 @@ public final class GuiInGame extends Gui {
                 float translateY = -1.25f;
                 float translateZ = -2f;
                 if (GameSettings.viewBob) {
-                    translateX -= 0.125f * ((MathUtil.sin((float) (((CosmicEvolution.instance.save.thePlayer.viewBobTimer / 60f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
-                    translateY -= 0.0625f * ((MathUtil.sin((float) (((CosmicEvolution.instance.save.thePlayer.viewBobTimer / 60f) - 0.125f) * (Math.PI * 4f))) * 0.5) + 0.5f);
+                    translateX -= 0.125f * ((MathUtil.sin((float) (((player.viewBobTimer / 60f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
+                    translateY -= 0.0625f * ((MathUtil.sin((float) (((player.viewBobTimer / 60f) - 0.125f) * (Math.PI * 4f))) * 0.5) + 0.5f);
                 }
-                translateZ -= 1f * ((MathUtil.sin((float) ((((float)CosmicEvolution.instance.save.thePlayer.swingTimer / (float)CosmicEvolution.instance.save.thePlayer.maxSwingTimer) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
+                translateZ -= 1f * ((MathUtil.sin((float) ((((float)player.swingTimer / (float)player.maxSwingTimer) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
 
                 Vector3f translation = new Vector3f(translateX, translateY, translateZ);
                 Matrix3f rotationMatrix = new Matrix3f();
                 rotationMatrix.rotateY((float) -(0.35 * Math.PI));
-                double sine = (MathUtil.sin((float) ((((double) CosmicEvolution.instance.save.thePlayer.swingTimer / (float)CosmicEvolution.instance.save.thePlayer.maxSwingTimer) * Math.PI * 2) - (0.5 * Math.PI))) * 0.5) + 0.5f;
+                double sine = (MathUtil.sin((float) ((((double) player.swingTimer / (float)player.maxSwingTimer) * Math.PI * 2) - (0.5 * Math.PI))) * 0.5) + 0.5f;
                 rotationMatrix.rotateLocalX((float) ((float) -(0.25 * Math.PI) * sine));
                 Quaternionf rotation = rotationMatrix.getUnnormalizedRotation(new Quaternionf());
-                int playerX = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x);
-                int playerY = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.y);
-                int playerZ = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z);
+                int playerX = MathUtil.floorDouble(player.x);
+                int playerY = MathUtil.floorDouble(player.y);
+                int playerZ = MathUtil.floorDouble(player.z);
                 float blockLight = getLightValueFromMap(CosmicEvolution.instance.save.activeWorld.getBlockLightValue(playerX, playerY, playerZ));
                 float lightLevelFloat = CosmicEvolution.instance.save.activeWorld.chunkController.renderWorldScene.baseLight > blockLight ? CosmicEvolution.instance.save.activeWorld.chunkController.renderWorldScene.baseLight : blockLight;
-                lightLevelFloat -= 0.1 * (MathUtil.sin(CosmicEvolution.instance.save.thePlayer.yaw / 45) + 1);
-                lightLevelFloat -= 0.1 * (MathUtil.sin(CosmicEvolution.instance.save.thePlayer.pitch / 45) + 1);
+                lightLevelFloat -= 0.1 * (MathUtil.sin(player.yaw / 45) + 1);
+                lightLevelFloat -= 0.1 * (MathUtil.sin(player.pitch / 45) + 1);
                 if (lightLevelFloat < 0.1f) {
                     lightLevelFloat = 0.1f;
                 }
@@ -870,35 +869,60 @@ public final class GuiInGame extends Gui {
                 CosmicEvolution.camera.viewMatrix = new Matrix4d();
                 GL46.glEnable(GL46.GL_CULL_FACE);
                 GL46.glCullFace(GL46.GL_FRONT);
-                tessellator.drawTexture2D(CosmicEvolution.instance.save.thePlayer.getTexture(), Shader.screen2DTexture, CosmicEvolution.camera);
+                tessellator.drawTexture2D(player.getTexture(), Shader.screen2DTexture, CosmicEvolution.camera);
                 GL46.glDisable(GL46.GL_CULL_FACE);
                 CosmicEvolution.camera.viewMatrix = preservedViewMatrix;
 
 
             } else if(itemID != Item.block.ID){
                 RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
+
                 float x = 3f;
                 float y = -2f;
                 float z = -3f;
                 if(GameSettings.viewBob) {
-                    x -= 0.125f * ((MathUtil.sin((float) (((CosmicEvolution.instance.save.thePlayer.viewBobTimer / 60f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
-                    y -= 0.0625f * ((MathUtil.sin((float) (((CosmicEvolution.instance.save.thePlayer.viewBobTimer / 60f) - 0.125f) * (Math.PI * 4f))) * 0.5) + 0.5f);
+                    x -= 0.125f * ((MathUtil.sin((float) (((player.viewBobTimer / 60f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
+                    y -= 0.0625f * ((MathUtil.sin((float) (((player.viewBobTimer / 60f) - 0.125f) * (Math.PI * 4f))) * 0.5) + 0.5f);
                 }
-                z -= 1f * ((MathUtil.sin((float) ((((float)CosmicEvolution.instance.save.thePlayer.swingTimer / (float)CosmicEvolution.instance.save.thePlayer.maxSwingTimer) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
+                if(!player.animateRightClick) {
+                    z -= 1f * ((MathUtil.sin((float) ((((float) player.swingTimer / (float) player.maxSwingTimer) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
+                }
 
                 Vector3f position = new Vector3f(x,y,z);
                 Matrix3f rotationMatrix = new Matrix3f();
-               // rotationMatrix.rotateY((float) -(0.35 * Math.PI));
-                double sine = (MathUtil.sin((float) ((((double) CosmicEvolution.instance.save.thePlayer.swingTimer / CosmicEvolution.instance.save.thePlayer.maxSwingTimer) * Math.PI * 2) - (0.5 * Math.PI))) * 0.5) + 0.5f;
-                rotationMatrix.rotateLocalX((float) ((float) -(0.25 * Math.PI) * sine));
+                if(!player.animateRightClick) {
+                    double sine = (MathUtil.sin((float) ((((double) player.swingTimer / player.maxSwingTimer) * Math.PI * 2) - (0.5 * Math.PI))) * 0.5) + 0.5f;
+                    rotationMatrix.rotateLocalX((float) ((float) -(0.25 * Math.PI) * sine));
+                }
+
+                if(Item.list[player.getHeldItem()] instanceof ItemHoe){
+                    float ratio;
+                    if(player.rightClickAnimateTimer > 45){
+                        ratio = ((player.rightClickAnimateTimer - 60) * -1) / 15f;
+                        rotationMatrix.rotateLocalX((float) (0.25 * Math.PI) * ratio);
+                    } else if(player.rightClickAnimateTimer > 15){
+                        rotationMatrix.rotateLocalX((float) (0.25 * Math.PI));
+                    } else if (player.rightClickAnimateTimer > 0) {
+                        ratio = (15 - player.rightClickAnimateTimer) / 15f;
+                        rotationMatrix.rotateLocalX((float) (0.25 * Math.PI));
+                        rotationMatrix.rotateLocalX((float) (-0.5 * Math.PI) * ratio);
+                    } else if(player.rightClickAnimateTimer > -15) {
+                        ratio = (player.rightClickAnimateTimer * -1) / 15f;
+                        rotationMatrix.rotateLocalX((float) (-0.25 * Math.PI));
+                        rotationMatrix.rotateLocalX((float) (0.25 * Math.PI) * ratio);
+                    }
+                }
+
                 Quaternionf rotation = rotationMatrix.getUnnormalizedRotation(new Quaternionf());
-                int playerX = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x);
-                int playerY = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.y);
-                int playerZ = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z);
+
+                int playerX = MathUtil.floorDouble(player.x);
+                int playerY = MathUtil.floorDouble(player.y);
+                int playerZ = MathUtil.floorDouble(player.z);
+
                 float blockLight = getLightValueFromMap(CosmicEvolution.instance.save.activeWorld.getBlockLightValue(playerX, playerY, playerZ));
-                float lightLevelFloat = CosmicEvolution.instance.save.activeWorld.chunkController.renderWorldScene.baseLight > blockLight ? CosmicEvolution.instance.save.activeWorld.chunkController.renderWorldScene.baseLight : blockLight;
-                lightLevelFloat -=  0.1 * (MathUtil.sin(CosmicEvolution.instance.save.thePlayer.yaw / 45) + 1);
-                lightLevelFloat -=  0.1 * (MathUtil.sin(CosmicEvolution.instance.save.thePlayer.pitch / 45) + 1);
+                float lightLevelFloat = Math.max(CosmicEvolution.instance.save.activeWorld.chunkController.renderWorldScene.baseLight, blockLight);
+                lightLevelFloat -=  0.1 * (MathUtil.sin(player.yaw / 45) + 1);
+                lightLevelFloat -=  0.1 * (MathUtil.sin(player.pitch / 45) + 1);
                 if(lightLevelFloat < 0.1f){
                     lightLevelFloat = 0.1f;
                 }
@@ -977,6 +1001,7 @@ public final class GuiInGame extends Gui {
                 CosmicEvolution.camera.viewMatrix = preservedViewMatrix;
             }
         }
+
     }
 
     public static float getLightValueFromMap(byte lightValue) {
@@ -1028,7 +1053,7 @@ public final class GuiInGame extends Gui {
                     if(checkedBlock.ID == Block.craftingItem.ID)return;
 
                     if (isBlockVisible(blockX, blockY, blockZ)) {
-                        if (checkedBlock.ID != Block.air.ID && checkedBlock.ID != Block.water.ID) {
+                        if (checkedBlock.ID != Block.air.ID && !(checkedBlock instanceof BlockWater)) {
                             locationX = blockX;
                             locationY = blockY;
                             locationZ = blockZ;
@@ -1217,7 +1242,7 @@ public final class GuiInGame extends Gui {
                 }
 
                 if (isBlockVisible(blockX, blockY, blockZ)) {
-                    if(checkedBlock.ID != Block.air.ID && checkedBlock.ID != Block.water.ID){
+                    if(checkedBlock.ID != Block.air.ID && !(checkedBlock instanceof BlockWater)){
                             locationX = blockX;
                             locationY = blockY;
                             locationZ = blockZ;
@@ -1417,6 +1442,10 @@ public final class GuiInGame extends Gui {
                     model.rotateModel(135f, 0, 1, 0);
                     model.scaleModel(2.1f);
                 }
+            }
+
+            if(craftingItem.outputRecipe.requiredItems[i] == Item.stoneHoeHead.ID){
+                model.rotateModel(90f, 0, 0, 1);
             }
 
             model.rotateModel((float) craftingItem.outputRecipe.requiredItemAngles[i], 0, 1, 0);

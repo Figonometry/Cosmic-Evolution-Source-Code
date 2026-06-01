@@ -1,6 +1,7 @@
 package spacegame.world.weather;
 
 import spacegame.block.Block;
+import spacegame.block.BlockWater;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.Sound;
 import spacegame.util.MathUtil;
@@ -31,7 +32,7 @@ public final class RainQuad {
 
         this.extinguishFireBlocks(blockID,x,y,z);
 
-        if(Block.list[blockID].isSolid || blockID == Block.water.ID){
+        if(Block.list[blockID].isSolid || Block.list[blockID] instanceof BlockWater){
             if(this.y <= MathUtil.floorDouble(this.y) + 0.5){
                 this.remove = true;
             }

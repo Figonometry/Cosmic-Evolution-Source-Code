@@ -8,6 +8,7 @@ import spacegame.core.Timer;
 import spacegame.entity.ai.AIPassive;
 import spacegame.item.IDecayItem;
 import spacegame.item.Item;
+import spacegame.nbt.NBTTagCompound;
 import spacegame.render.model.Model;
 import spacegame.render.model.ModelDeer;
 import spacegame.render.RenderEngine;
@@ -71,6 +72,27 @@ public final class EntityDeer extends EntityLiving implements IDecayable, IHarve
             this.setMovementAmount();
             this.doGravity();
             this.setEntityState();
+            int x = MathUtil.floorDouble(this.x);
+            int y = MathUtil.floorDouble(this.y);
+            int z = MathUtil.floorDouble(this.z);
+
+            short headBlock = CosmicEvolution.instance.save.activeWorld.getBlockID(x, y, z);
+
+            if(headBlock >= 152 && headBlock <= 158){
+                this.deltaX -= 0.01;
+            }
+
+            if(headBlock >= 159 && headBlock <= 165){
+                this.deltaX += 0.01;
+            }
+
+            if(headBlock >= 166 && headBlock <= 172){
+                this.deltaZ -= 0.01;
+            }
+
+            if(headBlock >= 173 && headBlock <= 179){
+                this.deltaZ += 0.01;
+            }
             this.moveAndHandleCollision();
             this.performStepSound();
             this.playAmbientSound();
@@ -303,15 +325,42 @@ public final class EntityDeer extends EntityLiving implements IDecayable, IHarve
     @Override
     public void dropItems(double x, double y, double z, World world, EntityPlayer player) {
 
-        if(!player.addItemToInventory(Item.rawGameMeat.ID, Item.NULL_ITEM_METADATA, (byte) CosmicEvolution.globalRand.nextInt(1,5), Item.NULL_ITEM_DURABILITY, world.ce.save.time + ((IDecayItem)Item.rawGameMeat).getDecayTime())){
-           world.addEntity(new EntityItem(this.x, this.y, this.z, Item.rawGameMeat.ID, Item.NULL_ITEM_METADATA, (byte) CosmicEvolution.globalRand.nextInt(1, 5), Item.NULL_ITEM_DURABILITY, world.ce.save.time + ((IDecayItem)Item.rawGameMeat).getDecayTime()));
+        int meatAmount = CosmicEvolution.globalRand.nextInt(1, 5);
+        int boneAmount = CosmicEvolution.globalRand.nextInt(1,3);
+        EntityItem item;
+
+        for (int i = 0; i <= meatAmount; i++) {
+            item = new EntityItem(this.x + CosmicEvolution.globalRand.nextDouble(-0.5f, 0.5f), this.y, this.z + CosmicEvolution.globalRand.nextDouble(-0.5f, 0.5f), Item.rawGameMeat.ID, Item.NULL_ITEM_METADATA, (byte) 1, Item.NULL_ITEM_DURABILITY, world.ce.save.time + ((IDecayItem) Item.rawGameMeat).getDecayTime(), null);
+            item.yaw = CosmicEvolution.globalRand.nextFloat(360f);
+            world.addEntity(item);
         }
 
-        if(!player.addItemToInventory(Item.deerPelt.ID, Item.NULL_ITEM_METADATA, (byte) 1, Item.NULL_ITEM_DURABILITY, 0)){
-            world.addEntity(new EntityItem(this.x, this.y, this.z, Item.deerPelt.ID, Item.NULL_ITEM_METADATA, (byte) 1, Item.NULL_ITEM_DURABILITY, 0));
+        for (int i = 0; i <= boneAmount; i++) {
+            item = new EntityItem(this.x + CosmicEvolution.globalRand.nextDouble(-0.5f, 0.5f), this.y, this.z + CosmicEvolution.globalRand.nextDouble(-0.5f, 0.5f), Item.bone.ID, Item.NULL_ITEM_METADATA, (byte) 1, Item.NULL_ITEM_DURABILITY, world.ce.save.time + ((IDecayItem) Item.rawGameMeat).getDecayTime(), null);
+            item.yaw = CosmicEvolution.globalRand.nextFloat(360f);
+            world.addEntity(item);
         }
+
+        item = new EntityItem(this.x + CosmicEvolution.globalRand.nextDouble(-0.5f, 0.5f), this.y, this.z + CosmicEvolution.globalRand.nextDouble(-0.5f, 0.5f), Item.deerPelt.ID, Item.NULL_ITEM_METADATA, (byte) 1, Item.NULL_ITEM_DURABILITY, 0, null);
+        item.yaw = CosmicEvolution.globalRand.nextFloat(360f);
+        world.addEntity(item);
 
 
         this.destroyOnDecay();
+    }
+
+    @Override
+    public String getEntityType(){
+        return "EntityDeer";
+    }
+
+    @Override
+    public void saveToNBT(NBTTagCompound nbtTagCompound){
+        nbtTagCompound.setString("entityType", "EntityDeer");
+        nbtTagCompound.setLong("despawnTime", this.despawnTime);
+        nbtTagCompound.setByte("count", (byte)1);
+        nbtTagCompound.setBoolean("isDead", this.isDead);
+        nbtTagCompound.setBoolean("isAIEnabled", this.isAIEnabled);
+        nbtTagCompound.setLong("timeDied", this.timeDied);
     }
 }

@@ -7,8 +7,9 @@ import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
 import spacegame.entity.*;
 import spacegame.item.crafting.CraftingBlockRecipes;
-import spacegame.item.crafting.InWorld3DCraftingItem;
-import spacegame.item.crafting.InWorldCraftingItem;
+import spacegame.item.itemstate.ItemState;
+import spacegame.world.blockstate.InWorld3DCraftingItem;
+import spacegame.world.blockstate.InWorldCraftingItem;
 import spacegame.item.crafting.InWorldCraftingRecipe;
 import spacegame.render.RenderEngine;
 import spacegame.util.MathUtil;
@@ -18,6 +19,8 @@ import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.render.RenderWorldScene;
 import spacegame.render.ThreadRebuildChunk;
+import spacegame.world.blockstate.HeatableBlockLocation;
+import spacegame.world.blockstateio.*;
 
 import java.awt.*;
 import java.io.File;
@@ -110,6 +113,7 @@ public final class ChunkController {
 
 
                 CosmicEvolution.instance.save.time = (long) (CosmicEvolution.instance.everything.getObjectAssociatedWithWorld(this.parentWorld).rotationPeriod *  ratio);
+
 
                 this.playerChunkX = MathUtil.floorDouble(this.parentWorld.ce.save.thePlayer.x) >> 5;
                 this.playerChunkZ = MathUtil.floorDouble(this.parentWorld.ce.save.thePlayer.z) >> 5;
@@ -374,6 +378,10 @@ public final class ChunkController {
                     chunk.elementOffsetTransparent = 0;
                     chunk.needsToUpdate = false;
                     chunk.updating = true;
+                    if (chunk.updateSkylight) {
+                        chunk.setSkyLight();
+                        chunk.updateSkylight = false;
+                    }
                     CosmicEvolution.threadJobs.incrementAndGet();
                     ChunkJobThreadScheduler.chunkJobQueue.add(new ChunkJob((float) MathUtil.distance3DSquared(playerChunkX << 5, playerChunkY << 5, playerChunkZ << 5, chunk.x << 5, chunk.y << 5, chunk.z << 5), new ThreadRebuildChunk(chunk, this.parentWorld)));
                     rebuildsStarted++;
@@ -550,10 +558,6 @@ public final class ChunkController {
     public void addChunk(Chunk chunk) {
         this.chunkTerrainHandler.setTerrain(chunk.blocks, chunk);
 
-        if (chunk.containsWater) {
-            chunk.setLightValueUnderWater();
-        }
-
         if (chunk.empty) {
             chunk.emptyChunk();
         }
@@ -573,9 +577,6 @@ public final class ChunkController {
             chunk.markDirty();
             if(!chunk.populated){
                 chunk.markToPopulate();
-            }
-            if (chunk.containsWater) {
-                chunk.setLightValueUnderWater();
             }
         }
 
@@ -694,6 +695,8 @@ public final class ChunkController {
                         NBTTagCompound heatableBlocks = chunkData.getCompoundTag("HeatableBlocks");
                         NBTTagCompound crafting3DItems = chunkData.getCompoundTag("Crafting3DItems");
                         NBTTagCompound craftingItems = chunkData.getCompoundTag("CraftingItems");
+                        NBTTagCompound cropStates = chunkData.getCompoundTag("CropStates");
+                        NBTTagCompound tilledSoilStates = chunkData.getCompoundTag("TilledSoilStates");
 
                         chunk = new Chunk(x, y, z, CosmicEvolution.instance.save.activeWorld);
 
@@ -713,159 +716,35 @@ public final class ChunkController {
                         }
 
                         if(entity != null) {
-                            int entityCount = entity.getInteger("entityCount");
-                            NBTTagCompound entityLoadedTag;
-                            Entity entityLoaded;
-                            for (int i = 0; i < entityCount; i++) {
-                                entityLoadedTag = entity.getCompoundTag("entity" + i);
-                                switch (entityLoadedTag.getString("entityType")) {
-                                    case "EntityBlock" -> {
-                                        entityLoaded = new EntityBlock(entityLoadedTag.getDouble("x"), entityLoadedTag.getDouble("y"), entityLoadedTag.getDouble("z"), entityLoadedTag.getShort("blockType"), entityLoadedTag.getByte("count"));
-                                        entityLoaded.y += 0.1;
-                                        chunk.addEntityToList(entityLoaded);
-                                    }
-                                    case "EntityItem" -> {
-                                        entityLoaded = new EntityItem(entityLoadedTag.getDouble("x"), entityLoadedTag.getDouble("y"), entityLoadedTag.getDouble("z"), entityLoadedTag.getShort("itemType"), (byte) 1, entityLoadedTag.getByte("count"), entityLoadedTag.getShort("durability"), 0);
-                                        entityLoaded.y += 0.1;
-                                        chunk.addEntityToList(entityLoaded);
-                                    }
-                                    case "EntityDeer" -> {
-                                        entityLoaded = new EntityDeer(entityLoadedTag.getDouble("x"), entityLoadedTag.getDouble("y"), entityLoadedTag.getDouble("z"), false, false);
-                                        entityLoaded.despawnTime = entityLoadedTag.getLong("despawnTime");
-                                        ((EntityLiving)entityLoaded).isDead = entityLoadedTag.getBoolean("isDead");
-                                        ((EntityLiving)entityLoaded).isAIEnabled = entityLoadedTag.getBoolean("isAIEnabled");
-                                        ((EntityLiving)entityLoaded).timeDied = entityLoadedTag.getLong("timeDied");
-                                        chunk.addEntityToList(entityLoaded);
-                                    }
-                                    case "EntityWolf" -> {
-                                        entityLoaded = new EntityWolf(entityLoadedTag.getDouble("x"), entityLoadedTag.getDouble("y"), entityLoadedTag.getDouble("z"), false, false);
-                                        entityLoaded.despawnTime = entityLoadedTag.getLong("despawnTime");
-                                        ((EntityLiving)entityLoaded).isDead = entityLoadedTag.getBoolean("isDead");
-                                        ((EntityLiving)entityLoaded).isAIEnabled = entityLoadedTag.getBoolean("isAIEnabled");
-                                        ((EntityLiving)entityLoaded).timeDied = entityLoadedTag.getLong("timeDied");
-                                        chunk.addEntityToList(entityLoaded);
-                                    }
-                                }
-                            }
+                            new ChunkEntitiesIO().loadEntities(chunk, entity);
                         }
 
                         if(chest != null) {
-                            int chestCount = chest.getInteger("chestCount");
-                            NBTTagCompound chestLoadedTag;
-                            for (int i = 0; i < chestCount; i++) {
-                                chestLoadedTag = chest.getCompoundTag("chest" + i);
-                                NBTTagCompound inventory = chestLoadedTag.getCompoundTag("Inventory");
-                                int index = chestLoadedTag.getInteger("index");
-                                NBTTagCompound item;
-                                if(!(Block.list[chunk.blocks[index]] instanceof BlockContainer))continue;
-                                Inventory chestInventory = new Inventory(((BlockContainer) (Block.list[chunk.blocks[index]])).inventoryWidth, ((BlockContainer) (Block.list[chunk.blocks[index]])).inventoryHeight);
-                                for (int j = 0; j < chestInventory.itemStacks.length; j++) {
-                                    item = inventory.getCompoundTag("slot " + j);
-                                    if (item != null) {
-                                        short id = item.getShort("id");
-                                        byte count = item.getByte("count");
-                                        short durability = item.getShort("durability");
-                                        short metadata = item.getShort("metadata");
-                                        long decayTime = item.getLong("decayTime");
-                                        chestInventory.loadItemToInventory(id, metadata, count, durability, j, decayTime);
-                                    }
-                                }
-                                chunk.addChestLocation(index, chestInventory);
-                            }
+                            new ChestLocationIO().loadChestLocations(chunk, chest);
                         }
 
                         if(timeEvents != null) {
-                            int eventCount = timeEvents.getInteger("eventCount");
-                            NBTTagCompound eventLoadedTag;
-                            for (int i = 0; i < eventCount; i++) {
-                                eventLoadedTag = timeEvents.getCompoundTag("event" + i);
-                                int index = eventLoadedTag.getInteger("index");
-                                long updateTime = eventLoadedTag.getLong("updateTime");
-                                if(updateTime <= CosmicEvolution.instance.save.time){
-                                    updateTime = CosmicEvolution.instance.save.time += 120;
-                                }
-                                chunk.addTimeUpdateEvent(index, updateTime);
-                            }
+                            new TimeUpdateIO().loadTimeEvents(chunk, timeEvents);
                         }
 
-
                         if(heatableBlocks != null){
-                            int heatableBlockCount = heatableBlocks.getInteger("heatableBlockCount");
-                            NBTTagCompound heatableBlockLoadedTag;
-                            HeatableBlockLocation heatableBlockLocation;
-                            for(int i = 0; i < heatableBlockCount; i++){
-                                heatableBlockLoadedTag = heatableBlocks.getCompoundTag("heatableBlock" + i);
-                                int index = heatableBlockLoadedTag.getInteger("index");
-                                float currentTemperature = heatableBlockLoadedTag.getFloat("currentTemperature");
-                                short currentFuelBurning = heatableBlockLoadedTag.getShort("currentFuelBurning");
-                                long fuelBurnoutTime = heatableBlockLoadedTag.getLong("fuelBurnoutTime");
-                                long heatingFinishTime = heatableBlockLoadedTag.getLong("heatingFinishTime");
-                                long fuelStartTime = heatableBlockLoadedTag.getLong("fuelStartTime");
-                                long heatStartTime = heatableBlockLoadedTag.getLong("heatStartTime");
-                                boolean heating = heatableBlockLoadedTag.getBoolean("heating");
-                                heatableBlockLocation = new HeatableBlockLocation(index);
-                                heatableBlockLocation.currentTemperature = currentTemperature;
-                                heatableBlockLocation.currentFuelBurning = currentFuelBurning;
-                                heatableBlockLocation.fuelBurnoutTime = fuelBurnoutTime;
-                                heatableBlockLocation.heatingFinishTime = heatingFinishTime;
-                                heatableBlockLocation.heating = heating;
-                                heatableBlockLocation.fuelStartTime = fuelStartTime;
-                                heatableBlockLocation.heatStartTime = heatStartTime;
-
-                                chunk.addHeatableBlock(heatableBlockLocation);
-                            }
+                            new HeatableBlockIO().loadHeatableBlocks(chunk, heatableBlocks);
                         }
 
                         if(crafting3DItems != null){
-                            int craftingBlockCount = crafting3DItems.getInteger("inWorldCrafting3DItemCount");
-                            NBTTagCompound inWorldCrafting3DItemLoadedTag;
-                            InWorld3DCraftingItem inWorld3DCraftingItem = null;
-                            for(int i = 0; i < craftingBlockCount; i++){
-                                inWorldCrafting3DItemLoadedTag = crafting3DItems.getCompoundTag("inWorldCrafting3DItem" + i);
-                                int index = inWorldCrafting3DItemLoadedTag.getInteger("index");
-                                short materialBlockID = inWorldCrafting3DItemLoadedTag.getShort("materialBlockID");
-                                short itemTextureID = inWorldCrafting3DItemLoadedTag.getShort("itemTextureID");
-
-                                if(materialBlockID != RenderEngine.NULL_TEXTURE) {
-                                    inWorld3DCraftingItem = new InWorld3DCraftingItem(index, materialBlockID,
-                                            InWorldCraftingRecipe.findInWorldCraftingRecipeFromName(inWorldCrafting3DItemLoadedTag.getString("craftingRecipeName")), chunk);
-                                } else if(itemTextureID != RenderEngine.NULL_TEXTURE){
-                                    inWorld3DCraftingItem = new InWorld3DCraftingItem(index,
-                                            InWorldCraftingRecipe.findInWorldCraftingRecipeFromName(inWorldCrafting3DItemLoadedTag.getString("craftingRecipeName")), chunk, itemTextureID);
-                                }
-                                inWorld3DCraftingItem.activeCraftingLayer = inWorldCrafting3DItemLoadedTag.getInteger("activeCraftingLayer");
-
-                                for(int j = 0; j < 16; j++){
-                                    inWorld3DCraftingItem.subVoxelIndices[j] = inWorldCrafting3DItemLoadedTag.getIntArray("craftingLayer" + j);
-                                }
-
-                                chunk.addInWorldCrafting3DItem(inWorld3DCraftingItem);
-                            }
+                            new Crafting3DItemsIO().loadCrafting3DItems(chunk, crafting3DItems);
                         }
 
                         if(craftingItems != null){
-                            int craftingItemCount = craftingItems.getInteger("inWorldCraftingItemCount");
-                            NBTTagCompound inWorldCraftingItemLoadedTag;
-                            InWorldCraftingItem inWorldCraftingItem;
-                            for(int i = 0; i < craftingItemCount; i++){
-                                inWorldCraftingItemLoadedTag = craftingItems.getCompoundTag("inWorldCraftingItem" + i);
+                            new CraftingItemsIO().loadCraftingItems(chunk, craftingItems);
+                        }
 
-                                int index =  inWorldCraftingItemLoadedTag.getInteger("index");
-                                int recipeID = inWorldCraftingItemLoadedTag.getInteger("outputRecipeID");
-                                boolean hasBeenBound = inWorldCraftingItemLoadedTag.getBoolean("hasBeenBound");
+                        if(cropStates != null){
+                            new CropStateIO().loadCropStates(chunk, cropStates);
+                        }
 
-                                inWorldCraftingItem = new InWorldCraftingItem(CraftingBlockRecipes.list[recipeID], index, chunk);
-                                inWorldCraftingItem.hasBeenBound = hasBeenBound;
-
-                                int filledItemIndex = inWorldCraftingItemLoadedTag.getInteger("filledItemIndex");
-
-                                for(int j = 0; j < filledItemIndex; j++){
-                                    inWorldCraftingItem.itemsFilled[j] = inWorldCraftingItemLoadedTag.getBoolean("item" + j + "Filled");
-                                }
-
-
-                                chunk.addCraftingItem(inWorldCraftingItem);
-                            }
+                        if(tilledSoilStates != null){
+                            new TilledSoilStateIO().loadTilledSoilStates(chunk, tilledSoilStates);
                         }
 
                         inputStream.close();

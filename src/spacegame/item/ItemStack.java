@@ -10,12 +10,15 @@ import spacegame.gui.FontRenderer;
 import spacegame.gui.GuiInGame;
 import spacegame.gui.GuiInventory;
 import spacegame.gui.GuiInventoryPlayer;
+import spacegame.item.itemstate.ItemState;
+import spacegame.item.itemstate.SeedState;
 import spacegame.render.*;
 import spacegame.render.model.ModelFace;
 import spacegame.render.model.ModelLoader;
 
 public final class ItemStack {
     public Item item;
+    public ItemState itemState;
     public String exclusiveItemType;
     public boolean usesExclusiveItem;
     public short metadata;
@@ -140,6 +143,9 @@ public final class ItemStack {
                 model.rotateModel(45, 0, 1, 0);
                 model.rotateModel(36, 1, 0, 0);
 
+                if(this.item instanceof ItemSeed){
+                    model.scaleModel(2f);
+                }
 
                 Vector3f position = new Vector3f(this.x, this.y, -70);
                 model.translateModel(position.x, position.y, position.z);
@@ -280,6 +286,9 @@ public final class ItemStack {
                model.rotateModel(45, 0, 1, 0);
                model.rotateModel(36, 1, 0, 0);
 
+               if(this.item instanceof ItemSeed){
+                   model.scaleModel(2f);
+               }
 
                 Vector3f position = new Vector3f(this.x + 4, this.y, -70);
                 model.translateModel(position.x, position.y, position.z);
@@ -351,7 +360,7 @@ public final class ItemStack {
 
     public void mergeStack(ItemStack incomingStack){
         this.count += incomingStack.count;
-
+        this.itemState = incomingStack.itemState != null ? incomingStack.itemState.copy() : null;
         this.decayTime = (this.decayTime + incomingStack.decayTime) / 2;
     }
 
@@ -359,6 +368,7 @@ public final class ItemStack {
         ItemStack newStack =  new ItemStack(this.item, this.count, this.x, this.y);
         newStack.setMetadata(this.metadata);
         newStack.decayTime = this.decayTime;
+        newStack.itemState = this.itemState != null ? this.itemState.copy() : null;
         if((this.count & 1) == 1){
             newStack.count = (byte) (this.count/2);
             newStack.count++;
@@ -419,5 +429,16 @@ public final class ItemStack {
         tessellator.drawTexture2D(texID, Shader.screen2DTexture, CosmicEvolution.camera);
         tessellator.toggleOrtho();
     }
+
+
+    public boolean doStatesMatch(ItemState incomingState){
+        if(this.itemState instanceof SeedState currentSeedState && incomingState instanceof SeedState incomingSeedState){
+            return currentSeedState.canMutate == incomingSeedState.canMutate && currentSeedState.percentToTargetCrop == incomingSeedState.percentToTargetCrop &&
+                    currentSeedState.targetCrop.equals(incomingSeedState.targetCrop);
+         }
+
+        return this.itemState == null && incomingState == null;
+    }
+
 
 }

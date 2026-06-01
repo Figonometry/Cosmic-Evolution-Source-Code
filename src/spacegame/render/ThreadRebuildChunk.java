@@ -39,14 +39,6 @@ public final class ThreadRebuildChunk implements Runnable {
         this.workingChunk.shouldRender = this.workingChunk.checkIfChunkShouldRender();
         if (!this.workingChunk.shouldRender) {return;}
         RenderBlocks renderBlocks = new RenderBlocks();
-        if (this.workingChunk.containsWater) {
-            this.workingChunk.setLightValueUnderWater();
-        }
-        if (this.workingChunk.updateSkylight) {
-            this.workingChunk.setSkyLight();
-            this.workingChunk.updateSkylight = false;
-            //  this.parentWorld.updateSkyLightMapChunks(this.x, this.y, this.z);
-        }
         int faceNumber = this.workingChunk.calculateFaceNumber();
         this.workingChunk.tempVertexBufferOpaque = BufferUtils.createFloatBuffer(faceNumber * 24);
         this.workingChunk.tempElementBufferOpaque = BufferUtils.createIntBuffer(faceNumber * 6);
@@ -202,8 +194,9 @@ public final class ThreadRebuildChunk implements Runnable {
 
     private void addBlockToRenderData(short block, int index, int face, int[] greedyMeshSize, RenderBlocks renderBlocks) {
         switch (Block.list[block].blockName) {
-            case "WATER", "TALL_GRASS" ->
+            case "WATER", "TALL_GRASS", "FLOWING_WATER" ->
                     renderBlocks.renderTransparentBlock(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);
+            case "WATER_FULL" -> renderBlocks.renderFullWater(this.workingChunk, this.parentWorld, block, index, face);
             case "SAPLING" -> renderBlocks.renderSapling(this.workingChunk, this.parentWorld, block, index, face);
             case "CAMPFIRE_LIT" -> {
                 renderBlocks.renderCampFire(this.workingChunk, this.parentWorld, block, index, face);
@@ -232,6 +225,9 @@ public final class ThreadRebuildChunk implements Runnable {
                     "DOOR_SOUTH_CLOSED_HINGE_LEFT", "DOOR_SOUTH_CLOSED_HINGE_RIGHT", "DOOR_SOUTH_OPEN_HINGE_LEFT", "DOOR_SOUTH_OPEN_HINGE_RIGHT",
                     "DOOR_WEST_CLOSED_HINGE_LEFT", "DOOR_WEST_CLOSED_HINGE_RIGHT", "DOOR_WEST_OPEN_HINGE_LEFT", "DOOR_WEST_OPEN_HINGE_RIGHT" -> {
                 //Intentionally blank
+            }
+            case "CROP_GROWTH" -> {
+                renderBlocks.renderCrop(this.workingChunk, this.parentWorld, block, index, face);
             }
 
             case "DOOR_PRIMITIVE" -> {

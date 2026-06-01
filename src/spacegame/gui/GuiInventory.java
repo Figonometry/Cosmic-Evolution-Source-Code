@@ -4,11 +4,14 @@ import org.lwjgl.opengl.GL46;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.Timer;
 import spacegame.item.IDecayItem;
+import spacegame.item.ItemSeed;
+import spacegame.item.itemstate.SeedState;
 import spacegame.util.MathUtil;
 import spacegame.item.Inventory;
 import spacegame.item.ItemStack;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
+import spacegame.world.blockstate.Crop;
 
 public abstract class GuiInventory extends Gui {
     public Inventory associatedInventory;
@@ -45,8 +48,9 @@ public abstract class GuiInventory extends Gui {
         int font = 50;
 
         boolean isDecayItem = stack.item instanceof IDecayItem;
+        boolean isSeedMutating = stack.item instanceof ItemSeed && ((SeedState)stack.itemState).canMutate;
 
-        float height = font + (isDecayItem ? font * 3 : 0);
+        float height = font + (isDecayItem || isSeedMutating ? font * 3 : 0);
         float width = font * ((displayedName.length() + 2) * 0.34f);
 
         StringBuilder stringBuilder = new StringBuilder();
@@ -68,6 +72,12 @@ public abstract class GuiInventory extends Gui {
             }
         }
 
+        if(isSeedMutating){
+            SeedState seedState = (SeedState)stack.itemState;
+
+            stringBuilder.append("Domesticating towards ").append(Crop.getCropFromName(seedState.targetCrop).displayName).append(" ").append(seedState.percentToTargetCrop * 100).append("% Completed");
+        }
+
         width += font * stringBuilder.length() * 0.34f;
 
         tessellator.addVertex2DTexture(0, x, y, -10, 3);
@@ -86,7 +96,7 @@ public abstract class GuiInventory extends Gui {
 
         fontRenderer.drawString(displayedName, x, y, -9, 16777215, font, 255);
 
-        if(isDecayItem){
+        if(isDecayItem || isSeedMutating){
             fontRenderer.drawString(stringBuilder.toString(), x, y + 120, -9, 16777215, font, 255);
         }
     }

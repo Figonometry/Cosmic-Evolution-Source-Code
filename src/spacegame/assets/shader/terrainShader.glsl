@@ -242,29 +242,103 @@ void main()
     vec3 correctPos = vec3(chunkOffset + decompressPosition(aPos, aTexId));
     vec3 correctPosRelativeToSun = vec3(sunChunkOffset + decompressPosition(aPos, aTexId));
         switch(int(fTexId)){
-            case 4://water
-            correctPos.y -= 0.15F;
+            case 4://water top
+            fColor.xyz -= 0.5F;
+            fColor.w = max(fColor.w, 0.5f);
             if (wavyWater){
-                correctPos.y += sinY(correctPos.x, correctPos.y, correctPos.z);
                 correctPos.y += (sinY(correctPos.x + 1, correctPos.y, correctPos.z + 1) * 0.5f);
                 correctPos.y += (sinY(correctPos.x - 2, correctPos.y, correctPos.z - 3) * 0.25f);
                 correctPos.y += (sinY(correctPos.x + 4, correctPos.y, correctPos.z + 7) * 0.125f);
                 correctPos.y += (sinY(correctPos.x + 8, correctPos.y, correctPos.z - 7) * 0.0625f);
-                fColor.xyz -= 0.5F;
-                fColor.w = max(fColor.w, 0.5f);
-                fTexCoords.xy += sin(float(time/150));
             }
             break;
+
+            case 63://water side
+            fColor.xyz -= 0.5F;
+            fColor.w = max(fColor.w, 0.5f);
+            if (wavyWater && fTexCoords.y != 1.0){
+                correctPos.y += (sinY(correctPos.x + 1, correctPos.y, correctPos.z + 1) * 0.5f);
+                correctPos.y += (sinY(correctPos.x - 2, correctPos.y, correctPos.z - 3) * 0.25f);
+                correctPos.y += (sinY(correctPos.x + 4, correctPos.y, correctPos.z + 7) * 0.125f);
+                correctPos.y += (sinY(correctPos.x + 8, correctPos.y, correctPos.z - 7) * 0.0625f);
+            }
+            fTexCoords.y -= (float(time/60));
+            break;
+
+            case 65://water flowing north
+            fColor.xyz -= 0.5F;
+            fColor.w = max(fColor.w, 0.5f);
+            fTexCoords.x += (float(time/60));
+            if (wavyWater){
+                correctPos.y += (sinY(correctPos.x + 1, correctPos.y, correctPos.z + 1) * 0.5f);
+                correctPos.y += (sinY(correctPos.x - 2, correctPos.y, correctPos.z - 3) * 0.25f);
+                correctPos.y += (sinY(correctPos.x + 4, correctPos.y, correctPos.z + 7) * 0.125f);
+                correctPos.y += (sinY(correctPos.x + 8, correctPos.y, correctPos.z - 7) * 0.0625f);
+            }
+            break;
+
+            case 66://water flowing south
+            fColor.xyz -= 0.5F;
+            fColor.w = max(fColor.w, 0.5f);
+            fTexCoords.x -= (float(time/60));
+            if (wavyWater){
+                correctPos.y += (sinY(correctPos.x + 1, correctPos.y, correctPos.z + 1) * 0.5f);
+                correctPos.y += (sinY(correctPos.x - 2, correctPos.y, correctPos.z - 3) * 0.25f);
+                correctPos.y += (sinY(correctPos.x + 4, correctPos.y, correctPos.z + 7) * 0.125f);
+                correctPos.y += (sinY(correctPos.x + 8, correctPos.y, correctPos.z - 7) * 0.0625f);
+            }
+            break;
+
+            case 67://water flowing east
+            fTexCoords.y += (float(time/60));
+            fColor.xyz -= 0.5F;
+            fColor.w = max(fColor.w, 0.5f);
+            if (wavyWater){
+                correctPos.y += (sinY(correctPos.x + 1, correctPos.y, correctPos.z + 1) * 0.5f);
+                correctPos.y += (sinY(correctPos.x - 2, correctPos.y, correctPos.z - 3) * 0.25f);
+                correctPos.y += (sinY(correctPos.x + 4, correctPos.y, correctPos.z + 7) * 0.125f);
+                correctPos.y += (sinY(correctPos.x + 8, correctPos.y, correctPos.z - 7) * 0.0625f);
+            }
+            break;
+
+            case 68://water flowing west
+            fTexCoords.y -= (float(time/60));
+            fColor.xyz -= 0.5F;
+            fColor.w = max(fColor.w, 0.5f);
+            if (wavyWater){
+                correctPos.y += (sinY(correctPos.x + 1, correctPos.y, correctPos.z + 1) * 0.5f);
+                correctPos.y += (sinY(correctPos.x - 2, correctPos.y, correctPos.z - 3) * 0.25f);
+                correctPos.y += (sinY(correctPos.x + 4, correctPos.y, correctPos.z + 7) * 0.125f);
+                correctPos.y += (sinY(correctPos.x + 8, correctPos.y, correctPos.z - 7) * 0.0625f);
+            }
+            break;
+
+            case 69://water side fullwater
+            fTexCoords.y -= (float(time/60));
+            fColor.xyz -= 0.5F;
+            fColor.w = max(fColor.w, 0.5f);
+            if (fTexCoords.y == 0.0f){
+                if (wavyWater){
+                    correctPos.y += (sinY(correctPos.x + 1, correctPos.y, correctPos.z + 1) * 0.5f);
+                    correctPos.y += (sinY(correctPos.x - 2, correctPos.y, correctPos.z - 3) * 0.25f);
+                    correctPos.y += (sinY(correctPos.x + 4, correctPos.y, correctPos.z + 7) * 0.125f);
+                    correctPos.y += (sinY(correctPos.x + 8, correctPos.y, correctPos.z - 7) * 0.0625f);
+                }
+            }
+            break;
+
             case 10://leaves
             if(wavyLeaves){
                 correctPos.x = sinX(correctPos.x, correctPos.y, correctPos.z);
             }
             break;
+
             case 24://leaves transparent
             if(wavyLeaves){
                 correctPos.x = sinX(correctPos.x, correctPos.y, correctPos.z);
             }
             break;
+
             case 18://fire
             fTexCoords.xy += vec2(sin(correctPos.x * 2.0 + float(time) * 0.1) * 0.05, cos(correctPos.y * 3.0 + float(time) * 0.15)  * 0.20);
             fTexCoords.y = clamp(fTexCoords.y, 0.0, 1.0);

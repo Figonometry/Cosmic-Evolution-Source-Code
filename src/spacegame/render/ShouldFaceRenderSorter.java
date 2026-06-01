@@ -17,6 +17,8 @@ public final class ShouldFaceRenderSorter {
         return switch (firstBlockName) {
             case "AIR" -> false; //DO NOT EVER MAKE THIS TRUE UNDER ANY CIRCUMSTANCE
             case "WATER" -> this.shouldFaceRenderWater(secondBlockName, face);
+            case "WATER_FULL" -> this.shouldFaceRenderWaterFull(secondBlockName, face);
+            case "FLOWING_WATER" -> this.shouldFaceRenderFlowingWater(secondBlockName, face);
             case "OAK_LOG" -> this.shouldFaceRenderLog(firstBlock,secondBlock, face);
             case "LEAF" -> this.shouldFaceRenderLeaf(firstBlock, secondBlock, face);
             default -> shouldFaceRenderStandard(secondBlock, face);
@@ -31,10 +33,10 @@ public final class ShouldFaceRenderSorter {
         String secondBlockName = Block.list[secondBlock].blockName;
         return switch (secondBlockName) {
             case "LEAF" -> GameSettings.transparentLeaves;
-            case "AIR", "WATER", "DOOR_EAST_CLOSED_HINGE_LEFT", "DOOR_EAST_CLOSED_HINGE_RIGHT", "DOOR_EAST_OPEN_HINGE_LEFT", "DOOR_EAST_OPEN_HINGE_RIGHT",
+            case "AIR", "WATER", "WATER_FULL", "FLOWING_WATER", "DOOR_EAST_CLOSED_HINGE_LEFT", "DOOR_EAST_CLOSED_HINGE_RIGHT", "DOOR_EAST_OPEN_HINGE_LEFT", "DOOR_EAST_OPEN_HINGE_RIGHT",
                     "DOOR_NORTH_CLOSED_HINGE_LEFT", "DOOR_NORTH_CLOSED_HINGE_RIGHT", "DOOR_NORTH_OPEN_HINGE_LEFT", "DOOR_NORTH_OPEN_HINGE_RIGHT",
                     "DOOR_SOUTH_CLOSED_HINGE_LEFT", "DOOR_SOUTH_CLOSED_HINGE_RIGHT", "DOOR_SOUTH_OPEN_HINGE_LEFT", "DOOR_SOUTH_OPEN_HINGE_RIGHT",
-                    "DOOR_WEST_CLOSED_HINGE_LEFT", "DOOR_WEST_CLOSED_HINGE_RIGHT", "DOOR_WEST_OPEN_HINGE_LEFT", "DOOR_WEST_OPEN_HINGE_RIGHT" -> true;
+                    "DOOR_WEST_CLOSED_HINGE_LEFT", "DOOR_WEST_CLOSED_HINGE_RIGHT", "DOOR_WEST_OPEN_HINGE_LEFT", "DOOR_WEST_OPEN_HINGE_RIGHT", "TILLED_SOIL" -> true;
             case "OAK_LOG" ->
                     (secondBlock != Block.oakLogFullSizeNormal.ID && secondBlock != Block.oakLogFullSizeNorthSouth.ID && secondBlock != Block.oakLogFullSizeEastWest.ID);
             default -> false;
@@ -50,10 +52,10 @@ public final class ShouldFaceRenderSorter {
             case "OAK_LOG" ->
                     firstBlock != secondBlock && BlockLog.facingDirectionOfLog(firstBlock) == BlockLog.facingDirectionOfLog(secondBlock);
             case "LEAF" -> GameSettings.transparentLeaves;
-            case "AIR", "WATER", "DOOR_EAST_CLOSED_HINGE_LEFT", "DOOR_EAST_CLOSED_HINGE_RIGHT", "DOOR_EAST_OPEN_HINGE_LEFT", "DOOR_EAST_OPEN_HINGE_RIGHT",
+            case "AIR", "WATER", "WATER_FULL", "DOOR_EAST_CLOSED_HINGE_LEFT", "DOOR_EAST_CLOSED_HINGE_RIGHT", "DOOR_EAST_OPEN_HINGE_LEFT", "DOOR_EAST_OPEN_HINGE_RIGHT",
                     "DOOR_NORTH_CLOSED_HINGE_LEFT", "DOOR_NORTH_CLOSED_HINGE_RIGHT", "DOOR_NORTH_OPEN_HINGE_LEFT", "DOOR_NORTH_OPEN_HINGE_RIGHT",
                     "DOOR_SOUTH_CLOSED_HINGE_LEFT", "DOOR_SOUTH_CLOSED_HINGE_RIGHT", "DOOR_SOUTH_OPEN_HINGE_LEFT", "DOOR_SOUTH_OPEN_HINGE_RIGHT",
-                    "DOOR_WEST_CLOSED_HINGE_LEFT", "DOOR_WEST_CLOSED_HINGE_RIGHT", "DOOR_WEST_OPEN_HINGE_LEFT", "DOOR_WEST_OPEN_HINGE_RIGHT" -> true;
+                    "DOOR_WEST_CLOSED_HINGE_LEFT", "DOOR_WEST_CLOSED_HINGE_RIGHT", "DOOR_WEST_OPEN_HINGE_LEFT", "DOOR_WEST_OPEN_HINGE_RIGHT", "TILLED_SOIL" -> true;
             default ->
                     firstBlock != secondBlock;
         };
@@ -62,8 +64,31 @@ public final class ShouldFaceRenderSorter {
 
     private boolean shouldFaceRenderWater(String secondBlockName, int face){
         return switch (secondBlockName) {
-            case "AIR" -> true;
+            case "AIR", "TALL_GRASS", "ITEM_STONE", "ITEM_STICK", "LEAF", "LOG_PILE", "BRICK_PILE", "TORCH", "ITEM_BLOCK", "TILLED_SOIL" -> true;
             case "WATER" -> false;
+            default -> face == RenderBlocks.TOP_FACE;
+        };
+    }
+
+    private boolean shouldFaceRenderFlowingWater(String secondBlockName, int face){
+        return switch (secondBlockName) {
+            case "AIR", "TALL_GRASS", "ITEM_STONE", "ITEM_STICK", "LEAF", "LOG_PILE", "BRICK_PILE", "TORCH", "ITEM_BLOCK", "WATER", "FLOWING_WATER, \"TILLED_SOIL\"" -> true;
+            case "" -> false;
+            default -> face == RenderBlocks.TOP_FACE;
+        };
+    }
+
+    private boolean shouldFaceRenderWaterFull(String secondBlockName, int face){
+        return switch (secondBlockName) {
+            case "AIR", "TALL_GRASS", "ITEM_STONE", "ITEM_STICK", "LEAF", "LOG_PILE", "BRICK_PILE", "TORCH", "ITEM_BLOCK", "WATER", "TILLED_SOIL" -> true;
+            case "FLOWING_WATER" -> {
+                if (face == RenderBlocks.TOP_FACE) {
+                   yield false;
+                } else {
+                   yield true;
+                }
+            }
+            case "" -> false;
             default -> face == RenderBlocks.TOP_FACE;
         };
     }
@@ -77,7 +102,7 @@ public final class ShouldFaceRenderSorter {
             case "AIR", "WATER", "DOOR_EAST_CLOSED_HINGE_LEFT", "DOOR_EAST_CLOSED_HINGE_RIGHT", "DOOR_EAST_OPEN_HINGE_LEFT", "DOOR_EAST_OPEN_HINGE_RIGHT",
                     "DOOR_NORTH_CLOSED_HINGE_LEFT", "DOOR_NORTH_CLOSED_HINGE_RIGHT", "DOOR_NORTH_OPEN_HINGE_LEFT", "DOOR_NORTH_OPEN_HINGE_RIGHT",
                     "DOOR_SOUTH_CLOSED_HINGE_LEFT", "DOOR_SOUTH_CLOSED_HINGE_RIGHT", "DOOR_SOUTH_OPEN_HINGE_LEFT", "DOOR_SOUTH_OPEN_HINGE_RIGHT",
-                    "DOOR_WEST_CLOSED_HINGE_LEFT", "DOOR_WEST_CLOSED_HINGE_RIGHT", "DOOR_WEST_OPEN_HINGE_LEFT", "DOOR_WEST_OPEN_HINGE_RIGHT" -> true;
+                    "DOOR_WEST_CLOSED_HINGE_LEFT", "DOOR_WEST_CLOSED_HINGE_RIGHT", "DOOR_WEST_OPEN_HINGE_LEFT", "DOOR_WEST_OPEN_HINGE_RIGHT", "TILLED_SOIL" -> true;
             case "LEAF" -> GameSettings.transparentLeaves;
             default -> firstBlock != secondBlock;
         };

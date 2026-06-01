@@ -1,4 +1,4 @@
-package spacegame.world;
+package spacegame.world.blockstate;
 
 public final class LightColorLocation {
     public final int x;

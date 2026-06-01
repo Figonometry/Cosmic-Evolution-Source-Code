@@ -213,7 +213,7 @@ public final class CommandParser {
             return;
         }
 
-        if(!CosmicEvolution.instance.save.thePlayer.addItemToInventory(Item.block.ID, blockID, quantity, Item.NULL_ITEM_DURABILITY, 0)){
+        if(!CosmicEvolution.instance.save.thePlayer.addItemToInventory(Item.block.ID, blockID, quantity, Item.NULL_ITEM_DURABILITY, 0, null)){
             CosmicEvolution.instance.save.activeWorld.addEntity(new EntityBlock(CosmicEvolution.instance.save.thePlayer.x, CosmicEvolution.instance.save.thePlayer.y, CosmicEvolution.instance.save.thePlayer.z, blockID, quantity));
         }
 
@@ -264,8 +264,8 @@ public final class CommandParser {
         }
 
 
-        if(!CosmicEvolution.instance.save.thePlayer.addItemToInventory(itemID, Item.NULL_ITEM_METADATA, quantity, Item.list[itemID].durability, 0)){
-            CosmicEvolution.instance.save.activeWorld.addEntity(new EntityItem(CosmicEvolution.instance.save.thePlayer.x, CosmicEvolution.instance.save.thePlayer.y, CosmicEvolution.instance.save.thePlayer.z, itemID, Item.NULL_ITEM_METADATA, quantity, Item.list[itemID].durability, 0));
+        if(!CosmicEvolution.instance.save.thePlayer.addItemToInventory(itemID, Item.NULL_ITEM_METADATA, quantity, Item.list[itemID].durability, 0, null)){
+            CosmicEvolution.instance.save.activeWorld.addEntity(new EntityItem(CosmicEvolution.instance.save.thePlayer.x, CosmicEvolution.instance.save.thePlayer.y, CosmicEvolution.instance.save.thePlayer.z, itemID, Item.NULL_ITEM_METADATA, quantity, Item.list[itemID].durability, 0, null));
         }
 
         GuiInGame.setMessageText("Gave the player " + quantity + " " + Item.list[itemID].getDisplayName(Item.NULL_ITEM_REFERENCE), 16777215);

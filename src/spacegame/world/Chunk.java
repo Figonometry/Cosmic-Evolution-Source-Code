@@ -3,15 +3,11 @@ package spacegame.world;
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL46;
-import spacegame.block.Block;
-import spacegame.block.BlockLeaf;
-import spacegame.block.ITickable;
-import spacegame.block.ITimeUpdate;
+import spacegame.block.*;
 import spacegame.core.CosmicEvolution;
 import spacegame.entity.*;
 import spacegame.item.IDecayItem;
-import spacegame.item.crafting.InWorld3DCraftingItem;
-import spacegame.item.crafting.InWorldCraftingItem;
+import spacegame.world.blockstate.*;
 import spacegame.util.MathUtil;
 import spacegame.item.Inventory;
 import spacegame.item.Item;
@@ -22,7 +18,6 @@ import spacegame.render.ShouldFaceRenderSorter;
 import java.awt.*;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.sql.Time;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -85,6 +80,8 @@ public final class Chunk implements Comparable<Chunk> {
     public ConcurrentHashMap<Integer, InWorld3DCraftingItem> crafting3DItems = new ConcurrentHashMap<>();
     public ConcurrentHashMap<Integer, InWorldCraftingItem> craftingItems = new ConcurrentHashMap<>();
     public ConcurrentHashMap<Integer, DoorTransition> doorTransitions = new ConcurrentHashMap<>();
+    public ConcurrentHashMap<Integer, CropState> cropStates = new ConcurrentHashMap<>();
+    public ConcurrentHashMap<Integer, TilledSoilState> tilledSoilStates = new ConcurrentHashMap<>();
     public boolean updateImmediately;
     public int opaqueVBOID = -10;
     public int opaqueVAOID = -10;
@@ -391,7 +388,7 @@ public final class Chunk implements Comparable<Chunk> {
         ArrayList<int[]> skyLightUpdateQueue = new ArrayList<>();
         ArrayList<int[]> previousSkyLightUpdateQueue = new ArrayList<>();
         for (int i = 0; i < this.blocks.length; i++) {
-            if (Block.list[this.blocks[i]].ID != Block.water.ID) {
+            if (!(Block.list[this.blocks[i]] instanceof BlockWater)) {
                 if (!Block.list[this.blocks[i]].isSolid && this.parentWorld.doesBlockHaveSkyAccess(this.getBlockXFromIndex(i), this.getBlockYFromIndex(i), this.getBlockZFromIndex(i))) {
                     this.parentWorld.propagateSkyLight(this.getBlockXFromIndex(i), this.getBlockYFromIndex(i), this.getBlockZFromIndex(i), skyLightUpdateQueue, previousSkyLightUpdateQueue);
                 }
@@ -757,7 +754,7 @@ public final class Chunk implements Comparable<Chunk> {
 
     public boolean containsWater(){
         for(int i = 0; i < this.blocks.length; i++){
-            if(this.blocks[i] == Block.water.ID){
+            if(Block.list[this.blocks[i]] instanceof BlockWater){
                 return true;
             }
         }
@@ -782,30 +779,9 @@ public final class Chunk implements Comparable<Chunk> {
     }
 
 
-    public void setLightValueUnderWater(){
-        byte airAboveWater;
-        for(int i = 0; i < this.blocks.length; i++){
-            if(this.blocks[i] == Block.water.ID){
-                airAboveWater = this.findAirAboveWater(i);
-                this.skyLight[i] = airAboveWater;
-            }
-        }
-    }
 
 
-    private byte findAirAboveWater(int index){
-        int x = this.getBlockXFromIndex(index);
-        int y = this.getBlockYFromIndex(index);
-        int z = this.getBlockZFromIndex(index);
-        for(byte i = 1; i < 16; i++){
-            if(this.parentWorld.getBlockID(x, y + i, z) == Block.air.ID){
-                return (byte) (this.parentWorld.skyLightLevel - i);
-            } else if(Block.list[this.parentWorld.getBlockID(x, y + i, z)].isSolid){
-                return 0;
-            }
-        }
-        return 0;
-    }
+
 
     public void createGLObjects(){
         this.opaqueVAOID = GL46.glGenVertexArrays();
@@ -1315,103 +1291,7 @@ public final class Chunk implements Comparable<Chunk> {
         return Float.compare(this.distanceFromPlayer, chunk.distanceFromPlayer);
     }
 
-    public int getNumberOfTimeEvents(){
-        int total = 0;
-        Iterator<Map.Entry<Long, ConcurrentHashMap<Integer, TimeUpdateEvent>>> outerIterator = this.updateEvents.entrySet().iterator();
-        while(outerIterator.hasNext()){
-            Map.Entry<Long, ConcurrentHashMap<Integer, TimeUpdateEvent>> entry = outerIterator.next();
-            Iterator<Map.Entry<Integer, TimeUpdateEvent>> innerIterator = entry.getValue().entrySet().iterator();
-            while(innerIterator.hasNext()){
-                Map.Entry<Integer, TimeUpdateEvent> entry1 = innerIterator.next();
-                total += entry.getValue() == null ? 0 : 1;
-            }
-        }
-        return total;
-    }
 
-    public TimeUpdateEvent[] getAllTimeEventsInArray(int numberOfTimeEvents){
-        int index = 0;
-        TimeUpdateEvent event;
-        TimeUpdateEvent[] timeUpdateEvents = new TimeUpdateEvent[numberOfTimeEvents];
-        Iterator<Map.Entry<Long, ConcurrentHashMap<Integer, TimeUpdateEvent>>> outerIterator = this.updateEvents.entrySet().iterator();
-        while(outerIterator.hasNext()){
-            Map.Entry<Long, ConcurrentHashMap<Integer, TimeUpdateEvent>> entry = outerIterator.next();
-            Iterator<Map.Entry<Integer, TimeUpdateEvent>> innerIterator = entry.getValue().entrySet().iterator();
-            while(innerIterator.hasNext()){
-                Map.Entry<Integer, TimeUpdateEvent> entry1 = innerIterator.next();
-                event = entry1.getValue();
-                if(event != null){
-                    timeUpdateEvents[index] = event;
-                    index++;
-                }
-            }
-        }
-        return timeUpdateEvents;
-    }
-
-    public InWorldCraftingItem[] getAllCraftingItemsInArray(int numberOfCraftingItems){
-        int index = 0;
-        InWorldCraftingItem craftingItem;
-        InWorldCraftingItem[] inWorldCraftingItems = new InWorldCraftingItem[numberOfCraftingItems];
-        Iterator<Map.Entry<Integer, InWorldCraftingItem>> iterator = this.craftingItems.entrySet().iterator();
-        while(iterator.hasNext()){
-            Map.Entry<Integer, InWorldCraftingItem> entry = iterator.next();
-            craftingItem = entry.getValue();
-            if(craftingItem != null){
-                inWorldCraftingItems[index] = craftingItem;
-                index++;
-            }
-        }
-        return inWorldCraftingItems;
-    }
-
-    public InWorld3DCraftingItem[] getAll3DCraftingItemsInArray(int numberOfCrafting3DItems){
-        int index = 0;
-        InWorld3DCraftingItem crafting3DItem;
-        InWorld3DCraftingItem[] inWorldCrafting3DItems = new InWorld3DCraftingItem[numberOfCrafting3DItems];
-        Iterator<Map.Entry<Integer, InWorld3DCraftingItem>> iterator = this.crafting3DItems.entrySet().iterator();
-        while(iterator.hasNext()){
-            Map.Entry<Integer, InWorld3DCraftingItem> entry = iterator.next();
-            crafting3DItem = entry.getValue();
-            if(crafting3DItem != null){
-                inWorldCrafting3DItems[index] = crafting3DItem;
-                index++;
-            }
-        }
-        return inWorldCrafting3DItems;
-    }
-
-    public HeatableBlockLocation[] getAllHeatableBlockLocationsInArray(int numberOfHeatableBlocks){
-        int index = 0;
-        HeatableBlockLocation heatableBlockLocation;
-        HeatableBlockLocation[] heatableBlockLocations = new HeatableBlockLocation[numberOfHeatableBlocks];
-        Iterator<Map.Entry<Integer, HeatableBlockLocation>> iterator = this.heatableBlocks.entrySet().iterator();
-        while(iterator.hasNext()){
-            Map.Entry<Integer, HeatableBlockLocation> entry = iterator.next();
-            heatableBlockLocation = entry.getValue();
-            if(heatableBlockLocation != null){
-                heatableBlockLocations[index] = heatableBlockLocation;
-                index++;
-            }
-        }
-        return heatableBlockLocations;
-    }
-
-    public ChestLocation[] getAllChestLocationsInArray(int numberOfChestLocations){
-        int index = 0;
-        ChestLocation chestLocation;
-        ChestLocation[] chestLocations1 = new ChestLocation[numberOfChestLocations];
-        Iterator<Map.Entry<Integer, ChestLocation>> iterator = this.chestLocations.entrySet().iterator();
-        while(iterator.hasNext()){
-            Map.Entry<Integer, ChestLocation> entry = iterator.next();
-            chestLocation = entry.getValue();
-            if(chestLocation != null){
-                chestLocations1[index] = chestLocation;
-                index++;
-            }
-        }
-        return chestLocations1;
-    }
 
 
     public void truncateTickableIndexArray(int maxLength, boolean empty){
@@ -1567,6 +1447,7 @@ public final class Chunk implements Comparable<Chunk> {
         ConcurrentHashMap<Integer, TimeUpdateEvent> updateTimes = this.updateEvents.get(updateTime);
         if(updateTimes == null){
             updateTimes = new ConcurrentHashMap<>();
+            this.updateEvents.put(updateTime, updateTimes);
         }
 
         updateTimes.put(index, new TimeUpdateEvent(index, updateTime));
@@ -1598,7 +1479,7 @@ public final class Chunk implements Comparable<Chunk> {
                 block.setMovementVector(new Vector3f(rand.nextFloat(-1, 1), rand.nextFloat(-1, 1), rand.nextFloat(-1, 1)));
                 this.addEntityToList(block);
             } else if(inventory.itemStacks[i].item != null){
-                EntityItem item = new EntityItem(this.getBlockXFromIndex(index) + 0.5, this.getBlockYFromIndex(index) + 0.5, this.getBlockZFromIndex(index) + 0.5, inventory.itemStacks[i].item.ID, inventory.itemStacks[i].metadata, inventory.itemStacks[i].count, inventory.itemStacks[i].durability, 0);
+                EntityItem item = new EntityItem(this.getBlockXFromIndex(index) + 0.5, this.getBlockYFromIndex(index) + 0.5, this.getBlockZFromIndex(index) + 0.5, inventory.itemStacks[i].item.ID, inventory.itemStacks[i].metadata, inventory.itemStacks[i].count, inventory.itemStacks[i].durability, 0, null);
                 item.setMovementVector(new Vector3f(rand.nextFloat(-1, 1), rand.nextFloat(-1, 1), rand.nextFloat(-1, 1)));
                 this.addEntityToList(item);
             }
@@ -1619,6 +1500,46 @@ public final class Chunk implements Comparable<Chunk> {
 
     public DoorTransition getDoorTransition(int x, int y, int z){
         return this.doorTransitions.get(getBlockIndexFromCoordinates(x,y,z));
+    }
+
+    public void addCropState(CropState cropState, int x, int y, int z){
+        this.cropStates.put(getBlockIndexFromCoordinates(x,y,z), cropState);
+    }
+
+    public void addCropState(CropState cropState, int index){
+        this.cropStates.put(index, cropState);
+    }
+
+    public void removeCropState(int x, int y, int z){
+        this.cropStates.remove(getBlockIndexFromCoordinates(x,y,z));
+    }
+
+    public CropState getCropState(int x, int y, int z){
+        return this.cropStates.get(getBlockIndexFromCoordinates(x,y,z));
+    }
+
+    public CropState getCropState(int index){
+        return this.cropStates.get(index);
+    }
+
+    public void addTilledSoilState(TilledSoilState tilledSoilState, int x, int y, int z){
+        this.tilledSoilStates.put(getBlockIndexFromCoordinates(x,y,z), tilledSoilState);
+    }
+
+    public void addTilledSoilState(TilledSoilState tilledSoilState, int index){
+        this.tilledSoilStates.put(index, tilledSoilState);
+    }
+
+    public void removeTilledSoilState(int x, int y, int z){
+        this.tilledSoilStates.remove(getBlockIndexFromCoordinates(x,y,z));
+    }
+
+    public TilledSoilState getTilledSoilState(int x, int y, int z){
+        return this.tilledSoilStates.get(getBlockIndexFromCoordinates(x,y,z));
+    }
+
+    public TilledSoilState getTilledSoilState(int index){
+        return this.tilledSoilStates.get(index);
     }
 
 

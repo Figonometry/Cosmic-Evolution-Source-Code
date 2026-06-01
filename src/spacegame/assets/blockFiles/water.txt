@@ -1,5 +1,5 @@
 blockName:WATER
-blockModel:standardBlockModel
+blockModel:waterDefault
 canGreedyMesh:false
 isSolid:false
 canBeBroken:false

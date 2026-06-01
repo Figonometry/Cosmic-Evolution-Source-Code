@@ -12,7 +12,7 @@ import spacegame.util.MathUtil;
 import spacegame.item.Item;
 import spacegame.render.*;
 import spacegame.world.Chunk;
-import spacegame.item.crafting.InWorld3DCraftingItem;
+import spacegame.world.blockstate.InWorld3DCraftingItem;
 
 public final class GuiCraftingReeds extends GuiCrafting {
     public RecipeSelector[] selectableRecipes;

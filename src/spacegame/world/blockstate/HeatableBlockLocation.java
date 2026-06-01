@@ -1,4 +1,4 @@
-package spacegame.world;
+package spacegame.world.blockstate;
 
 import spacegame.core.CosmicEvolution;
 import spacegame.core.Timer;
@@ -6,6 +6,8 @@ import spacegame.item.IDecayItem;
 import spacegame.item.IFuel;
 import spacegame.item.IHeatable;
 import spacegame.item.Item;
+import spacegame.world.ChestLocation;
+import spacegame.world.Chunk;
 
 public final class HeatableBlockLocation { //Trigger every 15 ticks, also is a "chest" slot 0 is fuel, slot 1 is input, slot 2 is output
     public int index;

@@ -5,14 +5,20 @@ import spacegame.core.*;
 import spacegame.entity.EntityBlock;
 import spacegame.entity.EntityItem;
 import spacegame.entity.EntityPlayer;
+import spacegame.gui.GuiMutateCrop;
 import spacegame.item.Inventory;
 import spacegame.item.Item;
 import spacegame.item.ItemKnife;
+import spacegame.item.ItemSeed;
+import spacegame.item.itemstate.SeedState;
 import spacegame.render.model.ModelLoader;
 import spacegame.util.MathUtil;
 import spacegame.world.AxisAlignedBB;
 import spacegame.world.Chunk;
 import spacegame.world.World;
+import spacegame.world.blockstate.Crop;
+import spacegame.world.blockstate.CropState;
+import spacegame.world.blockstate.TilledSoilState;
 
 import java.io.*;
 import java.util.Random;
@@ -52,6 +58,46 @@ public class Block {
     public static final ModelLoader seedModel = new ModelLoader(modelFolderPath + "seed.obj", true);
     public static final ModelLoader saplingModel = new ModelLoader(modelFolderPath + "sapling.obj", true);
     public static final ModelLoader primitiveCraftingTableModel = new ModelLoader(modelFolderPath + "primitiveCraftingTable.obj", true);
+    public static final ModelLoader waterDefault= new ModelLoader(modelFolderPath + "waterDefault.obj", false);
+    public static final ModelLoader topOfFullWater = new ModelLoader(modelFolderPath + "topOfFullWater.obj", false);
+    public static final ModelLoader waterFlowNorth1 = new ModelLoader(modelFolderPath + "waterFlowNorth1.obj", false);
+    public static final ModelLoader waterFlowNorth2 = new ModelLoader(modelFolderPath + "waterFlowNorth2.obj", false);
+    public static final ModelLoader waterFlowNorth3 = new ModelLoader(modelFolderPath + "waterFlowNorth3.obj", false);
+    public static final ModelLoader waterFlowNorth4 = new ModelLoader(modelFolderPath + "waterFlowNorth4.obj", false);
+    public static final ModelLoader waterFlowNorth5 = new ModelLoader(modelFolderPath + "waterFlowNorth5.obj", false);
+    public static final ModelLoader waterFlowNorth6 = new ModelLoader(modelFolderPath + "waterFlowNorth6.obj", false);
+    public static final ModelLoader waterFlowNorth7 = new ModelLoader(modelFolderPath + "waterFlowNorth7.obj", false);
+    public static final ModelLoader waterFlowSouth1 = new ModelLoader(modelFolderPath + "waterFlowSouth1.obj", false);
+    public static final ModelLoader waterFlowSouth2 = new ModelLoader(modelFolderPath + "waterFlowSouth2.obj", false);
+    public static final ModelLoader waterFlowSouth3 = new ModelLoader(modelFolderPath + "waterFlowSouth3.obj", false);
+    public static final ModelLoader waterFlowSouth4 = new ModelLoader(modelFolderPath + "waterFlowSouth4.obj", false);
+    public static final ModelLoader waterFlowSouth5 = new ModelLoader(modelFolderPath + "waterFlowSouth5.obj", false);
+    public static final ModelLoader waterFlowSouth6 = new ModelLoader(modelFolderPath + "waterFlowSouth6.obj", false);
+    public static final ModelLoader waterFlowSouth7 = new ModelLoader(modelFolderPath + "waterFlowSouth7.obj", false);
+    public static final ModelLoader waterFlowEast1 = new ModelLoader(modelFolderPath + "waterFlowEast1.obj", false);
+    public static final ModelLoader waterFlowEast2 = new ModelLoader(modelFolderPath + "waterFlowEast2.obj", false);
+    public static final ModelLoader waterFlowEast3 = new ModelLoader(modelFolderPath + "waterFlowEast3.obj", false);
+    public static final ModelLoader waterFlowEast4 = new ModelLoader(modelFolderPath + "waterFlowEast4.obj", false);
+    public static final ModelLoader waterFlowEast5 = new ModelLoader(modelFolderPath + "waterFlowEast5.obj", false);
+    public static final ModelLoader waterFlowEast6 = new ModelLoader(modelFolderPath + "waterFlowEast6.obj", false);
+    public static final ModelLoader waterFlowEast7 = new ModelLoader(modelFolderPath + "waterFlowEast7.obj", false);
+    public static final ModelLoader waterFlowWest1 = new ModelLoader(modelFolderPath + "waterFlowWest1.obj", false);
+    public static final ModelLoader waterFlowWest2 = new ModelLoader(modelFolderPath + "waterFlowWest2.obj", false);
+    public static final ModelLoader waterFlowWest3 = new ModelLoader(modelFolderPath + "waterFlowWest3.obj", false);
+    public static final ModelLoader waterFlowWest4 = new ModelLoader(modelFolderPath + "waterFlowWest4.obj", false);
+    public static final ModelLoader waterFlowWest5 = new ModelLoader(modelFolderPath + "waterFlowWest5.obj", false);
+    public static final ModelLoader waterFlowWest6 = new ModelLoader(modelFolderPath + "waterFlowWest6.obj", false);
+    public static final ModelLoader waterFlowWest7 = new ModelLoader(modelFolderPath + "waterFlowWest7.obj", false);
+    public static final ModelLoader tilledSoilModel = new ModelLoader(modelFolderPath + "tilledSoilModel.obj", false);
+    public static final ModelLoader cropGrowth1Model = new ModelLoader(modelFolderPath + "cropGrowth1.obj", false);
+    public static final ModelLoader cropGrowth2Model = new ModelLoader(modelFolderPath + "cropGrowth2.obj", false);
+    public static final ModelLoader cropGrowth3Model = new ModelLoader(modelFolderPath + "cropGrowth3.obj", false);
+    public static final ModelLoader cropGrowth4Model = new ModelLoader(modelFolderPath + "cropGrowth4.obj", false);
+    public static final ModelLoader cropGrowth5Model = new ModelLoader(modelFolderPath + "cropGrowth5.obj", false);
+    public static final ModelLoader cropGrowth6Model = new ModelLoader(modelFolderPath + "cropGrowth6.obj", false);
+    public static final ModelLoader cropGrowth7Model = new ModelLoader(modelFolderPath + "cropGrowth7.obj", false);
+    public static final ModelLoader cropGrowth8Model = new ModelLoader(modelFolderPath + "cropGrowth8.obj", false);
+
     public static final ModelLoader size15NormalModel = standardBlockModel.alterStandardBlockModel(1,0,1);
     public static final ModelLoader size14NormalModel = standardBlockModel.alterStandardBlockModel(2,0,2);
     public static final ModelLoader size13NormalModel = standardBlockModel.alterStandardBlockModel(3,0,3);
@@ -98,6 +144,7 @@ public class Block {
     public static final ModelLoader size2EastWestModel = standardBlockModel.alterStandardBlockModel(14,14,0);
     public static final ModelLoader size1EastWestModel = standardBlockModel.alterStandardBlockModel(15,15,0);
     public static final ModelLoader size2VoxelModel = itemVoxelModel.copyModel().scaleModel(2).translateModel(0.46875f, 0, 0.46875f);
+
     public static final AxisAlignedBB standardBlock = new AxisAlignedBB(0,0,0,1,1,1);
     public static final AxisAlignedBB fullBlock = new AxisAlignedBB(0, 0, 0, 1, 1, 1);
     public static final AxisAlignedBB quarterBlock = new AxisAlignedBB(0, 0, 0, 1, 0.25f, 1);
@@ -108,6 +155,7 @@ public class Block {
     public static final AxisAlignedBB southDoor = new AxisAlignedBB(0.875,0,0, 1, 1, 1);
     public static final AxisAlignedBB eastDoor = new AxisAlignedBB(0,0,0,1,1,0.125);
     public static final AxisAlignedBB westDoor = new AxisAlignedBB(0, 0, 0.875, 1, 1, 1);
+
     public static final Block[] list = new Block[Short.MAX_VALUE];
     public static final Block air = new Block((short) 0, -1, blockFolderPath + "air.txt");
     public static final Block grass = new BlockGrass((short) 1, 2, blockFolderPath + "grass.txt");
@@ -197,7 +245,7 @@ public class Block {
     public static final Block itemStone = new BlockItemStone((short)85, stone.textureID, blockFolderPath + "itemStone.txt");
     public static final Block berryBushFlower = new BlockBerryBush((short)86, 27, blockFolderPath + "berryBush.txt");
     public static final Block itemStick = new BlockItemStick((short)87, 29, blockFolderPath + "itemStick.txt");
-    public static final Block tallGrass = new Block((short)88, 30, blockFolderPath + "tallGrass.txt");
+    public static final Block tallGrass = new BlockTallGrass((short)88, 30, blockFolderPath + "tallGrass.txt");
     public static final Block campFire4FireWood = new BlockCampFireUnlit((short) 89, 16, blockFolderPath + "campFireUnlit.txt", 3, 1);
     public static final Block fireWoodBlock = new Block((short)90, 31, blockFolderPath + "fireWood.txt");
     public static final Block reedChest = new BlockReedChest((short)91, 32, blockFolderPath + "reedChest.txt",1, 9);
@@ -261,6 +309,37 @@ public class Block {
     public static final Block doorWestDoorHingeLeftOpen = new BlockDoor((short)149, -1, blockFolderPath + "westDoorOpenHingeLeft.txt");
     public static final Block doorWestDoorHingeRightOpen = new BlockDoor((short)150, -1, blockFolderPath + "westDoorOpenHingeRight.txt");
     public static final Block doorPrimitiveLower = new BlockDoor((short)151, 42, blockFolderPath + "doorPrimitive.txt");
+    public static final Block waterFlowNorth1Block = new BlockWater((short)152, 65, blockFolderPath + "waterFlowNorth1.txt");
+    public static final Block waterFlowNorth2Block = new BlockWater((short)153, 65, blockFolderPath + "waterFlowNorth2.txt");
+    public static final Block waterFlowNorth3Block = new BlockWater((short)154, 65, blockFolderPath + "waterFlowNorth3.txt");
+    public static final Block waterFlowNorth4Block = new BlockWater((short)155, 65, blockFolderPath + "waterFlowNorth4.txt");
+    public static final Block waterFlowNorth5Block = new BlockWater((short)156, 65, blockFolderPath + "waterFlowNorth5.txt");
+    public static final Block waterFlowNorth6Block = new BlockWater((short)157, 65, blockFolderPath + "waterFlowNorth6.txt");
+    public static final Block waterFlowNorth7Block = new BlockWater((short)158, 65, blockFolderPath + "waterFlowNorth7.txt");
+    public static final Block waterFlowSouth1Block = new BlockWater((short)159, 66, blockFolderPath + "waterFlowSouth1.txt");
+    public static final Block waterFlowSouth2Block = new BlockWater((short)160, 66, blockFolderPath + "waterFlowSouth2.txt");
+    public static final Block waterFlowSouth3Block = new BlockWater((short)161, 66, blockFolderPath + "waterFlowSouth3.txt");
+    public static final Block waterFlowSouth4Block = new BlockWater((short)162, 66, blockFolderPath + "waterFlowSouth4.txt");
+    public static final Block waterFlowSouth5Block = new BlockWater((short)163, 66, blockFolderPath + "waterFlowSouth5.txt");
+    public static final Block waterFlowSouth6Block = new BlockWater((short)164, 66, blockFolderPath + "waterFlowSouth6.txt");
+    public static final Block waterFlowSouth7Block = new BlockWater((short)165, 66, blockFolderPath + "waterFlowSouth7.txt");
+    public static final Block waterFlowEast1Block = new BlockWater((short)166, 67, blockFolderPath + "waterFlowEast1.txt");
+    public static final Block waterFlowEast2Block = new BlockWater((short)167, 67, blockFolderPath + "waterFlowEast2.txt");
+    public static final Block waterFlowEast3Block = new BlockWater((short)168, 67, blockFolderPath + "waterFlowEast3.txt");
+    public static final Block waterFlowEast4Block = new BlockWater((short)169, 67, blockFolderPath + "waterFlowEast4.txt");
+    public static final Block waterFlowEast5Block = new BlockWater((short)170, 67, blockFolderPath + "waterFlowEast5.txt");
+    public static final Block waterFlowEast6Block = new BlockWater((short)171, 67, blockFolderPath + "waterFlowEast6.txt");
+    public static final Block waterFlowEast7Block = new BlockWater((short)172, 67, blockFolderPath + "waterFlowEast7.txt");
+    public static final Block waterFlowWest1Block = new BlockWater((short)173, 68, blockFolderPath + "waterFlowWest1.txt");
+    public static final Block waterFlowWest2Block = new BlockWater((short)174, 68, blockFolderPath + "waterFlowWest2.txt");
+    public static final Block waterFlowWest3Block = new BlockWater((short)175, 68, blockFolderPath + "waterFlowWest3.txt");
+    public static final Block waterFlowWest4Block = new BlockWater((short)176, 68, blockFolderPath + "waterFlowWest4.txt");
+    public static final Block waterFlowWest5Block = new BlockWater((short)177, 68, blockFolderPath + "waterFlowWest5.txt");
+    public static final Block waterFlowWest6Block = new BlockWater((short)178, 68, blockFolderPath + "waterFlowWest6.txt");
+    public static final Block waterFlowWest7Block = new BlockWater((short)179, 68, blockFolderPath + "waterFlowWest7.txt");
+    public static final Block fullWater = new BlockWater((short)180, 4, blockFolderPath + "fullWater.txt");
+    public static final Block tilledSoil = new BlockSoil((short)181, 1,blockFolderPath + "tilledSoil.txt");
+    public static final Block cropGrowth = new BlockCrop((short)182, -1, blockFolderPath + "cropGrowth.txt");
     public final short ID;
     public final int textureID;
     public static int facingDirection;
@@ -422,6 +501,41 @@ public class Block {
                     case "seedModel" -> this.blockModel = seedModel;
                     case "saplingModel" -> this.blockModel = saplingModel;
                     case "primitiveCraftingTable" -> this.blockModel = primitiveCraftingTableModel;
+                    case "tilledSoilModel" -> this.blockModel = tilledSoilModel;
+
+                    case "waterDefault" -> this.blockModel = waterDefault;
+                    case "waterFlowNorth1" -> this.blockModel = waterFlowNorth1;
+                    case "waterFlowNorth2" -> this.blockModel = waterFlowNorth2;
+                    case "waterFlowNorth3" -> this.blockModel = waterFlowNorth3;
+                    case "waterFlowNorth4" -> this.blockModel = waterFlowNorth4;
+                    case "waterFlowNorth5" -> this.blockModel = waterFlowNorth5;
+                    case "waterFlowNorth6" -> this.blockModel = waterFlowNorth6;
+                    case "waterFlowNorth7" -> this.blockModel = waterFlowNorth7;
+
+                    case "waterFlowSouth1" -> this.blockModel = waterFlowSouth1;
+                    case "waterFlowSouth2" -> this.blockModel = waterFlowSouth2;
+                    case "waterFlowSouth3" -> this.blockModel = waterFlowSouth3;
+                    case "waterFlowSouth4" -> this.blockModel = waterFlowSouth4;
+                    case "waterFlowSouth5" -> this.blockModel = waterFlowSouth5;
+                    case "waterFlowSouth6" -> this.blockModel = waterFlowSouth6;
+                    case "waterFlowSouth7" -> this.blockModel = waterFlowSouth7;
+
+                    case "waterFlowEast1" -> this.blockModel = waterFlowEast1;
+                    case "waterFlowEast2" -> this.blockModel = waterFlowEast2;
+                    case "waterFlowEast3" -> this.blockModel = waterFlowEast3;
+                    case "waterFlowEast4" -> this.blockModel = waterFlowEast4;
+                    case "waterFlowEast5" -> this.blockModel = waterFlowEast5;
+                    case "waterFlowEast6" -> this.blockModel = waterFlowEast6;
+                    case "waterFlowEast7" -> this.blockModel = waterFlowEast7;
+
+                    case "waterFlowWest1" -> this.blockModel = waterFlowWest1;
+                    case "waterFlowWest2" -> this.blockModel = waterFlowWest2;
+                    case "waterFlowWest3" -> this.blockModel = waterFlowWest3;
+                    case "waterFlowWest4" -> this.blockModel = waterFlowWest4;
+                    case "waterFlowWest5" -> this.blockModel = waterFlowWest5;
+                    case "waterFlowWest6" -> this.blockModel = waterFlowWest6;
+                    case "waterFlowWest7" -> this.blockModel = waterFlowWest7;
+
                     case "size2VoxelModel" -> this.blockModel = size2VoxelModel;
                     case "size15NormalModel" -> this.blockModel = size15NormalModel;
                     case "size14NormalModel" -> this.blockModel = size14NormalModel;
@@ -533,6 +647,7 @@ public class Block {
         return this.textureID;
     }
 
+
     public void handleSpecialRightClickFunctions(int x, int y, int z, World world, EntityPlayer player){
         if(!MouseListener.rightClickReleased)return;
         short playerHeldItem = player.getHeldItem();
@@ -540,7 +655,7 @@ public class Block {
         //This is too generic to put in its own class
         if(world.isBlockAbleToBecomePitKiln(this, x, y, z) && playerHeldItem == Item.straw.ID && MouseListener.rightClickReleased && world.isBlockSuitableForPitKiln(x,y,z)){
             Inventory kilnInventory = new Inventory(1,1);
-            kilnInventory.addItemToInventory(world.pitKilnItemType(this.ID, x,y,z), world.getBlockID(x,y,z), world.pitKilnItemCount(this.ID, x,y,z), Item.NULL_ITEM_DURABILITY, 0);
+            kilnInventory.addItemToInventory(world.pitKilnItemType(this.ID, x,y,z), world.getBlockID(x,y,z), world.pitKilnItemCount(this.ID, x,y,z), Item.NULL_ITEM_DURABILITY, 0, null);
             if(this.ID == Block.brickPile.ID){
                 world.clearChestLocation(x,y,z);
             }
@@ -559,7 +674,7 @@ public class Block {
         short playerHeldItem = player.getHeldItem();
         if(playerHeldItem != Item.NULL_ITEM_REFERENCE) {
             if (this.ID == tallGrass.ID && Item.list[playerHeldItem] instanceof ItemKnife) {
-                world.addEntity(new EntityItem(x + 0.5, y + 0.5, z + 0.5, Item.straw.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY, 0));
+                world.addEntity(new EntityItem(x + 0.5, y + 0.5, z + 0.5, Item.straw.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY, 0, null));
             }
         }
         if(this.ID == grassWithClay.ID || this.ID == clay.ID){
@@ -591,7 +706,7 @@ public class Block {
         if (list[blockID].droppedItemID != Item.NULL_ITEM_REFERENCE) {
             if (list[blockID].droppedItemID != Item.block.ID) {
                 if (list[blockID].itemDropChance > CosmicEvolution.globalRand.nextFloat()) {
-                    world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).addEntityToList(new EntityItem(x + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), y + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), z + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), list[blockID].droppedItemID, Item.NULL_ITEM_METADATA, (byte) 1, Item.list[list[blockID].droppedItemID].durability, 0));
+                    world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).addEntityToList(new EntityItem(x + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), y + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), z + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), list[blockID].droppedItemID, Item.NULL_ITEM_METADATA, (byte) 1, Item.list[list[blockID].droppedItemID].durability, 0, null));
                 }
             } else {
                 if (list[blockID].itemDropChance > CosmicEvolution.globalRand.nextFloat()) {
@@ -659,7 +774,7 @@ public class Block {
                 if (list[blockID].droppedItemID != Item.NULL_ITEM_REFERENCE) {
                     if (list[blockID].droppedItemID != Item.block.ID) {
                         if (list[blockID].itemDropChance > CosmicEvolution.globalRand.nextFloat()) {
-                            world.findChunkFromChunkCoordinates(blockX >> 5, blockY >> 5, blockZ >> 5).addEntityToList(new EntityItem(blockX + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), blockY + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), blockZ + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), list[blockID].droppedItemID, Item.NULL_ITEM_METADATA, (byte) 1, Item.list[list[blockID].droppedItemID].durability, 0));
+                            world.findChunkFromChunkCoordinates(blockX >> 5, blockY >> 5, blockZ >> 5).addEntityToList(new EntityItem(blockX + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), blockY + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), blockZ + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), list[blockID].droppedItemID, Item.NULL_ITEM_METADATA, (byte) 1, Item.list[list[blockID].droppedItemID].durability, 0, null));
                         }
                     } else {
                         if (list[blockID].itemDropChance > CosmicEvolution.globalRand.nextFloat()) {
@@ -668,6 +783,14 @@ public class Block {
                     }
                 }
             }
+        }
+
+        if(this instanceof BlockCrop){
+            world.removeCropState(x,y,z);
+        }
+
+        if(this instanceof BlockSoil){
+            world.removeTilledSoilState(x,y,z);
         }
 
         if(this instanceof ITimeUpdate){
@@ -687,12 +810,12 @@ public class Block {
     public void onRightClick(int x, int y, int z, World world, EntityPlayer player) {
         Chunk chunk = world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
         if (chunk.blocks == null) {chunk.initChunk();}
-        if (chunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)] != air.ID && chunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)] != water.ID) {return;}
+        if (chunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)] != air.ID && !(Block.list[chunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)]] instanceof BlockWater)) {return;}
         if (!MouseListener.rightClickReleased)return;
-        if(world.wouldBlockIntersectPlayer(x,y,z))return;
 
         short heldItem = player.getHeldItem(); //Block all items that cannot be placed on the ground
         if (heldItem == Item.NULL_ITEM_REFERENCE || (!Item.list[heldItem].canPlaceOnGround && !Item.list[heldItem].canPlaceAsItemBlock))return;
+
 
         short heldBlock = 0;
         if (player.isHoldingBlock()) {
@@ -767,6 +890,13 @@ public class Block {
                     return;
                 }
             }
+            case "SEED_WILD_GRASS", "SEED_EINKORN_WHEAT" -> {
+                if(list[world.getBlockID(x, y - 1, z)] instanceof BlockSoil){
+                    heldBlock = cropGrowth.ID;
+                } else {
+                    return;
+                }
+            }
             case "DOOR_PRIMITIVE" -> {
                 switch (player.getPlayerCardinalFaceDirection()){
                     case "North" -> {
@@ -813,7 +943,7 @@ public class Block {
                 }
                 world.setBlock(x, y + 1, z, Block.doorPrimitiveUpper.ID);
             }
-        };
+        }
 
         if(list[heldBlock].requireSolidBlockBelow){
             if(!list[world.getBlockID(x,y - 1, z)].isSolid){
@@ -823,6 +953,28 @@ public class Block {
 
         if(Block.list[heldBlock] instanceof ITimeUpdate){
             chunk.addTimeUpdateEvent(x,y,z, CosmicEvolution.instance.save.time + ((ITimeUpdate) Block.list[heldBlock]).getUpdateTime());
+        }
+
+        if(Block.list[heldBlock] instanceof BlockCrop){
+            TilledSoilState tilledSoilState = world.getTilledSoilState(x, y - 1, z);
+
+            SeedState seedState = (SeedState)player.getHeldItemState();
+
+            if(seedState == null)throw new IllegalStateException("Itemstate in the player's hand is null");
+
+            String cropName = ((ItemSeed)Item.list[heldItem]).getCropName();
+
+            boolean canMutate = tilledSoilState.fertilizerID == TilledSoilState.BONEMEAL;
+            if(canMutate && !seedState.canMutate){
+                GuiMutateCrop guiMutateCrop = new GuiMutateCrop(world.ce, x, y, z, world, player, Crop.getCropFromName(cropName));
+                if(!guiMutateCrop.close) {
+                    world.ce.setNewGui(guiMutateCrop);
+                } else {
+                    tilledSoilState.fertilizerID = TilledSoilState.NO_FERTILIZER;
+                }
+            } else {
+                chunk.addCropState(new CropState(Chunk.getBlockIndexFromCoordinates(x,y,z), cropName, canMutate, seedState.targetCrop, 0, seedState.percentToTargetCrop),x,y,z);
+            }
         }
 
 

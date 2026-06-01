@@ -74,6 +74,27 @@ public final class EntityParticle extends EntityNonLiving {
 
             if (this.useGravity) {
                 this.doGravity();
+                int x = MathUtil.floorDouble(this.x);
+                int y = MathUtil.floorDouble(this.y);
+                int z = MathUtil.floorDouble(this.z);
+
+                short headBlock = CosmicEvolution.instance.save.activeWorld.getBlockID(x, y, z);
+
+                if(headBlock >= 152 && headBlock <= 158 && !this.canMoveWithVector){
+                    this.deltaX = -0.01;
+                }
+
+                if(headBlock >= 159 && headBlock <= 165 && !this.canMoveWithVector){
+                    this.deltaX = 0.01;
+                }
+
+                if(headBlock >= 166 && headBlock <= 172 && !this.canMoveWithVector){
+                    this.deltaZ = -0.01;
+                }
+
+                if(headBlock >= 173 && headBlock <= 179 && !this.canMoveWithVector){
+                    this.deltaZ = 0.01;
+                }
                 this.moveOnly();
                 if (this.collideWithGround) {
                     if (Block.list[world.getBlockID(MathUtil.floorDouble(this.x), MathUtil.floorDouble(this.y), MathUtil.floorDouble(this.z))].isSolid) {

@@ -7,7 +7,7 @@ import spacegame.item.Inventory;
 import spacegame.item.ItemStack;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
-import spacegame.world.HeatableBlockLocation;
+import spacegame.world.blockstate.HeatableBlockLocation;
 
 public final class GuiCampfire extends GuiInventory {
     public Inventory playerInventory;

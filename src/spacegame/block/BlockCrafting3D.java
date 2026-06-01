@@ -2,7 +2,7 @@ package spacegame.block;
 
 import spacegame.core.CosmicEvolution;
 import spacegame.item.Item;
-import spacegame.item.crafting.InWorld3DCraftingItem;
+import spacegame.world.blockstate.InWorld3DCraftingItem;
 
 public final class BlockCrafting3D extends Block {
     public BlockCrafting3D(short ID, int textureID, String filepath) {

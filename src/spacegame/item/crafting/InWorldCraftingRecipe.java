@@ -23,18 +23,20 @@ public final class InWorldCraftingRecipe {
             Item.rawClayAdobeBrick.ID, 2, 4);
     public static final InWorldCraftingRecipe rawCookingPot = new InWorldCraftingRecipe(recipePath + "clay/cookingPot/", 10, "rawRedCookingPot",
             Item.block.ID,  Block.rawRedClayCookingPot.ID,  1, 5);
-    public static final InWorldCraftingRecipe reedChest = new InWorldCraftingRecipe(recipePath + "/reed/chest/", 10, "reedChest",
+    public static final InWorldCraftingRecipe reedChest = new InWorldCraftingRecipe(recipePath + "reed/chest/", 10, "reedChest",
             Item.block.ID, Block.reedChest.ID, 1, 6);
-    public static final InWorldCraftingRecipe reedBasket = new InWorldCraftingRecipe(recipePath + "/reed/basket/", 13, "reedBasket",
+    public static final InWorldCraftingRecipe reedBasket = new InWorldCraftingRecipe(recipePath + "reed/basket/", 13, "reedBasket",
             Item.reedBasket.ID, 1,7);
-    public static final InWorldCraftingRecipe reedTwine = new InWorldCraftingRecipe(recipePath + "/reed/twine/", 1, "reedTwine",
+    public static final InWorldCraftingRecipe reedTwine = new InWorldCraftingRecipe(recipePath + "reed/twine/", 1, "reedTwine",
             Item.reedTwine.ID, 2, 8);
-    public static final InWorldCraftingRecipe reedCraftingGridTop = new InWorldCraftingRecipe(recipePath + "/reed/craftingGrid/", 1, "reedCraftingGridTop",
+    public static final InWorldCraftingRecipe reedCraftingGridTop = new InWorldCraftingRecipe(recipePath + "reed/craftingGrid/", 1, "reedCraftingGridTop",
             Item.reedCraftingGridTop.ID, 1, 9);
-    public static final InWorldCraftingRecipe deerPeltClothing = new InWorldCraftingRecipe(recipePath + "/peltClothing/deer/", 1, "deerPeltClothing",
+    public static final InWorldCraftingRecipe deerPeltClothing = new InWorldCraftingRecipe(recipePath + "peltClothing/deer/", 1, "deerPeltClothing",
             Item.primitiveDeerPeltClothing.ID, 1, 10);
-    public static final InWorldCraftingRecipe wolfPeltClothing = new InWorldCraftingRecipe(recipePath + "/peltClothing/wolf/", 1, "deerPeltClothing",
+    public static final InWorldCraftingRecipe wolfPeltClothing = new InWorldCraftingRecipe(recipePath + "peltClothing/wolf/", 1, "deerPeltClothing",
             Item.primitiveWolfPeltClothing.ID, 1, 11);
+    public static final InWorldCraftingRecipe stoneHoeHead = new InWorldCraftingRecipe(recipePath + "stone/hoeHead/", 1, "stoneHoeHead",
+            Item.stoneHoeHead.ID, 1, 12);
     public int[][] recipeIndices;
     public String recipeName;
     public short outputItemID;

@@ -23,6 +23,10 @@ public final class CraftingBlockRecipes {
             new double[][]{{1,0.0625,0.5f}, {0.5f,0.0625,0.5f}, {0,0.0625,0.5f}, {0.75f,0.0625,0.25f}, {0.25f,0.0625,0.25f}, {0.75f,0.0625,0.75f}, {0.25f,0.0625,0.75f}}, new double[]{90,90,90,0,0,0,0}, (byte)1, true, 6, 4,
             new short[]{Block.itemStick.ID,Block.itemStick.ID,Block.itemStick.ID,Block.itemStick.ID,Block.itemStick.ID,Block.itemStick.ID,Block.itemStick.ID});
 
+    public static final CraftingBlockRecipes stoneHoe = new CraftingBlockRecipes(Item.stoneHoe.ID, Item.stoneHoe.getDisplayName(Item.NULL_ITEM_REFERENCE),
+            new short[]{Item.block.ID, Item.stoneHoeHead.ID}, new int[]{1,1}, TECH_LEVEL_PRIMITIVE, new double[][]{{0.5, 0.0625, 0.5},{0.27, 0.0626, 0.44}},
+            new double[]{-45, 135}, (byte)1, true, 1, 5, new short[]{Block.itemStick.ID, Item.NULL_ITEM_METADATA});
+
     public short itemID;
     public short blockID;
     public String displayName;

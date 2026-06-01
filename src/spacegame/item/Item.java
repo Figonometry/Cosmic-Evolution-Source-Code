@@ -11,26 +11,26 @@ public class Item {
     public static String modelFolderPath = "src/spacegame/assets/models/itemModels/";
     public static final Item[] list = new Item[Short.MAX_VALUE];
     public static final Item block = new Item((short)0, null, "src/spacegame/assets/itemFiles/block.txt");
-    public static final Item old_torch = null; //1
-    public static final Item old_stone = null; //2
+    public static final Item stoneHoeHead = new ItemTool((short) 1, modelFolderPath + "stoneHoeHead.obj", "src/spacegame/assets/itemFiles/stoneHoeHead.txt");
+    public static final Item stoneHoe = new ItemHoe((short) 2, modelFolderPath + "stoneHoe.obj", "src/spacegame/assets/itemFiles/stoneHoe.txt", Material.STONE);
     public static final Item stoneFragments = new Item((short)3,  modelFolderPath + "stoneFragments.obj", "src/spacegame/assets/itemFiles/stoneFragments.txt");
     public static final Item stoneHandAxe = new ItemAxe((short)4, modelFolderPath + "stoneHandAxe.obj", "src/spacegame/assets/itemFiles/stoneHandAxe.txt", Material.RAW_STONE);
     public static final Item berry = new ItemBerry((short)5, modelFolderPath + "berry.obj", "src/spacegame/assets/itemFiles/berry.txt", 50f);
-    public static final Item old_stick = null; //6
-    public static final Item old_unlitTorch = null; //7
+    public static final Item seedWildGrass = new ItemSeed((short)6, modelFolderPath + "seedWildGrass.obj", "src/spacegame/assets/itemFiles/seedWildGrass.txt");
+    public static final Item seedEinkornWheat = new ItemSeed((short)7, modelFolderPath + "seedEinkornWheat.obj", "src/spacegame/assets/itemFiles/seedEinkornWheat.txt");
     public static final Item fireWood = new ItemFirewood((short)8, modelFolderPath + "firewood.obj", "src/spacegame/assets/itemFiles/fireWood.txt");
     public static final Item stoneHandKnifeBlade = new ItemKnife((short)9, modelFolderPath + "stoneKnifeBlade.obj", "src/spacegame/assets/itemFiles/stoneHandKnifeBlade.txt", Material.RAW_STONE);
     public static final Item stoneHandShovel = new ItemShovel((short)10, modelFolderPath + "stoneHandShovel.obj", "src/spacegame/assets/itemFiles/stoneHandShovel.txt", Material.RAW_STONE);
     public static final Item rawGameMeat = new ItemRawGameMeat((short)11, modelFolderPath + "rawGameMeat.obj", "src/spacegame/assets/itemFiles/rawGameMeat.txt", 5f);
     public static final Item straw = new Item((short)12, modelFolderPath + "straw.obj", "src/spacegame/assets/itemFiles/straw.txt");
     public static final Item reedBasket = new Item((short)13, modelFolderPath + "reedBasket.obj", "src/spacegame/assets/itemFiles/reedBasket.txt");
-    public static final Item old_clay = null; //14
+    public static final Item einkornWheat = new ItemFood((short)14, modelFolderPath + "einkornWheat.obj", "src/spacegame/assets/itemFiles/einkornWheat.txt", 5f);
     public static final Item rawClayAdobeBrick = new Item((short)15, modelFolderPath + "rawRedClayBrick.obj", "src/spacegame/assets/itemFiles/rawClayAdobeBrick.txt");
     public static final Item firedRedClayAdobeBrick = new Item((short)16, modelFolderPath + "redClayBrick.obj", "src/spacegame/assets/itemFiles/firedRedClayAdobeBrick.txt");
     public static final Item mud = new Item((short)17, modelFolderPath + "mud.obj", "src/spacegame/assets/itemFiles/mud.txt");
     public static final Item reeds = new ItemReed((short)18, modelFolderPath + "reeds.obj", "src/spacegame/assets/itemFiles/reeds.txt");
-    public static final Item old_berrySeed = null; //19
-    public static final Item old_reedSeed = null; //20
+    public static final Item bone = new ItemBone((short)19, modelFolderPath + "bone.obj", "src/spacegame/assets/itemFiles/bone.txt");
+    public static final Item boneMeal = new Item((short)20, modelFolderPath + "boneMeal.obj", "src/spacegame/assets/itemFiles/boneMeal.txt"); //20
     public static final Item old_treeSeed = null; //21
     public static final Item cookedGameMeat = new ItemCookedGameMeat((short)22, modelFolderPath + "cookedGameMeat.obj", "src/spacegame/assets/itemFiles/cookedGameMeat.txt", 300f);
     public static final Item reedTwine = new Item((short)23, modelFolderPath + "twine.obj", "src/spacegame/assets/itemFiles/reedTwine.txt");
@@ -89,7 +89,7 @@ public class Item {
             throw new RuntimeException("Missing item file at " + filepath);
         }
 
-        if(modelFilePath == null)modelFilePath = modelFolderPath + "defaultItem.obj"; //If the passed in model doesnt yet exist assign the default item model
+        if(modelFilePath == null || !new File(modelFilePath).exists())modelFilePath = modelFolderPath + "defaultItem.obj"; //If the passed in model doesnt yet exist assign the default item model
         this.itemModel = new ModelLoader(modelFilePath, true);
 
 
@@ -178,6 +178,9 @@ public class Item {
     public void onRightClick(int x, int y, int z, World world, EntityPlayer player){
 
     }
+    public void onFinishRightClickAnimation(int x, int y, int z, World world, EntityPlayer player){
+
+    }
 
     public String getDisplayName(short blockID){
         return this.ID == block.ID ? Block.list[blockID].getDisplayName(0,0,0) : this.displayName;
@@ -191,6 +194,7 @@ public class Item {
         itemStack.metadata = 0;
         itemStack.durability = 0;
         itemStack.decayTime = 0L;
+        itemStack.itemState = null;
     }
 
 }

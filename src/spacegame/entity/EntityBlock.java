@@ -2,6 +2,7 @@ package spacegame.entity;
 
 import spacegame.block.Block;
 import spacegame.core.CosmicEvolution;
+import spacegame.nbt.NBTTagCompound;
 import spacegame.util.MathUtil;
 import spacegame.core.Sound;
 import spacegame.item.Item;
@@ -46,7 +47,7 @@ public final class EntityBlock extends EntityNonLiving {
         this.boundingBox.scale(0.5);
         if(CosmicEvolution.instance.save.thePlayer.boundingBox != null) {
             if (this.boundingBox.clip(CosmicEvolution.instance.save.thePlayer.boundingBox) && this.pickupTimer >= 60) {
-                if (CosmicEvolution.instance.save.thePlayer.addItemToInventory(Item.block.ID, this.block, this.count, Item.NULL_ITEM_DURABILITY, 0)) {
+                if (CosmicEvolution.instance.save.thePlayer.addItemToInventory(Item.block.ID, this.block, this.count, Item.NULL_ITEM_DURABILITY, 0, null)) {
                     CosmicEvolution.instance.soundPlayer.playSound(this.x, this.y, this.z, new Sound(Sound.itemPickup, false, 1f), new Random().nextFloat(1.5F, 1.9F));
                     this.despawn = true;
                 }
@@ -58,6 +59,35 @@ public final class EntityBlock extends EntityNonLiving {
     public void tick(){
         this.setEntityState();
         this.doGravity();
+        int x = MathUtil.floorDouble(this.x);
+        int y = MathUtil.floorDouble(this.y);
+        int z = MathUtil.floorDouble(this.z);
+
+        short headBlock = CosmicEvolution.instance.save.activeWorld.getBlockID(x, y, z);
+
+        if(headBlock >= 152 && headBlock <= 158 && !this.canMoveWithVector){
+            this.deltaX = -0.01;
+        } else if(!this.canMoveWithVector){
+            this.deltaX = 0;
+        }
+
+        if(headBlock >= 159 && headBlock <= 165 && !this.canMoveWithVector){
+            this.deltaX = 0.01;
+        } else if(!this.canMoveWithVector){
+            this.deltaX = 0;
+        }
+
+        if(headBlock >= 166 && headBlock <= 172 && !this.canMoveWithVector){
+            this.deltaZ = -0.01;
+        } else if(!this.canMoveWithVector){
+            this.deltaZ = 0;
+        }
+
+        if(headBlock >= 173 && headBlock <= 179 && !this.canMoveWithVector){
+            this.deltaZ = 0.01;
+        } else if(!this.canMoveWithVector){
+            this.deltaZ = 0;
+        }
         this.moveAndHandleCollision();
     }
 
@@ -72,6 +102,18 @@ public final class EntityBlock extends EntityNonLiving {
     @Override
     public void renderForShadowMap(int sunX, int sunY, int sunZ){
         new RenderEntityItem(this.x, this.y, this.z, this.entityModel, true, true, Item.block.ID, this.block, this.height, this.width, this.yaw).renderBlockForShadowMap(sunX,sunY,sunZ);
+    }
+
+    @Override
+    public String getEntityType(){
+        return "EntityBlock";
+    }
+
+    @Override
+    public void saveToNBT(NBTTagCompound nbtTagCompound){
+        nbtTagCompound.setString("entityType", "EntityBlock");
+        nbtTagCompound.setShort("blockType", this.block);
+        nbtTagCompound.setByte("count", this.count);
     }
 
 }

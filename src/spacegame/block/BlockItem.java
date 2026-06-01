@@ -24,7 +24,7 @@ public final class BlockItem extends BlockContainer {
 
         if(!KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) && !KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT) && (playerHeldItem == Item.NULL_ITEM_REFERENCE
                 || playerHeldItem == chest.inventory.itemStacks[0].item.ID)){
-            if(player.addItemToInventory(chest.inventory.itemStacks[0].item.ID, chest.inventory.itemStacks[0].metadata, (byte)1, chest.inventory.itemStacks[0].durability, chest.inventory.itemStacks[0].decayTime)){
+            if(player.addItemToInventory(chest.inventory.itemStacks[0].item.ID, chest.inventory.itemStacks[0].metadata, (byte)1, chest.inventory.itemStacks[0].durability, chest.inventory.itemStacks[0].decayTime, null)){
                 chest.inventory.itemStacks[0].count = 0;
                 chest.inventory.itemStacks[0].item = null;
                 chest.inventory.itemStacks[0].durability = Item.NULL_ITEM_DURABILITY;
@@ -71,6 +71,9 @@ public final class BlockItem extends BlockContainer {
             case 18 -> 60;
             case 19 -> 61;
             case 20 -> 62;
+            case 21 -> 71;
+            case 22 -> 72;
+            case 23 -> 73;
 
             default -> this.textureID;
         };

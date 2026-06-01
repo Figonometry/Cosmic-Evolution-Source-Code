@@ -20,6 +20,7 @@ import spacegame.entity.*;
 import spacegame.gui.*;
 import spacegame.item.Item;
 import spacegame.item.ItemStack;
+import spacegame.item.itemstate.ItemState;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.render.*;
@@ -112,7 +113,7 @@ public final class CosmicEvolution implements Runnable {
         threadPool = new ThreadPoolExecutor(workerCount, workerCount, 0L, TimeUnit.MILLISECONDS, new PriorityBlockingQueue<>());
         this.dirtyChunksSchedulerThread = new Thread(new ChunkJobThreadScheduler());
         this.dirtyChunksSchedulerThread.start();
-        this.title = "Cosmic Evolution Alpha v0.47";
+        this.title = "Cosmic Evolution Alpha v0.48";
         GameSettings.loadOptionsFromFile(this.launcherDirectory);
         this.clearLogFiles(new File(this.launcherDirectory + "/crashReports"));
         this.initLWJGL();
@@ -582,7 +583,7 @@ public final class CosmicEvolution implements Runnable {
                     this.save.activeWorld.findChunkFromChunkCoordinates(MathUtil.floorDouble(this.save.thePlayer.x) >> 5, MathUtil.floorDouble(this.save.thePlayer.y) >> 5, MathUtil.floorDouble(this.save.thePlayer.z) >> 5).addEntityToList(droppedBlock);
                 }
             } else if(ItemStack.itemStackOnMouse.item.ID != Item.NULL_ITEM_REFERENCE) {
-                EntityItem droppedItem = new EntityItem(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, ItemStack.itemStackOnMouse.item.ID, Item.NULL_ITEM_METADATA, ItemStack.itemStackOnMouse.count, ItemStack.itemStackOnMouse.durability, 0);
+                EntityItem droppedItem = new EntityItem(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, ItemStack.itemStackOnMouse.item.ID, Item.NULL_ITEM_METADATA, ItemStack.itemStackOnMouse.count, ItemStack.itemStackOnMouse.durability, 0, null);
                 double[] vector = CosmicEvolution.camera.rayCast(1);
                 Vector3d difVector = new Vector3d(vector[0] - this.save.thePlayer.x, (vector[1] - this.save.thePlayer.y) + this.save.thePlayer.height/2, vector[2] - this.save.thePlayer.z);
                 difVector.normalize();
@@ -644,7 +645,7 @@ public final class CosmicEvolution implements Runnable {
             stack = ((GuiInventory)this.currentGui).getHoveredItemStack();
             if(stack != null) {
                 if(ItemStack.itemStackOnMouse.item != null) {
-                    if(ItemStack.itemStackOnMouse.item.equals(stack.item) && (stack.metadata == ItemStack.itemStackOnMouse.metadata)){
+                    if(ItemStack.itemStackOnMouse.item.equals(stack.item) && (stack.metadata == ItemStack.itemStackOnMouse.metadata) && stack.doStatesMatch(ItemStack.itemStackOnMouse.itemState)){
                         if(stack.count + ItemStack.itemStackOnMouse.count <= stack.item.stackLimit) {
                             if (MouseListener.leftClickReleased) {
                                 stack.mergeStack(ItemStack.itemStackOnMouse);
@@ -653,6 +654,7 @@ public final class CosmicEvolution implements Runnable {
                                 ItemStack.itemStackOnMouse.metadata = Item.NULL_ITEM_METADATA;
                                 ItemStack.itemStackOnMouse.durability = Item.NULL_ITEM_DURABILITY;
                                 ItemStack.itemStackOnMouse.decayTime = 0L;
+                                ItemStack.itemStackOnMouse.itemState = null;
                             }
                         } else {
                             if (MouseListener.leftClickReleased) {
@@ -670,11 +672,13 @@ public final class CosmicEvolution implements Runnable {
                                 stack.metadata = ItemStack.itemStackOnMouse.metadata;
                                 stack.durability = ItemStack.itemStackOnMouse.durability;
                                 stack.decayTime = ItemStack.itemStackOnMouse.decayTime;
+                                stack.itemState = ItemStack.itemStackOnMouse.itemState != null ? ItemStack.itemStackOnMouse.itemState.copy() : null;
                                 ItemStack.itemStackOnMouse.item = null;
                                 ItemStack.itemStackOnMouse.count = 0;
                                 ItemStack.itemStackOnMouse.metadata = Item.NULL_ITEM_METADATA;
                                 ItemStack.itemStackOnMouse.durability = Item.NULL_ITEM_DURABILITY;
                                 ItemStack.itemStackOnMouse.decayTime = 0L;
+                                ItemStack.itemStackOnMouse.itemState = null;
                                 if(stack.exclusiveItemType.equals(Item.ITEM_TYPE_PLAYER_STORAGE)){
                                     this.save.thePlayer.setPlayerStorageLevel((byte) stack.item.storageLevel);
                                 }
@@ -684,32 +688,37 @@ public final class CosmicEvolution implements Runnable {
                                 stack.metadata = ItemStack.itemStackOnMouse.metadata;
                                 stack.durability = ItemStack.itemStackOnMouse.durability;
                                 stack.decayTime = ItemStack.itemStackOnMouse.decayTime;
+                                stack.itemState = ItemStack.itemStackOnMouse.itemState != null ? ItemStack.itemStackOnMouse.itemState.copy() : null;
                                 ItemStack.itemStackOnMouse.item = null;
                                 ItemStack.itemStackOnMouse.count = 0;
                                 ItemStack.itemStackOnMouse.metadata = Item.NULL_ITEM_METADATA;
                                 ItemStack.itemStackOnMouse.durability = Item.NULL_ITEM_DURABILITY;
                                 ItemStack.itemStackOnMouse.decayTime = 0L;
+                                ItemStack.itemStackOnMouse.itemState = null;
                             }
                         }
-                    } else if(!stack.item.equals(ItemStack.itemStackOnMouse.item) || (stack.metadata != ItemStack.itemStackOnMouse.metadata)){
+                    } else if(!stack.item.equals(ItemStack.itemStackOnMouse.item) || (stack.metadata != ItemStack.itemStackOnMouse.metadata) || !stack.doStatesMatch(ItemStack.itemStackOnMouse.itemState)){
                         ItemStack tempStack = new ItemStack(null, (byte)0, 0,0);
                         tempStack.item = stack.item;
                         tempStack.count = stack.count;
                         tempStack.durability = stack.durability;
                         tempStack.metadata = stack.metadata;
                         tempStack.decayTime = stack.decayTime;
+                        tempStack.itemState = stack.itemState != null ? stack.itemState.copy() : null;
 
                         stack.item = ItemStack.itemStackOnMouse.item;;
                         stack.count = ItemStack.itemStackOnMouse.count;
                         stack.durability = ItemStack.itemStackOnMouse.durability;
                         stack.metadata = ItemStack.itemStackOnMouse.metadata;
                         stack.decayTime = ItemStack.itemStackOnMouse.decayTime;
+                        stack.itemState = ItemStack.itemStackOnMouse.itemState != null ? ItemStack.itemStackOnMouse.itemState.copy() : null;
 
                         ItemStack.itemStackOnMouse.item = tempStack.item;
                         ItemStack.itemStackOnMouse.count = tempStack.count;
                         ItemStack.itemStackOnMouse.durability = tempStack.durability;
                         ItemStack.itemStackOnMouse.metadata = tempStack.metadata;
                         ItemStack.itemStackOnMouse.decayTime = tempStack.decayTime;
+                        ItemStack.itemStackOnMouse.itemState = tempStack.itemState != null ? tempStack.itemState.copy() : null;
                     }
                 } else if(stack.item != null) {
                     if (MouseListener.leftClickReleased) {
@@ -719,11 +728,13 @@ public final class CosmicEvolution implements Runnable {
                         ItemStack.itemStackOnMouse.durability = stack.durability;
                         ItemStack.itemStackOnMouse.decayTime = stack.decayTime;
                         ItemStack.itemStackOnMouse.exclusiveItemType = stack.exclusiveItemType;
+                        ItemStack.itemStackOnMouse.itemState = stack.itemState != null ? stack.itemState.copy() : null;
                         stack.item = null;
                         stack.count = 0;
                         stack.metadata = Item.NULL_ITEM_METADATA;
                         stack.durability = Item.NULL_ITEM_DURABILITY;
                         stack.decayTime = 0L;
+                        stack.itemState = null;
                         if(stack.usesExclusiveItem && stack.exclusiveItemType.equals(Item.ITEM_TYPE_PLAYER_STORAGE)){
                             this.save.thePlayer.setPlayerStorageLevel((byte) 1);
                         }

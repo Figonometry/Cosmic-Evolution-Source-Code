@@ -5,7 +5,8 @@ import org.lwjgl.BufferUtils;
 import spacegame.block.*;
 import spacegame.core.GameSettings;
 import spacegame.item.ItemTool;
-import spacegame.item.crafting.InWorldCraftingItem;
+import spacegame.world.blockstate.CropState;
+import spacegame.world.blockstate.InWorldCraftingItem;
 import spacegame.render.model.ModelFace;
 import spacegame.render.model.ModelLoader;
 import spacegame.util.LongHasher;
@@ -13,8 +14,8 @@ import spacegame.util.MathUtil;
 import spacegame.item.Item;
 import spacegame.world.ChestLocation;
 import spacegame.world.Chunk;
-import spacegame.item.crafting.InWorld3DCraftingItem;
-import spacegame.world.DoorTransition;
+import spacegame.world.blockstate.InWorld3DCraftingItem;
+import spacegame.world.blockstate.DoorTransition;
 import spacegame.world.World;
 
 import java.nio.FloatBuffer;
@@ -67,15 +68,16 @@ public class RenderBlocks {
 
         this.handleWaterLoggedBlocks(chunk, world, block, index, face);
 
-        ModelFace[] modelFaces = Block.list[block].blockModel.getModelFaceOfType(face);
-        for (int i = 0; i < modelFaces.length; i++) {
-            renderOpaqueFace(chunk, world, block, index, face, modelFaces[i], greedyMeshSize);
+        ModelLoader model = Block.list[block].blockModel.copyModel();
+        for (int i = 0; i < model.modelFaces.length; i++) {
+            if(face != model.modelFaces[i].faceType)continue;
+            renderOpaqueFace(chunk, world, block, index, face, model.modelFaces[i], greedyMeshSize);
         }
     }
 
 
     private void handleWaterLoggedBlocks(Chunk chunk, World world, short block, int index, int face){
-        if(Block.list[block].waterlogged && block != Block.water.ID){
+        if(Block.list[block].waterlogged && !(Block.list[block] instanceof BlockWater)){
             if((face == TOP_FACE && !Block.list[world.getBlockID(chunk.getBlockXFromIndex(index), chunk.getBlockYFromIndex(index) + 1, chunk.getBlockZFromIndex(index))].isSolid) ||
                     (face == BOTTOM_FACE && !Block.list[world.getBlockID(chunk.getBlockXFromIndex(index), chunk.getBlockYFromIndex(index) - 1, chunk.getBlockZFromIndex(index))].isSolid) ||
                     (face == NORTH_FACE && !Block.list[world.getBlockID(chunk.getBlockXFromIndex(index) - 1, chunk.getBlockYFromIndex(index), chunk.getBlockZFromIndex(index))].isSolid) ||
@@ -93,9 +95,54 @@ public class RenderBlocks {
         this.blueReset = 1f;
         this.skyLightReset = 1f;
 
-        ModelFace[] modelFaces = Block.list[block].blockModel.getModelFaceOfType(face);
-        for (int i = 0; i < modelFaces.length; i++) {
-            renderTransparentFace(chunk, world, block, index, face, modelFaces[i], greedyMeshSize);
+        ModelLoader model = Block.list[block].blockModel.copyModel();
+        for (int i = 0; i < model.modelFaces.length; i++) {
+            if(face != model.modelFaces[i].faceType)continue;
+            renderTransparentFace(chunk, world, block, index, face, model.modelFaces[i], greedyMeshSize);
+        }
+    }
+
+    public void renderFullWater(Chunk chunk, World world, short block, int index, int face){
+        this.redReset = 1f;
+        this.greenReset = 1f;
+        this.blueReset = 1f;
+        this.skyLightReset = 1f;
+
+        ModelLoader model = Block.list[block].blockModel.copyModel();
+
+        int[] coordinates = chunk.getBlockCoordinatesFromIndex(index);
+
+
+        switch (face){
+            case NORTH_FACE -> {
+                if(world.getBlockID(coordinates[0] - 1, coordinates[1], coordinates[2]) >= Block.waterFlowNorth1Block.ID &&
+                        world.getBlockID(coordinates[0] - 1, coordinates[1], coordinates[2]) <= Block.waterFlowWest7Block.ID){
+                    model = Block.topOfFullWater.copyModel();
+                }
+            }
+            case SOUTH_FACE -> {
+                if(world.getBlockID(coordinates[0] + 1, coordinates[1], coordinates[2]) >= Block.waterFlowNorth1Block.ID &&
+                        world.getBlockID(coordinates[0] + 1, coordinates[1], coordinates[2]) <= Block.waterFlowWest7Block.ID){
+                    model = Block.topOfFullWater.copyModel();
+                }
+            }
+            case EAST_FACE -> {
+                if(world.getBlockID(coordinates[0], coordinates[1], coordinates[2] - 1) >= Block.waterFlowNorth1Block.ID &&
+                        world.getBlockID(coordinates[0], coordinates[1], coordinates[2] - 1) <= Block.waterFlowWest7Block.ID){
+                    model = Block.topOfFullWater.copyModel();
+                }
+            }
+            case WEST_FACE -> {
+                if(world.getBlockID(coordinates[0], coordinates[1], coordinates[2] + 1) >= Block.waterFlowNorth1Block.ID &&
+                        world.getBlockID(coordinates[0], coordinates[1], coordinates[2] + 1) <= Block.waterFlowWest7Block.ID){
+                    model = Block.topOfFullWater.copyModel();
+                }
+            }
+        }
+
+        for (int i = 0; i < model.modelFaces.length; i++) {
+            if(face != model.modelFaces[i].faceType)continue;
+            renderTransparentFace(chunk, world, block, index, face, model.modelFaces[i], new int[2]);
         }
     }
 
@@ -1024,6 +1071,10 @@ public class RenderBlocks {
                     model.scaleModel(2.1f);
                 }
             }
+
+            if(craftingItem.outputRecipe.requiredItems[i] == Item.stoneHoeHead.ID){
+                model.rotateModel(90f, 0, 0, 1);
+            }
             model.rotateModel((float) craftingItem.outputRecipe.requiredItemAngles[i], 0, 1, 0);
             model.translateModel((float) craftingItem.outputRecipe.requiredItemPositions[i][0], (float) craftingItem.outputRecipe.requiredItemPositions[i][1], (float) craftingItem.outputRecipe.requiredItemPositions[i][2]);
 
@@ -1627,6 +1678,42 @@ public class RenderBlocks {
         }
     }
 
+    public void renderCrop(Chunk chunk, World world, short block, int index, int face) {
+        if (face != TOP_FACE) return;
+
+        CropState cropState = chunk.getCropState(index);
+        if (cropState == null) {
+            System.out.println("Unable to get crop information in rendering thread");
+            return;
+        }
+
+        ModelLoader model = null;
+
+        switch (cropState.growthStage){
+            case 0 -> model = Block.topFaceBlockModel.copyModel();
+            case 1 -> model = Block.cropGrowth1Model.copyModel();
+            case 2 -> model = Block.cropGrowth2Model.copyModel();
+            case 3 -> model = Block.cropGrowth3Model.copyModel();
+            case 4 -> model = Block.cropGrowth4Model.copyModel();
+            case 5 -> model = Block.cropGrowth5Model.copyModel();
+            case 6 -> model = Block.cropGrowth6Model.copyModel();
+            case 7 -> model = Block.cropGrowth7Model.copyModel();
+            case 8 -> model = Block.cropGrowth8Model.copyModel();
+        }
+
+        if(model == null)return;
+
+        model.translateModel(0, -0.09375f, 0); //all models need to be translated down to match the height of the tilled soil
+        model.translateModel(-0.5f, 0, -0.5f);
+        model.rotateModel(new Random((new LongHasher().hash(index, String.valueOf(chunk.x + chunk.y + chunk.z)))).nextFloat(-10, 10), 0, 1, 0);
+        model.translateModel(0.5f, 0, 0.5f);
+
+
+        for (int i = 0; i < model.modelFaces.length; i++) {
+            this.renderTransparentFace(chunk, world, block, index, face, model.modelFaces[i], new int[2]);
+        }
+    }
+
 
 
 
@@ -1694,12 +1781,16 @@ public class RenderBlocks {
        this.grayScaleImageMultiplier = MathUtil.floatToHalf(this.highestChannel / highestChannel); //This division gives the number to multiply the vertex color by in the terrain shader to restore to the normal fully lit grass color
     }
 
-    private  void setLight(float x, float y, float z, float xMin, float yMin, float zMin, float xMax, float yMax, float zMax, int index, int face, Chunk chunk, World world, int[] greedyMeshSize, short blockID, int textureID) {
+    private void setLight(float x, float y, float z, float xMin, float yMin, float zMin, float xMax, float yMax, float zMax, int index, int face, Chunk chunk, World world, int[] greedyMeshSize, short blockID, int textureID) {
         int xBlock = chunk.getBlockXFromIndex(index);
         int yBlock = chunk.getBlockYFromIndex(index);
         int zBlock = chunk.getBlockZFromIndex(index);
 
         this.setPlantColorValues(xBlock, yBlock, zBlock, world, blockID, textureID);
+
+        if(blockID == Block.tilledSoil.ID && face == TOP_FACE){
+            y = yMax; //This shifts the vertex up to the top of the block so it doesnt detect zero sky lighting
+        }
 
         if(blockID == Block.itemBlock.ID){
             this.setVertexLight1Arg(world.getBlockLightValue(xBlock, yBlock , zBlock), world.getBlockLightColor(xBlock, yBlock, zBlock));
@@ -2987,6 +3078,10 @@ public class RenderBlocks {
             blockTextureID = Block.itemBlock.getBlockTexture(blockFace.texture);
         }
 
+        if(block == Block.tilledSoil.ID){
+            blockTextureID = ((BlockSoil)Block.tilledSoil).getBlockTexture(chunk.getBlockXFromIndex(index), chunk.getBlockYFromIndex(index), chunk.getBlockZFromIndex(index), face);
+        }
+
         if(block == Block.crafting3DItem.ID){
             InWorld3DCraftingItem craftingItem = world.getInWorldCrafting3DItem(chunk.getBlockXFromIndex(index), chunk.getBlockYFromIndex(index), chunk.getBlockZFromIndex(index));
             if(craftingItem == null)return;
@@ -3072,6 +3167,10 @@ public class RenderBlocks {
         Vector3f minVertex = new Vector3f(x,y,z);
         Vector3f maxVertex = new Vector3f(x + 1, y + 1, z + 1);
         Vector3f blockPosition = new Vector3f(x, y, z);
+
+        if(block == Block.cropGrowth.ID){
+            blockID = ((BlockCrop)(Block.cropGrowth)).getBlockTexture(chunk.getBlockXFromIndex(index),chunk.getBlockYFromIndex(index),chunk.getBlockZFromIndex(index), world);
+        }
 
 
         Vector3f normal = new Vector3f(blockFace.normal.x, blockFace.normal.y, blockFace.normal.z);

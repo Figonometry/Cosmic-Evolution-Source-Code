@@ -8,9 +8,11 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
 import spacegame.block.BlockDoor;
+import spacegame.block.BlockWater;
 import spacegame.core.*;
 import spacegame.gui.*;
 import spacegame.item.*;
+import spacegame.item.itemstate.ItemState;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.render.model.Model;
@@ -83,6 +85,8 @@ public final class EntityPlayer extends EntityLiving {
     public Model model;
     public int outOfWaterJumpDelay = 0;
     public long timeStartedBreakingBlock = Long.MIN_VALUE;
+    public boolean animateRightClick;
+    public int rightClickAnimateTimer;
 
     public EntityPlayer(CosmicEvolution cosmicEvolution, double x, double y, double z) {
         super(Integer.MAX_VALUE);
@@ -165,7 +169,7 @@ public final class EntityPlayer extends EntityLiving {
                     short durability = item.getShort("durability");
                     short metadata = item.getShort("metadata");
                     long decayTime = item.getLong("decayTime");
-                    this.inventory.loadItemToInventory(id, metadata, count, durability, i, decayTime);
+                    this.inventory.loadItemToInventory(id, metadata, count, durability, i, decayTime, ItemState.loadFromCompoundTag(item.getCompoundTag("itemState")));
                 }
             }
         } catch(Exception e){
@@ -219,6 +223,9 @@ public final class EntityPlayer extends EntityLiving {
                     items[i].setShort("metadata", stack.metadata);
                     items[i].setShort("durability", stack.durability);
                     items[i].setLong("decayTime", stack.decayTime);
+                    if(stack.itemState != null){
+                        items[i].setTag("itemState", stack.itemState.getCompoundTag());
+                    }
                     inventory.setTag("slot " + slotNumber, items[i]);
                 }
                 slotNumber++;
@@ -248,6 +255,13 @@ public final class EntityPlayer extends EntityLiving {
             return this.inventory.itemStacks[selectedInventorySlot].item.ID;
         }
         return Item.NULL_ITEM_REFERENCE;
+    }
+
+    public ItemState getHeldItemState(){
+        if(this.inventory.itemStacks[selectedInventorySlot].item != null){
+            return this.inventory.itemStacks[selectedInventorySlot].itemState;
+        }
+        return null;
     }
 
     public int getHeldItemCount(){
@@ -345,7 +359,7 @@ public final class EntityPlayer extends EntityLiving {
                         block.setMovementVector(new Vector3f((float) difVector.x, (float) difVector.y, (float) difVector.z));
                         this.ce.save.activeWorld.addEntity(block);
                     } else {
-                        EntityItem item = new EntityItem(this.x, this.y, this.z, this.inventory.itemStacks[i].item.ID, Item.NULL_ITEM_METADATA, this.inventory.itemStacks[i].count, this.inventory.itemStacks[i].durability, 0);
+                        EntityItem item = new EntityItem(this.x, this.y, this.z, this.inventory.itemStacks[i].item.ID, Item.NULL_ITEM_METADATA, this.inventory.itemStacks[i].count, this.inventory.itemStacks[i].durability, 0, null);
                         double[] vector = CosmicEvolution.camera.rayCast(1);
                         Vector3d difVector = new Vector3d(vector[0] - this.x, (vector[1] - this.y) + this.height/2, vector[2] - this.z);
                         difVector.normalize();
@@ -384,8 +398,8 @@ public final class EntityPlayer extends EntityLiving {
         return Item.NULL_ITEM_METADATA;
     }
 
-    public boolean addItemToInventory(short itemID, short metadata, byte count, short durability, long decayTime){
-       return this.inventory.addItemToInventory(itemID, metadata, count, durability,decayTime);
+    public boolean addItemToInventory(short itemID, short metadata, byte count, short durability, long decayTime, ItemState itemState){
+       return this.inventory.addItemToInventory(itemID, metadata, count, durability,decayTime, itemState);
     }
 
     public void removeItemFromInventory(){
@@ -407,7 +421,7 @@ public final class EntityPlayer extends EntityLiving {
                 this.ce.soundPlayer.playSound(this.x, this.y, this.z, new Sound(Sound.itemThrow, false, 1f), CosmicEvolution.globalRand.nextFloat(0.75f, 1f));
             }
         } else if(itemID != Item.NULL_ITEM_REFERENCE) {
-            EntityItem droppedItem = new EntityItem(this.x, this.y, this.z, itemID, Item.NULL_ITEM_METADATA, (byte) 1, this.getHeldItemDurability(), this.getHeldItemDecayTime());
+            EntityItem droppedItem = new EntityItem(this.x, this.y, this.z, itemID, Item.NULL_ITEM_METADATA, (byte) 1, this.getHeldItemDurability(), this.getHeldItemDecayTime(), null);
             this.removeItemFromInventory();
             double[] vector = CosmicEvolution.camera.rayCast(1);
             Vector3d difVector = new Vector3d(vector[0] - this.x, (vector[1] - this.y) + this.height/2, vector[2] - this.z);
@@ -446,6 +460,29 @@ public final class EntityPlayer extends EntityLiving {
 
             this.setEntityState();
             if(!this.freeMove) {
+                int playerX = MathUtil.floorDouble(this.x);
+                int playerYHead = MathUtil.floorDouble(this.y + (this.height * 0.25));
+                int playerYFoot = MathUtil.floorDouble(this.y - (this.height * 0.25));
+                int playerZ = MathUtil.floorDouble(this.z);
+
+                short headBlock = this.ce.save.activeWorld.getBlockID(playerX, playerYHead, playerZ);
+                short footBlock = this.ce.save.activeWorld.getBlockID(playerX, playerYFoot, playerZ);
+
+                if(headBlock >= 152 && headBlock <= 158 || footBlock >= 152 && footBlock <= 158){
+                    this.deltaX -= 0.01;
+                }
+
+                if(headBlock >= 159 && headBlock <= 165 || footBlock >= 159 && footBlock <= 165){
+                    this.deltaX += 0.01;
+                }
+
+                if(headBlock >= 166 && headBlock <= 172 || footBlock >= 166 && footBlock <= 172){
+                    this.deltaZ -= 0.01;
+                }
+
+                if(headBlock >= 173 && headBlock <= 179 || footBlock >= 173 && footBlock <= 179){
+                    this.deltaZ += 0.01;
+                }
                 this.moveAndHandleCollision();
             } else {
                 this.x += this.deltaX;
@@ -462,6 +499,13 @@ public final class EntityPlayer extends EntityLiving {
             this.animationTimer++;
             if(!this.stopLeftArm && !this.stopRightArm && !this.stopLeftLeg && !this.stopRightLeg && !this.animate){
                 this.animationTimer = 0;
+            }
+            this.rightClickAnimateTimer--;
+            if(this.rightClickAnimateTimer <= 0 && this.animateRightClick){
+                this.animateRightClick = false;
+                //Passing 0,0,0 to this, the function will handle exactly what to do on finishing the animation, it may need to vary
+                //Going to keep the args in the method signature in case I need to do special behavior elsewhere that isnt the player or where they're looking
+                Item.list[this.getHeldItem()].onFinishRightClickAnimation(0,0,0, CosmicEvolution.instance.save.activeWorld, this);
             }
         }
     }
@@ -540,6 +584,7 @@ public final class EntityPlayer extends EntityLiving {
             }
         }
 
+
         if(KeyListener.isKeyPressed(GameSettings.dropKey.keyCode) && KeyListener.keyReleased[GameSettings.dropKey.keyCode]){
             this.dropItemFromInventory();
             KeyListener.setKeyReleased(GameSettings.dropKey.keyCode);
@@ -613,7 +658,7 @@ public final class EntityPlayer extends EntityLiving {
         short headBlock = this.ce.save.activeWorld.getBlockID(playerX, playerYHead, playerZ);
         short footBlock = this.ce.save.activeWorld.getBlockID(playerX, playerYFoot, playerZ);
         this.inWater = Block.list[headBlock].waterlogged || Block.list[footBlock].waterlogged;
-        if(headBlock == Block.water.ID){
+        if(Block.list[headBlock] instanceof BlockWater){
             Shader.worldShaderTextureArray.uploadBoolean("underwater", true);
             this.drowningTimer++;
             if(this.drowningTimer >= 300){
@@ -877,7 +922,7 @@ public final class EntityPlayer extends EntityLiving {
                 blockY = MathUtil.floorDouble(this.ce.save.thePlayer.y  + this.ce.save.thePlayer.height/2 + yDif * multiplier * loopPass);
                 blockZ = MathUtil.floorDouble(this.ce.save.thePlayer.z + zDif * multiplier * loopPass);
 
-                if (GuiInGame.isBlockVisible(blockX, blockY, blockZ) && (Block.list[this.ce.save.activeWorld.getBlockID(blockX, blockY, blockZ)].ID != Block.air.ID && Block.list[this.ce.save.activeWorld.getBlockID(blockX, blockY, blockZ)].ID != Block.water.ID)) {
+                if (GuiInGame.isBlockVisible(blockX, blockY, blockZ) && (Block.list[this.ce.save.activeWorld.getBlockID(blockX, blockY, blockZ)].ID != Block.air.ID && !(Block.list[this.ce.save.activeWorld.getBlockID(blockX, blockY, blockZ)] instanceof BlockWater))) {
                     this.blockLookingAt[0] = blockX;
                     this.blockLookingAt[1] = blockY;
                     this.blockLookingAt[2] = blockZ;
@@ -896,58 +941,92 @@ public final class EntityPlayer extends EntityLiving {
     }
 
     public short getPlayerLookingAtBlockID(){
-        if (!this.ce.save.activeWorld.paused) {
-            double[] rayCast = CosmicEvolution.camera.rayCast(3);
-            final double multiplier = 0.05D;
-            final double xDif = (rayCast[0] - this.ce.save.thePlayer.x);
-            final double yDif = (rayCast[1] - (this.ce.save.thePlayer.y + this.ce.save.thePlayer.height/2));
-            final double zDif = (rayCast[2] - this.ce.save.thePlayer.z);
+        // 1. Compute ray direction
+        double[] ray = CosmicEvolution.camera.rayCast(3);
+        Vector3d dir = new Vector3d(
+                (float)(ray[0] - ce.save.thePlayer.x),
+                (float)(ray[1] - (ce.save.thePlayer.y + ce.save.thePlayer.height / 2)
+                        - (this.ce.save.thePlayer.isShifting ? EntityPlayer.SHIFT_DISTANCE : 0)),
+                (float)(ray[2] - ce.save.thePlayer.z)
+        );
 
-            int blockX = 0;
-            int blockY = 0;
-            int blockZ = 0;
-            for (int loopPass = 0; loopPass < 30; loopPass++) {
-                blockX = MathUtil.floorDouble(this.ce.save.thePlayer.x + xDif * multiplier * loopPass);
-                blockY = MathUtil.floorDouble(this.ce.save.thePlayer.y  + this.ce.save.thePlayer.height/2 + yDif * multiplier * loopPass);
-                blockZ = MathUtil.floorDouble(this.ce.save.thePlayer.z + zDif * multiplier * loopPass);
+        double rayLength = dir.length();
+        dir.normalize();
 
-                this.blockIDPlayerLookingAt = Block.air.ID;
+        final double step = 0.05f * rayLength;
+        final int maxSteps = 30;
 
-                if (GuiInGame.isBlockVisible(blockX, blockY, blockZ) && (Block.list[this.ce.save.activeWorld.getBlockID(blockX, blockY, blockZ)].ID != Block.air.ID && Block.list[this.ce.save.activeWorld.getBlockID(blockX, blockY, blockZ)].ID != Block.water.ID)) {
-                    this.blockIDPlayerLookingAt = this.ce.save.activeWorld.getBlockID(blockX, blockY,blockZ);
-                    break;
-                }
+        double px = ce.save.thePlayer.x;
+        double py = (ce.save.thePlayer.y + ce.save.thePlayer.height / 2) - (this.ce.save.thePlayer.isShifting ? EntityPlayer.SHIFT_DISTANCE : 0);
+        double pz = ce.save.thePlayer.z;
+
+        // 2. March along the ray
+        for (int i = 0; i < maxSteps; i++) {
+
+            double cx = px + dir.x * step * i;
+            double cy = py + dir.y * step * i;
+            double cz = pz + dir.z * step * i;
+
+
+            // BLOCK COORDS
+            int bx = MathUtil.floorDouble(cx);
+            int by = MathUtil.floorDouble(cy);
+            int bz = MathUtil.floorDouble(cz);
+
+            Block block = Block.list[this.ce.save.activeWorld.getBlockID(bx, by, bz)];
+
+            if (GuiInGame.isBlockVisible(bx, by, bz) && block.ID != Block.air.ID && !(block instanceof BlockWater)) {
+                this.blockIDPlayerLookingAt = block.ID;
+                break;
             }
         }
+
         return this.blockIDPlayerLookingAt;
     }
 
     public int[] getPlayerLookingAtBlockCoords(){
-        if (!this.ce.save.activeWorld.paused) {
-            double[] rayCast = CosmicEvolution.camera.rayCast(3);
-            final double multiplier = 0.05D;
-            final double xDif = (rayCast[0] - this.ce.save.thePlayer.x);
-            final double yDif = (rayCast[1] - (this.ce.save.thePlayer.y + this.ce.save.thePlayer.height/2));
-            final double zDif = (rayCast[2] - this.ce.save.thePlayer.z);
+        // 1. Compute ray direction
+        double[] ray = CosmicEvolution.camera.rayCast(3);
+        Vector3d dir = new Vector3d(
+                (float)(ray[0] - ce.save.thePlayer.x),
+                (float)(ray[1] - (ce.save.thePlayer.y + ce.save.thePlayer.height / 2)
+                        - (this.ce.save.thePlayer.isShifting ? EntityPlayer.SHIFT_DISTANCE : 0)),
+                (float)(ray[2] - ce.save.thePlayer.z)
+        );
 
-            int blockX = 0;
-            int blockY = 0;
-            int blockZ = 0;
-            for (int loopPass = 0; loopPass < 30; loopPass++) {
-                blockX = MathUtil.floorDouble(this.ce.save.thePlayer.x + xDif * multiplier * loopPass);
-                blockY = MathUtil.floorDouble(this.ce.save.thePlayer.y  + this.ce.save.thePlayer.height/2 + yDif * multiplier * loopPass);
-                blockZ = MathUtil.floorDouble(this.ce.save.thePlayer.z + zDif * multiplier * loopPass);
+        double rayLength = dir.length();
+        dir.normalize();
 
-                this.blockIDPlayerLookingAt = Block.air.ID;
+        final double step = 0.05f * rayLength;
+        final int maxSteps = 30;
 
-                if (GuiInGame.isBlockVisible(blockX, blockY, blockZ) && (Block.list[this.ce.save.activeWorld.getBlockID(blockX, blockY, blockZ)].ID != Block.air.ID && Block.list[this.ce.save.activeWorld.getBlockID(blockX, blockY, blockZ)].ID != Block.water.ID)) {
-                    this.blockLookingAtCoords[0] = blockX;
-                    this.blockLookingAtCoords[1] = blockY;
-                    this.blockLookingAtCoords[2] = blockZ;
-                    break;
-                }
+        double px = ce.save.thePlayer.x;
+        double py = (ce.save.thePlayer.y + ce.save.thePlayer.height / 2) - (this.ce.save.thePlayer.isShifting ? EntityPlayer.SHIFT_DISTANCE : 0);
+        double pz = ce.save.thePlayer.z;
+
+        // 2. March along the ray
+        for (int i = 0; i < maxSteps; i++) {
+
+            double cx = px + dir.x * step * i;
+            double cy = py + dir.y * step * i;
+            double cz = pz + dir.z * step * i;
+
+
+            // BLOCK COORDS
+            int bx = MathUtil.floorDouble(cx);
+            int by = MathUtil.floorDouble(cy);
+            int bz = MathUtil.floorDouble(cz);
+
+            Block block = Block.list[this.ce.save.activeWorld.getBlockID(bx, by, bz)];
+
+            if (GuiInGame.isBlockVisible(bx, by, bz) && block.ID != Block.air.ID && !(block instanceof BlockWater)) {
+                this.blockLookingAtCoords[0] = bx;
+                this.blockLookingAtCoords[1] = by;
+                this.blockLookingAtCoords[2] = bz;
+                break;
             }
         }
+
         return this.blockLookingAtCoords;
     }
 
@@ -1025,7 +1104,7 @@ public final class EntityPlayer extends EntityLiving {
                 block.setMovementVector(new Vector3f(rand.nextFloat(-1, 1), rand.nextFloat(-1, 1), rand.nextFloat(-1, 1)));
                 chunk.addEntityToList(block);
             } else if(this.inventory.itemStacks[i].item != null){
-                EntityItem item = new EntityItem(this.x, this.y, this.z,this.inventory.itemStacks[i].item.ID ,this.inventory.itemStacks[i].metadata, this.inventory.itemStacks[i].count, this.inventory.itemStacks[i].durability, 0);
+                EntityItem item = new EntityItem(this.x, this.y, this.z,this.inventory.itemStacks[i].item.ID ,this.inventory.itemStacks[i].metadata, this.inventory.itemStacks[i].count, this.inventory.itemStacks[i].durability, 0, null);
                 item.setMovementVector(new Vector3f(rand.nextFloat(-1, 1), rand.nextFloat(-1, 1), rand.nextFloat(-1, 1)));
                 chunk.addEntityToList(item);
             }

@@ -42,6 +42,7 @@ public final class ChunkTerrainHandler {
             if (noise >= this.solidNoiseThreshold) {
                 blocks[i] = Block.stone.ID;
                 chunk.empty = false;
+                if(Block.list[chunk.blocks[i]].isSolid)
                 if(lightMap.isHeightGreater(x,y,z)){
                     lightMap.updateLightMap(x,y,z);
                     chunk.lighting[Chunk.getBlockIndexFromCoordinates(x, y, z)] = 0;

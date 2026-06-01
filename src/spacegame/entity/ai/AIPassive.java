@@ -33,7 +33,6 @@ public abstract class AIPassive { ;
 
     public static void targetAwayFromPlayer(EntityLiving entityLiving){
         if(!entityLiving.isAIEnabled) return;
-        if(entityLiving.boundingBox.clip(CosmicEvolution.instance.save.thePlayer.boundingBox)) return;
 
         double x = entityLiving.x;
         double z = entityLiving.z;
@@ -60,7 +59,6 @@ public abstract class AIPassive { ;
 
     public static void targetAwayFromEntity(EntityLiving entityLiving, EntityLiving entityThatAlerted){
         if(!entityLiving.isAIEnabled) return;
-        if(entityLiving.boundingBox.clip(CosmicEvolution.instance.save.thePlayer.boundingBox)) return;
 
         double x = entityLiving.x;
         double z = entityLiving.z;
