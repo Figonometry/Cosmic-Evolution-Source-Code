@@ -1,0 +1,3 @@
+itemName:EINKORN_WHEAT
+displayName:Einkorn Wheat
+canPlaceOnGround:true

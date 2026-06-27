@@ -1,0 +1,6 @@
+# Made in Blockbench 5.1.4
+newmtl m_d9026d91-9c2b-49e0-b42b-1753f5843dcc
+map_Kd wolfPeltTop.png
+newmtl m_9cbd3708-0fd0-c949-811e-388fb7d1a6f9
+map_Kd animalPeltUnder.png
+newmtl none

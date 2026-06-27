@@ -1,0 +1,6 @@
+itemName:STONE_HOE
+attackDamage:1
+toolType:hoe
+stackLimit:1
+displayName:Stone Hoe
+canPlaceAsItemBlock:true

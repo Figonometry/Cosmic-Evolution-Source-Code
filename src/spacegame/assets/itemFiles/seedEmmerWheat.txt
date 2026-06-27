@@ -1,0 +1,3 @@
+itemName:SEED_EMMER_WHEAT
+displayName:Emmer Wheat Seed
+canPlaceOnGround:true

@@ -1,0 +1,3 @@
+itemName:SEED_WHEAT
+displayName:Wheat Seed
+canPlaceOnGround:true

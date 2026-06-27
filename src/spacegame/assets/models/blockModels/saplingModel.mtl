@@ -1,0 +1,6 @@
+# Made in Blockbench 5.1.4
+newmtl m_b4bbc4d8-ebed-8afe-e697-78ae64899078
+map_Kd leafTransparent.png
+newmtl m_5c6fd6fc-d82a-a4d1-8051-b9c464502c33
+map_Kd logSide.png
+newmtl none

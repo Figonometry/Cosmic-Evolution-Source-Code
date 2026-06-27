@@ -1,0 +1,3 @@
+itemName:SEED_EINKORN_WHEAT
+displayName:Einkorn Wheat Seed
+canPlaceOnGround:true

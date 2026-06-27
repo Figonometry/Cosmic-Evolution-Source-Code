@@ -1,0 +1,6 @@
+itemName:STONE_HOE_HEAD
+attackDamage:1
+toolType:hoe
+stackLimit:64
+displayName:Stone Hoe Head
+canPlaceAsItemBlock:true

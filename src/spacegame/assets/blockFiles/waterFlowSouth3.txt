@@ -1,0 +1,6 @@
+blockName:FLOWING_WATER
+blockModel:waterFlowSouth3
+canGreedyMesh:false
+isSolid:false
+canBeBroken:false
+waterlogged:true

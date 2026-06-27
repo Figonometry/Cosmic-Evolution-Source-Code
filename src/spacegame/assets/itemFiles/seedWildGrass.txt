@@ -1,0 +1,3 @@
+itemName:SEED_WILD_GRASS
+displayName:Wild Grass Seed
+canPlaceOnGround:true

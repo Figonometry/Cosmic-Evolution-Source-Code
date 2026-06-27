@@ -1,0 +1,3 @@
+itemName:SEED_SPELT_WHEAT
+displayName:Spelt Seed
+canPlaceOnGround:true
