@@ -6,7 +6,6 @@ import spacegame.core.CosmicEvolution;
 import spacegame.core.KeyListener;
 import spacegame.core.MouseListener;
 import spacegame.entity.EntityBlock;
-import spacegame.entity.EntityItem;
 import spacegame.entity.EntityPlayer;
 import spacegame.gui.GuiCraftingReeds;
 import spacegame.world.World;

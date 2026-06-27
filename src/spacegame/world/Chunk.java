@@ -7,18 +7,21 @@ import spacegame.block.*;
 import spacegame.core.CosmicEvolution;
 import spacegame.entity.*;
 import spacegame.item.IDecayItem;
-import spacegame.world.blockstate.*;
-import spacegame.util.MathUtil;
 import spacegame.item.Inventory;
 import spacegame.item.Item;
 import spacegame.render.RenderBlocks;
 import spacegame.render.Shader;
 import spacegame.render.ShouldFaceRenderSorter;
+import spacegame.util.MathUtil;
+import spacegame.world.blockstate.*;
 
 import java.awt.*;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class Chunk implements Comparable<Chunk> {

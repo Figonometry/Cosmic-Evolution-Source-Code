@@ -1,15 +1,9 @@
 package spacegame.world;
 
 import spacegame.core.CosmicEvolution;
-import spacegame.entity.*;
-import spacegame.world.blockstate.InWorld3DCraftingItem;
-import spacegame.world.blockstate.InWorldCraftingItem;
-import spacegame.util.Logger;
-import spacegame.item.ItemStack;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
-import spacegame.world.blockstate.HeatableBlockLocation;
-import spacegame.world.blockstate.TimeUpdateEvent;
+import spacegame.util.Logger;
 import spacegame.world.blockstateio.*;
 
 import java.io.File;

@@ -5,12 +5,15 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
 import spacegame.core.CosmicEvolution;
+import spacegame.item.Item;
 import spacegame.item.crafting.InWorldCraftingRecipe;
+import spacegame.render.Assets;
+import spacegame.render.RenderBlocks;
+import spacegame.render.RenderEngine;
+import spacegame.render.Shader;
 import spacegame.render.model.ModelFace;
 import spacegame.render.model.ModelLoader;
 import spacegame.util.MathUtil;
-import spacegame.item.Item;
-import spacegame.render.*;
 import spacegame.world.Chunk;
 import spacegame.world.blockstate.InWorld3DCraftingItem;
 

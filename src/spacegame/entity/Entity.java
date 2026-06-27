@@ -6,10 +6,10 @@ import spacegame.block.Block;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
 import spacegame.nbt.NBTTagCompound;
-import spacegame.util.MathUtil;
-import spacegame.render.model.ModelLoader;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
+import spacegame.render.model.ModelLoader;
+import spacegame.util.MathUtil;
 import spacegame.world.AxisAlignedBB;
 
 import java.util.ArrayList;

@@ -3,10 +3,10 @@ package spacegame.gui;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
 import spacegame.core.CosmicEvolution;
-import spacegame.util.MathUtil;
 import spacegame.core.Timer;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
+import spacegame.util.MathUtil;
 
 import java.awt.*;
 import java.util.Random;

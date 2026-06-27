@@ -8,7 +8,6 @@ import spacegame.gui.GuiCampfire;
 import spacegame.gui.GuiLightFire;
 import spacegame.item.Inventory;
 import spacegame.item.Item;
-import spacegame.world.ChestLocation;
 import spacegame.world.World;
 
 import java.util.Random;

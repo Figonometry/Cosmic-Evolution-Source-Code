@@ -9,9 +9,9 @@ import spacegame.entity.ai.AIPassive;
 import spacegame.item.IDecayItem;
 import spacegame.item.Item;
 import spacegame.nbt.NBTTagCompound;
+import spacegame.render.RenderEngine;
 import spacegame.render.model.Model;
 import spacegame.render.model.ModelDeer;
-import spacegame.render.RenderEngine;
 import spacegame.util.MathUtil;
 import spacegame.world.World;
 

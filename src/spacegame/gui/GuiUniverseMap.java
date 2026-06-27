@@ -7,11 +7,11 @@ import spacegame.celestial.CelestialObject;
 import spacegame.celestial.Sun;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
-import spacegame.util.MathUtil;
 import spacegame.core.MouseListener;
 import spacegame.render.Camera;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
+import spacegame.util.MathUtil;
 
 import java.lang.Math;
 import java.util.ArrayList;

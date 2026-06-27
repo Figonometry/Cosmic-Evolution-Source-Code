@@ -14,10 +14,10 @@ public final class BlockTallGrass extends Block {
 
     @Override
     public void onLeftClick(int x, int y, int z, World world, EntityPlayer player){
-      // if(CosmicEvolution.globalRand.nextInt(100) > 10){
-      //     super.onLeftClick(x,y,z, world, player);
-      //     return;
-      // }
+       if(CosmicEvolution.globalRand.nextInt(100) > 10){
+           super.onLeftClick(x,y,z, world, player);
+           return;
+       }
 
         SeedState seedState = new SeedState(false, 0, "no target");
 

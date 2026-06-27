@@ -2,12 +2,12 @@ package spacegame.render.model;
 
 import org.joml.Vector3f;
 import spacegame.core.CosmicEvolution;
+import spacegame.entity.Entity;
+import spacegame.entity.EntityDeer;
 import spacegame.entity.EntityLiving;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
 import spacegame.util.MathUtil;
-import spacegame.entity.Entity;
-import spacegame.entity.EntityDeer;
 
 public final class ModelDeer extends Model {
     public static final int BODY = 0;

@@ -1,6 +1,8 @@
 package spacegame.gui;
 
-import spacegame.core.*;
+import spacegame.core.CosmicEvolution;
+import spacegame.core.MouseListener;
+import spacegame.core.Timer;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
 

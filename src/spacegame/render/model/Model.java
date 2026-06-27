@@ -3,7 +3,6 @@ package spacegame.render.model;
 import org.joml.Vector3f;
 import spacegame.core.CosmicEvolution;
 import spacegame.entity.Entity;
-import spacegame.entity.EntityModelTest;
 import spacegame.gui.GuiInGame;
 import spacegame.util.MathUtil;
 

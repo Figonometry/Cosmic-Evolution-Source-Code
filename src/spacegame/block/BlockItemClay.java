@@ -4,7 +4,6 @@ import spacegame.core.CosmicEvolution;
 import spacegame.core.MouseListener;
 import spacegame.entity.EntityPlayer;
 import spacegame.gui.GuiCraftingPottery;
-import spacegame.item.Item;
 import spacegame.world.World;
 
 public final class BlockItemClay extends Block {

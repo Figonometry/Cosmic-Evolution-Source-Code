@@ -2,7 +2,6 @@ package spacegame.util;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL46;
-import spacegame.gui.GuiInGame;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;

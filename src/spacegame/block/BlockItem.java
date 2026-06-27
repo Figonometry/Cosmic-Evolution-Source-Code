@@ -74,6 +74,8 @@ public final class BlockItem extends BlockContainer {
             case 21 -> 71;
             case 22 -> 72;
             case 23 -> 73;
+            case 24 -> 85;
+            case 25 -> 94;
 
             default -> this.textureID;
         };

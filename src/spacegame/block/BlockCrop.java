@@ -2,7 +2,6 @@ package spacegame.block;
 
 import spacegame.core.CosmicEvolution;
 import spacegame.core.Timer;
-import spacegame.entity.Entity;
 import spacegame.entity.EntityBlock;
 import spacegame.entity.EntityItem;
 import spacegame.entity.EntityPlayer;
@@ -30,6 +29,16 @@ public class BlockCrop extends Block implements ITimeUpdate {
         SeedState outputSeedState;
         boolean mutationCompleted = false;
         long decayTime = 0L;
+
+        if(this.ID == Block.deadCrop.ID){
+            Crop thisCrop = Crop.getCropFromName(cropState.name);
+            entityItem = new EntityItem(x + CosmicEvolution.globalRand.nextDouble(), y + 0.5,
+                    z + CosmicEvolution.globalRand.nextDouble(), thisCrop.finishedItemIDs[0],
+                    Item.NULL_ITEM_METADATA, (byte) 1, Item.NULL_ITEM_DURABILITY, decayTime, new SeedState(cropState.canMutate, cropState.percentToTargetCrop, cropState.targetCrop));
+
+            entityItem.yaw = CosmicEvolution.globalRand.nextFloat(360f);
+            world.addEntity(entityItem);
+        }
 
         if(cropState.growthStage < Crop.getCropFromName(cropState.name).maxStages){
             super.onLeftClick(x,y,z, world, player);
@@ -62,7 +71,7 @@ public class BlockCrop extends Block implements ITimeUpdate {
                     decayTime = ((IDecayItem) Item.list[targetCrop.finishedItemIDs[i]]).getDecayTime() + world.ce.save.time;
                 }
 
-                byte quantity = (byte) CosmicEvolution.globalRand.nextInt(2,5);
+                byte quantity = (byte) CosmicEvolution.globalRand.nextInt(3,8);
 
                  boolean extraSeed = CosmicEvolution.globalRand.nextInt(100) <= 5;
                 entityItem = new EntityItem(x + CosmicEvolution.globalRand.nextDouble(), y + 0.5,
@@ -109,7 +118,17 @@ public class BlockCrop extends Block implements ITimeUpdate {
             return;
         }
 
+
         Crop crop = Crop.getCropFromName(cropState.name);
+
+        double temperature = world.getDisplayTemperature(x,y,z);
+
+        if(temperature > crop.maxTemp || temperature < crop.minTemp)cropState.damageValue++;
+
+        if(cropState.damageValue >= 7){
+            world.setBlockWithNotify(x,y,z, Block.deadCrop.ID, false);
+        }
+
         cropState.growthStage++;
         world.notifyChunk(x,y,z);
 
@@ -165,7 +184,7 @@ public class BlockCrop extends Block implements ITimeUpdate {
             case "Wild Grass" -> {
                 return  74;
             }
-            case "Einkorn Wheat" -> {
+            case "Einkorn Wheat", "Emmer Wheat" -> {
                 switch (cropState.growthStage){
                     case 1 -> {
                         return 75;
@@ -190,6 +209,37 @@ public class BlockCrop extends Block implements ITimeUpdate {
                     }
                     case 8 -> {
                         return 84;
+                    }
+                    default -> {
+                        return 4;
+                    }
+                }
+            }
+            case "Standard Wheat", "Spelt Wheat" -> {
+                switch (cropState.growthStage) {
+                    case 1 -> {
+                        return 86;
+                    }
+                    case 2 -> {
+                        return 87;
+                    }
+                    case 3 -> {
+                        return 88;
+                    }
+                    case 4 -> {
+                        return 89;
+                    }
+                    case 5 -> {
+                        return 90;
+                    }
+                    case 6 -> {
+                        return 91;
+                    }
+                    case 7 -> {
+                        return 92;
+                    }
+                    case 8 -> {
+                        return 93;
                     }
                     default -> {
                         return 4;

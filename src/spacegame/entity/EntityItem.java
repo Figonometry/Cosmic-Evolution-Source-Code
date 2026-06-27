@@ -2,12 +2,12 @@ package spacegame.entity;
 
 import spacegame.block.Block;
 import spacegame.core.CosmicEvolution;
-import spacegame.item.itemstate.ItemState;
-import spacegame.nbt.NBTTagCompound;
-import spacegame.util.MathUtil;
 import spacegame.core.Sound;
 import spacegame.item.Item;
+import spacegame.item.itemstate.ItemState;
+import spacegame.nbt.NBTTagCompound;
 import spacegame.render.RenderEntityItem;
+import spacegame.util.MathUtil;
 import spacegame.world.AxisAlignedBB;
 
 import java.util.Random;

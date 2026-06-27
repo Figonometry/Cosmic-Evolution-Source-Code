@@ -1,9 +1,7 @@
 package spacegame.world;
 
 import org.joml.Vector3d;
-import org.joml.Vector3f;
 import spacegame.block.Block;
-import spacegame.core.CosmicEvolution;
 import spacegame.entity.Entity;
 import spacegame.entity.EntityLiving;
 

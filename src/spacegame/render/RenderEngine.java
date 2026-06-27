@@ -478,7 +478,16 @@ public final class RenderEngine {
                 case 83 -> "einkornWheat-7";
                 case 84 -> "einkornWheat-8";
                 case 85 -> "item-einkornWheat";
-
+                case 86 -> "wheat-1";
+                case 87 -> "wheat-2";
+                case 88 -> "wheat-3";
+                case 89 -> "wheat-4";
+                case 90 -> "wheat-5";
+                case 91 -> "wheat-6";
+                case 92 -> "wheat-7";
+                case 93 -> "wheat-8";
+                case 94 -> "item-wheat";
+                case 95 -> "deadCrop";
                 default -> "missing";
             };
         } else if(textureFolderpath.contains("item")){
@@ -507,6 +516,7 @@ public final class RenderEngine {
                 case 22 -> "bone";
                 case 23 -> "boneMeal";
                 case 24 -> "einkornWheat";
+                case 25 -> "wheat";
                 default -> "missing";
             };
         }

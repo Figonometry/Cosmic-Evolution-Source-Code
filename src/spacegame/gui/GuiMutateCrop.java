@@ -8,7 +8,6 @@ import spacegame.core.CosmicEvolution;
 import spacegame.entity.EntityPlayer;
 import spacegame.item.Item;
 import spacegame.item.ItemSeed;
-import spacegame.item.itemstate.SeedState;
 import spacegame.render.Assets;
 import spacegame.render.RenderBlocks;
 import spacegame.render.RenderEngine;
@@ -20,7 +19,6 @@ import spacegame.world.Chunk;
 import spacegame.world.World;
 import spacegame.world.blockstate.Crop;
 import spacegame.world.blockstate.CropState;
-import spacegame.world.blockstate.InWorld3DCraftingItem;
 import spacegame.world.blockstate.TilledSoilState;
 
 import java.util.ArrayList;

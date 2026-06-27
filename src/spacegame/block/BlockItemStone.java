@@ -4,7 +4,6 @@ import spacegame.core.CosmicEvolution;
 import spacegame.core.MouseListener;
 import spacegame.entity.EntityPlayer;
 import spacegame.gui.GuiCraftingStoneTools;
-import spacegame.item.Item;
 import spacegame.world.World;
 
 

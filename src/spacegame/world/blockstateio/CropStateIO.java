@@ -3,7 +3,6 @@ package spacegame.world.blockstateio;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.world.Chunk;
 import spacegame.world.blockstate.CropState;
-import spacegame.world.blockstate.HeatableBlockLocation;
 
 import java.util.Iterator;
 import java.util.Map;

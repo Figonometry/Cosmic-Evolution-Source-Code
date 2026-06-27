@@ -1,33 +1,25 @@
 package spacegame.world;
 
 import spacegame.block.Block;
-import spacegame.block.BlockContainer;
 import spacegame.block.ITickable;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
-import spacegame.entity.*;
-import spacegame.item.crafting.CraftingBlockRecipes;
-import spacegame.item.itemstate.ItemState;
-import spacegame.world.blockstate.InWorld3DCraftingItem;
-import spacegame.world.blockstate.InWorldCraftingItem;
-import spacegame.item.crafting.InWorldCraftingRecipe;
-import spacegame.render.RenderEngine;
-import spacegame.util.MathUtil;
+import spacegame.entity.EntityDeer;
+import spacegame.entity.EntityWolf;
 import spacegame.gui.GuiWorldLoading;
-import spacegame.item.Inventory;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.render.RenderWorldScene;
 import spacegame.render.ThreadRebuildChunk;
-import spacegame.world.blockstate.HeatableBlockLocation;
+import spacegame.util.MathUtil;
 import spacegame.world.blockstateio.*;
 
 import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class ChunkController {

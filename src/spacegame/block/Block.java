@@ -1,7 +1,10 @@
 package spacegame.block;
 
 import org.lwjgl.glfw.GLFW;
-import spacegame.core.*;
+import spacegame.core.CosmicEvolution;
+import spacegame.core.KeyListener;
+import spacegame.core.MouseListener;
+import spacegame.core.Sound;
 import spacegame.entity.EntityBlock;
 import spacegame.entity.EntityItem;
 import spacegame.entity.EntityPlayer;
@@ -340,6 +343,7 @@ public class Block {
     public static final Block fullWater = new BlockWater((short)180, 4, blockFolderPath + "fullWater.txt");
     public static final Block tilledSoil = new BlockSoil((short)181, 1,blockFolderPath + "tilledSoil.txt");
     public static final Block cropGrowth = new BlockCrop((short)182, -1, blockFolderPath + "cropGrowth.txt");
+    public static final Block deadCrop = new Block((short)183, 95, blockFolderPath  + "deadCrop.txt");
     public final short ID;
     public final int textureID;
     public static int facingDirection;
@@ -890,7 +894,7 @@ public class Block {
                     return;
                 }
             }
-            case "SEED_WILD_GRASS", "SEED_EINKORN_WHEAT" -> {
+            case "SEED_WILD_GRASS", "SEED_EINKORN_WHEAT", "SEED_EMMER_WHEAT", "SEED_WHEAT" -> {
                 if(list[world.getBlockID(x, y - 1, z)] instanceof BlockSoil){
                     heldBlock = cropGrowth.ID;
                 } else {

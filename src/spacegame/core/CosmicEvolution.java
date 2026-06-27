@@ -1,7 +1,6 @@
 package spacegame.core;
 
 import org.joml.Vector3d;
-import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -13,19 +12,16 @@ import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL46;
 import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryUtil;
-import spacegame.block.Block;
 import spacegame.celestial.Sun;
 import spacegame.celestial.Universe;
 import spacegame.entity.*;
 import spacegame.gui.*;
 import spacegame.item.Item;
 import spacegame.item.ItemStack;
-import spacegame.item.itemstate.ItemState;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.render.*;
 import spacegame.util.Logger;
-import spacegame.util.MathUtil;
 import spacegame.util.ScreenshotHandler;
 import spacegame.world.*;
 import spacegame.world.weather.Cloud;
@@ -36,7 +32,10 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.Random;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public final class CosmicEvolution implements Runnable {
@@ -113,7 +112,7 @@ public final class CosmicEvolution implements Runnable {
         threadPool = new ThreadPoolExecutor(workerCount, workerCount, 0L, TimeUnit.MILLISECONDS, new PriorityBlockingQueue<>());
         this.dirtyChunksSchedulerThread = new Thread(new ChunkJobThreadScheduler());
         this.dirtyChunksSchedulerThread.start();
-        this.title = "Cosmic Evolution Alpha v0.48";
+        this.title = "Cosmic Evolution Alpha v0.49";
         GameSettings.loadOptionsFromFile(this.launcherDirectory);
         this.clearLogFiles(new File(this.launcherDirectory + "/crashReports"));
         this.initLWJGL();
@@ -571,32 +570,6 @@ public final class CosmicEvolution implements Runnable {
         GLFW.glfwPollEvents();
     }
 
-    private void dropItemStackFromMouse(){
-        if(ItemStack.itemStackOnMouse.item != null){
-            if(ItemStack.itemStackOnMouse.item.ID == Item.block.ID) {
-                if (ItemStack.itemStackOnMouse.metadata != Block.air.ID) {
-                    EntityBlock droppedBlock = new EntityBlock(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, ItemStack.itemStackOnMouse.metadata, ItemStack.itemStackOnMouse.count);
-                    double[] vector = CosmicEvolution.camera.rayCast(1);
-                    Vector3d difVector = new Vector3d(vector[0] - this.save.thePlayer.x, (vector[1] - this.save.thePlayer.y) + this.save.thePlayer.height/2, vector[2] - this.save.thePlayer.z);
-                    difVector.normalize();
-                    droppedBlock.setMovementVector(new Vector3f((float) difVector.x, (float) difVector.y, (float) difVector.z));
-                    this.save.activeWorld.findChunkFromChunkCoordinates(MathUtil.floorDouble(this.save.thePlayer.x) >> 5, MathUtil.floorDouble(this.save.thePlayer.y) >> 5, MathUtil.floorDouble(this.save.thePlayer.z) >> 5).addEntityToList(droppedBlock);
-                }
-            } else if(ItemStack.itemStackOnMouse.item.ID != Item.NULL_ITEM_REFERENCE) {
-                EntityItem droppedItem = new EntityItem(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, ItemStack.itemStackOnMouse.item.ID, Item.NULL_ITEM_METADATA, ItemStack.itemStackOnMouse.count, ItemStack.itemStackOnMouse.durability, 0, null);
-                double[] vector = CosmicEvolution.camera.rayCast(1);
-                Vector3d difVector = new Vector3d(vector[0] - this.save.thePlayer.x, (vector[1] - this.save.thePlayer.y) + this.save.thePlayer.height/2, vector[2] - this.save.thePlayer.z);
-                difVector.normalize();
-                droppedItem.setMovementVector(new Vector3f((float) difVector.x, (float) difVector.y, (float) difVector.z));
-                this.save.activeWorld.findChunkFromChunkCoordinates(MathUtil.floorDouble(this.save.thePlayer.x) >> 5, MathUtil.floorDouble(this.save.thePlayer.y) >> 5, MathUtil.floorDouble(this.save.thePlayer.z) >> 5).addEntityToList(droppedItem);
-            }
-            ItemStack.itemStackOnMouse.item = null;
-            ItemStack.itemStackOnMouse.count = 0;
-            ItemStack.itemStackOnMouse.metadata = Item.NULL_ITEM_METADATA;
-            ItemStack.itemStackOnMouse.durability = Item.NULL_ITEM_DURABILITY;
-            ItemStack.itemStackOnMouse.decayTime = 0L;
-        }
-    }
 
     private void checkKeyBindStates() {
         if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_ESCAPE) && this.save != null && this.currentGui instanceof GuiInGame && KeyListener.keyReleased[GLFW.GLFW_KEY_ESCAPE]) {
@@ -938,7 +911,7 @@ public final class CosmicEvolution implements Runnable {
 
     public void setNewGui(Gui gui) {
         if(this.currentGui instanceof GuiInventory && !(gui instanceof GuiInventory)){
-            this.dropItemStackFromMouse();
+            ItemStack.dropItemStackFromMouse(this);
         }
         if (this.currentGui != null) {
             this.currentGui.deleteTextures();

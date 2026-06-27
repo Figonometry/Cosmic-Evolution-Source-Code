@@ -4,14 +4,14 @@ import org.lwjgl.glfw.GLFW;
 import spacegame.block.Block;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
-import spacegame.util.MathUtil;
 import spacegame.core.MouseListener;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.render.*;
+import spacegame.util.MathUtil;
+import spacegame.world.Save;
 import spacegame.world.SaveSettings;
 import spacegame.world.ThreadDeleteWorld;
-import spacegame.world.Save;
 
 import java.awt.*;
 import java.io.File;

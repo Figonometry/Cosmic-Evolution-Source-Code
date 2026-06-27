@@ -2,7 +2,9 @@ package spacegame.render.model;
 
 import org.joml.Vector3f;
 import spacegame.core.CosmicEvolution;
-import spacegame.entity.*;
+import spacegame.entity.Entity;
+import spacegame.entity.EntityLiving;
+import spacegame.entity.EntityWolf;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
 import spacegame.util.MathUtil;

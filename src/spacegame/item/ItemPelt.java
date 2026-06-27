@@ -2,10 +2,10 @@ package spacegame.item;
 
 import spacegame.block.Block;
 import spacegame.entity.EntityPlayer;
-import spacegame.world.blockstate.InWorld3DCraftingItem;
 import spacegame.item.crafting.InWorldCraftingRecipe;
 import spacegame.world.Chunk;
 import spacegame.world.World;
+import spacegame.world.blockstate.InWorld3DCraftingItem;
 
 public final class ItemPelt extends Item {
     public ItemPelt(short ID, String modelFilePath, String filepath) {

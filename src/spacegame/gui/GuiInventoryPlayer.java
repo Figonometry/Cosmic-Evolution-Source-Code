@@ -11,10 +11,10 @@ import spacegame.item.ItemStack;
 import spacegame.item.ItemTool;
 import spacegame.render.Assets;
 import spacegame.render.RenderBlocks;
-import spacegame.render.model.ModelLoader;
-import spacegame.render.model.ModelPlayer;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
+import spacegame.render.model.ModelLoader;
+import spacegame.render.model.ModelPlayer;
 import spacegame.util.MathUtil;
 
 public final class GuiInventoryPlayer extends GuiInventory {

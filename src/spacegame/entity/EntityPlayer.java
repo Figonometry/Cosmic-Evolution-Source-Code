@@ -15,11 +15,11 @@ import spacegame.item.*;
 import spacegame.item.itemstate.ItemState;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
+import spacegame.render.RenderEngine;
+import spacegame.render.Shader;
 import spacegame.render.model.Model;
 import spacegame.render.model.ModelLoader;
 import spacegame.render.model.ModelPlayer;
-import spacegame.render.RenderEngine;
-import spacegame.render.Shader;
 import spacegame.util.MathUtil;
 import spacegame.world.Chunk;
 

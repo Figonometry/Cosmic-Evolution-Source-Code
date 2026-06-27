@@ -1,20 +1,27 @@
 package spacegame.item;
 
 
+import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.MouseListener;
+import spacegame.entity.EntityBlock;
+import spacegame.entity.EntityItem;
 import spacegame.gui.FontRenderer;
 import spacegame.gui.GuiInGame;
 import spacegame.gui.GuiInventory;
 import spacegame.gui.GuiInventoryPlayer;
 import spacegame.item.itemstate.ItemState;
 import spacegame.item.itemstate.SeedState;
-import spacegame.render.*;
+import spacegame.render.Assets;
+import spacegame.render.RenderBlocks;
+import spacegame.render.RenderEngine;
+import spacegame.render.Shader;
 import spacegame.render.model.ModelFace;
 import spacegame.render.model.ModelLoader;
+import spacegame.util.MathUtil;
 
 public final class ItemStack {
     public Item item;
@@ -438,6 +445,34 @@ public final class ItemStack {
          }
 
         return this.itemState == null && incomingState == null;
+    }
+
+    public static void dropItemStackFromMouse(CosmicEvolution cosmicEvolution){
+        if(ItemStack.itemStackOnMouse.item != null){
+            if(ItemStack.itemStackOnMouse.item.ID == Item.block.ID) {
+                if (ItemStack.itemStackOnMouse.metadata != Block.air.ID) {
+                    EntityBlock droppedBlock = new EntityBlock(cosmicEvolution.save.thePlayer.x, cosmicEvolution.save.thePlayer.y, cosmicEvolution.save.thePlayer.z, ItemStack.itemStackOnMouse.metadata, ItemStack.itemStackOnMouse.count);
+                    double[] vector = CosmicEvolution.camera.rayCast(1);
+                    Vector3d difVector = new Vector3d(vector[0] - cosmicEvolution.save.thePlayer.x, (vector[1] - cosmicEvolution.save.thePlayer.y) + cosmicEvolution.save.thePlayer.height/2, vector[2] - cosmicEvolution.save.thePlayer.z);
+                    difVector.normalize();
+                    droppedBlock.setMovementVector(new Vector3f((float) difVector.x, (float) difVector.y, (float) difVector.z));
+                    cosmicEvolution.save.activeWorld.findChunkFromChunkCoordinates(MathUtil.floorDouble(cosmicEvolution.save.thePlayer.x) >> 5, MathUtil.floorDouble(cosmicEvolution.save.thePlayer.y) >> 5, MathUtil.floorDouble(cosmicEvolution.save.thePlayer.z) >> 5).addEntityToList(droppedBlock);
+                }
+            } else if(ItemStack.itemStackOnMouse.item.ID != Item.NULL_ITEM_REFERENCE) {
+                EntityItem droppedItem = new EntityItem(cosmicEvolution.save.thePlayer.x, cosmicEvolution.save.thePlayer.y, cosmicEvolution.save.thePlayer.z, ItemStack.itemStackOnMouse.item.ID, Item.NULL_ITEM_METADATA, ItemStack.itemStackOnMouse.count, ItemStack.itemStackOnMouse.durability, 0, ItemStack.itemStackOnMouse.itemState);
+                double[] vector = CosmicEvolution.camera.rayCast(1);
+                Vector3d difVector = new Vector3d(vector[0] - cosmicEvolution.save.thePlayer.x, (vector[1] - cosmicEvolution.save.thePlayer.y) + cosmicEvolution.save.thePlayer.height/2, vector[2] - cosmicEvolution.save.thePlayer.z);
+                difVector.normalize();
+                droppedItem.setMovementVector(new Vector3f((float) difVector.x, (float) difVector.y, (float) difVector.z));
+                cosmicEvolution.save.activeWorld.findChunkFromChunkCoordinates(MathUtil.floorDouble(cosmicEvolution.save.thePlayer.x) >> 5, MathUtil.floorDouble(cosmicEvolution.save.thePlayer.y) >> 5, MathUtil.floorDouble(cosmicEvolution.save.thePlayer.z) >> 5).addEntityToList(droppedItem);
+            }
+            ItemStack.itemStackOnMouse.item = null;
+            ItemStack.itemStackOnMouse.count = 0;
+            ItemStack.itemStackOnMouse.metadata = Item.NULL_ITEM_METADATA;
+            ItemStack.itemStackOnMouse.durability = Item.NULL_ITEM_DURABILITY;
+            ItemStack.itemStackOnMouse.decayTime = 0L;
+            ItemStack.itemStackOnMouse.itemState = null;
+        }
     }
 
 

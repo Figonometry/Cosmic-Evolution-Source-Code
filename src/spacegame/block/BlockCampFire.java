@@ -1,8 +1,5 @@
 package spacegame.block;
 
-import spacegame.entity.EntityPlayer;
-import spacegame.world.World;
-
 public class BlockCampFire extends BlockHeating {
 
 
