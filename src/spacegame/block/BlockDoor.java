@@ -7,8 +7,8 @@ import spacegame.entity.EntityItem;
 import spacegame.entity.EntityPlayer;
 import spacegame.item.Item;
 import spacegame.world.AxisAlignedBB;
-import spacegame.world.blockstate.DoorTransition;
 import spacegame.world.World;
+import spacegame.world.blockstate.DoorTransition;
 
 public final class BlockDoor extends Block {
 

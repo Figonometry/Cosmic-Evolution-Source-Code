@@ -1,4 +1,4 @@
-package spacegame.world;
+package spacegame.world.blockstate;
 
 import spacegame.item.Inventory;
 

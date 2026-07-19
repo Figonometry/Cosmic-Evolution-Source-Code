@@ -2,8 +2,10 @@ package spacegame.render;
 
 import spacegame.core.CosmicEvolution;
 
-import javax.imageio.IIOException;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.regex.Pattern;
 
 public final class AssetPack {

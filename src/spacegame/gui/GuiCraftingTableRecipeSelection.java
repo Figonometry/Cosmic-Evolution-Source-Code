@@ -9,12 +9,15 @@ import spacegame.core.CosmicEvolution;
 import spacegame.entity.EntityPlayer;
 import spacegame.item.Item;
 import spacegame.item.crafting.CraftingBlockRecipes;
-import spacegame.world.blockstate.InWorldCraftingItem;
-import spacegame.render.*;
+import spacegame.render.Assets;
+import spacegame.render.RenderBlocks;
+import spacegame.render.RenderEngine;
+import spacegame.render.Shader;
 import spacegame.render.model.ModelFace;
 import spacegame.render.model.ModelLoader;
 import spacegame.util.MathUtil;
 import spacegame.world.Chunk;
+import spacegame.world.blockstate.InWorldCraftingItem;
 
 import java.util.ArrayList;
 

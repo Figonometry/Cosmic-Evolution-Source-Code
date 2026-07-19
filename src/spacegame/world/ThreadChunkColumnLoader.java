@@ -1,21 +1,10 @@
 package spacegame.world;
 
-import spacegame.block.Block;
-import spacegame.block.BlockContainer;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
-import spacegame.entity.*;
-import spacegame.item.crafting.CraftingBlockRecipes;
-import spacegame.item.itemstate.ItemState;
-import spacegame.world.blockstate.InWorld3DCraftingItem;
-import spacegame.world.blockstate.InWorldCraftingItem;
-import spacegame.item.crafting.InWorldCraftingRecipe;
-import spacegame.render.RenderEngine;
-import spacegame.util.Logger;
-import spacegame.item.Inventory;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
-import spacegame.world.blockstate.HeatableBlockLocation;
+import spacegame.util.Logger;
 import spacegame.world.blockstateio.*;
 
 import java.io.File;
@@ -63,6 +52,7 @@ public final class ThreadChunkColumnLoader implements Runnable {
                         NBTTagCompound craftingItems = chunkData.getCompoundTag("CraftingItems");
                         NBTTagCompound cropStates = chunkData.getCompoundTag("CropStates");
                         NBTTagCompound tilledSoilStates = chunkData.getCompoundTag("TilledSoilStates");
+                        NBTTagCompound campfireStates = chunkData.getCompoundTag("CampfireStates");
 
                         chunk = new Chunk(x, y, z, CosmicEvolution.instance.save.activeWorld);
 
@@ -111,6 +101,10 @@ public final class ThreadChunkColumnLoader implements Runnable {
 
                         if(tilledSoilStates != null){
                             new TilledSoilStateIO().loadTilledSoilStates(chunk, tilledSoilStates);
+                        }
+
+                        if(campfireStates != null){
+                            new CampfireStateIO().loadCampfireStates(chunk, campfireStates);
                         }
 
                         inputStream.close();

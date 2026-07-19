@@ -31,7 +31,7 @@ public class Item {
     public static final Item reeds = new ItemReed((short)18, modelFolderPath + "reeds.obj", "src/spacegame/assets/itemFiles/reeds.txt");
     public static final Item bone = new ItemBone((short)19, modelFolderPath + "bone.obj", "src/spacegame/assets/itemFiles/bone.txt");
     public static final Item boneMeal = new Item((short)20, modelFolderPath + "boneMeal.obj", "src/spacegame/assets/itemFiles/boneMeal.txt"); //20
-    public static final Item old_treeSeed = null; //21
+    public static final Item seedEmmerWheat = new ItemSeed((short)21, modelFolderPath + "seedEmmerWheat.obj", "src/spacegame/assets/itemFiles/emmerWheat.txt");
     public static final Item cookedGameMeat = new ItemCookedGameMeat((short)22, modelFolderPath + "cookedGameMeat.obj", "src/spacegame/assets/itemFiles/cookedGameMeat.txt", 300f);
     public static final Item reedTwine = new Item((short)23, modelFolderPath + "twine.obj", "src/spacegame/assets/itemFiles/reedTwine.txt");
     public static final Item reedCraftingGridTop = new Item((short)24, modelFolderPath + "craftingGridTop.obj", "src/spacegame/assets/itemFiles/reedCraftingGridTop.txt");
@@ -44,6 +44,11 @@ public class Item {
     public static final Item primitiveDoor = new Item((short)31, modelFolderPath + "primitiveDoor.obj", "src/spacegame/assets/itemFiles/primitiveDoor.txt");
     public static final Item primitiveDeerPeltClothing = new ItemClothing((short)32, modelFolderPath + "primitiveDeerPeltClothing.obj", "src/spacegame/assets/itemFiles/primitiveDeerPeltClothing.txt");
     public static final Item primitiveWolfPeltClothing = new ItemClothing((short)33, modelFolderPath + "primitiveWolfPeltClothing.obj", "src/spacegame/assets/itemFiles/primitiveWolfPeltClothing.txt");
+    public static final Item emmerWheat = new ItemFood((short)34, modelFolderPath + "einkornWheat.obj", "src/spacegame/assets/itemFiles/emmerWheat.txt", 10f);
+    public static final Item seedStandardWheat = new ItemSeed((short)35, modelFolderPath + "seedStandardWheat.obj", "src/spacegame/assets/itemFiles/seedStandardWheat.txt");
+    public static final Item wheat = new ItemFood((short)36, modelFolderPath + "wheat.obj", "src/spacegame/assets/itemFiles/wheat.txt", 20f);
+    public static final Item speltWheat = new ItemFood((short)37, modelFolderPath + "wheat.obj", "src/spacegame/assets/itemFiles/speltWheat.txt", 30f);
+    public static final Item seedSpeltWheat = new ItemSeed((short)38, modelFolderPath + "seedSpeltWheat.obj", "src/spacegame/assets/itemFiles/seedSpeltWheat.txt");
     public final short ID;
     public float hardness = 0;
     public boolean canPlaceAsItemBlock;

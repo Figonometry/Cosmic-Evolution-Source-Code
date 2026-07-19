@@ -1,15 +1,9 @@
 package spacegame.world;
 
 import spacegame.core.CosmicEvolution;
-import spacegame.entity.*;
-import spacegame.world.blockstate.InWorld3DCraftingItem;
-import spacegame.world.blockstate.InWorldCraftingItem;
-import spacegame.util.Logger;
-import spacegame.item.ItemStack;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
-import spacegame.world.blockstate.HeatableBlockLocation;
-import spacegame.world.blockstate.TimeUpdateEvent;
+import spacegame.util.Logger;
 import spacegame.world.blockstateio.*;
 
 import java.io.File;
@@ -50,6 +44,7 @@ public final class ThreadChunkUnloader implements Runnable {
                 NBTTagCompound craftingItems = new NBTTagCompound();
                 NBTTagCompound cropStates = new NBTTagCompound();
                 NBTTagCompound tilledSoilStates = new NBTTagCompound();
+                NBTTagCompound campfireStates = new NBTTagCompound();
 
                 chunkTag.setTag("Chunk", chunkData);
                 chunkData.setTag("Entity", entity);
@@ -60,6 +55,7 @@ public final class ThreadChunkUnloader implements Runnable {
                 chunkData.setTag("CraftingItems", craftingItems);
                 chunkData.setTag("CropStates", cropStates);
                 chunkData.setTag("TilledSoilStates", tilledSoilStates);
+                chunkData.setTag("CampfireStates", campfireStates);
 
                 chunkData.setInteger("x", this.chunks[chunkIndex].x);
                 chunkData.setInteger("y", this.chunks[chunkIndex].y);
@@ -110,6 +106,10 @@ public final class ThreadChunkUnloader implements Runnable {
 
                 if(this.chunks[chunkIndex].tilledSoilStates.size() > 0){
                     new TilledSoilStateIO().saveTilledSoilStates(this.chunks[chunkIndex], tilledSoilStates);
+                }
+
+                if(this.chunks[chunkIndex].campfireStates.size() > 0){
+                    new CampfireStateIO().saveCampfireStates(this.chunks[chunkIndex], campfireStates);
                 }
 
                 NBTIO.writeCompressed(chunkTag, outputStream);

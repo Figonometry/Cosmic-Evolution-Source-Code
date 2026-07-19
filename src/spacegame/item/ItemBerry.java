@@ -3,7 +3,6 @@ package spacegame.item;
 import spacegame.block.Block;
 import spacegame.core.Timer;
 import spacegame.entity.EntityBlock;
-import spacegame.entity.EntityItem;
 import spacegame.entity.EntityPlayer;
 import spacegame.world.World;
 

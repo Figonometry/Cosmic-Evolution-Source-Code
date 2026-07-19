@@ -1,9 +1,9 @@
 package spacegame.gui;
 
 import spacegame.core.CosmicEvolution;
-import spacegame.util.MathUtil;
 import spacegame.core.MouseListener;
 import spacegame.entity.EntityPlayer;
+import spacegame.util.MathUtil;
 
 public final class RecipeSelector {
     public short itemID;

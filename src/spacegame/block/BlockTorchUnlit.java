@@ -4,7 +4,6 @@ import org.lwjgl.glfw.GLFW;
 import spacegame.core.KeyListener;
 import spacegame.core.MouseListener;
 import spacegame.entity.EntityPlayer;
-import spacegame.item.Item;
 import spacegame.world.World;
 
 public final class BlockTorchUnlit extends Block {

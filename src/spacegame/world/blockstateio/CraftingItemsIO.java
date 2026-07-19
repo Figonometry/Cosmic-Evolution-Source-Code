@@ -4,6 +4,7 @@ import spacegame.item.crafting.CraftingBlockRecipes;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.world.Chunk;
 import spacegame.world.blockstate.InWorldCraftingItem;
+import spacegame.world.blockstatewrapper.InWorldCraftingItemSafe;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -68,10 +69,10 @@ public class CraftingItemsIO {
         int index = 0;
         InWorldCraftingItem craftingItem;
         InWorldCraftingItem[] inWorldCraftingItems = new InWorldCraftingItem[chunk.craftingItems.size()];
-        Iterator<Map.Entry<Integer, InWorldCraftingItem>> iterator = chunk.craftingItems.entrySet().iterator();
+        Iterator<Map.Entry<Integer, InWorldCraftingItemSafe>> iterator = chunk.craftingItems.entrySet().iterator();
         while(iterator.hasNext()){
-            Map.Entry<Integer, InWorldCraftingItem> entry = iterator.next();
-            craftingItem = entry.getValue();
+            Map.Entry<Integer, InWorldCraftingItemSafe> entry = iterator.next();
+            craftingItem = entry.getValue().value;
             if(craftingItem != null){
                 inWorldCraftingItems[index] = craftingItem;
                 index++;

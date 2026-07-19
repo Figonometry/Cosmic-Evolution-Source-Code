@@ -1,6 +1,5 @@
 package spacegame.core;
 
-import org.lwjgl.glfw.GLFW;
 import spacegame.gui.TextField;
 
 public final class CharListener {

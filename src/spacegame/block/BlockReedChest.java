@@ -4,7 +4,7 @@ import spacegame.core.CosmicEvolution;
 import spacegame.core.MouseListener;
 import spacegame.entity.EntityPlayer;
 import spacegame.gui.GuiInventoryStrawChest;
-import spacegame.world.ChestLocation;
+import spacegame.world.blockstate.ChestLocation;
 import spacegame.world.World;
 
 public final class BlockReedChest extends BlockContainer {

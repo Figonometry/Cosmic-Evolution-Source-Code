@@ -3,7 +3,7 @@ package spacegame.block;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.Sound;
 import spacegame.item.Item;
-import spacegame.world.ChestLocation;
+import spacegame.world.blockstate.ChestLocation;
 
 public class BlockPile extends BlockContainer {
     public short itemInPile;

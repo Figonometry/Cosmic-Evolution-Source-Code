@@ -49,7 +49,7 @@ public final class RainQuad {
 
     private void extinguishFireBlocks(short blockID, int x, int y, int z){
         if(blockID != Block.torchStandard.ID && blockID != Block.torchNorth.ID && blockID != Block.torchSouth.ID && blockID
-                != Block.torchEast.ID && blockID != Block.torchWest.ID && blockID != Block.campfireLit.ID)return;
+                != Block.torchEast.ID && blockID != Block.torchWest.ID && blockID != Block.campfire.ID)return;
 
         World world = CosmicEvolution.instance.save.activeWorld;
         world.setBlockWithNotify(x,y,z, Block.air.ID, false);
@@ -71,7 +71,7 @@ public final class RainQuad {
             }
             case 68 -> { //Lit campfire
                 world.removeHeatableBlock(x,y,z);
-                world.setBlockWithNotify(x,y,z, Block.campFire4FireWood.ID, false);
+                world.setBlockWithNotify(x,y,z, Block.campfire.ID, false);
             }
             case 99 -> { //Pit Kiln Lit
                 world.setBlockWithNotify(x,y,z, Block.pitKilnUnlit.ID, false);

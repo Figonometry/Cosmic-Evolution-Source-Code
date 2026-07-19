@@ -3,6 +3,7 @@ package spacegame.world.blockstateio;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.world.Chunk;
 import spacegame.world.blockstate.TilledSoilState;
+import spacegame.world.blockstatewrapper.TilledSoilStateSafe;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -50,10 +51,10 @@ public class TilledSoilStateIO {
         int index = 0;
         TilledSoilState tilledSoilState;
         TilledSoilState[] tilledSoilStates1 = new TilledSoilState[chunk.tilledSoilStates.size()];
-        Iterator<Map.Entry<Integer, TilledSoilState>> iterator = chunk.tilledSoilStates.entrySet().iterator();
+        Iterator<Map.Entry<Integer, TilledSoilStateSafe>> iterator = chunk.tilledSoilStates.entrySet().iterator();
         while(iterator.hasNext()){
-            Map.Entry<Integer, TilledSoilState> entry = iterator.next();
-            tilledSoilState = entry.getValue();
+            Map.Entry<Integer, TilledSoilStateSafe> entry = iterator.next();
+            tilledSoilState = entry.getValue().value;
             if(tilledSoilState != null){
                 tilledSoilStates1[index] = tilledSoilState;
                 index++;

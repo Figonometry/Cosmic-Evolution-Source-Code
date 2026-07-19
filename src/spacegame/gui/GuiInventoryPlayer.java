@@ -11,10 +11,10 @@ import spacegame.item.ItemStack;
 import spacegame.item.ItemTool;
 import spacegame.render.Assets;
 import spacegame.render.RenderBlocks;
-import spacegame.render.model.ModelLoader;
-import spacegame.render.model.ModelPlayer;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
+import spacegame.render.model.ModelLoader;
+import spacegame.render.model.ModelPlayer;
 import spacegame.util.MathUtil;
 
 public final class GuiInventoryPlayer extends GuiInventory {
@@ -83,7 +83,7 @@ public final class GuiInventoryPlayer extends GuiInventory {
 
         ModelPlayer modelPlayer = ModelPlayer.getBaseModel();
         modelPlayer.scale(150);
-        modelPlayer.animate(CosmicEvolution.instance.save.thePlayer.animationTimer, CosmicEvolution.instance.save.thePlayer.animate, CosmicEvolution.instance.save.thePlayer);
+        modelPlayer.animate(CosmicEvolution.instance.save.thePlayer.walkingAnimationTimer, CosmicEvolution.instance.save.thePlayer.animate, CosmicEvolution.instance.save.thePlayer);
         modelPlayer.segments[ModelPlayer.BODY].rotateModelSegmentY(-90f);
 
         float xCenter = -390;

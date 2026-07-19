@@ -10,16 +10,17 @@ import spacegame.block.Block;
 import spacegame.block.BlockDoor;
 import spacegame.block.BlockWater;
 import spacegame.core.*;
+import spacegame.entity.animations.PlayerAnimation;
 import spacegame.gui.*;
 import spacegame.item.*;
 import spacegame.item.itemstate.ItemState;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
+import spacegame.render.RenderEngine;
+import spacegame.render.Shader;
 import spacegame.render.model.Model;
 import spacegame.render.model.ModelLoader;
 import spacegame.render.model.ModelPlayer;
-import spacegame.render.RenderEngine;
-import spacegame.render.Shader;
 import spacegame.util.MathUtil;
 import spacegame.world.Chunk;
 
@@ -79,14 +80,13 @@ public final class EntityPlayer extends EntityLiving {
     public float angleRightArm;
     public float angleLeftLeg;
     public float angleRightLeg;
-    public int animationTimer = 0;
+    public int walkingAnimationTimer = 0;
     public int texture = RenderEngine.NULL_TEXTURE;
     public boolean animate;
     public Model model;
     public int outOfWaterJumpDelay = 0;
     public long timeStartedBreakingBlock = Long.MIN_VALUE;
-    public boolean animateRightClick;
-    public int rightClickAnimateTimer;
+    public PlayerAnimation playerAnimation;
 
     public EntityPlayer(CosmicEvolution cosmicEvolution, double x, double y, double z) {
         super(Integer.MAX_VALUE);
@@ -496,17 +496,32 @@ public final class EntityPlayer extends EntityLiving {
             this.checkHealth();
             this.updateSwingTimer();
             this.checkItemDurability();
-            this.animationTimer++;
+            this.walkingAnimationTimer++;
             if(!this.stopLeftArm && !this.stopRightArm && !this.stopLeftLeg && !this.stopRightLeg && !this.animate){
-                this.animationTimer = 0;
+                this.walkingAnimationTimer = 0;
             }
-            this.rightClickAnimateTimer--;
-            if(this.rightClickAnimateTimer <= 0 && this.animateRightClick){
-                this.animateRightClick = false;
-                //Passing 0,0,0 to this, the function will handle exactly what to do on finishing the animation, it may need to vary
-                //Going to keep the args in the method signature in case I need to do special behavior elsewhere that isnt the player or where they're looking
-                Item.list[this.getHeldItem()].onFinishRightClickAnimation(0,0,0, CosmicEvolution.instance.save.activeWorld, this);
+
+
+
+            if(this.playerAnimation != null){
+
+                if(!this.playerAnimation.heldRequired){
+                    this.playerAnimation.timer--;
+                } else {
+                    if(this.playerAnimation.leftClick && MouseListener.mouseButtonDown(GLFW.GLFW_MOUSE_BUTTON_LEFT)){
+                        this.playerAnimation.timer--;
+                    } else if(this.playerAnimation.rightClick && MouseListener.mouseButtonDown(GLFW.GLFW_MOUSE_BUTTON_RIGHT)){
+                        this.playerAnimation.timer--;
+                    }
+                }
+
+
+                if(this.playerAnimation.timer <= 0){
+                    this.playerAnimation.onAnimationComplete(this);
+                    this.playerAnimation = null;
+                }
             }
+
         }
     }
 
@@ -672,8 +687,8 @@ public final class EntityPlayer extends EntityLiving {
             this.drowningTimer = 0;
         }
 
-        if(this.blockUnderPlayer == Block.campfireLit.ID || this.blockUnderPlayer == Block.pitKilnLit.ID || headBlock == Block.campfireLit.ID ||
-                headBlock == Block.pitKilnLit.ID || footBlock == Block.campfireLit.ID || footBlock == Block.pitKilnLit.ID){
+        if(this.blockUnderPlayer == Block.campfire.ID || this.blockUnderPlayer == Block.pitKilnLit.ID || headBlock == Block.campfire.ID ||
+                headBlock == Block.pitKilnLit.ID || footBlock == Block.campfire.ID || footBlock == Block.pitKilnLit.ID){
             this.damage(5);
         }
 
@@ -1160,7 +1175,7 @@ public final class EntityPlayer extends EntityLiving {
     @Override
     public void renderForShadowMap(int sunX, int sunY, int sunZ){
         this.model = ModelPlayer.getBaseModel();
-        this.model.animate(this.animationTimer, this.animate, this);
+        this.model.animate(this.walkingAnimationTimer, this.animate, this);
         this.model.renderModelForShadowMap(this, sunX, sunY, sunZ);
 
         this.renderHeldItemForShadowMap(sunX, sunY, sunZ);
@@ -1282,7 +1297,7 @@ public final class EntityPlayer extends EntityLiving {
            this.loadTexture();
        }
        this.model = ModelPlayer.getBaseModel();
-       this.model.animate(this.animationTimer, this.animate, this);
+       this.model.animate(this.walkingAnimationTimer, this.animate, this);
        this.model.renderModel(this);
        this.renderShadow();
     }

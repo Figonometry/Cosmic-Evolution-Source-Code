@@ -3,7 +3,7 @@ package spacegame.world.blockstateio;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.world.Chunk;
 import spacegame.world.blockstate.CropState;
-import spacegame.world.blockstate.HeatableBlockLocation;
+import spacegame.world.blockstatewrapper.CropStateSafe;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -50,10 +50,10 @@ public class CropStateIO {
         int index = 0;
         CropState cropState;
         CropState[] cropStates1 = new CropState[chunk.cropStates.size()];
-        Iterator<Map.Entry<Integer, CropState>> iterator = chunk.cropStates.entrySet().iterator();
+        Iterator<Map.Entry<Integer, CropStateSafe>> iterator = chunk.cropStates.entrySet().iterator();
         while(iterator.hasNext()){
-            Map.Entry<Integer, CropState> entry = iterator.next();
-            cropState = entry.getValue();
+            Map.Entry<Integer, CropStateSafe> entry = iterator.next();
+            cropState = entry.getValue().value;
             if(cropState != null){
                 cropStates1[index] = cropState;
                 index++;

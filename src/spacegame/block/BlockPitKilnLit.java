@@ -6,7 +6,7 @@ import spacegame.core.Timer;
 import spacegame.entity.EntityParticle;
 import spacegame.item.Inventory;
 import spacegame.item.Item;
-import spacegame.world.ChestLocation;
+import spacegame.world.blockstate.ChestLocation;
 import spacegame.world.Chunk;
 import spacegame.world.World;
 
@@ -24,7 +24,8 @@ public final class BlockPitKilnLit extends BlockPitKilnUnlit implements ITimeUpd
         EntityParticle particle;
         Chunk chunk = CosmicEvolution.instance.save.activeWorld.chunkController.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
         for(int i = 0; i < particleCount; i++){
-            particle = new EntityParticle(xPos + CosmicEvolution.globalRand.nextDouble(-0.5, 0.5), yPos + CosmicEvolution.globalRand.nextDouble(0.125), zPos + CosmicEvolution.globalRand.nextDouble(-0.5, 0.5), false, CosmicEvolution.globalRand.nextInt(30, 180), Block.campfireLit.ID, false, false, false, false, 0, 0);
+            particle = new EntityParticle(xPos + CosmicEvolution.globalRand.nextDouble(-0.125, 0.125), yPos + CosmicEvolution.globalRand.nextDouble(0.125), zPos + CosmicEvolution.globalRand.nextDouble(-0.125, 0.125), false, CosmicEvolution.globalRand.nextInt(120, 240),  Block.fire.ID, false, false, false, true, CosmicEvolution.globalRand.nextInt(31), CosmicEvolution.globalRand.nextInt(15,31));
+            particle.size *= CosmicEvolution.globalRand.nextFloat(1f, 5f);
             chunk.addEntityToList(particle);
         }
     }

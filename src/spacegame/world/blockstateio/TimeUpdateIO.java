@@ -4,6 +4,7 @@ import spacegame.core.CosmicEvolution;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.world.Chunk;
 import spacegame.world.blockstate.TimeUpdateEvent;
+import spacegame.world.blockstatewrapper.TimeUpdateEventSafe;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -48,13 +49,13 @@ public class TimeUpdateIO {
         int index = 0;
         TimeUpdateEvent event;
         TimeUpdateEvent[] timeUpdateEvents = new TimeUpdateEvent[this.getNumberOfTimeEvents(chunk)];
-        Iterator<Map.Entry<Long, ConcurrentHashMap<Integer, TimeUpdateEvent>>> outerIterator = chunk.updateEvents.entrySet().iterator();
+        Iterator<Map.Entry<Long, ConcurrentHashMap<Integer, TimeUpdateEventSafe>>> outerIterator = chunk.updateEvents.entrySet().iterator();
         while(outerIterator.hasNext()){
-            Map.Entry<Long, ConcurrentHashMap<Integer, TimeUpdateEvent>> entry = outerIterator.next();
-            Iterator<Map.Entry<Integer, TimeUpdateEvent>> innerIterator = entry.getValue().entrySet().iterator();
+            Map.Entry<Long, ConcurrentHashMap<Integer, TimeUpdateEventSafe>> entry = outerIterator.next();
+            Iterator<Map.Entry<Integer, TimeUpdateEventSafe>> innerIterator = entry.getValue().entrySet().iterator();
             while(innerIterator.hasNext()){
-                Map.Entry<Integer, TimeUpdateEvent> entry1 = innerIterator.next();
-                event = entry1.getValue();
+                Map.Entry<Integer, TimeUpdateEventSafe> entry1 = innerIterator.next();
+                event = entry1.getValue().value;
                 if(event != null){
                     timeUpdateEvents[index] = event;
                     index++;
@@ -66,12 +67,12 @@ public class TimeUpdateIO {
 
     private int getNumberOfTimeEvents(Chunk chunk){
         int total = 0;
-        Iterator<Map.Entry<Long, ConcurrentHashMap<Integer, TimeUpdateEvent>>> outerIterator = chunk.updateEvents.entrySet().iterator();
+        Iterator<Map.Entry<Long, ConcurrentHashMap<Integer, TimeUpdateEventSafe>>> outerIterator = chunk.updateEvents.entrySet().iterator();
         while(outerIterator.hasNext()){
-            Map.Entry<Long, ConcurrentHashMap<Integer, TimeUpdateEvent>> entry = outerIterator.next();
-            Iterator<Map.Entry<Integer, TimeUpdateEvent>> innerIterator = entry.getValue().entrySet().iterator();
+            Map.Entry<Long, ConcurrentHashMap<Integer, TimeUpdateEventSafe>> entry = outerIterator.next();
+            Iterator<Map.Entry<Integer, TimeUpdateEventSafe>> innerIterator = entry.getValue().entrySet().iterator();
             while(innerIterator.hasNext()){
-                Map.Entry<Integer, TimeUpdateEvent> entry1 = innerIterator.next();
+                Map.Entry<Integer, TimeUpdateEventSafe> entry1 = innerIterator.next();
                 total += entry.getValue() == null ? 0 : 1;
             }
         }

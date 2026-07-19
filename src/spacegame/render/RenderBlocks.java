@@ -4,18 +4,14 @@ import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 import spacegame.block.*;
 import spacegame.core.GameSettings;
+import spacegame.item.Item;
 import spacegame.item.ItemTool;
-import spacegame.world.blockstate.CropState;
-import spacegame.world.blockstate.InWorldCraftingItem;
 import spacegame.render.model.ModelFace;
 import spacegame.render.model.ModelLoader;
 import spacegame.util.LongHasher;
 import spacegame.util.MathUtil;
-import spacegame.item.Item;
-import spacegame.world.ChestLocation;
+import spacegame.world.blockstate.*;
 import spacegame.world.Chunk;
-import spacegame.world.blockstate.InWorld3DCraftingItem;
-import spacegame.world.blockstate.DoorTransition;
 import spacegame.world.World;
 
 import java.nio.FloatBuffer;
@@ -156,13 +152,59 @@ public class RenderBlocks {
 
         this.renderCampFireUnlit(chunk, world, block, index, face);
 
-        ModelLoader shrunkBlock = Block.fireBlockModel.copyModel();
-        shrunkBlock.scaleModel(0.4f);
-        shrunkBlock.translateModel(0.3f, 0f, 0.3f);
-        ModelFace[] modelFace = shrunkBlock.getModelFaceOfType(face);
-        for(int i = 0; i < modelFace.length; i++){
-            this.renderTransparentFace(chunk, world, Block.fire.ID, index, face, modelFace[i], new int[2]);
+        CampfireState campfireState = chunk.getCampfireState(index);
+        if(campfireState == null)return;
+
+        if(campfireState.isLit) {
+            ModelLoader shrunkBlock = Block.fireBlockModel.copyModel();
+            shrunkBlock.scaleModel(0.4f);
+            shrunkBlock.translateModel(0.3f, 0f, 0.3f);
+            ModelFace[] modelFace = shrunkBlock.getModelFaceOfType(face);
+            for (int i = 0; i < modelFace.length; i++) {
+                if (modelFace[i] == null) continue;
+                if (modelFace[i].faceType != face) continue;
+                this.renderTransparentFace(chunk, world, Block.fire.ID, index, face, modelFace[i], new int[2]);
+            }
         }
+
+        //Render stick model
+        ModelLoader stickModel = Block.campFireStickFull.copyModel();
+        switch (campfireState.cookingStickCount){
+            case 1 -> {
+                stickModel = Block.campFireStick1.copyModel();
+            }
+            case 2 -> {
+                stickModel = Block.campFireStick2.copyModel();
+            }
+            case 3 -> {
+                stickModel = Block.campFireStick3.copyModel();
+            }
+            case 4 -> {
+                stickModel = Block.campFireStick4.copyModel();
+            }
+            case 5 -> {
+                stickModel = Block.campFireStickFull.copyModel();
+            }
+        }
+
+        if(campfireState.cookingStickCount == 0)return;
+
+        for(int i = 0; i < stickModel.modelFaces.length; i++){
+            if(stickModel.modelFaces[i].faceType != face)continue;
+            this.renderOpaqueFace(chunk, world, Block.itemStick.ID, index, face, stickModel.modelFaces[i], new int[2]);
+        }
+
+        ChestLocation chestLocation = chunk.getChestLocation(index);
+        if(chestLocation == null)return;
+        if(chestLocation.inventory.itemStacks[0].item == null)return;
+
+        ModelLoader itemModel = chestLocation.inventory.itemStacks[0].item.itemModel.copyModel();
+        itemModel.translateModel(0.5f,0.75f, 0.5f);
+        for(int i = 0; i < itemModel.modelFaces.length; i++){
+            if(itemModel.modelFaces[i].faceType != face)continue;
+            this.renderOpaqueFace(chunk, world, Block.itemBlock.ID, index, face, itemModel.modelFaces[i], new int[2]); //Renders item
+        }
+
     }
 
     public void renderCampFireUnlit(Chunk chunk, World world, short block, int index, int face){
@@ -188,7 +230,9 @@ public class RenderBlocks {
         this.blueReset = 1f;
         this.skyLightReset = 1f;
 
-        int logCount = ((BlockCampFire) Block.list[block]).getLogCount(); //Get log count and draw logs above the base
+        CampfireState campfireState = chunk.getCampfireState(index);
+        if(campfireState == null)return;
+        int logCount = campfireState.logCount; //Get log count and draw logs above the base
 
         block = Block.fireWoodBlock.ID; //Switch to this block id in order to bind the correct image in the texture array
 

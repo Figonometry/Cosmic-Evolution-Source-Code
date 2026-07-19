@@ -6,7 +6,10 @@ import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
-import spacegame.render.*;
+import spacegame.render.Assets;
+import spacegame.render.PlantColorizer;
+import spacegame.render.RenderEngine;
+import spacegame.render.Shader;
 import spacegame.render.model.ModelLoader;
 import spacegame.util.MathUtil;
 import spacegame.world.World;
@@ -173,7 +176,12 @@ public final class EntityParticle extends EntityNonLiving {
             if(this.useLight) {
                 byte lightLevel = world.getBlockLightValue(MathUtil.floorDouble(this.x), MathUtil.floorDouble(this.y), MathUtil.floorDouble(this.z));
                 this.setVertexLight1Arg(lightLevel, x, y, z, world.getBlockLightColor(MathUtil.floorDouble(this.x), MathUtil.floorDouble(this.y), MathUtil.floorDouble(this.z)));
+            } else {
+                this.red = 1f;
+                this.green = 1f;
+                this.blue = 1f;
             }
+
             int colorValue = (int)(this.red * 255) << 16 | (int)(this.green * 255) << 8 | (int)(this.blue * 255);
 
 
@@ -207,7 +215,6 @@ public final class EntityParticle extends EntityNonLiving {
                 vertex5 = new Vector3d(blockModel.modelFaces[i].normal);
 
 
-
                     worldTessellator.addVertexTextureArrayWithUV(colorValue, (float) vertex1.x, (float) vertex1.y, (float) vertex1.z, blockID, (float) vertex5.x, (float) vertex5.y, (float) vertex5.z, skyLightValue, blockModel.modelFaces[i].UVs[0][0], blockModel.modelFaces[i].UVs[0][1]);
                     worldTessellator.addVertexTextureArrayWithUV(colorValue, (float) vertex2.x, (float) vertex2.y, (float) vertex2.z, blockID, (float) vertex5.x, (float) vertex5.y, (float) vertex5.z, skyLightValue,  blockModel.modelFaces[i].UVs[1][0], blockModel.modelFaces[i].UVs[1][1]);
                     worldTessellator.addVertexTextureArrayWithUV(colorValue, (float) vertex3.x, (float) vertex3.y, (float) vertex3.z, blockID, (float) vertex5.x, (float) vertex5.y, (float) vertex5.z, skyLightValue,  blockModel.modelFaces[i].UVs[2][0], blockModel.modelFaces[i].UVs[2][1]);
@@ -233,13 +240,17 @@ public final class EntityParticle extends EntityNonLiving {
             if(this.useLight) {
                 byte lightLevel = world.getBlockLightValue(MathUtil.floorDouble(this.x), MathUtil.floorDouble(this.y), MathUtil.floorDouble(this.z));
                 this.setVertexLight1Arg(lightLevel, x, y, z, world.getBlockLightColor(MathUtil.floorDouble(this.x), MathUtil.floorDouble(this.y), MathUtil.floorDouble(this.z)));
+            } else {
+                this.red = 1f;
+                this.green = 1f;
+                this.blue = 1f;
             }
             int colorValue = (int)(this.red * 255) << 16 | (int)(this.green * 255) << 8 | (int)(this.blue * 255);
             worldTessellator.addVertexTextureArrayWithSampling(colorValue, (float) vertex1.x, (float) vertex1.y, (float) vertex1.z, 3, blockID, 0.46875f, -0.46875f, 0, 0, 0, 0);
             worldTessellator.addVertexTextureArrayWithSampling(colorValue, (float) vertex2.x, (float) vertex2.y, (float) vertex2.z, 1, blockID, -0.46875f, 0.46875f, 0, 0, 0, 0);
             worldTessellator.addVertexTextureArrayWithSampling(colorValue, (float) vertex3.x, (float) vertex3.y, (float) vertex3.z, 2, blockID, 0.46875f, 0.46875f, 0, 0, 0, 0);
             worldTessellator.addVertexTextureArrayWithSampling(colorValue, (float) vertex4.x, (float) vertex4.y, (float) vertex4.z, 0, blockID, -0.46875f, -0.46875f, 0, 0, 0, 0);
-            worldTessellator.addElementsCW();
+            worldTessellator.addElementsCCW();
             Shader.worldShaderTextureArray.uploadBoolean("performNormals", false);
             worldTessellator.drawTextureArray(Assets.blockTextureArray, Shader.worldShaderTextureArray, CosmicEvolution.camera);
         }

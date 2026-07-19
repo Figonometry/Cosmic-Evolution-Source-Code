@@ -7,13 +7,13 @@ import spacegame.celestial.CelestialObject;
 import spacegame.celestial.Sun;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
+import spacegame.core.Timer;
 import spacegame.entity.EntityParticle;
+import spacegame.gui.GuiInGame;
+import spacegame.gui.GuiUniverseMap;
 import spacegame.render.model.ModelFace;
 import spacegame.render.model.ModelLoader;
 import spacegame.util.MathUtil;
-import spacegame.core.Timer;
-import spacegame.gui.GuiInGame;
-import spacegame.gui.GuiUniverseMap;
 import spacegame.world.Chunk;
 import spacegame.world.ChunkController;
 import spacegame.world.ChunkRegion;
@@ -277,6 +277,7 @@ public final class RenderWorldScene {
 
 
     private void renderRain(){
+        if(true)return;
         if(!this.controller.parentWorld.raining)return;
         Matrix4d preservedViewMatrix = CosmicEvolution.camera.viewMatrix.get(new Matrix4d());
         Quaterniond viewMatrixRotation = CosmicEvolution.camera.viewMatrix.getUnnormalizedRotation(new Quaterniond());
@@ -345,6 +346,7 @@ public final class RenderWorldScene {
     }
 
     private void renderClouds(){
+        if(true)return; //disable, upload a matrix transform instead of shoving vertex and element data to the GPU every frame, do the same with rain
         Matrix4d preservedViewMatrix = CosmicEvolution.camera.viewMatrix.get(new Matrix4d());
         Quaterniond viewMatrixRotation = CosmicEvolution.camera.viewMatrix.getUnnormalizedRotation(new Quaterniond());
         CosmicEvolution.camera.viewMatrix = new Matrix4d();

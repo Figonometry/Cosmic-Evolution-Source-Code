@@ -3,7 +3,6 @@ package spacegame.render;
 import org.lwjgl.BufferUtils;
 import spacegame.block.Block;
 import spacegame.core.CosmicEvolution;
-import spacegame.core.GameSettings;
 import spacegame.util.Logger;
 import spacegame.world.Chunk;
 import spacegame.world.ChunkJobThreadScheduler;

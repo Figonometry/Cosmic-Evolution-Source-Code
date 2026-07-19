@@ -8,7 +8,7 @@ import spacegame.core.Sound;
 import spacegame.entity.EntityPlayer;
 import spacegame.item.Item;
 import spacegame.world.AxisAlignedBB;
-import spacegame.world.ChestLocation;
+import spacegame.world.blockstate.ChestLocation;
 import spacegame.world.World;
 
 import java.util.Random;
@@ -32,6 +32,7 @@ public final class BlockLogPile extends BlockPile {
             KeyListener.setKeyReleased(GLFW.GLFW_KEY_LEFT_SHIFT);
             CosmicEvolution.instance.soundPlayer.playSound(x, y, z, new Sound(Sound.wood, false, 1f), new Random().nextFloat(0.6F, 1));
             world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).notifyBlock(x,y,z);
+            world.notifyChunk(x,y,z);
             return;
         }
 
@@ -51,6 +52,7 @@ public final class BlockLogPile extends BlockPile {
             }
 
             world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).notifyBlock(x,y,z);
+            world.notifyChunk(x,y,z);
         }
     }
 

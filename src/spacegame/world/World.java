@@ -2,25 +2,32 @@ package spacegame.world;
 
 import org.joml.Vector3d;
 import org.joml.Vector3f;
-import spacegame.block.*;
+import spacegame.block.Block;
+import spacegame.block.BlockCraftingTable;
+import spacegame.block.BlockWater;
 import spacegame.core.*;
 import spacegame.entity.*;
 import spacegame.entity.ai.AIPassive;
-import spacegame.gui.*;
+import spacegame.gui.GuiInGame;
 import spacegame.item.Inventory;
 import spacegame.item.Item;
-import spacegame.world.blockstate.*;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
-import spacegame.render.*;
+import spacegame.render.RenderEngine;
+import spacegame.render.RenderWorldScene;
+import spacegame.render.Shader;
 import spacegame.util.MathUtil;
+import spacegame.world.blockstate.*;
 import spacegame.world.weather.Cloud;
 import spacegame.world.weather.CloudFormation;
 import spacegame.world.weather.RainQuad;
 import spacegame.world.weather.WeatherSystem;
 
 import java.awt.*;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
@@ -336,7 +343,7 @@ public abstract class World {
     }
 
     public synchronized void setBlockWithNotify(int x, int y, int z, short blockID, boolean playerInitiated) {
-        boolean destroyLight = Block.list[this.getBlockID(x, y, z)].isLightBlock && blockID == Block.air.ID;
+        boolean destroyLight = Block.list[this.getBlockID(x, y, z)].isLightBlock(x,y,z, this) && blockID == Block.air.ID;
         boolean destroyWater = Block.list[this.getBlockID(x,y,z)] instanceof BlockWater && !(Block.list[blockID] instanceof BlockWater);
         Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
         if(chunk == null)return;
@@ -344,7 +351,7 @@ public abstract class World {
         if (blockID == Block.air.ID) {
             this.resetNearestLight(x, y, z);
         }
-        if (Block.list[blockID].isLightBlock) {
+        if (Block.list[blockID].isLightBlock(x,y,z, this)) {
             this.propagateLightSource(x, y, z, Block.list[blockID].lightBlockValue);
         }
         if (Block.list[blockID].isSolid) {
@@ -871,7 +878,7 @@ public abstract class World {
         while (!this.lightSearchQueue.isEmpty() && this.safetyThreshold < 100000) {
             for (int i = 0; i < this.lightSearchQueue.size(); i++) {
                 coordinates = this.lightSearchQueue.get(i);
-                if (Block.list[this.getBlockID(coordinates[0], coordinates[1], coordinates[2])].isLightBlock) {
+                if (Block.list[this.getBlockID(coordinates[0], coordinates[1], coordinates[2])].isLightBlock(x,y,z, this)) {
                     this.propagateDarkness(coordinates[0], coordinates[1], coordinates[2]);
                     break lightSearch;
                 }
@@ -964,7 +971,7 @@ public abstract class World {
             for (y = yCenter - boxDimension / 2; y < boxYMax; y++) {
                 for (z = zCenter - boxDimension / 2; z < boxZMax; z++) {
                     this.clearBlockLight(x, y, z);
-                    if (Block.list[this.getBlockID(x, y, z)].isLightBlock) {
+                    if (Block.list[this.getBlockID(x, y, z)].isLightBlock(x,y,z, this)) {
                         lightSourceQueue.add(new int[]{x, y, z});
                     }
                 }
@@ -989,7 +996,7 @@ public abstract class World {
         for (x = xCenter - boxDimension / 2; x < boxXMax; x++) {
             for (y = yCenter - boxDimension / 2; y < boxYMax; y++) {
                 for (z = zCenter - boxDimension / 2; z < boxZMax; z++) {
-                    if (Block.list[this.getBlockID(x, y, z)].isLightBlock) {
+                    if (Block.list[this.getBlockID(x, y, z)].isLightBlock(x,y,z, this)) {
                         this.propagateLightSource(x, y, z, Block.list[this.getBlockID(x, y, z)].lightBlockValue);
                     }
                 }
@@ -2527,6 +2534,24 @@ public abstract class World {
         Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
         if(chunk == null)return null;
         return chunk.getTilledSoilState(x,y,z);
+    }
+
+    public void addCampfireState(CampfireState campfireState, int x, int y, int z){
+        Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
+        if(chunk == null)return;
+        chunk.addCampfireState(campfireState,x,y,z);
+    }
+
+    public void removeCampfireState(int x, int y, int z){
+        Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
+        if(chunk == null)return;
+        chunk.removeCampfireState(x,y,z);
+    }
+
+    public CampfireState getCampfireState(int x, int y, int z){
+        Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
+        if(chunk == null)return null;
+        return chunk.getCampfireState(x,y,z);
     }
 
     public void notifyChunk(int x, int y, int z){

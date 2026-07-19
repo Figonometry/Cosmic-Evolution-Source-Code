@@ -7,21 +7,22 @@ import org.lwjgl.opengl.GL46;
 import spacegame.block.*;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
+import spacegame.core.Timer;
 import spacegame.entity.Entity;
+import spacegame.entity.EntityPlayer;
+import spacegame.entity.animations.PlayerAnimationTillingSoil;
+import spacegame.item.Item;
 import spacegame.item.ItemHoe;
-import spacegame.world.blockstate.InWorldCraftingItem;
+import spacegame.render.*;
 import spacegame.render.model.ModelFace;
 import spacegame.render.model.ModelLoader;
 import spacegame.render.model.ModelPlayer;
 import spacegame.render.model.ModelSegment;
 import spacegame.util.MathUtil;
-import spacegame.core.Timer;
-import spacegame.entity.EntityPlayer;
-import spacegame.item.Item;
-import spacegame.render.*;
 import spacegame.world.AxisAlignedBB;
 import spacegame.world.Chunk;
 import spacegame.world.blockstate.InWorld3DCraftingItem;
+import spacegame.world.blockstate.InWorldCraftingItem;
 import spacegame.world.blockstate.TimeUpdateEvent;
 
 import java.lang.Math;
@@ -577,7 +578,7 @@ public final class GuiInGame extends Gui {
             x += size;
         }
 
-        if(CosmicEvolution.instance.currentGui instanceof GuiInventoryStrawChest || CosmicEvolution.instance.currentGui instanceof GuiCampfire){
+        if(CosmicEvolution.instance.currentGui instanceof GuiInventoryStrawChest){
             CosmicEvolution.instance.save.thePlayer.inventory.shiftPlayerHotbar(-256, 0);
         }
     }
@@ -884,32 +885,35 @@ public final class GuiInGame extends Gui {
                     x -= 0.125f * ((MathUtil.sin((float) (((player.viewBobTimer / 60f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
                     y -= 0.0625f * ((MathUtil.sin((float) (((player.viewBobTimer / 60f) - 0.125f) * (Math.PI * 4f))) * 0.5) + 0.5f);
                 }
-                if(!player.animateRightClick) {
+                if(player.playerAnimation == null) {
                     z -= 1f * ((MathUtil.sin((float) ((((float) player.swingTimer / (float) player.maxSwingTimer) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
                 }
 
                 Vector3f position = new Vector3f(x,y,z);
                 Matrix3f rotationMatrix = new Matrix3f();
-                if(!player.animateRightClick) {
+                if(player.playerAnimation == null) {
                     double sine = (MathUtil.sin((float) ((((double) player.swingTimer / player.maxSwingTimer) * Math.PI * 2) - (0.5 * Math.PI))) * 0.5) + 0.5f;
                     rotationMatrix.rotateLocalX((float) ((float) -(0.25 * Math.PI) * sine));
                 }
 
                 if(Item.list[player.getHeldItem()] instanceof ItemHoe){
                     float ratio;
-                    if(player.rightClickAnimateTimer > 45){
-                        ratio = ((player.rightClickAnimateTimer - 60) * -1) / 15f;
-                        rotationMatrix.rotateLocalX((float) (0.25 * Math.PI) * ratio);
-                    } else if(player.rightClickAnimateTimer > 15){
-                        rotationMatrix.rotateLocalX((float) (0.25 * Math.PI));
-                    } else if (player.rightClickAnimateTimer > 0) {
-                        ratio = (15 - player.rightClickAnimateTimer) / 15f;
-                        rotationMatrix.rotateLocalX((float) (0.25 * Math.PI));
-                        rotationMatrix.rotateLocalX((float) (-0.5 * Math.PI) * ratio);
-                    } else if(player.rightClickAnimateTimer > -15) {
-                        ratio = (player.rightClickAnimateTimer * -1) / 15f;
-                        rotationMatrix.rotateLocalX((float) (-0.25 * Math.PI));
-                        rotationMatrix.rotateLocalX((float) (0.25 * Math.PI) * ratio);
+
+                    if(player.playerAnimation instanceof PlayerAnimationTillingSoil){
+                        if(player.playerAnimation.timer > 45){
+                            ratio = ((player.playerAnimation.timer - 60) * -1) / 15f;
+                            rotationMatrix.rotateLocalX((float) (0.25 * Math.PI) * ratio);
+                        } else if(player.playerAnimation.timer > 15){
+                            rotationMatrix.rotateLocalX((float) (0.25 * Math.PI));
+                        } else if (player.playerAnimation.timer > 0) {
+                            ratio = (15 - player.playerAnimation.timer) / 15f;
+                            rotationMatrix.rotateLocalX((float) (0.25 * Math.PI));
+                            rotationMatrix.rotateLocalX((float) (-0.5 * Math.PI) * ratio);
+                        } else if(player.playerAnimation.timer > -15) {
+                            ratio = (player.playerAnimation.timer * -1) / 15f;
+                            rotationMatrix.rotateLocalX((float) (-0.25 * Math.PI));
+                            rotationMatrix.rotateLocalX((float) (0.25 * Math.PI) * ratio);
+                        }
                     }
                 }
 

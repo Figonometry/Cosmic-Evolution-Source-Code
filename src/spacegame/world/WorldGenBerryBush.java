@@ -1,7 +1,6 @@
 package spacegame.world;
 
 import spacegame.block.Block;
-import spacegame.block.ITimeUpdate;
 import spacegame.core.CosmicEvolution;
 import spacegame.util.LongHasher;
 

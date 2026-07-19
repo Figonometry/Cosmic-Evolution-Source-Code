@@ -6,6 +6,7 @@ import spacegame.core.CosmicEvolution;
 import spacegame.core.MouseListener;
 import spacegame.core.Sound;
 import spacegame.entity.EntityPlayer;
+import spacegame.entity.animations.PlayerAnimationTillingSoil;
 import spacegame.world.Chunk;
 import spacegame.world.World;
 import spacegame.world.blockstate.TilledSoilState;
@@ -22,8 +23,7 @@ public final class ItemHoe extends ItemTool {
 
     public void onRightClick(int x, int y, int z, World world, EntityPlayer player) {
         if(!MouseListener.rightClickReleased)return;
-        player.rightClickAnimateTimer = 60;
-        player.animateRightClick = true;
+        player.playerAnimation = new PlayerAnimationTillingSoil(false, true, false, 60);
         MouseListener.rightClickReleased = false;
     }
 

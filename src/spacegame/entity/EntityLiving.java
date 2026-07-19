@@ -2,10 +2,10 @@ package spacegame.entity;
 
 import spacegame.block.Block;
 import spacegame.core.CosmicEvolution;
-import spacegame.util.MathUtil;
 import spacegame.core.Sound;
 import spacegame.entity.ai.AIPassive;
 import spacegame.gui.GuiWorldLoading;
+import spacegame.util.MathUtil;
 import spacegame.world.AxisAlignedBB;
 
 import java.util.Random;

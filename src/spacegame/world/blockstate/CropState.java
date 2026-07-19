@@ -6,7 +6,8 @@ public final class CropState {
     public boolean canMutate;
     public String targetCrop = "";
     public int growthStage;
-    public float percentToTargetCrop; //This needs to be stored to be passed onto child seeds from this crop along with the canMutate bool
+    public float percentToTargetCrop;
+    public int damageValue; //This needs to be stored to be passed onto child seeds from this crop along with the canMutate bool
 
     public CropState(int index, String name, boolean canMutate, String targetCrop, int growthStage, float percentToTargetCrop){
         this.index = index;

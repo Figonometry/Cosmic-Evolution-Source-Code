@@ -11,12 +11,14 @@ import java.util.Random;
 public class WorldGenTree extends WorldGen {
     public ArrayList<int[]> blockPos = new ArrayList<>();
     public boolean decayIntoDirt;
+    public boolean fromWorldGen;
 
-    public WorldGenTree(Chunk chunk, WorldEarth worldEarth, int index, boolean fixed) {
+    public WorldGenTree(Chunk chunk, WorldEarth worldEarth, int index, boolean fromWorldGen) {
         if(chunk.blocks[index] != Block.grass.ID && chunk.blocks[index] != Block.dirt.ID)return; //Guard clause to prevent trees from generating when they shouldnt
         this.worldEarth = worldEarth;
         this.index = index;
         this.chunk = chunk;
+        this.fromWorldGen = fromWorldGen;
         this.rand = new Random(new LongHasher().hash(CosmicEvolution.instance.save.seed, String.valueOf(chunk.x + chunk.y + chunk.z + index)));
         this.startGenerate();
     }
@@ -87,6 +89,7 @@ public class WorldGenTree extends WorldGen {
         int z = this.chunk.getBlockZFromIndex(index);
         boolean negative;
         for(int i = 0; i < numberOfSticks; i++){
+            if(!this.fromWorldGen)break;
             negative = rand.nextBoolean();
             x = x + (negative ? rand.nextInt(-7, -1) : rand.nextInt(1, 7));
             negative = rand.nextBoolean();

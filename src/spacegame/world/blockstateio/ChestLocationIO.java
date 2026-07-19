@@ -6,8 +6,9 @@ import spacegame.item.Inventory;
 import spacegame.item.ItemStack;
 import spacegame.item.itemstate.ItemState;
 import spacegame.nbt.NBTTagCompound;
-import spacegame.world.ChestLocation;
+import spacegame.world.blockstate.ChestLocation;
 import spacegame.world.Chunk;
+import spacegame.world.blockstatewrapper.ChestLocationSafe;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -80,10 +81,10 @@ public class ChestLocationIO { //This must be instance and not static since it w
         int index = 0;
         ChestLocation chestLocation;
         ChestLocation[] chestLocations1 = new ChestLocation[chunk.chestLocations.size()];
-        Iterator<Map.Entry<Integer, ChestLocation>> iterator = chunk.chestLocations.entrySet().iterator();
+        Iterator<Map.Entry<Integer, ChestLocationSafe>> iterator = chunk.chestLocations.entrySet().iterator();
         while(iterator.hasNext()){
-            Map.Entry<Integer, ChestLocation> entry = iterator.next();
-            chestLocation = entry.getValue();
+            Map.Entry<Integer, ChestLocationSafe> entry = iterator.next();
+            chestLocation = entry.getValue().value;
             if(chestLocation != null){
                 chestLocations1[index] = chestLocation;
                 index++;

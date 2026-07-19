@@ -8,8 +8,8 @@ import org.lwjgl.opengl.GL46;
 import spacegame.celestial.CelestialObject;
 import spacegame.celestial.Sun;
 import spacegame.core.CosmicEvolution;
-import spacegame.util.MathUtil;
 import spacegame.gui.GuiUniverseMap;
+import spacegame.util.MathUtil;
 
 public final class RenderCelestialBody {
 

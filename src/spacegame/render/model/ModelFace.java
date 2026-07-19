@@ -5,8 +5,6 @@ import spacegame.render.RenderBlocks;
 import spacegame.render.RenderEngine;
 import spacegame.util.MathUtil;
 
-import java.util.Arrays;
-
 public final class ModelFace {
     public float[][] UVs = new float[4][2];
     public Vector3f[] vertices = new Vector3f[4];

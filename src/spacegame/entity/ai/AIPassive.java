@@ -2,8 +2,8 @@ package spacegame.entity.ai;
 
 import org.joml.Vector2f;
 import spacegame.core.CosmicEvolution;
-import spacegame.util.MathUtil;
 import spacegame.entity.EntityLiving;
+import spacegame.util.MathUtil;
 
 public abstract class AIPassive { ;
 

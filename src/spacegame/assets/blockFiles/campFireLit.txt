@@ -5,6 +5,7 @@ boundingBox:itemStoneBoundingBox
 isSolid:false
 isLightBlock:true
 lightBlockValue:14
+requireSolidBlockBelow:true
 breakTimer:60
 lightColor:16760877
 displayName:Campfire

@@ -7,11 +7,10 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL46;
 import spacegame.core.CosmicEvolution;
 import spacegame.gui.GuiUniverseMap;
+import spacegame.render.RenderCelestialBody;
 import spacegame.util.LongHasher;
 import spacegame.util.MathUtil;
-import spacegame.render.RenderCelestialBody;
 
-import java.nio.Buffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 

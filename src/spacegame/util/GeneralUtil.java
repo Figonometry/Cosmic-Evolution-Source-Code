@@ -1,14 +1,9 @@
 package spacegame.util;
 
-import org.joml.Matrix2f;
-import org.joml.Vector2f;
-import org.joml.Vector2i;
-
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 
 public final class GeneralUtil {
 

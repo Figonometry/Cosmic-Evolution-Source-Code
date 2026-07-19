@@ -3,6 +3,7 @@ package spacegame.world.blockstateio;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.world.Chunk;
 import spacegame.world.blockstate.HeatableBlockLocation;
+import spacegame.world.blockstatewrapper.HeatableBlockLocationSafe;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -63,10 +64,10 @@ public class HeatableBlockIO {
         int index = 0;
         HeatableBlockLocation heatableBlockLocation;
         HeatableBlockLocation[] heatableBlockLocations = new HeatableBlockLocation[chunk.heatableBlocks.size()];
-        Iterator<Map.Entry<Integer, HeatableBlockLocation>> iterator = chunk.heatableBlocks.entrySet().iterator();
+        Iterator<Map.Entry<Integer, HeatableBlockLocationSafe>> iterator = chunk.heatableBlocks.entrySet().iterator();
         while(iterator.hasNext()){
-            Map.Entry<Integer, HeatableBlockLocation> entry = iterator.next();
-            heatableBlockLocation = entry.getValue();
+            Map.Entry<Integer, HeatableBlockLocationSafe> entry = iterator.next();
+            heatableBlockLocation = entry.getValue().value;
             if(heatableBlockLocation != null){
                 heatableBlockLocations[index] = heatableBlockLocation;
                 index++;

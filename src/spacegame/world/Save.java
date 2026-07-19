@@ -1,8 +1,8 @@
 package spacegame.world;
 
 import spacegame.core.CosmicEvolution;
-import spacegame.gui.GuiInGame;
 import spacegame.entity.EntityPlayer;
+import spacegame.gui.GuiInGame;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.util.MathUtil;

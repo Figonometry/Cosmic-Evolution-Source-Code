@@ -1,15 +1,9 @@
 package spacegame.world;
 
 import spacegame.core.CosmicEvolution;
-import spacegame.entity.*;
-import spacegame.world.blockstate.InWorld3DCraftingItem;
-import spacegame.world.blockstate.InWorldCraftingItem;
-import spacegame.util.Logger;
-import spacegame.item.ItemStack;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
-import spacegame.world.blockstate.HeatableBlockLocation;
-import spacegame.world.blockstate.TimeUpdateEvent;
+import spacegame.util.Logger;
 import spacegame.world.blockstateio.*;
 
 import java.io.File;
@@ -47,6 +41,7 @@ public final class ThreadChunkSave implements Runnable {
             NBTTagCompound craftingItems = new NBTTagCompound();
             NBTTagCompound cropStates = new NBTTagCompound();
             NBTTagCompound tilledSoilStates = new NBTTagCompound();
+            NBTTagCompound campfireStates = new NBTTagCompound();
 
             chunkTag.setTag("Chunk", chunkData);
             chunkData.setTag("Entity", entity);
@@ -57,6 +52,7 @@ public final class ThreadChunkSave implements Runnable {
             chunkData.setTag("CraftingItems", craftingItems);
             chunkData.setTag("CropStates", cropStates);
             chunkData.setTag("TilledSoilStates", tilledSoilStates);
+            chunkData.setTag("CampfireStates", campfireStates);
 
             chunkData.setInteger("x", chunk.x);
             chunkData.setInteger("y", chunk.y);
@@ -107,6 +103,10 @@ public final class ThreadChunkSave implements Runnable {
 
             if(this.chunk.tilledSoilStates.size() > 0){
                 new TilledSoilStateIO().saveTilledSoilStates(this.chunk, tilledSoilStates);
+            }
+
+            if(this.chunk.campfireStates.size() > 0){
+                new CampfireStateIO().saveCampfireStates(this.chunk, campfireStates);
             }
 
             NBTIO.writeCompressed(chunkTag, outputStream);

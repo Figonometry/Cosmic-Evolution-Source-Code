@@ -3,9 +3,7 @@ package spacegame.block;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
 import spacegame.entity.EntityBlock;
-import spacegame.entity.EntityItem;
 import spacegame.entity.EntityPlayer;
-import spacegame.item.Item;
 import spacegame.world.Chunk;
 import spacegame.world.World;
 

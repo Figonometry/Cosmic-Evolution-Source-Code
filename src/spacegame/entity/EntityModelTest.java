@@ -1,10 +1,9 @@
 package spacegame.entity;
 
 import spacegame.core.CosmicEvolution;
+import spacegame.render.RenderEngine;
 import spacegame.render.model.Model;
 import spacegame.render.model.ModelPlayer;
-import spacegame.render.RenderEngine;
-import spacegame.render.model.ModelWolf;
 
 public final class EntityModelTest extends Entity {
     public static int ticksSinceLastRender = 0;

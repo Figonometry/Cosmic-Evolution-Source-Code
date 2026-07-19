@@ -1,7 +1,10 @@
 package spacegame.block;
 
 import org.lwjgl.glfw.GLFW;
-import spacegame.core.*;
+import spacegame.core.CosmicEvolution;
+import spacegame.core.KeyListener;
+import spacegame.core.MouseListener;
+import spacegame.core.Sound;
 import spacegame.entity.EntityBlock;
 import spacegame.entity.EntityItem;
 import spacegame.entity.EntityPlayer;
@@ -16,6 +19,7 @@ import spacegame.util.MathUtil;
 import spacegame.world.AxisAlignedBB;
 import spacegame.world.Chunk;
 import spacegame.world.World;
+import spacegame.world.blockstate.CampfireState;
 import spacegame.world.blockstate.Crop;
 import spacegame.world.blockstate.CropState;
 import spacegame.world.blockstate.TilledSoilState;
@@ -41,6 +45,11 @@ public class Block {
     public static final ModelLoader itemStickModel = new ModelLoader(modelFolderPath + "itemStick.obj", false);
     public static final ModelLoader campFireBase = new ModelLoader(modelFolderPath + "campFireBase.obj", false);
     public static final ModelLoader fireWood = new ModelLoader(modelFolderPath + "fireWood.obj", false);
+    public static final ModelLoader campFireStick1 = new ModelLoader(modelFolderPath + "campFireStick1.obj", true);
+    public static final ModelLoader campFireStick2 = new ModelLoader(modelFolderPath + "campFireStick2.obj", true);
+    public static final ModelLoader campFireStick3 = new ModelLoader(modelFolderPath + "campFireStick3.obj", true);
+    public static final ModelLoader campFireStick4 = new ModelLoader(modelFolderPath + "campFireStick4.obj", true);
+    public static final ModelLoader campFireStickFull = new ModelLoader(modelFolderPath + "campFireStickFull.obj", true);
     public static final ModelLoader strawChestModel = new ModelLoader(modelFolderPath + "strawChest.obj", false);
     public static final ModelLoader itemClayModel = new ModelLoader(modelFolderPath + "itemClay.obj", false);
     public static final ModelLoader clayCookingPotModel = new ModelLoader(modelFolderPath + "clayCookingPot.obj", false);
@@ -220,12 +229,12 @@ public class Block {
     public static final Block leaf = new BlockLeaf((short) 60, 10,blockFolderPath + "leaf.txt"); //Leaf Erikson
     public static final Block berryBush = new BlockBerryBush((short) 61, 25, blockFolderPath + "berryBush.txt");
     public static final Block berryBushNoBerries = new BlockBerryBush((short) 62, 11, blockFolderPath + "berryBush.txt");
-    public static final Block campFire1FireWood = new BlockCampFireUnlit((short) 63, 16, blockFolderPath + "campFireUnlit.txt", 1, 3);
-    public static final Block campFire2FireWood = new BlockCampFireUnlit((short) 64, 16, blockFolderPath + "campFireUnlit.txt", 1,3);
-    public static final Block campFire3Firewood = new BlockCampFireUnlit((short) 65, 16, blockFolderPath + "campFireUnlit.txt", 1,3);
-    public static final Block campFireNoFirewood = new BlockCampFireUnlit((short) 66, 16, blockFolderPath + "campFireUnlit.txt", 1,3);
+    public static final Block unused_field_1 = null; //Unused 63
+    public static final Block unused_field_2 = null; //64
+    public static final Block unused_field_3 = null; //65
+    public static final Block unused_field_4 = null; //66
     public static final Block fire = new Block((short)67, 18, blockFolderPath + "fire.txt");
-    public static final Block campfireLit = new BlockCampFireLit((short) 68, 16, blockFolderPath + "campFireLit.txt", 3, 1);
+    public static final Block campfire = new BlockCampFire((short) 68, 16, blockFolderPath + "campFireLit.txt", 3, 1);
     public static final Block grassWithClay = new BlockGrassWithClay((short)69, 2, blockFolderPath + "grassWithClay.txt"); //Nice
     public static final Block grassBlockWithClayLower = new Block((short)70, 14, blockFolderPath + "grassBlockWithClayLower.txt");
     public static final Block clay = new BlockClay((short)71, 13, blockFolderPath + "clay.txt");
@@ -246,7 +255,7 @@ public class Block {
     public static final Block berryBushFlower = new BlockBerryBush((short)86, 27, blockFolderPath + "berryBush.txt");
     public static final Block itemStick = new BlockItemStick((short)87, 29, blockFolderPath + "itemStick.txt");
     public static final Block tallGrass = new BlockTallGrass((short)88, 30, blockFolderPath + "tallGrass.txt");
-    public static final Block campFire4FireWood = new BlockCampFireUnlit((short) 89, 16, blockFolderPath + "campFireUnlit.txt", 3, 1);
+    public static final Block unused_field_5 = null; //Unused 89
     public static final Block fireWoodBlock = new Block((short)90, 31, blockFolderPath + "fireWood.txt");
     public static final Block reedChest = new BlockReedChest((short)91, 32, blockFolderPath + "reedChest.txt",1, 9);
     public static final Block reedChestTier0 = new BlockReedCrafting((short)92, 32, blockFolderPath + "reedChestBuilding0.txt");
@@ -340,6 +349,8 @@ public class Block {
     public static final Block fullWater = new BlockWater((short)180, 4, blockFolderPath + "fullWater.txt");
     public static final Block tilledSoil = new BlockSoil((short)181, 1,blockFolderPath + "tilledSoil.txt");
     public static final Block cropGrowth = new BlockCrop((short)182, -1, blockFolderPath + "cropGrowth.txt");
+    public static final Block deadCrop = new Block((short)183, 95, blockFolderPath  + "deadCrop.txt");
+
     public final short ID;
     public final int textureID;
     public static int facingDirection;
@@ -851,7 +862,11 @@ public class Block {
         }
 
         switch (Item.list[heldItem].itemName) { //Convert held item into an equivalent block id to place, if one exists, otherwise default to the held block
-            case "STRAW" -> heldBlock = campFireNoFirewood.ID;
+            case "STRAW" -> {
+                heldBlock = campfire.ID;
+                world.addChestLocation(x,y,z, new Inventory(1, 2));
+                world.addCampfireState(new CampfireState(Chunk.getBlockIndexFromCoordinates(x,y,z), false, 0,0), x,y,z);
+            }
             case "FIRE_WOOD" -> {
                 if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) && KeyListener.keyReleased[GLFW.GLFW_KEY_LEFT_SHIFT] && world.getBlockID(player.blockLookingAt[0], player.blockLookingAt[1], player.blockLookingAt[2]) != logPile.ID) {;
                     heldBlock = logPile.ID;
@@ -890,7 +905,7 @@ public class Block {
                     return;
                 }
             }
-            case "SEED_WILD_GRASS", "SEED_EINKORN_WHEAT" -> {
+            case "SEED_WILD_GRASS", "SEED_EINKORN_WHEAT", "SEED_EMMER_WHEAT", "SEED_WHEAT" -> {
                 if(list[world.getBlockID(x, y - 1, z)] instanceof BlockSoil){
                     heldBlock = cropGrowth.ID;
                 } else {
@@ -1009,6 +1024,10 @@ public class Block {
 
     public static int getRandomTickRate(){
         return 60;
+    }
+
+    public boolean isLightBlock(int x, int y, int z, World world){
+        return this.isLightBlock;
     }
 
     public void adjustBoundingBox(int x, int y, int z, AxisAlignedBB boundingBox){

@@ -7,18 +7,22 @@ import spacegame.block.*;
 import spacegame.core.CosmicEvolution;
 import spacegame.entity.*;
 import spacegame.item.IDecayItem;
-import spacegame.world.blockstate.*;
-import spacegame.util.MathUtil;
 import spacegame.item.Inventory;
 import spacegame.item.Item;
 import spacegame.render.RenderBlocks;
 import spacegame.render.Shader;
 import spacegame.render.ShouldFaceRenderSorter;
+import spacegame.util.MathUtil;
+import spacegame.world.blockstate.*;
+import spacegame.world.blockstatewrapper.*;
 
 import java.awt.*;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class Chunk implements Comparable<Chunk> {
@@ -74,14 +78,15 @@ public final class Chunk implements Comparable<Chunk> {
     public IntBuffer tempElementBufferOpaque;
     public FloatBuffer tempVertexBufferTransparent;
     public IntBuffer tempElementBufferTransparent;
-    public ConcurrentHashMap<Integer, ChestLocation> chestLocations = new ConcurrentHashMap<>();
-    public ConcurrentHashMap<Long, ConcurrentHashMap<Integer, TimeUpdateEvent>>  updateEvents = new ConcurrentHashMap<>();
-    public ConcurrentHashMap<Integer, HeatableBlockLocation> heatableBlocks = new ConcurrentHashMap<>();
-    public ConcurrentHashMap<Integer, InWorld3DCraftingItem> crafting3DItems = new ConcurrentHashMap<>();
-    public ConcurrentHashMap<Integer, InWorldCraftingItem> craftingItems = new ConcurrentHashMap<>();
-    public ConcurrentHashMap<Integer, DoorTransition> doorTransitions = new ConcurrentHashMap<>();
-    public ConcurrentHashMap<Integer, CropState> cropStates = new ConcurrentHashMap<>();
-    public ConcurrentHashMap<Integer, TilledSoilState> tilledSoilStates = new ConcurrentHashMap<>();
+    public ConcurrentHashMap<Integer, ChestLocationSafe> chestLocations = new ConcurrentHashMap<>();
+    public ConcurrentHashMap<Long, ConcurrentHashMap<Integer, TimeUpdateEventSafe>>  updateEvents = new ConcurrentHashMap<>();
+    public ConcurrentHashMap<Integer, HeatableBlockLocationSafe> heatableBlocks = new ConcurrentHashMap<>();
+    public ConcurrentHashMap<Integer, InWorld3DCraftingItemSafe> crafting3DItems = new ConcurrentHashMap<>();
+    public ConcurrentHashMap<Integer, InWorldCraftingItemSafe> craftingItems = new ConcurrentHashMap<>();
+    public ConcurrentHashMap<Integer, DoorTransitionSafe> doorTransitions = new ConcurrentHashMap<>();
+    public ConcurrentHashMap<Integer, CropStateSafe> cropStates = new ConcurrentHashMap<>();
+    public ConcurrentHashMap<Integer, TilledSoilStateSafe> tilledSoilStates = new ConcurrentHashMap<>();
+    public ConcurrentHashMap<Integer, CampfireStateSafe> campfireStates = new ConcurrentHashMap<>();
     public boolean updateImmediately;
     public int opaqueVBOID = -10;
     public int opaqueVAOID = -10;
@@ -421,7 +426,7 @@ public final class Chunk implements Comparable<Chunk> {
     }
 
     private float[] getBlendedLightColor(int x, int y, int z) {
-        if (Block.list[this.blocks[getBlockIndexFromCoordinates(x, y, z)]].isLightBlock) {
+        if (Block.list[this.blocks[getBlockIndexFromCoordinates(x, y, z)]].isLightBlock(x,y,z, this.parentWorld)) {
             Color color = new Color(this.getLightBlockColor(x, y, z));
             return new float[]{color.getRed() / 255F, color.getGreen() / 255F, color.getBlue() / 255F};
         } else if (Block.list[this.blocks[getBlockIndexFromCoordinates(x, y, z)]].isSolid) {
@@ -771,7 +776,7 @@ public final class Chunk implements Comparable<Chunk> {
             y = this.getBlockYFromIndex(i);
             z = this.getBlockZFromIndex(i);
             this.notifyBlock(x, y, z);
-            if(Block.list[this.blocks[i]].isLightBlock){
+            if(Block.list[this.blocks[i]].isLightBlock(x,y,z, this.parentWorld)){
                 this.parentWorld.propagateLightSource(x,y,z, Block.list[this.blocks[i]].lightBlockValue);
             }
         }
@@ -1218,31 +1223,31 @@ public final class Chunk implements Comparable<Chunk> {
             }
 
 
-            InWorld3DCraftingItem craftingBlock;
-            for(Map.Entry<Integer, InWorld3DCraftingItem> entry : this.crafting3DItems.entrySet()){
+            InWorld3DCraftingItemSafe craftingBlock;
+            for(Map.Entry<Integer, InWorld3DCraftingItemSafe> entry : this.crafting3DItems.entrySet()){
                 craftingBlock = entry.getValue();
-                if(craftingBlock.removeObject){
-                    this.crafting3DItems.remove(craftingBlock.indexInChunk);
+                if(craftingBlock.value.removeObject){
+                    this.crafting3DItems.remove(craftingBlock.value.indexInChunk);
                 }
             }
 
-            InWorldCraftingItem craftingItem;
-            for(Map.Entry<Integer, InWorldCraftingItem> entry : this.craftingItems.entrySet()){
+            InWorldCraftingItemSafe craftingItem;
+            for(Map.Entry<Integer, InWorldCraftingItemSafe> entry : this.craftingItems.entrySet()){
                 craftingItem = entry.getValue();
-                if(craftingItem.remove){
-                    this.craftingItems.remove(craftingItem.indexInChunk);
+                if(craftingItem.value.remove){
+                    this.craftingItems.remove(craftingItem.value.indexInChunk);
                 }
             }
 
 
 
-            ChestLocation chestLocation;
-            for(Map.Entry<Integer, ChestLocation> entry : this.chestLocations.entrySet()){
+            ChestLocationSafe chestLocation;
+            for(Map.Entry<Integer, ChestLocationSafe> entry : this.chestLocations.entrySet()){
                 chestLocation = entry.getValue();
-                for(int j = 0; j < chestLocation.inventory.itemStacks.length; j++){
-                    if(chestLocation.inventory.itemStacks[j].item instanceof IDecayItem){
-                        if(this.parentWorld.ce.save.time >= chestLocation.inventory.itemStacks[j].decayTime){
-                            chestLocation.inventory.itemStacks[j].item = Item.rot;
+                for(int j = 0; j < chestLocation.value.inventory.itemStacks.length; j++){
+                    if(chestLocation.value.inventory.itemStacks[j].item instanceof IDecayItem){
+                        if(this.parentWorld.ce.save.time >= chestLocation.value.inventory.itemStacks[j].decayTime){
+                            chestLocation.value.inventory.itemStacks[j].item = Item.rot;
                         }
                     }
                 }
@@ -1250,27 +1255,27 @@ public final class Chunk implements Comparable<Chunk> {
 
         }
 
-        TimeUpdateEvent event;
-        ConcurrentHashMap<Integer, TimeUpdateEvent> outerMap = this.updateEvents.get(this.parentWorld.ce.save.time);
+        TimeUpdateEventSafe event;
+        ConcurrentHashMap<Integer, TimeUpdateEventSafe> outerMap = this.updateEvents.get(this.parentWorld.ce.save.time);
         if(outerMap != null) {
-            for (Map.Entry<Integer, TimeUpdateEvent> entry1 : outerMap.entrySet()) {
+            for (Map.Entry<Integer, TimeUpdateEventSafe> entry1 : outerMap.entrySet()) {
                 event = entry1.getValue();
-                int x = this.getBlockXFromIndex(event.index);
-                int y = this.getBlockYFromIndex(event.index);
-                int z = this.getBlockZFromIndex(event.index);
-                if (Block.list[this.blocks[event.index]] instanceof ITimeUpdate) {
-                    ((ITimeUpdate) Block.list[this.blocks[event.index]]).onTimeUpdate(x, y, z, this.parentWorld);
+                int x = this.getBlockXFromIndex(event.value.index);
+                int y = this.getBlockYFromIndex(event.value.index);
+                int z = this.getBlockZFromIndex(event.value.index);
+                if (Block.list[this.blocks[event.value.index]] instanceof ITimeUpdate) {
+                    ((ITimeUpdate) Block.list[this.blocks[event.value.index]]).onTimeUpdate(x, y, z, this.parentWorld);
                 }
             }
         }
 
 
         if(this.doorTransitions.size() > 0){
-            DoorTransition doorTransition;
-            for(Map.Entry<Integer, DoorTransition> entry : this.doorTransitions.entrySet()){
+            DoorTransitionSafe doorTransition;
+            for(Map.Entry<Integer, DoorTransitionSafe> entry : this.doorTransitions.entrySet()){
                 doorTransition = entry.getValue();
-                if(doorTransition.completeTime <= CosmicEvolution.instance.save.time){
-                    this.removeDoorTransition(doorTransition);
+                if(doorTransition.value.completeTime <= CosmicEvolution.instance.save.time){
+                    this.removeDoorTransition(doorTransition.value);
                 }
             }
             this.markDirty();
@@ -1278,10 +1283,10 @@ public final class Chunk implements Comparable<Chunk> {
 
 
         if(CosmicEvolution.instance.save.time % 15 == 0){
-            HeatableBlockLocation heatableBlockLocation;
-            for(Map.Entry<Integer, HeatableBlockLocation> entry : this.heatableBlocks.entrySet()){
+            HeatableBlockLocationSafe heatableBlockLocation;
+            for(Map.Entry<Integer, HeatableBlockLocationSafe> entry : this.heatableBlocks.entrySet()){
                 heatableBlockLocation = entry.getValue();
-                heatableBlockLocation.heatItem(this);
+                heatableBlockLocation.value.heatItem(this);
             }
         }
     }
@@ -1351,7 +1356,7 @@ public final class Chunk implements Comparable<Chunk> {
     }
 
     public void addCraftingItem(InWorldCraftingItem craftingItem){
-        this.craftingItems.put(craftingItem.indexInChunk, craftingItem);
+        this.craftingItems.put(craftingItem.indexInChunk, new InWorldCraftingItemSafe(craftingItem));
     }
 
     public void removeCraftingItem(int x, int y, int z){
@@ -1359,11 +1364,12 @@ public final class Chunk implements Comparable<Chunk> {
     }
 
     public InWorldCraftingItem getInWorldCraftingItem(int x, int y, int z){
-        return this.craftingItems.get(getBlockIndexFromCoordinates(x,y,z));
+        InWorldCraftingItemSafe inWorldCraftingItemSafe = this.craftingItems.get(getBlockIndexFromCoordinates(x,y,z));
+        return inWorldCraftingItemSafe == null ? null : inWorldCraftingItemSafe.value;
     }
 
     public void addHeatableBlock(HeatableBlockLocation heatableBlockLocation){
-        this.heatableBlocks.put(heatableBlockLocation.index, heatableBlockLocation);
+        this.heatableBlocks.put(heatableBlockLocation.index, new HeatableBlockLocationSafe(heatableBlockLocation));
     }
 
     public void addHeatableBlock(int x, int y, int z){
@@ -1371,15 +1377,17 @@ public final class Chunk implements Comparable<Chunk> {
     }
 
     public void addHeatableBlock(int index){
-        this.heatableBlocks.put(index, new HeatableBlockLocation(index));
+        this.heatableBlocks.put(index, new HeatableBlockLocationSafe(new HeatableBlockLocation(index)));
     }
 
     public HeatableBlockLocation getHeatableBlock(int x, int y, int z){
-        return this.getHeatableBlock(getBlockIndexFromCoordinates(x,y,z));
+        HeatableBlockLocationSafe heatableBlockLocationSafe = this.heatableBlocks.get(getBlockIndexFromCoordinates(x,y,z));
+        return heatableBlockLocationSafe == null ? null : heatableBlockLocationSafe.value;
     }
 
     public HeatableBlockLocation getHeatableBlock(int index){
-        return this.heatableBlocks.get(index);
+        HeatableBlockLocationSafe heatableBlockLocationSafe = this.heatableBlocks.get(index);
+        return heatableBlockLocationSafe == null ? null : heatableBlockLocationSafe.value;
     }
 
     public void removeHeatableBlock(int x, int y, int z){
@@ -1391,7 +1399,7 @@ public final class Chunk implements Comparable<Chunk> {
     }
 
     public void addInWorldCrafting3DItem(InWorld3DCraftingItem craftingBlock){
-       this.crafting3DItems.put(craftingBlock.indexInChunk, craftingBlock);
+       this.crafting3DItems.put(craftingBlock.indexInChunk, new InWorld3DCraftingItemSafe(craftingBlock));
     }
 
     public void removeInWorldCrafting3DItem(int index){
@@ -1399,28 +1407,32 @@ public final class Chunk implements Comparable<Chunk> {
     }
 
     public InWorld3DCraftingItem getInWorldCrafting3DItem(int index){
-        return this.crafting3DItems.get(index);
+        InWorld3DCraftingItemSafe inWorld3DCraftingItemSafe = this.crafting3DItems.get(index);
+        return inWorld3DCraftingItemSafe == null ? null : inWorld3DCraftingItemSafe.value;
     }
 
     public void addChestLocation(int x, int y, int z, Inventory inventory){
-        this.chestLocations.put(getBlockIndexFromCoordinates(x,y,z), new ChestLocation(getBlockIndexFromCoordinates(x,y,z), inventory));
+        this.chestLocations.put(getBlockIndexFromCoordinates(x,y,z), new ChestLocationSafe(new ChestLocation(getBlockIndexFromCoordinates(x,y,z), inventory)));
     }
 
     public void addChestLocation(int index, Inventory inventory){
-        this.chestLocations.put(index, new ChestLocation(index, inventory));
+        this.chestLocations.put(index, new ChestLocationSafe(new ChestLocation(index, inventory)));
     }
 
     public ChestLocation getChestLocation(int x, int y, int z){
-        return this.getChestLocation(getBlockIndexFromCoordinates(x,y,z));
+        ChestLocationSafe chestLocationSafe = this.chestLocations.get(getBlockIndexFromCoordinates(x,y,z));
+        return chestLocationSafe == null ? null : chestLocationSafe.value;
     }
 
     public ChestLocation getChestLocation(int index){
-        return this.chestLocations.get(index);
+        ChestLocationSafe chestLocationSafe = this.chestLocations.get(index);
+        return chestLocationSafe == null ? null : chestLocationSafe.value;
     }
 
     public void removeChestLocation(int index){
-        ChestLocation chestLocation = this.chestLocations.get(index);
-        this.clearInventoryFromChest(chestLocation.inventory, index);
+        ChestLocationSafe chestLocationSafe = this.chestLocations.get(index);
+        if(chestLocationSafe == null)return;
+        this.clearInventoryFromChest(chestLocationSafe.value.inventory, index);
         this.chestLocations.remove(index);
     }
 
@@ -1429,14 +1441,15 @@ public final class Chunk implements Comparable<Chunk> {
     }
 
     public TimeUpdateEvent getTimeUpdateEvent(int x, int y, int z){
-        ConcurrentHashMap<Integer, TimeUpdateEvent> updateTimes;
-        TimeUpdateEvent returnVal;
-        for(Map.Entry<Long, ConcurrentHashMap<Integer,  TimeUpdateEvent>> entry : updateEvents.entrySet()){
+        ConcurrentHashMap<Integer, TimeUpdateEventSafe> updateTimes;
+        TimeUpdateEventSafe returnVal;
+        for(Map.Entry<Long, ConcurrentHashMap<Integer,  TimeUpdateEventSafe>> entry : updateEvents.entrySet()){
             updateTimes = entry.getValue();
-            for(Map.Entry<Integer, TimeUpdateEvent> entry1 : updateTimes.entrySet()){
+            for(Map.Entry<Integer, TimeUpdateEventSafe> entry1 : updateTimes.entrySet()){
                 returnVal = entry1.getValue();
-                if(returnVal.index == getBlockIndexFromCoordinates(x,y,z)){
-                    return returnVal;
+                if(returnVal == null)continue;
+                if(returnVal.value.index == getBlockIndexFromCoordinates(x,y,z)){
+                    return returnVal.value;
                 }
             }
         }
@@ -1444,18 +1457,18 @@ public final class Chunk implements Comparable<Chunk> {
     }
 
     public void addTimeUpdateEvent(int index, long updateTime){
-        ConcurrentHashMap<Integer, TimeUpdateEvent> updateTimes = this.updateEvents.get(updateTime);
+        ConcurrentHashMap<Integer, TimeUpdateEventSafe> updateTimes = this.updateEvents.get(updateTime);
         if(updateTimes == null){
             updateTimes = new ConcurrentHashMap<>();
             this.updateEvents.put(updateTime, updateTimes);
         }
 
-        updateTimes.put(index, new TimeUpdateEvent(index, updateTime));
+        updateTimes.put(index, new TimeUpdateEventSafe(new TimeUpdateEvent(index, updateTime)));
     }
 
     public void removeTimeUpdateEvent(int x, int y, int z){
-        ConcurrentHashMap<Integer, TimeUpdateEvent> updateTimes;
-        for(Map.Entry<Long, ConcurrentHashMap<Integer,  TimeUpdateEvent>> entry : updateEvents.entrySet()){
+        ConcurrentHashMap<Integer, TimeUpdateEventSafe> updateTimes;
+        for(Map.Entry<Long, ConcurrentHashMap<Integer,  TimeUpdateEventSafe>> entry : updateEvents.entrySet()){
             updateTimes = entry.getValue();
             updateTimes.remove(getBlockIndexFromCoordinates(x,y,z));
             break;
@@ -1463,10 +1476,13 @@ public final class Chunk implements Comparable<Chunk> {
     }
 
     public void updateTimeEvent(int x, int y, int z, long updateTime){
-        ConcurrentHashMap<Integer, TimeUpdateEvent> updateTimes;
-        for(Map.Entry<Long, ConcurrentHashMap<Integer,  TimeUpdateEvent>> entry : updateEvents.entrySet()){
+        ConcurrentHashMap<Integer, TimeUpdateEventSafe> updateTimes;
+        for(Map.Entry<Long, ConcurrentHashMap<Integer,  TimeUpdateEventSafe>> entry : updateEvents.entrySet()){
             updateTimes = entry.getValue();
-            updateTimes.get(getBlockIndexFromCoordinates(x,y,z)).updateTime = updateTime;
+            if(updateTimes == null)continue;
+            TimeUpdateEventSafe timeUpdateEventSafe = updateTimes.get(getBlockIndexFromCoordinates(x,y,z));
+            if(timeUpdateEventSafe == null)continue;
+            timeUpdateEventSafe.value.updateTime = updateTime;
             break;
         }
     }
@@ -1491,7 +1507,7 @@ public final class Chunk implements Comparable<Chunk> {
     }
 
     public void addDoorTransition(DoorTransition doorTransition){
-        this.doorTransitions.put(getBlockIndexFromCoordinates(doorTransition.x, doorTransition.y, doorTransition.z), doorTransition);
+        this.doorTransitions.put(getBlockIndexFromCoordinates(doorTransition.x, doorTransition.y, doorTransition.z), new DoorTransitionSafe(doorTransition));
     }
 
     public void removeDoorTransition(DoorTransition doorTransition){
@@ -1499,15 +1515,16 @@ public final class Chunk implements Comparable<Chunk> {
     }
 
     public DoorTransition getDoorTransition(int x, int y, int z){
-        return this.doorTransitions.get(getBlockIndexFromCoordinates(x,y,z));
+        DoorTransitionSafe doorTransitionSafe = this.doorTransitions.get(getBlockIndexFromCoordinates(x,y,z));
+        return doorTransitionSafe == null ? null : doorTransitionSafe.value;
     }
 
     public void addCropState(CropState cropState, int x, int y, int z){
-        this.cropStates.put(getBlockIndexFromCoordinates(x,y,z), cropState);
+        this.cropStates.put(getBlockIndexFromCoordinates(x,y,z), new CropStateSafe(cropState));
     }
 
     public void addCropState(CropState cropState, int index){
-        this.cropStates.put(index, cropState);
+        this.cropStates.put(index, new CropStateSafe(cropState));
     }
 
     public void removeCropState(int x, int y, int z){
@@ -1515,19 +1532,21 @@ public final class Chunk implements Comparable<Chunk> {
     }
 
     public CropState getCropState(int x, int y, int z){
-        return this.cropStates.get(getBlockIndexFromCoordinates(x,y,z));
+        CropStateSafe cropStateSafe = this.cropStates.get(getBlockIndexFromCoordinates(x,y,z));
+        return cropStateSafe == null ? null : cropStateSafe.value;
     }
 
     public CropState getCropState(int index){
-        return this.cropStates.get(index);
+        CropStateSafe cropStateSafe = this.cropStates.get(index);
+        return cropStateSafe == null ? null : cropStateSafe.value;
     }
 
     public void addTilledSoilState(TilledSoilState tilledSoilState, int x, int y, int z){
-        this.tilledSoilStates.put(getBlockIndexFromCoordinates(x,y,z), tilledSoilState);
+        this.tilledSoilStates.put(getBlockIndexFromCoordinates(x,y,z), new TilledSoilStateSafe(tilledSoilState));
     }
 
     public void addTilledSoilState(TilledSoilState tilledSoilState, int index){
-        this.tilledSoilStates.put(index, tilledSoilState);
+        this.tilledSoilStates.put(index, new TilledSoilStateSafe(tilledSoilState));
     }
 
     public void removeTilledSoilState(int x, int y, int z){
@@ -1535,17 +1554,41 @@ public final class Chunk implements Comparable<Chunk> {
     }
 
     public TilledSoilState getTilledSoilState(int x, int y, int z){
-        return this.tilledSoilStates.get(getBlockIndexFromCoordinates(x,y,z));
+        TilledSoilStateSafe tilledSoilStateSafe = this.tilledSoilStates.get(getBlockIndexFromCoordinates(x,y,z));
+        return tilledSoilStateSafe == null ? null : tilledSoilStateSafe.value;
     }
 
     public TilledSoilState getTilledSoilState(int index){
-        return this.tilledSoilStates.get(index);
+        TilledSoilStateSafe tilledSoilStateSafe = this.tilledSoilStates.get(index);
+        return tilledSoilStateSafe == null ? null : tilledSoilStateSafe.value;
     }
 
-
-    public long getChunkSeed(){
-        return (long) this.x * this.y + this.z;
+    public void addCampfireState(CampfireState campfireState, int x, int y, int z){
+        this.campfireStates.put(getBlockIndexFromCoordinates(x,y,z), new CampfireStateSafe(campfireState));
     }
+
+    public void addCampfireState(CampfireState campfireState, int index){
+        this.campfireStates.put(index, new CampfireStateSafe(campfireState));
+    }
+
+    public CampfireState getCampfireState(int index){
+        CampfireStateSafe campfireStateSafe = this.campfireStates.get(index);
+        return campfireStateSafe == null ? null : campfireStateSafe.value;
+    }
+
+    public CampfireState getCampfireState(int x, int y, int z){
+        CampfireStateSafe campfireStateSafe = this.campfireStates.get(getBlockIndexFromCoordinates(x,y,z));
+        return campfireStateSafe == null ? null : campfireStateSafe.value;
+    }
+
+    public void removeCampfireState(int index){
+        this.campfireStates.remove(index);
+    }
+
+    public void removeCampfireState(int x, int y, int z){
+        this.campfireStates.remove(getBlockIndexFromCoordinates(x,y,z));
+    }
+
 }
 
 
