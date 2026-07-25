@@ -36,6 +36,8 @@ public abstract class Entity {
     public double targetX;
     public double targetY;
     public double targetZ;
+    public boolean collided;
+    public boolean prevCollided;
     public boolean shouldMove;
     public int moveTimer = 10;
     public int timeFalling;
@@ -84,7 +86,6 @@ public abstract class Entity {
         }
 
         this.setMovementVector(movementVector);
-
     }
 
     public static boolean isValidEntity(String entityName){
@@ -230,7 +231,7 @@ public abstract class Entity {
 
         for(int i = 0; i < surroundingBlocks.size(); i++) {
             block = surroundingBlocks.get(i);
-            this.deltaY = block.clipYCollide(this.boundingBox, this.deltaY);
+            this.deltaY = block.clipYCollide(this.boundingBox, this.deltaY, this);
             if(block.maxY == this.boundingBox.minY) {
                 this.isOnGround = true;
                 this.timeFalling = 0;

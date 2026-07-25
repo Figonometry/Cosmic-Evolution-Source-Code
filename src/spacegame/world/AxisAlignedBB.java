@@ -74,6 +74,7 @@ public final class AxisAlignedBB {
                             entity.y += (this.maxY - this.minY);
                         }
                     }
+                    entity.collided = true;
                 }
 
                 if (deltaX < 0.0 && entityBoundingBox.minX >= this.maxX) {
@@ -84,6 +85,7 @@ public final class AxisAlignedBB {
                             entity.y += (this.maxY - this.minY);
                         }
                     }
+                    entity.collided = true;
                 }
 
             }
@@ -91,7 +93,7 @@ public final class AxisAlignedBB {
         return deltaX;
     }
 
-    public double clipYCollide(AxisAlignedBB entityBoundingBox, double deltaY) {
+    public double clipYCollide(AxisAlignedBB entityBoundingBox, double deltaY, Entity entity) {
         if (entityBoundingBox.maxX > this.minX && entityBoundingBox.minX < this.maxX) {
             if (entityBoundingBox.maxZ > this.minZ && entityBoundingBox.minZ < this.maxZ) {
                 double max;
@@ -100,6 +102,7 @@ public final class AxisAlignedBB {
                     if (max < deltaY) {
                         deltaY = max;
                     }
+                    entity.collided = true;
                 }
 
                 if (deltaY < 0.0 && entityBoundingBox.minY >= this.maxY) {
@@ -107,6 +110,7 @@ public final class AxisAlignedBB {
                     if (max > deltaY) {
                         deltaY = max;
                     }
+                    entity.collided = true;
                 }
 
             }
@@ -126,6 +130,7 @@ public final class AxisAlignedBB {
                             entity.y += (this.maxY - this.minY);
                         }
                     }
+                    entity.collided = true;
                 }
 
                 if (deltaZ < 0.0 && entityBoundingBox.minZ >= this.maxZ) {
@@ -136,6 +141,7 @@ public final class AxisAlignedBB {
                             entity.y += (this.maxY - this.minY);
                         }
                     }
+                    entity.collided = true;
                 }
 
             }

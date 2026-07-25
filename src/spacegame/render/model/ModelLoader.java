@@ -1,5 +1,8 @@
 package spacegame.render.model;
 
+import org.joml.Matrix3f;
+import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import spacegame.render.RenderBlocks;
 import spacegame.render.RenderEngine;
@@ -434,6 +437,28 @@ public class ModelLoader{
                 }
             }
         }
+        return this;
+    }
+
+    public ModelLoader pitchModel(float deg){
+        float rad = (float) Math.toRadians(deg);
+
+        Matrix4f rot = new Matrix4f();
+        rot.rotateLocalX(-rad);
+        Quaternionf quaternionf = rot.getUnnormalizedRotation(new Quaternionf());
+
+        for(int i = 0; i < this.modelFaces.length; i++){
+            if(this.modelFaces[i] != null){
+
+                for(int j = 0; j < this.modelFaces[i].vertices.length; j++){
+
+                    this.modelFaces[i].vertices[j].rotate(quaternionf);
+
+                }
+
+            }
+        }
+
         return this;
     }
 

@@ -8,9 +8,11 @@ import spacegame.block.BlockWater;
 import spacegame.core.*;
 import spacegame.entity.*;
 import spacegame.entity.ai.AIPassive;
+import spacegame.entity.animations.PlayerAnimationThrustingSpearHold;
 import spacegame.gui.GuiInGame;
 import spacegame.item.Inventory;
 import spacegame.item.Item;
+import spacegame.item.ItemSpear;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.render.RenderEngine;
@@ -1953,7 +1955,9 @@ public abstract class World {
         return entities;
     }
 
-    private boolean hasHitEntity(double x, double y, double z, boolean isLeftClick){
+    public boolean hasHitEntity(double x, double y, double z, boolean isLeftClick, EntityProjectile projectile){
+        short playerHeldItem = this.ce.save.thePlayer.getHeldItem();
+
         int chunkX = MathUtil.floorDouble(x) >> 5;
         int chunkY = MathUtil.floorDouble(y) >> 5;
         int chunkZ = MathUtil.floorDouble(z) >> 5;
@@ -1963,13 +1967,12 @@ public abstract class World {
         ArrayList<Entity> entities = this.getEntitiesInChunks(this.getSurroundingChunksAndCurrentChunk(chunkX, chunkY, chunkZ));
 
         for(int i = 0; i < entities.size(); i++){
-            if(entities.get(i) instanceof EntityItem || entities.get(i) instanceof EntityBlock)continue;
+            if(entities.get(i) instanceof EntityItem || entities.get(i) instanceof EntityBlock || entities.get(i) instanceof  EntityProjectile)continue;
 
             if(entities.get(i) instanceof EntityLiving){
                 if(((EntityLiving) entities.get(i)).isDead && isLeftClick){
                    continue;
                 } else if(((EntityLiving) entities.get(i)).isDead && entities.get(i) instanceof IHarvestable && !entities.get(i).despawn){
-                    short playerHeldItem = this.ce.save.thePlayer.getHeldItem();
                     if(playerHeldItem != Item.NULL_ITEM_REFERENCE){
                         if(Item.list[playerHeldItem].toolType.equals("knife") && this.ce.save.thePlayer.isShifting){
                             ((IHarvestable) entities.get(i)).dropItems(entities.get(i).x, entities.get(i).y, entities.get(i).z, this, this.ce.save.thePlayer);
@@ -1977,9 +1980,10 @@ public abstract class World {
                     }
                 }
             }
-            if(entities.get(i).boundingBox.pointInsideBoundingBox(x,y,z)) { //This determines if you hit an entity
-                entities.get(i).damage(movementVector, this.ce.save.thePlayer.getAttackDamageValue());
-                entities.get(i).setLastEntityToHit(this.ce.save.thePlayer);
+            if(entities.get(i).boundingBox.pointInsideBoundingBox(x,y,z) && isLeftClick) { //This determines if you hit an entity
+                entities.get(i).damage(movementVector, projectile == null ? this.ce.save.thePlayer.getAttackDamageValue() : projectile.getAttackDamageValue());
+                entities.get(i).setLastEntityToHit(projectile == null ? this.ce.save.thePlayer : projectile);
+                this.ce.soundPlayer.playSound(x,y,z, this.ce.save.thePlayer.getHeldItemEntityHitSounds(), 1f);
                 return true;
             }
         }
@@ -2003,12 +2007,13 @@ public abstract class World {
 
     public void handleClick(boolean isLeftClick) {
 
-        if (this.paused || !(this.ce.currentGui instanceof GuiInGame) || this.delayWhenExitingUI > 0) {
+        if (this.paused || !(this.ce.currentGui instanceof GuiInGame) || this.delayWhenExitingUI > 0 || this.ce.save.thePlayer.playerAnimation instanceof PlayerAnimationThrustingSpearHold) {
             return;
         }
 
+        short playerHeldItem = this.ce.save.thePlayer.getHeldItem();
         // 1. Compute ray direction
-        double[] ray = CosmicEvolution.camera.rayCast(3);
+        double[] ray = CosmicEvolution.camera.rayCast(playerHeldItem == Item.NULL_ITEM_REFERENCE ? 3 : Item.list[playerHeldItem].hitDistance);
         Vector3d dir = new Vector3d(
                 (float)(ray[0] - ce.save.thePlayer.x),
                 (float)(ray[1] - (ce.save.thePlayer.y + ce.save.thePlayer.height / 2)
@@ -2034,8 +2039,12 @@ public abstract class World {
             double cz = pz + dir.z * step * i;
 
             // ENTITY HIT CHECK
-            if (hasHitEntity(cx, cy, cz, isLeftClick)) {
+            if (hasHitEntity(cx, cy, cz, isLeftClick, null)) {
                 return;
+            }
+
+            if(playerHeldItem != Item.NULL_ITEM_REFERENCE){
+                if(Item.list[playerHeldItem] instanceof ItemSpear)continue; //When using a spear only allow enemy hitting to occur
             }
 
             // BLOCK COORDS
@@ -2078,8 +2087,6 @@ public abstract class World {
                 }
                 MouseListener.lastTimeClicked = now;
 
-                short playerHeldItem = this.ce.save.thePlayer.getHeldItem();
-
                 if(playerHeldItem == Item.NULL_ITEM_REFERENCE)return;
 
                 if(craftingItem.canItemBePlaced(playerHeldItem)){
@@ -2115,7 +2122,6 @@ public abstract class World {
         }
 
         if(!isLeftClick) {
-            short playerHeldItem = CosmicEvolution.instance.save.thePlayer.getHeldItem();
 
             if (playerHeldItem != Item.NULL_ITEM_REFERENCE) {
                 Item.list[playerHeldItem].onRightClick(MathUtil.floorDouble(px), MathUtil.floorDouble(py), MathUtil.floorDouble(pz), this, CosmicEvolution.instance.save.thePlayer);
@@ -2466,8 +2472,9 @@ public abstract class World {
             entity = chunkEntityIsIn.entities.get(i);
             if(entity instanceof EntityDeer){
                 deer = (EntityDeer)entity;
-                if(this.isDeerInRangeToAlert(deer.x, deer.y, deer.z, originatingEntity.x, originatingEntity.y, originatingEntity.z)){
+                if(this.isDeerInRangeToAlert(deer.x, deer.y, deer.z, originatingEntity.x, originatingEntity.y, originatingEntity.z) && !originatingEntity.equals(deer)){
                     deer.alerted = true;
+                    deer.alertTimer = new Random().nextInt(300, 600);
                     AIPassive.targetAwayFromEntity(deer, originatingEntity);
                 }
             }
@@ -2479,8 +2486,9 @@ public abstract class World {
                 entity = surroundingChunks[i].entities.get(j);
                 if(entity instanceof EntityDeer){
                     deer = (EntityDeer)entity;
-                    if(this.isDeerInRangeToAlert(deer.x, deer.y, deer.z, originatingEntity.x, originatingEntity.y, originatingEntity.z)){
+                    if(this.isDeerInRangeToAlert(deer.x, deer.y, deer.z, originatingEntity.x, originatingEntity.y, originatingEntity.z)  && !originatingEntity.equals(deer)){
                         deer.alerted = true;
+                        deer.alertTimer = new Random().nextInt(300, 600);
                         AIPassive.targetAwayFromEntity(deer, originatingEntity);
                     }
                 }

@@ -93,7 +93,7 @@ public final class EntityItem extends EntityNonLiving {
 
     @Override
     public void render() {
-        new RenderEntityItem(this.x, this.y, this.z, null, false, false, this.item, this.itemMetadata, this.height, this.width, this.yaw).renderEntity();
+        new RenderEntityItem(this.x, this.y, this.z, null, false, false, this.item, this.itemMetadata, this.height, this.width, this.yaw, 0).renderEntity();
         if(Block.list[CosmicEvolution.instance.save.activeWorld.getBlockID(MathUtil.floorDouble(this.x), MathUtil.floorDouble(this.y - 0.1), MathUtil.floorDouble(this.z))].isSolid) {
             this.renderShadow();
         }
@@ -101,7 +101,7 @@ public final class EntityItem extends EntityNonLiving {
 
     @Override
     public void renderForShadowMap(int sunX, int sunY, int sunZ){
-        new RenderEntityItem(this.x, this.y, this.z, null, false, false, this.item, this.itemMetadata, this.height, this.width, this.yaw).renderItemForShadowMap(sunX,sunY,sunZ);
+        new RenderEntityItem(this.x, this.y, this.z, null, false, false, this.item, this.itemMetadata, this.height, this.width, this.yaw, 0).renderItemForShadowMap(sunX,sunY,sunZ);
     }
 
     @Override
@@ -115,6 +115,10 @@ public final class EntityItem extends EntityNonLiving {
         nbtTagCompound.setShort("itemType", this.item);
         nbtTagCompound.setByte("count", this.count);
         nbtTagCompound.setShort("durability", this.itemDurability);
+        NBTTagCompound itemStateTag = this.itemState.getCompoundTag();
+
+
+        nbtTagCompound.setTag("ItemState", itemStateTag);
     }
 
 }

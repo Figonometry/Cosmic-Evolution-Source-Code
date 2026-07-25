@@ -90,10 +90,22 @@ public final class ModelPlayer extends Model {
             }
         }
 
+
+        if(thePlayer.sitting){
+            angleLeftLeg = 70;
+            angleRightLeg = 70;
+        }
+
         this.rotateSegment(LEFT_ARM, 0, 0, 1, angleLeftArm, true);
         this.rotateSegment(RIGHT_ARM, 0, 0, 1, angleRightArm, true);
         this.rotateSegment(LEFT_LEG, 0, 0, 1, angleLeftLeg, true);
         this.rotateSegment(RIGHT_LEG, 0, 0 , 1, angleRightLeg, true);
+
+
+        if(thePlayer.sitting){
+            this.rotateSegment(LEFT_LEG, 0, 1, 0, 10, true);
+            this.rotateSegment(RIGHT_LEG, 0, 1 , 0, -10, true);
+        }
     }
 
     private void animatePunching(EntityPlayer player){

@@ -113,7 +113,7 @@ public final class CosmicEvolution implements Runnable {
         threadPool = new ThreadPoolExecutor(workerCount, workerCount, 0L, TimeUnit.MILLISECONDS, new PriorityBlockingQueue<>());
         this.dirtyChunksSchedulerThread = new Thread(new ChunkJobThreadScheduler());
         this.dirtyChunksSchedulerThread.start();
-        this.title = "Cosmic Evolution Alpha v0.50";
+        this.title = "Cosmic Evolution Alpha v0.51";
         GameSettings.loadOptionsFromFile(this.launcherDirectory);
         this.clearLogFiles(new File(this.launcherDirectory + "/crashReports"));
         this.initLWJGL();
@@ -416,17 +416,22 @@ public final class CosmicEvolution implements Runnable {
 
 
 
-                if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_G) && KeyListener.keyReleased[GLFW.GLFW_KEY_G]){
-                 //    if(this.modelTest == null){
-                 //        this.modelTest = new EntityDeer(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, true, true);
-                 //        this.modelTest.health = 1f;
-                 //        this.save.activeWorld.addEntity(this.modelTest);
-                 //    } else {
-                 //        this.save.activeWorld.findChunkFromChunkCoordinates(MathUtil.floorDouble(this.modelTest.x) >> 5, MathUtil.floorDouble(this.modelTest.y) >> 5, MathUtil.floorDouble(this.modelTest.z) >> 5).removeEntity(this.modelTest);
-                 //        this.modelTest = null;
-                 //    }
+                if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_U) && KeyListener.keyReleased[GLFW.GLFW_KEY_U]){
+
+                  //  for(int i = 0; i < 10; i++){
+                  //      this.save.activeWorld.addEntity(new EntityDeer(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, true, true));
+                  //  }
+
+                  //  if(this.modelTest == null){
+                  //      this.modelTest = new EntityDeer(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, true, true);
+                  //      this.modelTest.health = 1f;
+                  //      this.save.activeWorld.addEntity(this.modelTest);
+                  //  } else {
+                  //      this.save.activeWorld.findChunkFromChunkCoordinates(MathUtil.floorDouble(this.modelTest.x) >> 5, MathUtil.floorDouble(this.modelTest.y) >> 5, MathUtil.floorDouble(this.modelTest.z) >> 5).removeEntity(this.modelTest);
+                  //      this.modelTest = null;
+                  //  }
                   //  Shader.terrainShader = this.renderEngine.reloadShader(Shader.terrainShader);
-                    KeyListener.setKeyReleased(GLFW.GLFW_KEY_G);
+                    KeyListener.setKeyReleased(GLFW.GLFW_KEY_U);
                 }
             }
 

@@ -36,6 +36,10 @@ public final class Sound {
     public static String itemThrow = "src/spacegame/assets/sound/itemThrow.ogg";
     public static String twineBind = "src/spacegame/assets/sound/twineBind.ogg";
     public static String itemClunk = "src/spacegame/assets/sound/itemClunk.ogg";
+    public static String spearImpact = "src/spacegame/assets/sound/spearImpact.ogg";
+    public static String stabEntity = "src/spacegame/assets/sound/stabEntity.ogg";
+    public static String whoosh = "src/spacegame/assets/sound/whoosh.ogg";
+    public static String projectilePing = "src/spacegame/assets/sound/projectilePing.ogg";
     public static boolean canPlaySound = true;
     public String filepath;
     public int bufferID;

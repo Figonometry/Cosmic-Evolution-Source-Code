@@ -253,7 +253,7 @@ public final class EntityWolf extends EntityLiving implements IDecayable, IHarve
 
     private void setMovementAmount(){
         if(this.shouldMove && !this.isDead) {
-            this.rawDeltaX -= 0.1f;
+            this.rawDeltaX = -0.1f;
         } else {
             this.rawDeltaX = 0.0f;
         }

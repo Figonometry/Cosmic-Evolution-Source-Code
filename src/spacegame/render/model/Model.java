@@ -92,7 +92,9 @@ public abstract class Model {
         int xInt = MathUtil.floorDouble(x);
         int yInt = MathUtil.floorDouble(y);
         int zInt = MathUtil.floorDouble(z);
-        float[] lightColor =  !associatedEntity.canDamage ? new float[]{1,0.65f,0.65f}  : CosmicEvolution.instance.save.activeWorld.getBlockLightColor(xInt, yInt, zInt);
+
+        float[] lightColor = CosmicEvolution.instance.save.activeWorld.getBlockLightColor(xInt, yInt, zInt);
+
 
         byte lightVal = CosmicEvolution.instance.save.activeWorld.getBlockLightValue(xInt, yInt, zInt);
 

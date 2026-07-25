@@ -196,7 +196,7 @@ vec4 setFog(vec4 color){
         }
     }
 
-    if (distanceFromPlayer > fogStart){
+    if (distanceFromPlayer > fogStart){//This never executes
         fogDepth += ((distanceFromPlayer - fogStart) / fogEnd);
     }
 
@@ -209,7 +209,6 @@ vec4 setFog(vec4 color){
 
     return color;
 }
-
 
 vec4 setFogUnderwater(vec4 color){
     float fogDepth = (gl_FragCoord.z / (50 * gl_FragCoord.w));

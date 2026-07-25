@@ -11,6 +11,9 @@ import spacegame.block.BlockDoor;
 import spacegame.block.BlockWater;
 import spacegame.core.*;
 import spacegame.entity.animations.PlayerAnimation;
+import spacegame.entity.animations.PlayerAnimationSittingDown;
+import spacegame.entity.animations.PlayerAnimationStandingUp;
+import spacegame.entity.animations.PlayerAnimationThrustingSpear;
 import spacegame.gui.*;
 import spacegame.item.*;
 import spacegame.item.itemstate.ItemState;
@@ -87,6 +90,10 @@ public final class EntityPlayer extends EntityLiving {
     public int outOfWaterJumpDelay = 0;
     public long timeStartedBreakingBlock = Long.MIN_VALUE;
     public PlayerAnimation playerAnimation;
+    public boolean sitting;
+    public double sitMovement;
+    public int drawbackTimer;
+    public boolean drawingBack;
 
     public EntityPlayer(CosmicEvolution cosmicEvolution, double x, double y, double z) {
         super(Integer.MAX_VALUE);
@@ -251,10 +258,7 @@ public final class EntityPlayer extends EntityLiving {
     }
 
     public short getHeldItem(){
-        if(this.inventory.itemStacks[selectedInventorySlot].item != null) {
-            return this.inventory.itemStacks[selectedInventorySlot].item.ID;
-        }
-        return Item.NULL_ITEM_REFERENCE;
+        return this.inventory.itemStacks[selectedInventorySlot].item != null ? this.inventory.itemStacks[selectedInventorySlot].item.ID : Item.NULL_ITEM_REFERENCE;
     }
 
     public ItemState getHeldItemState(){
@@ -389,6 +393,15 @@ public final class EntityPlayer extends EntityLiving {
     }
 
 
+    public Vector3f getNormalizedVectorFromEye(){
+        double[] vector = CosmicEvolution.camera.rayCast(10);
+        Vector3d difVector = new Vector3d(vector[0] - this.x, (vector[1] - this.y) + this.height / 2, vector[2] - this.z);
+        difVector.normalize();
+
+        return new Vector3f((float) difVector.x, (float) difVector.y, (float) difVector.z);
+    }
+
+
     public short getHeldBlock() {
         if(this.inventory.itemStacks[selectedInventorySlot].item != null){
             if(this.inventory.itemStacks[selectedInventorySlot].item.ID == Item.block.ID) {
@@ -421,7 +434,7 @@ public final class EntityPlayer extends EntityLiving {
                 this.ce.soundPlayer.playSound(this.x, this.y, this.z, new Sound(Sound.itemThrow, false, 1f), CosmicEvolution.globalRand.nextFloat(0.75f, 1f));
             }
         } else if(itemID != Item.NULL_ITEM_REFERENCE) {
-            EntityItem droppedItem = new EntityItem(this.x, this.y, this.z, itemID, Item.NULL_ITEM_METADATA, (byte) 1, this.getHeldItemDurability(), this.getHeldItemDecayTime(), null);
+            EntityItem droppedItem = new EntityItem(this.x, this.y, this.z, itemID, Item.NULL_ITEM_METADATA, (byte) 1, this.getHeldItemDurability(), this.getHeldItemDecayTime(), this.getHeldItemState());
             this.removeItemFromInventory();
             double[] vector = CosmicEvolution.camera.rayCast(1);
             Vector3d difVector = new Vector3d(vector[0] - this.x, (vector[1] - this.y) + this.height/2, vector[2] - this.z);
@@ -438,6 +451,49 @@ public final class EntityPlayer extends EntityLiving {
         if (this.ce.save.activeWorld.chunkController.findChunkFromChunkCoordinates(MathUtil.floorDouble(this.x) >> 5, MathUtil.floorDouble(this.y) >> 5, MathUtil.floorDouble(this.z) >> 5) != null && !this.ce.save.activeWorld.paused) {
             if(this.ce.currentGui instanceof GuiInGame) {
                 this.updateYawAndPitch();
+
+                if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_G) && KeyListener.keyReleased[GLFW.GLFW_KEY_G] && this.playerAnimation == null){
+
+                    if(!this.sitting){
+                        this.playerAnimation = new PlayerAnimationSittingDown(false, false, false, 15);
+                    } else {
+                        this.playerAnimation = new PlayerAnimationStandingUp(false, false, false, 15);
+                    }
+
+                    KeyListener.setKeyReleased(GLFW.GLFW_KEY_G);
+                }
+
+                if(this.playerAnimation instanceof PlayerAnimationSittingDown){
+                    this.sitMovement = -0.895;
+
+                    this.sitMovement *= 1 - ((double) this.playerAnimation.timer / 15);
+                }
+
+                if(this.playerAnimation instanceof PlayerAnimationStandingUp){
+                    this.sitMovement = 0.895;
+
+                    this.sitMovement *= 1 - ((double) this.playerAnimation.timer / 15);
+                }
+
+
+                if(this.playerAnimation instanceof PlayerAnimationThrustingSpear){
+                    if(this.playerAnimation.timer == 15){
+                        CosmicEvolution.instance.soundPlayer.playSound(this.x, this.y, this.z, new Sound(Sound.whoosh, false, 1f), 1f);
+                    }
+                }
+
+
+                if(this.drawingBack && !MouseListener.mouseButtonDown(GLFW.GLFW_MOUSE_BUTTON_RIGHT)){
+                    if(this.getHeldItem() != Item.NULL_ITEM_REFERENCE) {
+                        Item.list[this.getHeldItem()].onDrawBackRelease(this, this.ce.save.activeWorld);
+                    }
+                    this.drawingBack = false;
+                    this.drawbackTimer = 0;
+                }
+
+                if(this.drawingBack){
+                    this.drawbackTimer++;
+                }
             }
             this.checkInventoryForDecayingItems();
             this.setMovementAmountAndKeyControls();
@@ -517,8 +573,15 @@ public final class EntityPlayer extends EntityLiving {
 
 
                 if(this.playerAnimation.timer <= 0){
-                    this.playerAnimation.onAnimationComplete(this);
-                    this.playerAnimation = null;
+                    if(!this.playerAnimation.onAnimationComplete(this)){
+                        this.playerAnimation = null;
+                    }
+                }
+
+                if(this.playerAnimation instanceof PlayerAnimationThrustingSpear){
+                    if(this.playerAnimation.timer == 15){
+                        this.ce.save.activeWorld.handleClick(true);
+                    }
                 }
             }
 
@@ -638,6 +701,15 @@ public final class EntityPlayer extends EntityLiving {
         }
 
 
+
+        if((rawDeltaX != 0.0f || rawDeltaZ != 0.0f) && this.sitting && !(this.playerAnimation instanceof  PlayerAnimationStandingUp)){
+            this.playerAnimation = new PlayerAnimationStandingUp(false, false, false, 15);
+        }
+
+        if(this.sitting){
+            rawDeltaX = 0.0f;
+            rawDeltaZ = 0.0f;
+        }
 
         this.updateGroundPosition(rawDeltaX, rawDeltaY, rawDeltaZ);
     }
@@ -849,7 +921,7 @@ public final class EntityPlayer extends EntityLiving {
             CosmicEvolution.camera.viewMatrix.translate(0, 0, (this.chunkZ - this.prevChunkZ) * 32);
         }
 
-        CosmicEvolution.camera.viewMatrix.translate(0, -this.height/2, 0);
+        CosmicEvolution.camera.viewMatrix.translate(0, -this.height/2 + -this.sitMovement, 0);
 
         this.prevChunkX = this.chunkX;
         this.prevChunkY = this.chunkY;
@@ -907,6 +979,11 @@ public final class EntityPlayer extends EntityLiving {
             this.runDamageTilt = true;
             CosmicEvolution.instance.soundPlayer.playSound(this.x, this.y, this.z, new Sound(Sound.fallDamage, false, 1f), new Random().nextFloat(0.4F, 0.7F));
         }
+    }
+
+
+    public Sound getHeldItemEntityHitSounds(){
+        return this.getHeldItem() == Item.NULL_ITEM_REFERENCE ? new Sound(Sound.stabEntity, false, 0f) : this.inventory.itemStacks[selectedInventorySlot].item.getEntityHitSound();
     }
 
     public float getAttackDamageValue(){
@@ -1107,7 +1184,7 @@ public final class EntityPlayer extends EntityLiving {
 
     @Override
     public String getAmbientSound() {
-        return null;
+        return "null";
     }
 
     private void clearInventoryOnDeath(){
@@ -1342,6 +1419,10 @@ public final class EntityPlayer extends EntityLiving {
             }
         }
         return null;
+    }
+
+    public void queuePlayerAnimationForNextTick(PlayerAnimation playerAnimation){
+
     }
 
 

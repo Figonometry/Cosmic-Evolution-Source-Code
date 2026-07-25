@@ -37,6 +37,8 @@ public final class InWorldCraftingRecipe {
             Item.primitiveWolfPeltClothing.ID, 1, 11);
     public static final InWorldCraftingRecipe stoneHoeHead = new InWorldCraftingRecipe(recipePath + "stone/hoeHead/", 1, "stoneHoeHead",
             Item.stoneHoeHead.ID, 1, 12);
+    public static final InWorldCraftingRecipe stoneSpearHead = new InWorldCraftingRecipe(recipePath + "stone/spearHead/", 1, "stoneSpearHead",
+            Item.stoneSpearHead.ID, 1, 13);
     public int[][] recipeIndices;
     public String recipeName;
     public short outputItemID;

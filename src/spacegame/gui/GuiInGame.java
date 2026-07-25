@@ -8,11 +8,13 @@ import spacegame.block.*;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
 import spacegame.core.Timer;
-import spacegame.entity.Entity;
 import spacegame.entity.EntityPlayer;
+import spacegame.entity.animations.PlayerAnimationThrustingSpear;
+import spacegame.entity.animations.PlayerAnimationThrustingSpearHold;
 import spacegame.entity.animations.PlayerAnimationTillingSoil;
 import spacegame.item.Item;
 import spacegame.item.ItemHoe;
+import spacegame.item.ItemSpear;
 import spacegame.render.*;
 import spacegame.render.model.ModelFace;
 import spacegame.render.model.ModelLoader;
@@ -36,6 +38,8 @@ public final class GuiInGame extends Gui {
     public static int subVoxelOutline;
     public static int blockBreaking;
     public static TextureAtlas blockBreakingAtlas;
+    public static int crossHairIndictaor;
+    public static TextureAtlas crossHairIndicatorAtlas;
     public static int transparentBackground;
     public static int fillableColorWithShadedBottom;
     public static int fillableColor;
@@ -66,6 +70,8 @@ public final class GuiInGame extends Gui {
             transparentBackground = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
             fillableColorWithShadedBottom = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColorWithShadedBottom.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
             fillableColor = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColor.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
+            crossHairIndictaor = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiInGame/crosshairOutlineAtlas.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
+            crossHairIndicatorAtlas = CosmicEvolution.instance.renderEngine.createTextureAtlas(64, 64, 32, 32, 4, 0);
         }
     }
 
@@ -114,7 +120,7 @@ public final class GuiInGame extends Gui {
     public void drawGui() {
         GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
         renderText();
-        this.renderCursor();
+        renderCrosshair();
         renderVignette();
         renderHeldItem();
         renderBlockLookingAtName();
@@ -132,6 +138,77 @@ public final class GuiInGame extends Gui {
         renderHotbar();
         renderHealthAndHungerBar();
     }
+
+
+   private static void renderCrosshair(){
+       int color = 4210752;
+       float fontID = 223 / 16F;
+       Texture textureID = Assets.fontTextureAtlas.textures.get(223);
+       int x = -15;
+       int y = -15;
+       float z = -10F;
+
+       RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
+       tessellator.toggleOrtho();
+       tessellator.addVertex2DTextureWithAtlas(color, x, y, z, 3, textureID, fontID, 255);
+       tessellator.addVertex2DTextureWithAtlas(color, x + 30, y + 30, z, 1, textureID, fontID, 255);
+       tessellator.addVertex2DTextureWithAtlas(color, x, y + 30, z, 2, textureID, fontID, 255);
+       tessellator.addVertex2DTextureWithAtlas(color, x + 30, y, z, 0, textureID, fontID, 255);
+       tessellator.addElementsCW();
+       tessellator.drawTexture2DWithAtlas(Assets.fontTextureLoader, Shader.screen2DTextureAtlas, CosmicEvolution.camera);
+
+       if(CosmicEvolution.instance.save.thePlayer.drawingBack) {
+           color = 0;
+
+           z += 5;
+
+
+           float outerMovement = 15 - 10 * (CosmicEvolution.instance.save.thePlayer.drawbackTimer / 180f);
+
+           if(outerMovement < 5f){
+               outerMovement = 5f;
+           }
+
+           float sideLength = outerMovement * 2;
+
+           x -= outerMovement;
+           y += outerMovement;
+
+           tessellator.addVertex2DTextureWithAtlas(color, x, y, z, 3, crossHairIndicatorAtlas.getTexture(2), 2 / 16f, 255);
+           tessellator.addVertex2DTextureWithAtlas(color, x + 30, y + 30, z, 1, crossHairIndicatorAtlas.getTexture(2), 2 / 16f, 255);
+           tessellator.addVertex2DTextureWithAtlas(color, x, y + 30, z, 2, crossHairIndicatorAtlas.getTexture(2), 2 / 16f, 255);
+           tessellator.addVertex2DTextureWithAtlas(color, x + 30, y, z, 0, crossHairIndicatorAtlas.getTexture(2), 2 / 16f, 255);
+           tessellator.addElementsCW();
+
+           x += sideLength;
+           tessellator.addVertex2DTextureWithAtlas(color, x, y, z, 3, crossHairIndicatorAtlas.getTexture(3), 3 / 16f, 255);
+           tessellator.addVertex2DTextureWithAtlas(color, x + 30, y + 30, z, 1, crossHairIndicatorAtlas.getTexture(3), 3 / 16f, 255);
+           tessellator.addVertex2DTextureWithAtlas(color, x, y + 30, z, 2, crossHairIndicatorAtlas.getTexture(3), 3 / 16f, 255);
+           tessellator.addVertex2DTextureWithAtlas(color, x + 30, y, z, 0, crossHairIndicatorAtlas.getTexture(3), 3 / 16f, 255);
+           tessellator.addElementsCW();
+
+           y -= sideLength;
+           tessellator.addVertex2DTextureWithAtlas(color, x, y, z, 3, crossHairIndicatorAtlas.getTexture(1), 1 / 16f, 255);
+           tessellator.addVertex2DTextureWithAtlas(color, x + 30, y + 30, z, 1, crossHairIndicatorAtlas.getTexture(1), 1 / 16f, 255);
+           tessellator.addVertex2DTextureWithAtlas(color, x, y + 30, z, 2, crossHairIndicatorAtlas.getTexture(1), 1 / 16f, 255);
+           tessellator.addVertex2DTextureWithAtlas(color, x + 30, y, z, 0, crossHairIndicatorAtlas.getTexture(1), 1 / 16f, 255);
+           tessellator.addElementsCW();
+
+           x -= sideLength;
+           tessellator.addVertex2DTextureWithAtlas(color, x, y, z, 3, crossHairIndicatorAtlas.getTexture(0), 0, 255);
+           tessellator.addVertex2DTextureWithAtlas(color, x + 30, y + 30, z, 1, crossHairIndicatorAtlas.getTexture(0), 0, 255);
+           tessellator.addVertex2DTextureWithAtlas(color, x, y + 30, z, 2, crossHairIndicatorAtlas.getTexture(0), 0, 255);
+           tessellator.addVertex2DTextureWithAtlas(color, x + 30, y, z, 0, crossHairIndicatorAtlas.getTexture(0), 0, 255);
+           tessellator.addElementsCW();
+
+           GL46.glEnable(GL46.GL_BLEND);
+           GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
+           tessellator.drawTexture2DWithAtlas(crossHairIndictaor, Shader.screen2DTextureAtlas, CosmicEvolution.camera);
+           GL46.glDisable(GL46.GL_BLEND);
+       }
+
+       tessellator.toggleOrtho();
+   }
 
     public static void renderVignette(){
         RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
@@ -770,6 +847,7 @@ public final class GuiInGame extends Gui {
                 RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
                 ModelSegment arm = ModelPlayer.getBaseModel().segments[ModelPlayer.LEFT_ARM];
                 arm.scale(1.5f);
+
                 float translateX = 1.5f;
                 float translateY = -1.25f;
                 float translateZ = -2f;
@@ -784,7 +862,7 @@ public final class GuiInGame extends Gui {
                 rotationMatrix.rotateY((float) -(0.35 * Math.PI));
                 double sine = (MathUtil.sin((float) ((((double) player.swingTimer / (float)player.maxSwingTimer) * Math.PI * 2) - (0.5 * Math.PI))) * 0.5) + 0.5f;
                 rotationMatrix.rotateLocalX((float) ((float) -(0.25 * Math.PI) * sine));
-                Quaternionf rotation = rotationMatrix.getUnnormalizedRotation(new Quaternionf());
+
                 int playerX = MathUtil.floorDouble(player.x);
                 int playerY = MathUtil.floorDouble(player.y);
                 int playerZ = MathUtil.floorDouble(player.z);
@@ -895,6 +973,30 @@ public final class GuiInGame extends Gui {
                     double sine = (MathUtil.sin((float) ((((double) player.swingTimer / player.maxSwingTimer) * Math.PI * 2) - (0.5 * Math.PI))) * 0.5) + 0.5f;
                     rotationMatrix.rotateLocalX((float) ((float) -(0.25 * Math.PI) * sine));
                 }
+
+                if(Item.list[itemID] instanceof ItemSpear){
+                    rotationMatrix = new Matrix3f();
+                    z = -3f;
+
+
+                    if(player.playerAnimation instanceof PlayerAnimationThrustingSpearHold) {
+                        position.z += 1f * 1 - (player.playerAnimation.timer / 60f);
+                    }
+
+                    if(player.playerAnimation instanceof PlayerAnimationThrustingSpear){
+                        position.z += 1f;
+
+                        position.z -= 4f * ((MathUtil.sin((float) ((((float) player.playerAnimation.timer / 30f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
+                    }
+
+                    if(player.drawingBack){
+                        float ratio = player.drawbackTimer / 60f;
+                        if(ratio > 1)ratio = 1;
+                        position.z += ratio;
+                    }
+
+                }
+
 
                 if(Item.list[player.getHeldItem()] instanceof ItemHoe){
                     float ratio;
@@ -1888,22 +1990,6 @@ public final class GuiInGame extends Gui {
         blue *= finalLight;
     }
 
-    protected static int calculateVertexLightColor(Vector3f vertex, Entity associatedEntity){
-        resetLight();
-        float x = (float) (Math.abs(MathUtil.positiveMod(associatedEntity.x,32f) - vertex.x) + associatedEntity.x);
-        float y = (float) (Math.abs(MathUtil.positiveMod(associatedEntity.y,32f) - vertex.y) + associatedEntity.y);
-        float z = (float) (Math.abs(MathUtil.positiveMod(associatedEntity.z,32f) - vertex.z) + associatedEntity.z);
-        int xInt = MathUtil.floorDouble(x);
-        int yInt = MathUtil.floorDouble(y);
-        int zInt = MathUtil.floorDouble(z);
-        float[] lightColor =  !associatedEntity.canDamage ? new float[]{1,0.65f,0.65f}  : CosmicEvolution.instance.save.activeWorld.getBlockLightColor(xInt, yInt, zInt);
 
-        byte lightVal = CosmicEvolution.instance.save.activeWorld.getBlockLightValue(xInt, yInt, zInt);
-        byte skyLightVal = CosmicEvolution.instance.save.activeWorld.getBlockSkyLightValue(xInt, yInt, zInt);
 
-        setVertexLight1Arg(lightVal > skyLightVal ? lightVal : skyLightVal, x, y, z, lightColor);
-        skyLightValue = GuiInGame.getLightValueFromMap(CosmicEvolution.instance.save.activeWorld.getBlockSkyLightValue(xInt, yInt, zInt));
-
-        return MathUtil.floatToIntRGBA(red) << 16 | MathUtil.floatToIntRGBA(green) << 8 | MathUtil.floatToIntRGBA(blue);
-    }
 }

@@ -1,5 +1,7 @@
 package spacegame.item.itemstate;
 
+import spacegame.nbt.NBTTagCompound;
+
 public final class SeedState extends ItemState {
     public boolean canMutate;
     public float percentToTargetCrop;
@@ -10,4 +12,17 @@ public final class SeedState extends ItemState {
         this.percentToTargetCrop = percentToTargetCrop;
         this.targetCrop = targetCrop;
     }
+
+
+    public NBTTagCompound getCompoundTag(){
+            NBTTagCompound returnTag = new NBTTagCompound();
+            returnTag.setString("Type", "SeedState");
+            returnTag.setBoolean("canMutate",this.canMutate);
+            returnTag.setFloat("percentToTargetCrop", this.percentToTargetCrop);
+            returnTag.setString("targetCrop", this.targetCrop);
+            return returnTag;
+    }
+
+
+
 }

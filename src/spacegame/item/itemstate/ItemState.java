@@ -14,18 +14,7 @@ public abstract class ItemState {
     }
 
 
-    public NBTTagCompound getCompoundTag(){
-        if(this instanceof SeedState seedState){
-            NBTTagCompound returnTag = new NBTTagCompound();
-            returnTag.setString("Type", "SeedState");
-            returnTag.setBoolean("canMutate",seedState.canMutate);
-            returnTag.setFloat("percentToTargetCrop", seedState.percentToTargetCrop);
-            returnTag.setString("targetCrop", seedState.targetCrop);
-            return returnTag;
-        }
-
-        return null;
-    }
+    public abstract NBTTagCompound getCompoundTag();
 
     public static ItemState loadFromCompoundTag(NBTTagCompound compoundTag){
         String type = compoundTag != null ? compoundTag.getString("Type") : "Null";

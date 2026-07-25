@@ -10,7 +10,8 @@ public final class PlayerAnimationTillingSoil extends PlayerAnimation {
     }
 
     @Override
-    public void onAnimationComplete(EntityPlayer player) {
+    public boolean onAnimationComplete(EntityPlayer player) {
         Item.list[player.getHeldItem()].onFinishRightClickAnimation(0,0,0, CosmicEvolution.instance.save.activeWorld, player);
+        return false;
     }
 }

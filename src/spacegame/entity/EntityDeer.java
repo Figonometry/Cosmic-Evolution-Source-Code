@@ -112,7 +112,7 @@ public final class EntityDeer extends EntityLiving implements IDecayable, IHarve
 
     private void updateAI(){
         this.moveTimer--;
-        if(Math.abs(this.x - this.targetX) < 0.5 && Math.abs(this.z - this.targetZ) < 0.5 || this.moveTimer <= 0 && this.shouldMove){
+        if((Math.abs(this.x - this.targetX) < 0.5 && Math.abs(this.z - this.targetZ) < 0.5) || (this.moveTimer <= 0 && this.shouldMove)){
             this.shouldMove = false;
             if(this.alerted){
                 this.waitTimer = new Random().nextInt(15,30);
@@ -172,6 +172,7 @@ public final class EntityDeer extends EntityLiving implements IDecayable, IHarve
             this.speed = 0.04D;
         }
 
+
         if (this.moveEntityUp) {
             if(!this.isJumping) {
                 this.speed = 0.025;
@@ -179,7 +180,7 @@ public final class EntityDeer extends EntityLiving implements IDecayable, IHarve
             if (this.moveEntityUpDistance <= 0D) {
                 this.moveEntityUp = false;
                 this.moveEntityUpDistance = 0;
-                this.speed = 0.025;
+                this.speed = 0.04;
                 this.isJumping = false;
             } else {
                 this.deltaY = 0.05;
@@ -222,11 +223,6 @@ public final class EntityDeer extends EntityLiving implements IDecayable, IHarve
         }
         this.handleFallDamage();
 
-
-        if(this.timeDied + 60 <= CosmicEvolution.instance.save.time){
-
-        }
-
         if(this.isDead){
             this.width = this.deathWidth;
             this.height = this.deathHeight;
@@ -243,7 +239,7 @@ public final class EntityDeer extends EntityLiving implements IDecayable, IHarve
 
     private void setMovementAmount(){
         if(this.shouldMove && !this.isDead) {
-            this.rawDeltaX -= 0.1f;
+            this.rawDeltaX = -0.1f;
         } else {
             this.rawDeltaX = 0.0f;
         }
@@ -257,6 +253,7 @@ public final class EntityDeer extends EntityLiving implements IDecayable, IHarve
         } else {
             this.animate = false;
         }
+
 
         this.updateGroundPosition(this.rawDeltaX, 0, 0);
 
@@ -301,7 +298,7 @@ public final class EntityDeer extends EntityLiving implements IDecayable, IHarve
 
     @Override
     public String getAmbientSound() {
-        return this.isDead ? null : Sound.deerAmbient;
+        return this.isDead ? "null" : Sound.deerAmbient;
     }
 
     @Override

@@ -1116,6 +1116,10 @@ public class RenderBlocks {
                 }
             }
 
+            if(craftingItem.outputRecipe.requiredItems[i] == Item.stoneSpearHead.ID){
+                model.rotateModel(90, 0, 0, 1);
+            }
+
             if(craftingItem.outputRecipe.requiredItems[i] == Item.stoneHoeHead.ID){
                 model.rotateModel(90f, 0, 0, 1);
             }

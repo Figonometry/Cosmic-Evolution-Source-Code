@@ -90,7 +90,7 @@ public final class BlockCampFire extends BlockHeating implements ITickable, IPar
             KeyListener.setKeyReleased(GLFW.GLFW_KEY_LEFT_SHIFT);
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) && KeyListener.keyReleased[GLFW.GLFW_KEY_LEFT_SHIFT]){
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) && KeyListener.keyReleased[GLFW.GLFW_KEY_LEFT_SHIFT] && campfireState.isLit){
             player.spawnX = x;
             player.spawnY = y;
             player.spawnZ = z;

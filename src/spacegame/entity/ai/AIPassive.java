@@ -1,6 +1,9 @@
 package spacegame.entity.ai;
 
+import org.joml.Matrix3d;
+import org.joml.Vector2d;
 import org.joml.Vector2f;
+import org.joml.Vector3d;
 import spacegame.core.CosmicEvolution;
 import spacegame.entity.EntityLiving;
 import spacegame.util.MathUtil;
@@ -46,15 +49,20 @@ public abstract class AIPassive { ;
         entityLiving.yaw = (float) Math.toDegrees(Math.atan2(dz, dx));
 
 
+        Vector3d target = new Vector3d(-30, 0, 0);
+        Matrix3d rot = new Matrix3d();
+        rot.rotateY(Math.toRadians(entityLiving.yaw));
+        target.mul(rot);
 
-        entityLiving.targetX = targetX;
-        entityLiving.targetZ = targetZ;
+
+        entityLiving.targetX = x + target.x;
+        entityLiving.targetZ = z + target.y;
         entityLiving.shouldMove = true;
 
         double distance = MathUtil.distance2D(x, z, targetX, targetZ);
         double distancePerTick = distancePerTick(entityLiving);
 
-        entityLiving.moveTimer = (int) (distance / distancePerTick);
+        entityLiving.moveTimer = 600;
     }
 
     public static void targetAwayFromEntity(EntityLiving entityLiving, EntityLiving entityThatAlerted){
@@ -71,16 +79,20 @@ public abstract class AIPassive { ;
 
         entityLiving.yaw = (float) Math.toDegrees(Math.atan2(dz, dx));
 
+        Vector3d target = new Vector3d(-30, 0, 0);
+        Matrix3d rot = new Matrix3d();
+        rot.rotateY(Math.toRadians(entityLiving.yaw));
+        target.mul(rot);
 
 
-        entityLiving.targetX = targetX;
-        entityLiving.targetZ = targetZ;
+        entityLiving.targetX = x + target.x;
+        entityLiving.targetZ = z + target.y;
         entityLiving.shouldMove = true;
 
         double distance = MathUtil.distance2D(x, z, targetX, targetZ);
         double distancePerTick = distancePerTick(entityLiving);
 
-        entityLiving.moveTimer = (int) (distance / distancePerTick);
+        entityLiving.moveTimer = 600;
     }
 
 

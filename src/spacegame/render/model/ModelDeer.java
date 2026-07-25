@@ -284,8 +284,10 @@ public final class ModelDeer extends Model {
         int offsetY = (chunkY - playerChunkY) << 5;
         int offsetZ = (chunkZ - playerChunkZ) << 5;
 
+        Shader.worldShader2DTexture.uploadBoolean("entityDamaged", !associatedEntity.canDamage);
         Shader.worldShader2DTexture.uploadVec3f("chunkOffset", new Vector3f(offsetX, offsetY, offsetZ));
         worldTessellator.drawTexture2D(EntityDeer.texture, Shader.worldShader2DTexture, CosmicEvolution.camera);
+        Shader.worldShader2DTexture.uploadBoolean("entityDamaged", false);
     }
 
     @Override

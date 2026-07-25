@@ -2,7 +2,11 @@ package spacegame.world;
 
 import spacegame.core.CosmicEvolution;
 import spacegame.entity.EntityPlayer;
+import spacegame.entity.animations.PlayerAnimationThrustingSpear;
+import spacegame.entity.animations.PlayerAnimationThrustingSpearHold;
 import spacegame.gui.GuiInGame;
+import spacegame.item.Item;
+import spacegame.item.ItemSpear;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.util.MathUtil;
@@ -184,11 +188,28 @@ public final class Save {
     }
 
     public void handleLeftClick() {
+
+        if(this.thePlayer.getHeldItem() != Item.NULL_ITEM_REFERENCE && this.ce.currentGui instanceof GuiInGame){
+            if(Item.list[this.thePlayer.getHeldItem()] instanceof ItemSpear){
+                this.thePlayer.playerAnimation = new PlayerAnimationThrustingSpearHold(true, false, false, 60);
+            }
+        }
+
+        if(this.thePlayer.playerAnimation instanceof PlayerAnimationThrustingSpear || this.thePlayer.playerAnimation instanceof PlayerAnimationThrustingSpearHold)return;
+
         this.activeWorld.handleClick(true);
         this.thePlayer.isSwinging = this.ce.currentGui instanceof GuiInGame;
     }
 
     public void handleRightClick() {
+
+        if(this.thePlayer.getHeldItem() != Item.NULL_ITEM_REFERENCE && this.ce.currentGui instanceof GuiInGame){
+            if(Item.list[this.thePlayer.getHeldItem()] instanceof ItemSpear){
+                this.thePlayer.drawingBack = true;
+            }
+        }
+
+
         this.activeWorld.handleClick(false);
     }
 

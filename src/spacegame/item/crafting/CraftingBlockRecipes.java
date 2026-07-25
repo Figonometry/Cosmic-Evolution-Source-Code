@@ -27,6 +27,10 @@ public final class CraftingBlockRecipes {
             new short[]{Item.block.ID, Item.stoneHoeHead.ID}, new int[]{1,1}, TECH_LEVEL_PRIMITIVE, new double[][]{{0.5, 0.0625, 0.5},{0.27, 0.0626, 0.44}},
             new double[]{-45, 135}, (byte)1, true, 1, 5, new short[]{Block.itemStick.ID, Item.NULL_ITEM_METADATA});
 
+    public static final CraftingBlockRecipes stoneSpear = new CraftingBlockRecipes(Item.stoneSpear.ID, Item.stoneSpear.getDisplayName(Item.NULL_ITEM_REFERENCE),
+            new short[]{Item.block.ID, Item.stoneSpearHead.ID, Item.block.ID}, new int[]{1,1,1}, TECH_LEVEL_PRIMITIVE, new double[][]{{0.5, 0.0625, 0.5},{0.2, 0.0625, 0.2},{0.85, 0.0625, 0.85}},
+            new double[]{-45, 45,-45}, (byte)1, true, 1, 6, new short[]{Block.itemStick.ID, Item.NULL_ITEM_METADATA, Block.itemStick.ID});
+
     public short itemID;
     public short blockID;
     public String displayName;

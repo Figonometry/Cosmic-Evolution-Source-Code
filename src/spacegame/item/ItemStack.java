@@ -154,6 +154,10 @@ public final class ItemStack {
                     model.scaleModel(2f);
                 }
 
+                if(this.item instanceof ItemSpear){
+                    model.scaleModel(0.75f);
+                }
+
                 Vector3f position = new Vector3f(this.x, this.y, -70);
                 model.translateModel(position.x, position.y, position.z);
                 ModelFace face;
@@ -295,6 +299,10 @@ public final class ItemStack {
 
                if(this.item instanceof ItemSeed){
                    model.scaleModel(2f);
+               }
+
+               if(this.item instanceof ItemSpear){
+                   model.scaleModel(0.75f);
                }
 
                 Vector3f position = new Vector3f(this.x + 4, this.y, -70);

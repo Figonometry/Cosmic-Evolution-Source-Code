@@ -64,6 +64,13 @@ public abstract class EntityLiving extends Entity {
         CosmicEvolution.instance.soundPlayer.playSound(this.x, this.y, this.z, new Sound(this.getHurtSound(), false, 1f), new Random().nextFloat(0.9F, 1));
     }
 
+    @Override
+    protected void checkToDespawn(){
+        if(CosmicEvolution.instance.save.time >= this.despawnTime && !this.isDead){
+            this.despawn = true;
+        }
+    }
+
     public void playAmbientSound(){
         if(CosmicEvolution.globalRand.nextInt(1200) == 0){
             CosmicEvolution.instance.soundPlayer.playSound(this.x, this.y, this.z, new Sound(this.getAmbientSound(), false, 1f), new Random().nextFloat(0.9F, 1));

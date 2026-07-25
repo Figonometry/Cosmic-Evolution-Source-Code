@@ -37,7 +37,7 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
         this.y = y;
         this.z = z;
         this.close = new Button(EnumButtonEffects.CLOSE.name(), 50, 50, 349, 190, this, this.ce);
-        this.selectableRecipes = new RecipeSelector[5];
+        this.selectableRecipes = new RecipeSelector[6];
         this.setSelectableItemIDs();
     }
 
@@ -49,6 +49,7 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
 
         for(int i = 0; i < this.selectableRecipes.length; i++){
             switch (i) {
+                case 5 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneSpearHead.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneSpearHead.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.block.ID}, new int[]{1}, new short[]{Block.itemStone.ID});
                 case 4 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneHoeHead.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneHoe.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.block.ID}, new int[]{1}, new short[]{Block.itemStone.ID});
                 case 3 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneFragments.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneFragments.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.block.ID}, new int[]{1}, new short[]{Block.itemStone.ID});
                 case 0 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneHandAxe.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneHandAxe.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.block.ID}, new int[]{1}, new short[]{Block.itemStone.ID});
@@ -353,6 +354,9 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
             }
             case 1 -> {
                 return InWorldCraftingRecipe.stoneHoeHead;
+            }
+            case 39 -> {
+                return InWorldCraftingRecipe.stoneSpearHead;
             }
         }
 

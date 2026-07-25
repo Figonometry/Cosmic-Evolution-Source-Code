@@ -65,6 +65,7 @@ public final class EntityBlock extends EntityNonLiving {
 
         short headBlock = CosmicEvolution.instance.save.activeWorld.getBlockID(x, y, z);
 
+        //Water movement code
         if(headBlock >= 152 && headBlock <= 158 && !this.canMoveWithVector){
             this.deltaX = -0.01;
         } else if(!this.canMoveWithVector){
@@ -88,12 +89,13 @@ public final class EntityBlock extends EntityNonLiving {
         } else if(!this.canMoveWithVector){
             this.deltaZ = 0;
         }
+
         this.moveAndHandleCollision();
     }
 
     @Override
     public void render() {
-        new RenderEntityItem(this.x, this.y, this.z, this.entityModel, true, true, Item.block.ID, this.block, this.height, this.width, this.yaw).renderEntity();
+        new RenderEntityItem(this.x, this.y, this.z, this.entityModel, true, true, Item.block.ID, this.block, this.height, this.width, this.yaw, 0).renderEntity();
         if(Block.list[CosmicEvolution.instance.save.activeWorld.getBlockID(MathUtil.floorDouble(this.x), MathUtil.floorDouble(this.y - 0.1), MathUtil.floorDouble(this.z))].isSolid) {
             this.renderShadow();
         }
@@ -101,7 +103,7 @@ public final class EntityBlock extends EntityNonLiving {
 
     @Override
     public void renderForShadowMap(int sunX, int sunY, int sunZ){
-        new RenderEntityItem(this.x, this.y, this.z, this.entityModel, true, true, Item.block.ID, this.block, this.height, this.width, this.yaw).renderBlockForShadowMap(sunX,sunY,sunZ);
+        new RenderEntityItem(this.x, this.y, this.z, this.entityModel, true, true, Item.block.ID, this.block, this.height, this.width, this.yaw, 0).renderBlockForShadowMap(sunX,sunY,sunZ);
     }
 
     @Override

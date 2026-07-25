@@ -1,6 +1,7 @@
 package spacegame.item;
 
 import spacegame.block.Block;
+import spacegame.core.Sound;
 import spacegame.entity.EntityPlayer;
 import spacegame.render.model.ModelLoader;
 import spacegame.world.World;
@@ -49,6 +50,8 @@ public class Item {
     public static final Item wheat = new ItemFood((short)36, modelFolderPath + "wheat.obj", "src/spacegame/assets/itemFiles/wheat.txt", 20f);
     public static final Item speltWheat = new ItemFood((short)37, modelFolderPath + "wheat.obj", "src/spacegame/assets/itemFiles/speltWheat.txt", 30f);
     public static final Item seedSpeltWheat = new ItemSeed((short)38, modelFolderPath + "seedSpeltWheat.obj", "src/spacegame/assets/itemFiles/seedSpeltWheat.txt");
+    public static final Item stoneSpearHead = new ItemTool((short)39, modelFolderPath + "stoneSpearHead.obj", "src/spacegame/assets/itemFiles/stoneSpearHead.txt");
+    public static final Item stoneSpear = new ItemSpear((short)40, modelFolderPath + "stoneSpear.obj", "src/spacegame/assets/itemFiles/stoneSpear.txt", Material.STONE);
     public final short ID;
     public float hardness = 0;
     public boolean canPlaceAsItemBlock;
@@ -63,6 +66,8 @@ public class Item {
     public String itemType;
     public int storageLevel;
     public ModelLoader itemModel;
+    public int hitDistance = 3;
+    public boolean canDrawBack = false;
     public static final short NULL_ITEM_REFERENCE = -1;
     public static final short NULL_ITEM_DURABILITY = -1;
     public static final short NULL_ITEM_METADATA = 0;
@@ -145,6 +150,10 @@ public class Item {
                 this.displayName = properties[1];
             }
 
+            if(properties[0].equals("canDrawBack")){
+                this.canDrawBack = Boolean.parseBoolean(properties[1]);
+            }
+
             if(properties[0].equals("canPlaceOnGround")){
                 this.canPlaceOnGround = Boolean.parseBoolean(properties[1]);
             }
@@ -159,6 +168,10 @@ public class Item {
 
             if (properties[0].equals("toolType")) {
                 this.toolType = properties[1];
+            }
+
+            if(properties[0].equals("hitDistance")){
+                this.hitDistance = Integer.parseInt(properties[1]);
             }
         }
         try {
@@ -187,8 +200,16 @@ public class Item {
 
     }
 
+    public void onDrawBackRelease(EntityPlayer entityPlayer, World world){
+
+    }
+
     public String getDisplayName(short blockID){
         return this.ID == block.ID ? Block.list[blockID].getDisplayName(0,0,0) : this.displayName;
+    }
+
+    public Sound getEntityHitSound(){
+        return new Sound(Sound.stabEntity, false, 0f);
     }
 
 

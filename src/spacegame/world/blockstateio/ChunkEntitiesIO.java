@@ -1,6 +1,8 @@
 package spacegame.world.blockstateio;
 
+import org.joml.Vector3f;
 import spacegame.entity.*;
+import spacegame.item.itemstate.ItemState;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.world.Chunk;
 
@@ -16,6 +18,8 @@ public class ChunkEntitiesIO {
             entities[i].setDouble("x", savingEntity.x);
             entities[i].setDouble("y", savingEntity.y);
             entities[i].setDouble("z", savingEntity.z);
+            entities[i].setFloat("pitch", savingEntity.pitch);
+            entities[i].setFloat("yaw", savingEntity.yaw);
 
             savingEntity.saveToNBT(entities[i]);
 
@@ -38,7 +42,8 @@ public class ChunkEntitiesIO {
                     chunk.addEntityToList(entityLoaded);
                 }
                 case "EntityItem" -> {
-                    entityLoaded = new EntityItem(entityLoadedTag.getDouble("x"), entityLoadedTag.getDouble("y"), entityLoadedTag.getDouble("z"), entityLoadedTag.getShort("itemType"), (byte) 1, entityLoadedTag.getByte("count"), entityLoadedTag.getShort("durability"), 0, null);
+                    ItemState itemState = ItemState.loadFromCompoundTag(entityLoadedTag.getCompoundTag("ItemState"));
+                    entityLoaded = new EntityItem(entityLoadedTag.getDouble("x"), entityLoadedTag.getDouble("y"), entityLoadedTag.getDouble("z"), entityLoadedTag.getShort("itemType"), (byte) 1, entityLoadedTag.getByte("count"), entityLoadedTag.getShort("durability"), entityLoadedTag.getLong("decayTime"), itemState);
                     entityLoaded.y += 0.1;
                     chunk.addEntityToList(entityLoaded);
                 }
@@ -48,6 +53,7 @@ public class ChunkEntitiesIO {
                     ((EntityLiving)entityLoaded).isDead = entityLoadedTag.getBoolean("isDead");
                     ((EntityLiving)entityLoaded).isAIEnabled = entityLoadedTag.getBoolean("isAIEnabled");
                     ((EntityLiving)entityLoaded).timeDied = entityLoadedTag.getLong("timeDied");
+                    entityLoaded.y += 0.1;
                     chunk.addEntityToList(entityLoaded);
                 }
                 case "EntityWolf" -> {
@@ -56,6 +62,19 @@ public class ChunkEntitiesIO {
                     ((EntityLiving)entityLoaded).isDead = entityLoadedTag.getBoolean("isDead");
                     ((EntityLiving)entityLoaded).isAIEnabled = entityLoadedTag.getBoolean("isAIEnabled");
                     ((EntityLiving)entityLoaded).timeDied = entityLoadedTag.getLong("timeDied");
+                    entityLoaded.y += 0.1;
+                    chunk.addEntityToList(entityLoaded);
+                }
+                case "EntityThrownSpear" -> {
+                    entityLoaded = new EntityThrownSpear(entityLoadedTag.getDouble("x"), entityLoadedTag.getDouble("y"), entityLoadedTag.getDouble("z"),
+                            new Vector3f(entityLoadedTag.getFloat("vec3fX"), entityLoadedTag.getFloat("vec3fY"), entityLoadedTag.getFloat("vec3fZ")),
+                            entityLoadedTag.getDouble("speed"), entityLoadedTag.getShort("itemID"), entityLoadedTag.getFloat("pitch"),
+                            entityLoadedTag.getFloat("yaw"), entityLoadedTag.getShort("itemDurability"));
+
+                    entityLoaded.canMoveWithVector = entityLoadedTag.getBoolean("canMoveWithVector");
+                    entityLoaded.collided = entityLoadedTag.getBoolean("collided");
+
+
                     chunk.addEntityToList(entityLoaded);
                 }
             }

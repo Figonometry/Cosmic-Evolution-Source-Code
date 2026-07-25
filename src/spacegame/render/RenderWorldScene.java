@@ -106,14 +106,18 @@ public final class RenderWorldScene {
         Shader.terrainShader.uploadInt("textureArray", 0);
         Shader.terrainShader.uploadBoolean("useFog", true);
         Shader.terrainShader.uploadFloat("fogDistance", GameSettings.renderDistance * 20f);
+
         Shader.worldShader2DTexture.uploadFloat("fogDistance", GameSettings.renderDistance * 20f);
         Shader.worldShader2DTexture.uploadBoolean("useFog", true);
+
         Shader.terrainShader.uploadFloat("fogRed", this.controller.parentWorld.skyColor[0]);
         Shader.terrainShader.uploadFloat("fogGreen", this.controller.parentWorld.skyColor[1]);
         Shader.terrainShader.uploadFloat("fogBlue", this.controller.parentWorld.skyColor[2]);
+
         Shader.worldShader2DTexture.uploadFloat("fogRed", this.controller.parentWorld.skyColor[0]);
         Shader.worldShader2DTexture.uploadFloat("fogGreen", this.controller.parentWorld.skyColor[1]);
         Shader.worldShader2DTexture.uploadFloat("fogBlue", this.controller.parentWorld.skyColor[2]);
+
         Shader.terrainShader.uploadDouble("time", (double) Timer.elapsedTime % 8388608);
 
         Shader.terrainShader.uploadBoolean("raining", this.controller.parentWorld.raining);

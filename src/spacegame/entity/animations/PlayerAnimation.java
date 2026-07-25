@@ -13,8 +13,9 @@ public abstract class PlayerAnimation {
         this.leftClick = leftClick;
         this.rightClick = rightClick;
         this.heldRequired = heldRequired;
+        this.timer = timer;
     }
 
 
-    public abstract void onAnimationComplete(EntityPlayer player);
+    public abstract boolean onAnimationComplete(EntityPlayer player); //Returns true if another animation is queued from a previous one
 }

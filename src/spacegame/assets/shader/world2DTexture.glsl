@@ -20,6 +20,7 @@ uniform bool compressTest;
 uniform bool animateTexture;
 uniform float animateHorizontal;
 uniform float animateVertical;
+uniform bool entityDamaged;
 
 out vec4 fColor;
 out vec2 fTexCoords;
@@ -133,10 +134,17 @@ void main()
 {
 
     vec4 skyLightColor = performLightingNormals(vec4(skyLightValue, skyLightValue, skyLightValue, 1.0), normal);
+
     if(performNormals){
         fColor = setFinalColor(skyLightColor, aColor);
     } else {
         fColor = aColor;
+    }
+
+    if(entityDamaged){
+        fColor.x *= 1;
+        fColor.y *= 0.65f;
+        fColor.z *= 0.65f;
     }
 
     fTexCoords = aTexCoords;
