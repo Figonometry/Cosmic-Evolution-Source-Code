@@ -41,6 +41,12 @@ public final class Chunk implements Comparable<Chunk> {
     public float distanceFromPlayer;
     public boolean occluded;
     public int queryID = -10;
+    public final int chunkMinX;
+    public final int chunkMinY;
+    public final int chunkMinZ;
+    public final int chunkMaxX;
+    public final int chunkMaxY;
+    public final int chunkMaxZ;
     public final int x;
     public final int y;
     public final int z;
@@ -105,7 +111,21 @@ public final class Chunk implements Comparable<Chunk> {
         this.x = x;
         this.y = y;
         this.z = z;
+        this.chunkMinX = this.x << 5;
+        this.chunkMinY = this.y << 5;
+        this.chunkMinZ = this.z << 5;
+        this.chunkMaxX = this.chunkMinX + 31;
+        this.chunkMaxY = this.chunkMinY + 31;
+        this.chunkMaxZ = this.chunkMinZ + 31;
         this.parentWorld = world;
+    }
+
+    protected boolean isBlockInCallingChunkExcludeEdge(int x, int y, int z){
+        return x > this.chunkMinX && x < this.chunkMaxX && y > this.chunkMinY && y < this.chunkMaxY && z > this.chunkMinZ && z < this.chunkMaxZ;
+    }
+
+    protected boolean isBlockInCallingChunk(int x, int y, int z){
+        return x >= this.chunkMinX && x <= this.chunkMaxX && y >= this.chunkMinY && y <= this.chunkMaxY && z >= this.chunkMinZ && z <= this.chunkMaxZ;
     }
 
     public void setBlock(int x, int y, int z, short blockID) {
@@ -771,11 +791,27 @@ public final class Chunk implements Comparable<Chunk> {
         int x = 0;
         int y = 0;
         int z = 0;
+
+        ChunkColumnSkylightMap skylightMap = this.parentWorld.findChunkSkyLightMap(this.x >> 5, this.z >> 5);
+
         for (int i = 0; i < this.blocks.length; i++) {
             x = this.getBlockXFromIndex(i);
             y = this.getBlockYFromIndex(i);
             z = this.getBlockZFromIndex(i);
             this.notifyBlock(x, y, z);
+
+            if(Block.list[this.blocks[i]].isSolid){
+                this.lighting[i] = 0;
+                this.skyLight[i] = 0;
+            }
+
+            if(this.blocks[i] != Block.air.ID){
+                if(skylightMap.isHeightGreater(x,y,z)){
+                    skylightMap.updateLightMap(x,y,z);
+                }
+            }
+
+
             if(Block.list[this.blocks[i]].isLightBlock(x,y,z, this.parentWorld)){
                 this.parentWorld.propagateLightSource(x,y,z, Block.list[this.blocks[i]].lightBlockValue);
             }
@@ -931,10 +967,11 @@ public final class Chunk implements Comparable<Chunk> {
     public void renderOpaque(int sunX, int sunY, int sunZ) {
         if(this.elementBufferOpaque == null || this.vertexBufferOpaque == null || this.opaqueVAOID == -10 || this.opaqueVBOID == -10 || this.opaqueEBOID == -10 || this.opaqueVAOID == 0 || this.opaqueVBOID == 0 || this.opaqueEBOID == 0)return;
 
-        int indexCount  = this.elementBufferOpaque.limit();
-        int vertexCount = this.vertexBufferOpaque.limit();
+        int componentsPerVertex = 6;
+        int vertexCount = this.vertexBufferOpaque.limit() / componentsPerVertex;
 
-        if (indexCount == 0 || vertexCount == 0)return;
+        this.elementBufferOpaque.position(0);
+        this.vertexBufferOpaque.position(0);
 
 
         int maxIndex = -1;
@@ -943,8 +980,10 @@ public final class Chunk implements Comparable<Chunk> {
             if (idx > maxIndex) maxIndex = idx;
         }
 
-        if (maxIndex >= vertexCount)return;
+        if (maxIndex >= vertexCount) return;
 
+        this.elementBufferOpaque.position(0);
+        this.vertexBufferOpaque.position(0);
 
         Shader.terrainShader.uploadVec3f("chunkOffset", this.chunkOffset);
         Shader.terrainShader.uploadVec3f("sunChunkOffset", new Vector3f((this.x - sunX) << 5, (this.y - sunY) << 5, (this.z - sunZ) << 5));
@@ -957,10 +996,11 @@ public final class Chunk implements Comparable<Chunk> {
     public void renderTransparent(int sunX, int sunY, int sunZ) {
         if(this.elementBufferTransparent == null || this.vertexBufferTransparent == null || this.transparentVAOID == -10 || this.transparentVBOID == -10 || this.transparentEBOID == -10 || this.transparentVAOID == 0 || this.transparentVBOID == 0 || this.transparentEBOID == 0)return;
 
-        int indexCount  = this.elementBufferTransparent.limit();
-        int vertexCount = this.vertexBufferTransparent.limit();
+        int componentsPerVertex = 6;
+        int vertexCount = this.vertexBufferTransparent.limit() / componentsPerVertex;
 
-        if (indexCount == 0 || vertexCount == 0)return;
+        this.elementBufferTransparent.position(0);
+        this.vertexBufferTransparent.position(0);
 
 
         int maxIndex = -1;
@@ -969,7 +1009,12 @@ public final class Chunk implements Comparable<Chunk> {
             if (idx > maxIndex) maxIndex = idx;
         }
 
-        if (maxIndex >= vertexCount)return;
+        if (maxIndex >= vertexCount) return;
+
+
+        this.elementBufferTransparent.position(0);
+        this.vertexBufferTransparent.position(0);
+
 
         Shader.terrainShader.uploadVec3f("chunkOffset", this.chunkOffset);
         Shader.terrainShader.uploadVec3f("sunChunkOffset", new Vector3f((this.x - sunX) << 5, (this.y - sunY) << 5, (this.z - sunZ) << 5));

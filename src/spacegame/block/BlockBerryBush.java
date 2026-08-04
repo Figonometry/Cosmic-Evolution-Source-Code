@@ -32,7 +32,7 @@ public final class BlockBerryBush extends Block implements ITimeUpdate {
 
 
     @Override
-    public int getBlockTexture(int face){
+    public int getBlockTexture(int x, int y, int z, int face){
         return face == RenderBlocks.TOP_FACE ? this.textureID + 1 : this.textureID;
     }
 

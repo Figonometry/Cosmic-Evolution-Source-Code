@@ -17,6 +17,7 @@ public final class Sound {
     public static String waterSplash = "src/spacegame/assets/sound/waterSplash.ogg";
     public static String snow = "src/spacegame/assets/sound/stepSnow.ogg";
     public static String wood = "src/spacegame/assets/sound/stepWood.ogg";
+    public static String ice = "src/spacegame/assets/sound/stepIce.ogg";
     public static String itemPickup = "src/spacegame/assets/sound/itemPickup.ogg";
     public static String fallDamage = "src/spacegame/assets/sound/fallDamage.ogg";
     public static String deerHurt = "src/spacegame/assets/sound/deerHurt.ogg";

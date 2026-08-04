@@ -4,6 +4,7 @@ import org.joml.SimplexNoise;
 import org.joml.Vector3f;
 import spacegame.celestial.CelestialObject;
 import spacegame.core.CosmicEvolution;
+import spacegame.util.LongHasher;
 import spacegame.util.MathUtil;
 import spacegame.world.NoiseMap2D;
 import spacegame.world.World;
@@ -46,14 +47,14 @@ public final class ThreadGenerateCelestialBodyTextures implements Runnable {
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         int[] pixels = new int[width * height];
 
-        Random rand = new Random(seed);
+        Random rand = new Random(new LongHasher().hash(CosmicEvolution.instance.save.seed, String.valueOf(seed)));
         double offsetX = rand.nextDouble() * 1000;
         double offsetY = rand.nextDouble() * 1000;
         double offsetZ = rand.nextDouble() * 1000;
 
 
         double[][] elevation = new double[width][height];
-        int octaves = 16;
+        int octaves = 8;
 
         // Step 1: Generate elevation using spherical 3D noise
         for (int y = 0; y < height; y++) {
@@ -98,8 +99,10 @@ public final class ThreadGenerateCelestialBodyTextures implements Runnable {
         double[][] temperature = this.generateMercatorImageNoiseMap(this.seed - 12, 1);
 
         for (int y = 0; y < height; y++) {
-            double lat = Math.PI * ((double) y / height - 0.5); // -π/2 to π/2
-            double latitudeFactor = MathUtil.cos(lat); // 1.0 at equator, 0.0 at poles
+            double mercatorY = (double) y / height; // 0..1
+            double lat = Math.atan(Math.sinh(Math.PI * (2.0 * mercatorY - 1.0)));
+            double latitudeFactor = Math.cos(lat);
+
 
             for (int x = 0; x < width; x++) {
                 double noise = temperature[x][y]; // existing noise-based temperature
@@ -233,6 +236,8 @@ public final class ThreadGenerateCelestialBodyTextures implements Runnable {
 
 
 
+        ((WorldEarth)(CosmicEvolution.instance.save.activeWorld)).globalElevationMap.scaleByExponent(5);
+
         // Step 5: Save image
         try {
             File output = new File(CosmicEvolution.instance.save.saveFolder + "/worlds/worldEarth/worldMercator.png");
@@ -297,6 +302,27 @@ public final class ThreadGenerateCelestialBodyTextures implements Runnable {
         }
 
         return elevation;
+    }
+
+    float tileableSimplex(float x, float y, float w, float h) {
+        float nx = x % w;
+        float ny = y % h;
+
+        if (nx < 0) nx += w;
+        if (ny < 0) ny += h;
+
+        float fx = nx / w;
+        float fy = ny / h;
+
+        float a = SimplexNoise.noise(nx, ny);
+        float b = SimplexNoise.noise(nx + w, ny);
+        float c = SimplexNoise.noise(nx, ny + h);
+        float d = SimplexNoise.noise(nx + w, ny + h);
+
+        float i1 = a + fx * (b - a);
+        float i2 = c + fx * (d - c);
+
+        return i1 + fy * (i2 - i1);
     }
 
     private void splitIntoCubemap(File imageFile) {
@@ -419,6 +445,8 @@ public final class ThreadGenerateCelestialBodyTextures implements Runnable {
         earth.globalElevationMap = new NoiseMap2D(width, height, elevation);
         earth.globalTemperatureMap = new NoiseMap2D(width, height, temperature);
         earth.globalRainfallMap = new NoiseMap2D(width, height, rainfall);
+
+        earth.globalElevationMap.scaleByExponent(5);
 
         World.worldLoadPhase = 2;
     }

@@ -86,7 +86,8 @@ public abstract class EntityLiving extends Entity {
             int prevZ = MathUtil.floorDouble(this.prevZ);
             if ((x != prevX || z != prevZ) && this.stepTimer <= 0) {
                 int lowerY = MathUtil.floorDouble(this.y - (this.height/2) - 0.1);
-                CosmicEvolution.instance.soundPlayer.playSound(this.x, lowerY, this.z, new Sound(Block.list[CosmicEvolution.instance.save.activeWorld.getBlockID(x, lowerY, z)].getStepSound(x, lowerY, z), false, 1f), new Random().nextFloat(0.6F, 1));
+                boolean standingOnSnowLayer = CosmicEvolution.instance.save.activeWorld.getBlockID(x, MathUtil.floorDouble(this.y), z) == Block.snowLayer.ID;
+                CosmicEvolution.instance.soundPlayer.playSound(this.x, lowerY, this.z, new Sound(standingOnSnowLayer ? Block.snowLayer.getStepSound(0,0,0) :  Block.list[CosmicEvolution.instance.save.activeWorld.getBlockID(x, lowerY, z)].getStepSound(x, lowerY, z), false, 1f), new Random().nextFloat(0.6F, 1));
                 this.stepTimer = 30;
             } else {
                 this.stepTimer--;

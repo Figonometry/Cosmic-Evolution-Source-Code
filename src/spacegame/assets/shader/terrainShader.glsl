@@ -29,8 +29,9 @@ out float fTexId;
 out vec4 fragPosInLightSpace;
 out vec3 fragPosInWorldSpace;
 flat out int isInShadowRange;
+flat out int frostFactor;
+flat out vec3 fNormal;
 out vec3 fPlayerPositionInChunk;
-out vec3 fNormal;
 out vec3 lightDir;
 
 float sinX(float x, float y, float z){
@@ -73,13 +74,23 @@ float halfToFloat(int f16) {
 }
 
 
+int decompressFrostFactor(float texCoord){
+    return (floatBitsToInt(texCoord) >> 8) & 3;
+}
 
 
 
-//first 8 bits are unused, bit order in increments of 6 (x less than 1, x greater than 1, y less than 1, y greater than 1)
+//In order, grayscale image mult, xUV, yUV, frost factor, unused byte, 8 bits, 7 bits, 7 bits, 2 bits and 8 bits
 vec2 decompressTextureCoordinates(float texCoord){
+    const float fractMult = 0.03125f;
     int combinedInt = floatBitsToInt(texCoord);
-    return vec2(((combinedInt >> 18) & 63) != 0 ? ((combinedInt >> 18) & 63) * 0.03125f : float((combinedInt >> 12) & 63), ((combinedInt >> 6) & 63) != 0 ? ((combinedInt >> 6) & 63) * 0.03125f : float(combinedInt & 63));
+    float xUV = (combinedInt >> 18) & 63;
+    xUV *= ((combinedInt >> 17) & 1) == 1 ? fractMult : 1;
+
+    float yUV = (combinedInt >> 11) & 63;
+    yUV *= ((combinedInt >> 10) & 1) == 1 ? fractMult : 1;
+
+    return vec2(xUV,yUV);
 }
 
 //encoded in increments of 8 bits as red, green, blue, the most significant byte is unused as alpha is hard coded to 1
@@ -365,6 +376,9 @@ void main()
         correctPos = windyGrass(correctPos);
     }
 
+    frostFactor = decompressFrostFactor(aTexCoords);
+
+
     fragPosInLightSpace = vec4(lightViewProjectionMatrix * vec4(correctPosRelativeToSun, 1.0));
     gl_Position = vec4(uProjection * uView * vec4(correctPos, 1.0));
 }
@@ -378,9 +392,10 @@ in vec2 fTexCoords;
 in float fTexId;
 in vec4 fragPosInLightSpace;
 flat in int isInShadowRange;
+flat in int frostFactor;
+flat in vec3 fNormal;
 in vec3 fragPosInWorldSpace;
 in vec3 fPlayerPositionInChunk;
-in vec3 fNormal;
 in vec3 lightDir;
 
 uniform sampler2DArray textureArray;
@@ -530,6 +545,41 @@ float getShadowFactor(vec4 fragPosInLightSpace)
     return shadow;
 }
 
+float hash(vec2 p) {
+    p = fract(p * 0.3183099 + vec2(0.71, 0.113));
+    p *= 17.0;
+    return fract(p.x * p.y * (p.x + p.y));
+}
+
+float valueNoise(vec2 p) {
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+
+    vec2 u = f * f * (3.0 - 2.0 * f);
+
+    float a = hash(i);
+    float b = hash(i + vec2(1.0, 0.0));
+    float c = hash(i + vec2(0.0, 1.0));
+    float d = hash(i + vec2(1.0, 1.0));
+
+    return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+}
+
+float fbm(vec2 p) {
+    float value = 0.0;
+    float amplitude = 0.5;
+
+    for (int i = 0; i < 4; i++) {
+        value += amplitude * valueNoise(p);
+        p *= 2.0;
+        amplitude *= 0.5;
+    }
+
+    return value;
+}
+
+
+
 
 
 
@@ -593,4 +643,38 @@ void main()
             }
         }
     }
+
+    if (frostFactor != 0) {
+        float frostPatchSize = 1.5; //Decrease this to increase patach size
+
+        float frostMask = fbm(
+        fNormal.y == 1.0 || fNormal.y == -1.0 ? fragPosInWorldSpace.xz * frostPatchSize :
+        fNormal.x == 1.0 || fNormal.x == -1.0 ? fragPosInWorldSpace.zy * frostPatchSize :
+        fragPosInWorldSpace.xy * frostPatchSize
+        );
+
+        float frostStateFactor = float(frostFactor) / 3.0;
+        float frost = frostMask * frostStateFactor;
+        float frostBoost = pow(frost, 0.75);
+
+        // Compute brightness from final lit color
+        float brightness = dot(color.rgb, vec3(0.299, 0.587, 0.114));
+
+        // Additive frost (day)
+        vec3 frostAdd = mix(color.rgb, vec3(0.85, 0.9, 1.0), frostBoost);
+
+        // Multiplicative frost (night)
+        vec3 frostMul = color.rgb * (1.0 - frostBoost * 0.5);
+
+        // Blend between modes based on brightness
+        float mode = clamp(brightness * 2.0, 0.0, 1.0);
+        vec3 finalColor = mix(frostMul, frostAdd, mode);
+
+        color = vec4(finalColor, color.a);
+    }
+
+
+
+
+    //Frost effect occurs here with fractal sampling, need to figure out how to tell the fragment shader to perform frosting
 }

@@ -869,7 +869,7 @@ public final class EntityPlayer extends EntityLiving {
             this.startViewBob = true;
         }
 
-        if(this.blockUnderPlayer == Block.air.ID || this.isLeavingWater ||  this.isSwinging || this.isShifting || this.inWater){
+        if(this.blockUnderPlayer == Block.air.ID || this.isLeavingWater ||  this.isSwinging || this.isShifting || this.inWater || (this.timeReleasedXAxis != Long.MIN_VALUE || this.timeReleasedZAxis != Long.MIN_VALUE)){
             this.startViewBob = false;
         }
 
@@ -1001,7 +1001,7 @@ public final class EntityPlayer extends EntityLiving {
     public void setBlockPlayerLookingAt(){
         if (!this.ce.save.activeWorld.paused) {
             double[] rayCast = CosmicEvolution.camera.rayCast(3);
-            final double multiplier = 0.05D;
+            final double multiplier = 0.01;
             final double xDif = (rayCast[0] - this.ce.save.thePlayer.x);
             final double yDif = (rayCast[1] - (this.ce.save.thePlayer.y + this.ce.save.thePlayer.height/2));
             final double zDif = (rayCast[2] - this.ce.save.thePlayer.z);
@@ -1009,12 +1009,22 @@ public final class EntityPlayer extends EntityLiving {
             int blockX = 0;
             int blockY = 0;
             int blockZ = 0;
-            for (int loopPass = 0; loopPass < 30; loopPass++) {
-                blockX = MathUtil.floorDouble(this.ce.save.thePlayer.x + xDif * multiplier * loopPass);
-                blockY = MathUtil.floorDouble(this.ce.save.thePlayer.y  + this.ce.save.thePlayer.height/2 + yDif * multiplier * loopPass);
-                blockZ = MathUtil.floorDouble(this.ce.save.thePlayer.z + zDif * multiplier * loopPass);
+            for (int loopPass = 0; loopPass < 300; loopPass++) {
 
-                if (GuiInGame.isBlockVisible(blockX, blockY, blockZ) && (Block.list[this.ce.save.activeWorld.getBlockID(blockX, blockY, blockZ)].ID != Block.air.ID && !(Block.list[this.ce.save.activeWorld.getBlockID(blockX, blockY, blockZ)] instanceof BlockWater))) {
+                double cx = this.ce.save.thePlayer.x + xDif * multiplier * loopPass;
+                double cy = (this.ce.save.thePlayer.y  + this.ce.save.thePlayer.height/2) + yDif * multiplier * loopPass;
+                double cz = this.ce.save.thePlayer.z + zDif * multiplier * loopPass;
+
+
+                blockX = MathUtil.floorDouble(cx);
+                blockY = MathUtil.floorDouble(cy);
+                blockZ = MathUtil.floorDouble(cz);
+
+                short blockID = this.ce.save.activeWorld.getBlockID(blockX, blockY, blockZ);
+                Block block = Block.list[blockID];
+
+                if (GuiInGame.isBlockVisible(blockX, blockY, blockZ) && (Block.list[blockID].ID != Block.air.ID && !(Block.list[blockID] instanceof BlockWater)) &&
+                this.ce.save.activeWorld.intersectsBlockBoundingBox(block, cx, cy, cz)) {
                     this.blockLookingAt[0] = blockX;
                     this.blockLookingAt[1] = blockY;
                     this.blockLookingAt[2] = blockZ;
@@ -1147,6 +1157,11 @@ public final class EntityPlayer extends EntityLiving {
             tessellator.drawTexture2D(shadow, Shader.worldShader2DTexture, CosmicEvolution.camera);
             GL46.glDisable(GL46.GL_BLEND);
         }
+    }
+
+    @Override
+    public String getEntityType() {
+        return this.getClass().getSimpleName();
     }
 
     @Override

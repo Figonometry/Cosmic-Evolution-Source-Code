@@ -50,7 +50,7 @@ public final class BlockItem extends BlockContainer {
 
 
     @Override
-    public int getBlockTexture(int face) {
+    public int getBlockTexture(int x, int y, int z, int face) {
         return switch (face){
             case 2 -> 44;
             case 3 -> 45;

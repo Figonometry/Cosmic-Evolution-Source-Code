@@ -26,6 +26,7 @@ public final class CommandParser {
         this.commands.add("/toggleTime");
         this.commands.add("/summonEntity");
         this.commands.add("/clear");
+        this.commands.add("/killEntities");
     }
 
     public void parseCommand(String inputString){
@@ -81,9 +82,17 @@ public final class CommandParser {
             case "/clear" -> {
                 CosmicEvolution.instance.save.thePlayer.clearInventory();
             }
+            case "/killEntities" -> {
+                this.parseKillEntities(contents);
+            }
         }
 
 
+    }
+
+
+    private void parseKillEntities(String[] commandArgs){
+        CosmicEvolution.instance.save.activeWorld.killEntitiesOfType(commandArgs.length == 1 ? null : commandArgs[1]);
     }
 
 

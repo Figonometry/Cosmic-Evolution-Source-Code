@@ -63,7 +63,7 @@ public final class BlockLog extends Block {
     }
 
     @Override
-    public int getBlockTexture(int face) {
+    public int getBlockTexture(int x, int y, int z, int face) {
        switch (this.ID){
            case 12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27 -> {
                return switch (face) {

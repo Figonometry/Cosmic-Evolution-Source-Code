@@ -68,24 +68,36 @@ public final class ChunkController {
 
 
     public void update() {
-        this.playerChunkX = MathUtil.floorDouble(this.parentWorld.ce.save.thePlayer.x) >> 5;
-        this.playerChunkY = MathUtil.floorDouble(this.parentWorld.ce.save.thePlayer.y) >> 5;
-        this.playerChunkZ = MathUtil.floorDouble(this.parentWorld.ce.save.thePlayer.z) >> 5;
-        if (!this.loadedInitialColumn) {
+        synchronized (this.bindingChunks) {
+            Chunk chunk;
+            if (this.bindingChunks.size() > 0) {
+                chunk = this.bindingChunks.get(0);
+                chunk.bindRenderData();
+                this.bindingChunks.remove(0);
+                this.bindingChunks.trimToSize();
 
+                if(chunk.updateImmediately){
+                    chunk.markDirty();
+                }
+            }
+        }
+    }
+
+
+    private void handlePlayerInitialLoad(){
             if(!CosmicEvolution.instance.save.thePlayer.loadedFromFile) {
                 int count = 0;
                 WorldEarth earth = (WorldEarth) this.parentWorld;
-                while (earth.globalElevationMap.elevation[earth.convertBlockZToGlobalMap(MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z))][earth.convertBlockXToGlobalMap(MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x))] < 0
-                || this.isDesert(MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x), 0, MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z))) {
-                        CosmicEvolution.instance.save.thePlayer.z = 489.1328125 * count * 10;
+                while (earth.globalElevationMap.elevation[(int) earth.convertBlockZToGlobalMap(MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z))][(int) earth.convertBlockXToGlobalMap(MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x))] < 0
+                        || this.isDesert(MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x), 0, MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z))) {
+                    CosmicEvolution.instance.save.thePlayer.z = 489.1328125 * count * 10;
 
-                        if(CosmicEvolution.instance.save.thePlayer.z >= (double) this.parentWorld.size / 4){
-                            count = 0;
-                            CosmicEvolution.instance.save.thePlayer.x -= 25000;
-                            continue;
-                        }
-                        count++;
+                    if(CosmicEvolution.instance.save.thePlayer.z >= (double) this.parentWorld.size / 4){
+                        count = 0;
+                        CosmicEvolution.instance.save.thePlayer.x -= 25000;
+                        continue;
+                    }
+                    count++;
                 }
 
                 CosmicEvolution.instance.save.spawnX = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x);
@@ -125,30 +137,27 @@ public final class ChunkController {
                 }
             }
             this.loadedInitialColumn = true;
-        }
-        this.loadOrUnloadChunks();
-        this.numberOfLoadedChunks = this.numberOfLoadedChunks();
-        this.populateChunks();
-        this.rebuildDirtyChunks();
-
-        this.checkForMissedChunksAndCheckForUpdateTime();
-
-        synchronized (this.bindingChunks) {
-            Chunk chunk;
-            if (this.bindingChunks.size() > 0) {
-                chunk = this.bindingChunks.get(0);
-                chunk.bindRenderData();
-                this.bindingChunks.remove(0);
-                this.bindingChunks.trimToSize();
-
-                if(chunk.updateImmediately){
-                    chunk.markDirty();
-                }
-            }
-        }
     }
 
     public void tick(){
+        this.playerChunkX = MathUtil.floorDouble(this.parentWorld.ce.save.thePlayer.x) >> 5;
+        this.playerChunkY = MathUtil.floorDouble(this.parentWorld.ce.save.thePlayer.y) >> 5;
+        this.playerChunkZ = MathUtil.floorDouble(this.parentWorld.ce.save.thePlayer.z) >> 5;
+
+        if(!this.loadedInitialColumn && World.worldLoadPhase >= 2){
+            this.handlePlayerInitialLoad();
+        }
+
+        if(World.worldLoadPhase >= 2) {
+            this.loadOrUnloadChunks();
+            this.numberOfLoadedChunks = this.numberOfLoadedChunks();
+            this.populateChunks();
+            this.rebuildDirtyChunks();
+        }
+
+        this.checkForMissedChunksAndCheckForUpdateTime();
+
+
         if(!this.parentWorld.paused) {
             this.renderWorldScene.chunksThatContainEntities.clear();
             this.entityCap = this.numberOfLoadedChunks / 100;
@@ -288,8 +297,10 @@ public final class ChunkController {
                 chunk = this.nonPopulatedChunks.get(i);
                 if (chunk != null) {
                     if (this.parentWorld.chunkFullySurrounded(chunk.x, chunk.y, chunk.z) && !chunk.populated) {
-                        this.chunkTerrainHandler.populateChunk(chunk);
+                        CosmicEvolution.threadJobs.incrementAndGet();
+                        ChunkJobThreadScheduler.chunkJobQueue.add(new ChunkJob((float) MathUtil.distance3DSquared(playerChunkX << 5, playerChunkY << 5, playerChunkZ << 5, chunk.x << 5, chunk.y << 5, chunk.z << 5), new ThreadPopulateChunk(chunk, this.parentWorld)));
                         this.nonPopulatedChunks.remove(chunk);
+                        break; //Only execute the first available chunk and pop, 60 ticks pass in a second, most chunks should populate within a second, this reduces load on each frame since population is an intensive process and runs synchronously
                     }
                 }
             }
@@ -370,10 +381,6 @@ public final class ChunkController {
                     chunk.elementOffsetTransparent = 0;
                     chunk.needsToUpdate = false;
                     chunk.updating = true;
-                    if (chunk.updateSkylight) {
-                        chunk.setSkyLight();
-                        chunk.updateSkylight = false;
-                    }
                     CosmicEvolution.threadJobs.incrementAndGet();
                     ChunkJobThreadScheduler.chunkJobQueue.add(new ChunkJob((float) MathUtil.distance3DSquared(playerChunkX << 5, playerChunkY << 5, playerChunkZ << 5, chunk.x << 5, chunk.y << 5, chunk.z << 5), new ThreadRebuildChunk(chunk, this.parentWorld)));
                     rebuildsStarted++;

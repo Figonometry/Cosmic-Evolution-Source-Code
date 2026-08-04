@@ -6,7 +6,7 @@ public final class BlockCactus extends Block {
     }
 
     @Override
-    public int getBlockTexture(int face){
+    public int getBlockTexture(int x, int y, int z, int face){
         return switch (face) {
             case 0 -> this.textureID + 1;
             case 1 -> this.textureID + 2;

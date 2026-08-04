@@ -106,7 +106,7 @@ public final class EntityItem extends EntityNonLiving {
 
     @Override
     public String getEntityType(){
-        return "EntityItem";
+        return this.getClass().getSimpleName();
     }
 
     @Override

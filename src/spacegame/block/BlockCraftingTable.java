@@ -15,7 +15,7 @@ public final class BlockCraftingTable extends Block {
     }
 
     @Override
-    public int getBlockTexture(int face) {
+    public int getBlockTexture(int x, int y, int z, int face) {
         switch (this.ID){
             case 132 -> { //Primitive crafting table
                 switch (face){ //40 is the side, 41 is the top

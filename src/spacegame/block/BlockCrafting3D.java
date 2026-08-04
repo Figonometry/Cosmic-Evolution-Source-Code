@@ -30,7 +30,7 @@ public final class BlockCrafting3D extends Block {
     }
 
     @Override
-    public int getBlockTexture(int face) {
+    public int getBlockTexture(int x, int y, int z, int face) {
         return this.textureID;
     }
 

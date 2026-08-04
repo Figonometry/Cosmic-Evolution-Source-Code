@@ -35,6 +35,10 @@ public final class ThreadRebuildChunk implements Runnable {
             this.workingChunk.notifyAllBlocks();
             this.workingChunk.firstRender = false;
         }
+        if (this.workingChunk.updateSkylight) {
+            this.workingChunk.setSkyLight();
+            this.workingChunk.updateSkylight = false;
+        }
         this.workingChunk.shouldRender = this.workingChunk.checkIfChunkShouldRender();
         if (!this.workingChunk.shouldRender) {return;}
         RenderBlocks renderBlocks = new RenderBlocks();
@@ -193,7 +197,7 @@ public final class ThreadRebuildChunk implements Runnable {
 
     private void addBlockToRenderData(short block, int index, int face, int[] greedyMeshSize, RenderBlocks renderBlocks) {
         switch (Block.list[block].blockName) {
-            case "WATER", "TALL_GRASS", "FLOWING_WATER" ->
+            case "WATER", "FLOWING_WATER" ->
                     renderBlocks.renderTransparentBlock(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);
             case "WATER_FULL" -> renderBlocks.renderFullWater(this.workingChunk, this.parentWorld, block, index, face);
             case "SAPLING" -> renderBlocks.renderSapling(this.workingChunk, this.parentWorld, block, index, face);

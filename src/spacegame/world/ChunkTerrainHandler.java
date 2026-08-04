@@ -1,8 +1,10 @@
 package spacegame.world;
 
 import spacegame.block.Block;
+import spacegame.block.BlockWater;
 import spacegame.block.ITickable;
 import spacegame.core.CosmicEvolution;
+import spacegame.util.LongHasher;
 
 import java.awt.*;
 import java.util.Random;
@@ -138,7 +140,12 @@ public final class ChunkTerrainHandler {
 
     public boolean isDesert(int x, int y, int z){
         double rainfall = this.world.getAverageRainfall(x,z);
-        return rainfall < 0.3;
+        return rainfall < 0.3 && !this.isFrozenBiome(x,y,z);
+    }
+
+    public boolean isFrozenBiome(int x, int y, int z){
+        double temperature = this.world.getAverageTemperature(x,y,z);
+        return temperature < 0.3;
     }
 
 
@@ -159,14 +166,20 @@ public final class ChunkTerrainHandler {
         return (this.earth.scaleNoise.getNoiseRaw(x >> 5,z >> 5) + this.earth.secondaryScaleNoise.getNoiseRaw(x >> 5, z >> 5)) / 2;
     }
 
+    public double getTreeNoise(int x, int z){
+       return (this.earth.treeNoise.getNoiseRaw(x, z) + this.earth.secondaryTreeNoise.getNoiseRaw(x, z)) * 0.5;
+    }
+
+    public int getChunkTreeDensity(int x, int z){
+        return (int) (this.earth.treeDensityNoise1.getNoise(x,z) + this.earth.treeDensityNoise2.getNoise(x,z) * 0.5f);
+    }
+
     public void populateChunk(Chunk chunk) {
         //retrieve a list of all grass blocks, and maybe other blocks to not have to loop all 32k blocks at once
-        Random rand = new Random(CosmicEvolution.instance.save.seed & (chunk.x + chunk.y * chunk.z));
+        Random rand = new Random(CosmicEvolution.instance.save.seed & new LongHasher().hash(CosmicEvolution.instance.save.seed, String.valueOf(chunk.x & chunk.y * chunk.z)));
         WorldGenTree worldGenTree;
-        int treeCount = 0;
         int rockCount = 0;
         if(chunk.parentWorld instanceof WorldEarth){
-            treeCount = 2 + ((WorldEarth)chunk.parentWorld).treeNoise.getNoise(chunk.x, chunk.z);
             rockCount = 2 + ((WorldEarth)chunk.parentWorld).treeNoise.getNoise(chunk.z, chunk.x);
         }
         int berryClusterCount = rand.nextInt(40) == 0 ? 1 : 0;
@@ -222,18 +235,26 @@ public final class ChunkTerrainHandler {
             cactusCount--;
         }
 
-        while (treeCount > 0 && grassIndex > 0) {
-            worldGenTree = new WorldGenTree(chunk, (WorldEarth) chunk.parentWorld, grassIndices[rand.nextInt(grassIndices.length)], true);
-            treeCount--;
+        int treeX;
+        int treeZ;
+        for(int i = 0; i < grassIndices.length; i += 96 - this.getChunkTreeDensity(chunk.x, chunk.z)){ //interval for i directly controls tree density
+            treeX = chunk.getBlockXFromIndex(grassIndices[i]);
+            treeZ = chunk.getBlockZFromIndex(grassIndices[i]);
+            short groundBlockID = chunk.parentWorld.getBlockID(treeX, chunk.getBlockYFromIndex(grassIndices[i]) ,treeZ);
+            if(this.getTreeNoise(treeX, treeZ) < 0 || (groundBlockID != Block.grass.ID && groundBlockID != Block.grassWithClay.ID))continue;
+
+            new WorldGenTree(chunk, (WorldEarth) chunk.parentWorld, grassIndices[rand.nextInt(grassIndices.length)], true);
         }
+
+
+        if(waterIndex > 0 && rand.nextBoolean()) {
+            new WorldGenReeds(chunk, (WorldEarth)chunk.parentWorld, waterIndices[rand.nextInt(waterIndices.length)]);
+        }
+
 
         while (berryClusterCount > 0 && grassIndex > 0){
             new WorldGenBerryBush(chunk, (WorldEarth)chunk.parentWorld, grassIndices[rand.nextInt(grassIndices.length)]);
             berryClusterCount--;
-        }
-
-        if(waterIndex > 0 && rand.nextBoolean()) {
-            new WorldGenReeds(chunk, (WorldEarth)chunk.parentWorld, waterIndices[rand.nextInt(waterIndices.length)]);
         }
 
         int stonePlacementIndex = 0;
@@ -262,6 +283,25 @@ public final class ChunkTerrainHandler {
             }
 
             tallGrassCount--;
+        }
+
+
+        for(int i = 0; i < chunk.blocks.length; i++) {
+            x = chunk.getBlockXFromIndex(i);
+            y = chunk.getBlockYFromIndex(i);
+            z = chunk.getBlockZFromIndex(i);
+            if (this.earth.doesBlockHaveSkyAccess(x, y + 1, z) && this.isFrozenBiome(x, y, z) && this.earth.getBlockID(x, y + 1 , z) == Block.air.ID && (Block.list[chunk.blocks[i]].isSolid) || Block.list[chunk.blocks[i]] instanceof BlockWater) { //place snow and ice, air still overwrites into snow
+                if (Block.list[chunk.blocks[i]] instanceof BlockWater) {
+                    chunk.blocks[i] = Block.ice.ID;
+                } else {
+                    if (chunk.isBlockInCallingChunkExcludeEdge(x, y + 1, z)) {
+                        chunk.blocks[i + 1024] = Block.snowLayer.ID;
+                    } else {
+                        this.earth.setBlock(x, y + 1, z, Block.snowLayer.ID);
+                        chunk.firstRender = true;
+                    }
+                }
+            }
         }
 
         chunk.populated = true;

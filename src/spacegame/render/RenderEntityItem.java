@@ -203,7 +203,7 @@ public final class RenderEntityItem {
         for (int i = 0; i < model.modelFaces.length; i++) {
             if (model.modelFaces[i] == null) continue;
 
-            textureID = model.usesMultipleTextures ? model.modelFaces[i].texture : Block.list[this.blockID].getBlockTexture(this.blockID, model.modelFaces[i].faceType);
+            textureID = model.usesMultipleTextures ? model.modelFaces[i].texture : Block.list[this.blockID].getBlockTexture(this.blockID, 0, 0, 0, model.modelFaces[i].faceType);
 
 
             for(int j = 0; j < model.modelFaces[i].vertices.length; j++){

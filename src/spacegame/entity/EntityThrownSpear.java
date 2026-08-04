@@ -117,6 +117,11 @@ public final class EntityThrownSpear extends EntityProjectile {
         }
     }
 
+    @Override
+    public String getEntityType() {
+        return this.getClass().getSimpleName();
+    }
+
 
     @Override
     public void saveToNBT(NBTTagCompound nbtTagCompound){

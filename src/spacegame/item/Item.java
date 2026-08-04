@@ -186,7 +186,7 @@ public class Item {
     }
 
     public float getTextureID(short ID, short metadata, int face){
-        return ID == block.ID ?  Block.list[metadata].getBlockTexture(metadata, face) : 0;
+        return ID == block.ID ?  Block.list[metadata].getBlockTexture(metadata, 0, 0, 0, face) : 0;
     }
 
     public void onLeftClick(int x, int y, int z, World world, EntityPlayer player){

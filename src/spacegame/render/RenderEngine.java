@@ -488,6 +488,9 @@ public final class RenderEngine {
                 case 93 -> "wheat-8";
                 case 94 -> "item-wheat";
                 case 95 -> "deadCrop";
+                case 96 -> "snowyGrassSide";
+                case 97 -> "snowyGrassSideWithClay";
+                case 98 -> "ice";
                 default -> "missing";
             };
         } else if(textureFolderpath.contains("item")){

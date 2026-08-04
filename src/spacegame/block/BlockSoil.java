@@ -17,7 +17,7 @@ public final class BlockSoil extends Block implements ITimeUpdate, ITickable  {
     }
 
 
-    public int getBlockTexture(int x, int y, int z, int face){
+    public int getBlockTexture(int x, int y, int face, int z){
         if(face != RenderBlocks.TOP_FACE)return this.textureID;
 
         TilledSoilState tilledSoilState = CosmicEvolution.instance.save.activeWorld.getTilledSoilState(x,y,z);

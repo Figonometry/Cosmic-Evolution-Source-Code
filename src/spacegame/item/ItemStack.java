@@ -126,7 +126,7 @@ public final class ItemStack {
                     faces = model.getModelFaceOfType(face);
                     for(int i = 0; i < faces.length; i++){
                         if(faces[i] == null)continue;
-                        textureID = Block.list[this.metadata].getBlockTexture(this.metadata, face);
+                        textureID = Block.list[this.metadata].getBlockTexture(this.metadata, 0, 0, 0, face);
                         vertex1 = new Vector3f(faces[i].vertices[0].x, faces[i].vertices[0].y, faces[i].vertices[0].z).mul(38).rotateY((float)(0.25 * Math.PI)).rotateX((float)(0.20 * Math.PI)).add(position);
                         vertex2 = new Vector3f(faces[i].vertices[1].x, faces[i].vertices[1].y, faces[i].vertices[1].z).mul(38).rotateY((float)(0.25 * Math.PI)).rotateX((float)(0.20 * Math.PI)).add(position);
                         vertex3 = new Vector3f(faces[i].vertices[2].x, faces[i].vertices[2].y, faces[i].vertices[2].z).mul(38).rotateY((float)(0.25 * Math.PI)).rotateX((float)(0.20 * Math.PI)).add(position);
@@ -256,7 +256,7 @@ public final class ItemStack {
                     faces = model.getModelFaceOfType(face);
                     for (int i = 0; i < faces.length; i++) {
                         if (faces[i] == null) continue;
-                        textureID = Block.list[this.metadata].getBlockTexture(this.metadata, face);
+                        textureID = Block.list[this.metadata].getBlockTexture(this.metadata, 0, 0, 0, face);
                         vertex1 = new Vector3f(faces[i].vertices[0].x, faces[i].vertices[0].y, faces[i].vertices[0].z).mul(38).rotateY((float) (0.25 * Math.PI)).rotateX((float) (0.20 * Math.PI)).add(position);
                         vertex2 = new Vector3f(faces[i].vertices[1].x, faces[i].vertices[1].y, faces[i].vertices[1].z).mul(38).rotateY((float) (0.25 * Math.PI)).rotateX((float) (0.20 * Math.PI)).add(position);
                         vertex3 = new Vector3f(faces[i].vertices[2].x, faces[i].vertices[2].y, faces[i].vertices[2].z).mul(38).rotateY((float) (0.25 * Math.PI)).rotateX((float) (0.20 * Math.PI)).add(position);

@@ -12,11 +12,11 @@ public final class BlockGrassWithClay extends Block implements ITickable {
 
 
     @Override
-    public int getBlockTexture(int face) {
+    public int getBlockTexture(int x, int y, int z, int face) {
         return switch (face) {
             case 0 -> this.textureID - 2;
             case 1 -> this.textureID + 11;
-            default -> this.textureID;
+            default -> Block.list[CosmicEvolution.instance.save.activeWorld.getBlockID(x,y + 1,z)] instanceof BlockSnow ? 97 : this.textureID; //Side texture
         };
     }
 

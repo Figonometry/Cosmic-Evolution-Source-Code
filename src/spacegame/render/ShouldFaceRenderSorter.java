@@ -21,12 +21,12 @@ public final class ShouldFaceRenderSorter {
             case "FLOWING_WATER" -> this.shouldFaceRenderFlowingWater(secondBlockName, face);
             case "OAK_LOG" -> this.shouldFaceRenderLog(firstBlock,secondBlock, face);
             case "LEAF" -> this.shouldFaceRenderLeaf(firstBlock, secondBlock, face);
-            default -> shouldFaceRenderStandard(secondBlock, face);
+            default -> shouldFaceRenderStandard(firstBlock, secondBlock, face);
         };
 
     }
 
-    private boolean shouldFaceRenderStandard(short secondBlock, int face){
+    private boolean shouldFaceRenderStandard(short firstBlock, short secondBlock, int face){
         if(Block.list[secondBlock].alwaysRenderFace){
             return true;
         }
@@ -39,6 +39,7 @@ public final class ShouldFaceRenderSorter {
                     "DOOR_WEST_CLOSED_HINGE_LEFT", "DOOR_WEST_CLOSED_HINGE_RIGHT", "DOOR_WEST_OPEN_HINGE_LEFT", "DOOR_WEST_OPEN_HINGE_RIGHT", "TILLED_SOIL" -> true;
             case "OAK_LOG" ->
                     (secondBlock != Block.oakLogFullSizeNormal.ID && secondBlock != Block.oakLogFullSizeNorthSouth.ID && secondBlock != Block.oakLogFullSizeEastWest.ID);
+            case "SNOW_LAYER" -> Block.list[firstBlock].ID != Block.snowLayer.ID;
             default -> false;
         };
     }
@@ -65,7 +66,7 @@ public final class ShouldFaceRenderSorter {
     private boolean shouldFaceRenderWater(String secondBlockName, int face){
         return switch (secondBlockName) {
             case "AIR", "TALL_GRASS", "ITEM_STONE", "ITEM_STICK", "LEAF", "LOG_PILE", "BRICK_PILE", "TORCH", "ITEM_BLOCK", "TILLED_SOIL" -> true;
-            case "WATER" -> false;
+            case "WATER", "ICE" -> false;
             default -> face == RenderBlocks.TOP_FACE;
         };
     }
@@ -107,5 +108,6 @@ public final class ShouldFaceRenderSorter {
             default -> firstBlock != secondBlock;
         };
     }
+
 
 }

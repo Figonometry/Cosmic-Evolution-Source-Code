@@ -22,7 +22,7 @@ public final class BlockLeaf extends Block {
     }
 
     @Override
-    public int getBlockTexture(int face){
+    public int getBlockTexture(int x, int y, int z, int face){
         return GameSettings.transparentLeaves ? this.textureID + 14 : this.textureID;
     }
 

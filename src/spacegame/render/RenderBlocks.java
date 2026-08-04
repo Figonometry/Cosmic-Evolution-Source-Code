@@ -3,7 +3,6 @@ package spacegame.render;
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 import spacegame.block.*;
-import spacegame.core.GameSettings;
 import spacegame.item.Item;
 import spacegame.item.ItemTool;
 import spacegame.render.model.ModelFace;
@@ -163,7 +162,7 @@ public class RenderBlocks {
             for (int i = 0; i < modelFace.length; i++) {
                 if (modelFace[i] == null) continue;
                 if (modelFace[i].faceType != face) continue;
-                this.renderTransparentFace(chunk, world, Block.fire.ID, index, face, modelFace[i], new int[2]);
+                this.renderOpaqueFace(chunk, world, Block.fire.ID, index, face, modelFace[i], new int[2]);
             }
         }
 
@@ -917,7 +916,7 @@ public class RenderBlocks {
         this.skyLightReset = 1f;
 
         ModelFace modelFace = Block.list[Block.berryBushNoBerries.ID].blockModel.getModelFace(face);
-        this.renderTransparentFace(chunk, world, Block.berryBushNoBerries.ID, index, face, modelFace, new int[2]);
+        this.renderOpaqueFace(chunk, world, Block.berryBushNoBerries.ID, index, face, modelFace, new int[2]);
 
         Vector3f translation = new Vector3f();
         switch (face){
@@ -942,10 +941,10 @@ public class RenderBlocks {
         }
         if(block == Block.berryBush.ID){
             modelFace = modelFace.translateFace(translation.x, translation.y, translation.z);
-            this.renderTransparentFace(chunk, world, Block.berryBush.ID, index, face, modelFace, new int[2]);
+            this.renderOpaqueFace(chunk, world, Block.berryBush.ID, index, face, modelFace, new int[2]);
         } else if(block == Block.berryBushFlower.ID){
             modelFace = modelFace.translateFace(translation.x, translation.y, translation.z);
-            this.renderTransparentFace(chunk, world, Block.berryBushFlower.ID, index, face, modelFace, new int[2]);
+            this.renderOpaqueFace(chunk, world, Block.berryBushFlower.ID, index, face, modelFace, new int[2]);
         }
     }
 
@@ -995,7 +994,7 @@ public class RenderBlocks {
         ModelFace modelFace = baseModel.getModelFace(face);
 
 
-        renderTransparentFace(chunk, world, block, index, face, modelFace, new int[2]);
+        renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
     }
 
     public void renderReedGrowing(Chunk chunk, World world, short block, int index, int face){
@@ -1695,11 +1694,7 @@ public class RenderBlocks {
 
         for(int i = 0; i < model.modelFaces.length; i++){
             modelFace = model.modelFaces[i];
-            if(GameSettings.transparentLeaves){
-                this.renderTransparentFace(chunk, world, block, index, face, modelFace, new int[2]);
-            } else {
-                this.renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
-            }
+            this.renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
         }
     }
 
@@ -1718,11 +1713,7 @@ public class RenderBlocks {
         model.translateModel(0.5f, 0, 0.5f);
 
         for(int i = 0; i < model.modelFaces.length; i++){
-            if(model.modelFaces[i].texture == 24){
-               this.renderTransparentFace(chunk, world, block, index, face, model.modelFaces[i], new int[2]);  //Leaves
-            } else {
-                this.renderOpaqueFace(chunk, world, block, index, face, model.modelFaces[i], new int[2]);  //Trunk
-            }
+            this.renderOpaqueFace(chunk, world, block, index, face, model.modelFaces[i], new int[2]);  //Trunk
         }
     }
 
@@ -1758,7 +1749,7 @@ public class RenderBlocks {
 
 
         for (int i = 0; i < model.modelFaces.length; i++) {
-            this.renderTransparentFace(chunk, world, block, index, face, model.modelFaces[i], new int[2]);
+            this.renderOpaqueFace(chunk, world, block, index, face, model.modelFaces[i], new int[2]);
         }
     }
 
@@ -3066,30 +3057,53 @@ public class RenderBlocks {
         this.skyLightValue = (light1Float + light2Float + light3Float + light4Float) * 0.25f;
     }
 
+    private int calculateFrostAmount(double temperature){
+        //0 above 40
+        //1 35-40
+        //2 35-30
+        //3 below 30, snow generates at 30
 
-    private float compressTextureCoordinates(float x, float y){
-        int xAsIntLessThanOne = 0;
-        int yAsIntLessThanOne = 0;
-        int xAsIntGreaterThanOne = 0;
-        int yAsIntGreaterThanOne = 0;
+        if(temperature > 0.4)return 0;
+        if(temperature > 0.35)return 1;
+        if(temperature > 0.3)return 2;
+
+        return 3;
+    }
+
+
+    private float compressTextureCoordinatesAndFrostFactor(float x, float y, double temperature){
+        int xUV = 0;
+        int yUV = 0;
 
         if(x <= 1.0){
-            xAsIntLessThanOne = (int)(x * 32f);
+            xUV = (int)(x * 32f);
+            xUV <<= 1;
+            xUV |= 1;
         }
 
         if(y <= 1.0){
-            yAsIntLessThanOne = (int)(y * 32f);
+            yUV = (int)(y * 32f);
+            yUV <<= 1;
+            yUV |= 1;
         }
 
         if(x > 1.0){
-            xAsIntGreaterThanOne = (int)x;
+            xUV = (int)x;
+            xUV <<= 1;
         }
 
         if(y > 1.0){
-            yAsIntGreaterThanOne = (int)y;
+            yUV = (int)y;
+            yUV <<= 1;
         }
 
-        int combinedInt = (((this.grayScaleImageMultiplier & 255) << 24) | (xAsIntLessThanOne << 18) | (xAsIntGreaterThanOne << 12) | (yAsIntLessThanOne << 6) | yAsIntGreaterThanOne);
+        //Re encode each section to be 6 bits for UV values plus 1 bit for fractional bool, this leaves 10 bits at the end to encode frost state
+        //None, Light, Medium, Heavy, this leaves one additional byte to encode future information with
+
+        //00000000 0000000 0000000 00 00000000
+        //In order, grayscale image mult, xUV, yUV, frost factor, unused byte
+
+        int combinedInt = (((this.grayScaleImageMultiplier & 255) << 24) | (xUV << 17) | (yUV << 10) | (this.calculateFrostAmount(temperature) << 8));
         return Float.intBitsToFloat(combinedInt);
     }
 
@@ -3120,14 +3134,14 @@ public class RenderBlocks {
         int y = (index >> 10);
         int z = ((index & 1023) >> 5);
 
-        float blockTextureID = blockFace.texture == RenderEngine.NULL_TEXTURE ? getBlockTextureID(block, face) : blockFace.texture;
+        float blockTextureID = blockFace.texture == RenderEngine.NULL_TEXTURE ? getBlockTextureID(block, face, chunk.getBlockXFromIndex(index), chunk.getBlockYFromIndex(index), chunk.getBlockZFromIndex(index)) : blockFace.texture;
 
         if(block == Block.itemBlock.ID){
-            blockTextureID = Block.itemBlock.getBlockTexture(blockFace.texture);
+            blockTextureID = Block.itemBlock.getBlockTexture(0, 0, 0, blockFace.texture);
         }
 
         if(block == Block.tilledSoil.ID){
-            blockTextureID = ((BlockSoil)Block.tilledSoil).getBlockTexture(chunk.getBlockXFromIndex(index), chunk.getBlockYFromIndex(index), chunk.getBlockZFromIndex(index), face);
+            blockTextureID = ((BlockSoil)Block.tilledSoil).getBlockTexture(chunk.getBlockXFromIndex(index), chunk.getBlockYFromIndex(index), face, chunk.getBlockZFromIndex(index));
         }
 
         if(block == Block.crafting3DItem.ID){
@@ -3193,7 +3207,7 @@ public class RenderBlocks {
 
             addVertexFloatOpaque(chunk, compressPosXY(wx, wy));
             addVertexFloatOpaque(chunk, compressColor(red, green, blue));
-            addVertexFloatOpaque(chunk, compressTextureCoordinates(uv[0], uv[1]));
+            addVertexFloatOpaque(chunk, compressTextureCoordinatesAndFrostFactor(uv[0], uv[1], world.getTemperatureWithTimeOfDay(chunk.getBlockXFromIndex(index), chunk.getBlockYFromIndex(index), chunk.getBlockZFromIndex(index))));
             addVertexFloatOpaque(chunk, compressPosZAndTexId(wz, blockTextureID));
             addVertexFloatOpaque(chunk, compressNormalXY(normal.x, normal.y));
             addVertexFloatOpaque(chunk, compressNormalZAndSkyLightValue(normal.z, skyLightValue));
@@ -3210,7 +3224,7 @@ public class RenderBlocks {
         int y = (index >> 10);
         int z = ((index & 1023) >> 5);
 
-        float blockID = blockFace.texture == RenderEngine.NULL_TEXTURE ? getBlockTextureID(block, face) : blockFace.texture;
+        float blockID = blockFace.texture == RenderEngine.NULL_TEXTURE ? getBlockTextureID(block, face, chunk.getBlockXFromIndex(index), chunk.getBlockYFromIndex(index), chunk.getBlockZFromIndex(index)) : blockFace.texture;
 
         Vector3f minVertex = new Vector3f(x,y,z);
         Vector3f maxVertex = new Vector3f(x + 1, y + 1, z + 1);
@@ -3239,7 +3253,7 @@ public class RenderBlocks {
 
             addVertexFloatTransparent(chunk, compressPosXY(wx, wy));
             addVertexFloatTransparent(chunk, compressColor(red, green, blue));
-            addVertexFloatTransparent(chunk, compressTextureCoordinates(uv[0], uv[1]));
+            addVertexFloatTransparent(chunk, compressTextureCoordinatesAndFrostFactor(uv[0], uv[1], world.getTemperatureWithTimeOfDay(chunk.getBlockXFromIndex(index), chunk.getBlockYFromIndex(index), chunk.getBlockZFromIndex(index))));
             addVertexFloatTransparent(chunk, compressPosZAndTexId(wz, blockID));
             addVertexFloatTransparent(chunk, compressNormalXY(normal.x, normal.y));
             addVertexFloatTransparent(chunk, compressNormalZAndSkyLightValue(normal.z, skyLightValue));
@@ -3315,8 +3329,8 @@ public class RenderBlocks {
     }
 
 
-    public static float getBlockTextureID(short block, int face) {
-        return Block.list[block].getBlockTexture(block, face);
+    public static float getBlockTextureID(short block, int face, int x, int y, int z) {
+        return Block.list[block].getBlockTexture(block, x,y,z, face);
     }
 
 }

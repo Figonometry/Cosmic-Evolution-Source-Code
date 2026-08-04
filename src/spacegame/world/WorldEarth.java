@@ -8,6 +8,7 @@ import java.io.File;
 
 public final class WorldEarth extends World {
     public NoiseMap2D treeNoise;
+    public NoiseMap2D secondaryTreeNoise;
     public NoiseMap2D berryNoise;
     public NoiseMap3D terrainNoise;
     public NoiseMap3D secondaryTerrainNoise;
@@ -24,6 +25,8 @@ public final class WorldEarth extends World {
     public NoiseMap2D globalElevationMap;
     public NoiseMap2D globalRainfallMap;
     public NoiseMap2D globalTemperatureMap;
+    public NoiseMap2D treeDensityNoise1;
+    public NoiseMap2D treeDensityNoise2;
 
     public WorldEarth(CosmicEvolution cosmicEvolution, int size) {
         super(cosmicEvolution,size);
@@ -35,7 +38,7 @@ public final class WorldEarth extends World {
         if(!this.worldFolder.exists()){
             this.worldFolder.mkdirs();
         }
-        World.totalMaps = 14;
+        World.totalMaps = 17;
     }
 
     @Override
@@ -43,7 +46,9 @@ public final class WorldEarth extends World {
         LongHasher longHasher = new LongHasher();
         World.worldLoadPhase = 0;
         World.noiseMapsCompleted = 0;
-        this.treeNoise = new NoiseMap2D(255, 255, 2, 3, 1, 2, longHasher.hash(this.ce.save.seed, "EarthLike1"));
+        this.treeNoise = new NoiseMap2D(417, 417, 5, 1, 1, 0, longHasher.hash(this.ce.save.seed, "EarthLike1"));
+        World.noiseMapsCompleted++;
+        this.secondaryTreeNoise = new NoiseMap2D(631, 631, 3, 1, 1, 0, longHasher.hash(this.ce.save.seed, "EarthLike14"));
         World.noiseMapsCompleted++;
         this.berryNoise = new NoiseMap2D(317, 317, 1, 1, 1, 0, longHasher.hash(this.ce.save.seed, "EarthLike2"));
         World.noiseMapsCompleted++;
@@ -54,10 +59,12 @@ public final class WorldEarth extends World {
         this.sampleNoise = new NoiseMap2D(256, 256, 6, 7, 1, 12, longHasher.hash(this.ce.save.seed, "EarthLike5"));
         World.noiseMapsCompleted++;
         this.continentalNoise = new NoiseMap2D(256, 256, 3, 1, 1, 0, longHasher.hash(this.ce.save.seed, "EarthLike6"));
+        this.continentalNoise.scaleByExponent(5);
         World.noiseMapsCompleted++;
         this.secondaryTerrainNoise = new NoiseMap3D(345, 256, 345, 16, longHasher.hash(this.ce.save.seed, "EarthLike7"));
         World.noiseMapsCompleted++;
         this.secondaryContinentalNoise = new NoiseMap2D(631, 631, 3, 1, 1, 0, longHasher.hash(this.ce.save.seed, "EarthLike8"));
+        this.secondaryContinentalNoise.scaleByExponent(5);
         World.noiseMapsCompleted++;
         this.scaleNoise = new NoiseMap2D(128, 128, 16, 0.011, 1, 0, longHasher.hash(this.ce.save.seed, "EarthLike9"));
         World.noiseMapsCompleted++;
@@ -70,6 +77,10 @@ public final class WorldEarth extends World {
         this.rainfallNoise1 = new NoiseMap2D(937, 937, 1, 0.5, 1, 0.5, longHasher.hash(this.ce.save.seed, "EarthLike13"));
         World.noiseMapsCompleted++;
         this.rainfallNoise2 = new NoiseMap2D(1579, 1579, 1, 0.5, 1, 0, longHasher.hash(this.ce.save.seed, "EarthLike14"));
+        World.noiseMapsCompleted++;
+        this.treeDensityNoise1 = new NoiseMap2D(935, 935, 6, 32, 1, 32, longHasher.hash(this.ce.save.seed, "EarthLike16"));
+        World.noiseMapsCompleted++;
+        this.treeDensityNoise2 = new NoiseMap2D(438, 438, 5, 32, 1, 32, longHasher.hash(this.ce.save.seed, "EarthLike17"));
         World.noiseMapsCompleted++;
         World.worldLoadPhase = 1;
     }
@@ -101,14 +112,14 @@ public final class WorldEarth extends World {
     }
 
 
-    public int convertBlockXToGlobalMap(int x) {
+    public double convertBlockXToGlobalMap(int x) {
         double blocksPerPixel = (double) this.size / 4096;
-        return  (int)((x + (this.size / 2)) / blocksPerPixel);
+        return (x + ((double) this.size / 2)) / blocksPerPixel;
     }
 
-    public int convertBlockZToGlobalMap(int z) {
-        double blocksPerPixel = (double) this.size / 8192;
-        return (int)((z + (this.size / 2)) / blocksPerPixel);
+    public double convertBlockZToGlobalMap(int z) {
+        double blocksPerPixel = (double) (this.size * 2) / 8192;
+        return (z + ((double) this.size / 2)) / blocksPerPixel;
     }
 
 

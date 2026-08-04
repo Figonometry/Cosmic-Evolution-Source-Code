@@ -282,7 +282,7 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
                 for (int face = 0; face < model.modelFaces.length; face++) {
                     modelFace = model.modelFaces[face];
                     if (modelFace == null) continue;
-                    textureID = Block.list[hoveredRecipe.requiredItemMetadata[i]].getBlockTexture(hoveredRecipe.requiredItemMetadata[i], modelFace.faceType);
+                    textureID = Block.list[hoveredRecipe.requiredItemMetadata[i]].getBlockTexture(hoveredRecipe.requiredItemMetadata[i], 0, 0, 0, modelFace.faceType);
 
                     tessellator.addVertexTextureArrayWithUV(((red << 16) | (green << 8) | blue), modelFace.vertices[0].x, modelFace.vertices[0].y, modelFace.vertices[0].z, textureID, modelFace.UVs[0][0], modelFace.UVs[0][1]);
                     tessellator.addVertexTextureArrayWithUV(((red << 16) | (green << 8) | blue), modelFace.vertices[1].x, modelFace.vertices[1].y, modelFace.vertices[1].z, textureID, modelFace.UVs[1][0], modelFace.UVs[1][1]);

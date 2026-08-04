@@ -109,7 +109,7 @@ public final class GuiInGame extends Gui {
             fontRenderer.drawString("Rainfall: " + CosmicEvolution.instance.save.activeWorld.getRainfall(playerX, playerZ), leftSide, 40,-15, 16777215, 50, 255);
             fontRenderer.drawString("Time: " + CosmicEvolution.instance.save.time, leftSide, 10, -15, 16777215, 50, 255);
             fontRenderer.drawString("Entities: " + CosmicEvolution.instance.save.activeWorld.chunkController.numLoadedEntities + " / " + CosmicEvolution.instance.save.activeWorld.chunkController.entityCap, leftSide,-20, -15, 16777215, 50, 255);
-        } else {
+     } else {
             fontRenderer.drawString("Temperature: " + CosmicEvolution.instance.save.activeWorld.getDisplayTemperature(playerX, playerY, playerZ) + "F", leftSide, 400,-15, 16777215, 50, 255);
             fontRenderer.drawString("Rainfall: " + CosmicEvolution.instance.save.activeWorld.getRainfall(playerX, playerZ), leftSide, 370,-15, 16777215, 50, 255);
         }
@@ -447,7 +447,7 @@ public final class GuiInGame extends Gui {
                 int colorWest = ((colorVal - 50) << 16) | ((colorVal - 50) << 8) | colorVal - 50;
                 for(int faceIndex = 0; faceIndex < model.modelFaces.length; faceIndex++){
                     face = model.modelFaces[faceIndex];
-                    textureID = Block.list[craftingItem.outputRecipe.requiredItemMetadata[i]].getBlockTexture(craftingItem.outputRecipe.requiredItemMetadata[i], face.faceType);
+                    textureID = Block.list[craftingItem.outputRecipe.requiredItemMetadata[i]].getBlockTexture(craftingItem.outputRecipe.requiredItemMetadata[i], 0, 0, 0, face.faceType);
 
                     switch (face.faceType){
                         case RenderBlocks.TOP_FACE -> {
@@ -793,7 +793,7 @@ public final class GuiInGame extends Gui {
                     for(int i = 0; i < faces.length; i++){
                         if(faces[i] == null)continue;
 
-                        textureID = RenderBlocks.getBlockTextureID(heldBlock, face);
+                        textureID = RenderBlocks.getBlockTextureID(heldBlock, face, MathUtil.floorDouble(player.x), MathUtil.floorDouble(player.y), MathUtil.floorDouble(player.z));
                         vertex1 = new Vector3f(faces[i].vertices[0].x, faces[i].vertices[0].y, faces[i].vertices[0].z).rotate(rotation).add(position);
                         vertex2 = new Vector3f(faces[i].vertices[1].x, faces[i].vertices[1].y, faces[i].vertices[1].z).rotate(rotation).add(position);
                         vertex3 = new Vector3f(faces[i].vertices[2].x, faces[i].vertices[2].y, faces[i].vertices[2].z).rotate(rotation).add(position);
@@ -1141,7 +1141,7 @@ public final class GuiInGame extends Gui {
             ModelLoader modelLoader;
             if (!CosmicEvolution.instance.save.activeWorld.paused) {
                 double[] rayCast = CosmicEvolution.camera.rayCast(3);
-                final double multiplier = 0.05D;
+                final double multiplier = 0.01;
                 final double xDif = (rayCast[0] - CosmicEvolution.instance.save.thePlayer.x);
                 final double yDif = (rayCast[1] - (CosmicEvolution.instance.save.thePlayer.y + CosmicEvolution.instance.save.thePlayer.height/2));
                 final double zDif = (rayCast[2] - CosmicEvolution.instance.save.thePlayer.z);
@@ -1149,16 +1149,21 @@ public final class GuiInGame extends Gui {
                 int blockX = 0;
                 int blockY = 0;
                 int blockZ = 0;
-                for (int loopPass = 0; loopPass < 30; loopPass++) {
-                    blockX = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x + xDif * multiplier * loopPass);
-                    blockY = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.y  + CosmicEvolution.instance.save.thePlayer.height/2 + yDif * multiplier * loopPass);
-                    blockZ = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z + zDif * multiplier * loopPass);
+                for (int loopPass = 0; loopPass < 300; loopPass++) {
+
+                    double cx = CosmicEvolution.instance.save.thePlayer.x + xDif * multiplier * loopPass;
+                    double cy = CosmicEvolution.instance.save.thePlayer.y  + CosmicEvolution.instance.save.thePlayer.height/2 + yDif * multiplier * loopPass;
+                    double cz = CosmicEvolution.instance.save.thePlayer.z + zDif * multiplier * loopPass;
+
+                    blockX = MathUtil.floorDouble(cx);
+                    blockY = MathUtil.floorDouble(cy);
+                    blockZ = MathUtil.floorDouble(cz);
 
                     Block checkedBlock = Block.list[CosmicEvolution.instance.save.activeWorld.getBlockID(blockX, blockY, blockZ)];
                     if(checkedBlock.ID == Block.crafting3DItem.ID)return;
                     if(checkedBlock.ID == Block.craftingItem.ID)return;
 
-                    if (isBlockVisible(blockX, blockY, blockZ)) {
+                    if (isBlockVisible(blockX, blockY, blockZ) && intersectsBlockBoundingBox(checkedBlock, cx, cy, cz)) {
                         if (checkedBlock.ID != Block.air.ID && !(checkedBlock instanceof BlockWater)) {
                             locationX = blockX;
                             locationY = blockY;
@@ -1198,72 +1203,8 @@ public final class GuiInGame extends Gui {
 
                         if(Block.list[block].ID == Block.doorPrimitiveUpper.ID || (block >= Block.doorNorthDoorHingeLeftClosed.ID && block <= Block.doorWestDoorHingeRightOpen.ID)){
                             short lowerBlock = Block.list[block].ID == Block.doorPrimitiveUpper.ID ?  CosmicEvolution.instance.save.activeWorld.getBlockID(locationX, locationY - 1, locationZ) : block;
-
                            ModelLoader baseModel = (block >= Block.doorNorthDoorHingeLeftClosed.ID && block <= Block.doorWestDoorHingeRightOpen.ID) ? Block.primitiveDoorLower : modelLoader;
-
-                            boolean doorOpen = Block.list[lowerBlock].isDoorOpen;
-                            switch (Block.list[lowerBlock].faceDirection){
-                                case "North" -> {
-                                    if(doorOpen && lowerBlock == Block.doorNorthDoorHingeLeftOpen.ID){
-                                        modelLoader = baseModel.copyModel();
-                                        modelLoader.rotateModel(270, 0, 1, 0);
-                                        modelLoader.translateModel(0.5f, 0, 0.9375f);
-                                    } else if(doorOpen && lowerBlock == Block.doorNorthDoorHingeRightOpen.ID){
-                                        modelLoader = baseModel.copyModel();
-                                        modelLoader.rotateModel(90, 0, 1, 0);
-                                        modelLoader.translateModel(0.5f, 0, 0.0625f);
-                                    } else {
-                                        modelLoader = baseModel.copyModel();
-                                        modelLoader.translateModel(0.0625f, 0, 0.5f);
-                                    }
-                                }
-                                case "South" -> {
-                                    if(doorOpen && lowerBlock == Block.doorSouthDoorHingeLeftOpen.ID){
-                                        modelLoader = baseModel.copyModel();
-                                        modelLoader.rotateModel(90, 0, 1, 0);
-                                        modelLoader.translateModel(0.5f, 0, 0.0625f);
-                                    } else if(doorOpen && lowerBlock == Block.doorSouthDoorHingeRightOpen.ID){
-                                        modelLoader = baseModel.copyModel();
-                                        modelLoader.rotateModel(270, 0, 1, 0);
-                                        modelLoader.translateModel(0.5f, 0, 0.9375f);
-                                    } else {
-                                        modelLoader = baseModel.copyModel();
-                                        modelLoader.rotateModel(180, 0, 1, 0);;
-                                        modelLoader.translateModel(0.9375f, 0, 0.5f);
-                                    }
-                                }
-                                case "East" -> {
-                                    if(doorOpen && lowerBlock == Block.doorEastDoorHingeLeftOpen.ID){
-                                        modelLoader = baseModel.copyModel();
-                                        modelLoader.rotateModel(180, 0, 1, 0);
-                                        modelLoader.translateModel(0.0625f, 0, 0.5f);
-                                    } else if(doorOpen && lowerBlock == Block.doorEastDoorHingeRightOpen.ID){
-                                        modelLoader = baseModel.copyModel();
-                                        modelLoader.translateModel(0.9375f, 0, 0.5f);
-                                    } else {
-                                        modelLoader = baseModel.copyModel();
-                                        modelLoader.rotateModel(270, 0, 1, 0);
-                                        modelLoader.translateModel(0.5f, 0, 0.0625f);
-                                    }
-                                }
-                                case "West" -> {
-                                    if(doorOpen && lowerBlock == Block.doorWestDoorHingeLeftOpen.ID){
-                                        modelLoader = baseModel.copyModel();
-                                        modelLoader.translateModel(0.9375f, 0, 0.5f);
-                                    } else if(doorOpen && lowerBlock == Block.doorWestDoorHingeRightOpen.ID){
-                                        modelLoader = baseModel.copyModel();
-                                        modelLoader.rotateModel(180, 0, 1, 0);
-                                        modelLoader.translateModel(0.0625f, 0, 0.5f);
-                                    } else {
-                                        modelLoader = baseModel.copyModel();
-                                        modelLoader.rotateModel(90, 0, 1, 0);
-                                        modelLoader.translateModel(0.5f, 0, 0.9375f);
-                                    }
-                                }
-                                default -> {
-                                    throw new IllegalStateException("Unknown Face Direction on door");
-                                }
-                            }
+                           handleDoorModel(modelLoader, lowerBlock, baseModel);
                         }
 
 
@@ -1318,6 +1259,80 @@ public final class GuiInGame extends Gui {
         }
     }
 
+    private static void handleDoorModel(ModelLoader modelLoader, short lowerBlock, ModelLoader baseModel){
+        boolean doorOpen = Block.list[lowerBlock].isDoorOpen;
+        switch (Block.list[lowerBlock].faceDirection){
+            case "North" -> {
+                if(doorOpen && lowerBlock == Block.doorNorthDoorHingeLeftOpen.ID){
+                    modelLoader = baseModel.copyModel();
+                    modelLoader.rotateModel(270, 0, 1, 0);
+                    modelLoader.translateModel(0.5f, 0, 0.9375f);
+                } else if(doorOpen && lowerBlock == Block.doorNorthDoorHingeRightOpen.ID){
+                    modelLoader = baseModel.copyModel();
+                    modelLoader.rotateModel(90, 0, 1, 0);
+                    modelLoader.translateModel(0.5f, 0, 0.0625f);
+                } else {
+                    modelLoader = baseModel.copyModel();
+                    modelLoader.translateModel(0.0625f, 0, 0.5f);
+                }
+            }
+            case "South" -> {
+                if(doorOpen && lowerBlock == Block.doorSouthDoorHingeLeftOpen.ID){
+                    modelLoader = baseModel.copyModel();
+                    modelLoader.rotateModel(90, 0, 1, 0);
+                    modelLoader.translateModel(0.5f, 0, 0.0625f);
+                } else if(doorOpen && lowerBlock == Block.doorSouthDoorHingeRightOpen.ID){
+                    modelLoader = baseModel.copyModel();
+                    modelLoader.rotateModel(270, 0, 1, 0);
+                    modelLoader.translateModel(0.5f, 0, 0.9375f);
+                } else {
+                    modelLoader = baseModel.copyModel();
+                    modelLoader.rotateModel(180, 0, 1, 0);
+                    modelLoader.translateModel(0.9375f, 0, 0.5f);
+                }
+            }
+            case "East" -> {
+                if(doorOpen && lowerBlock == Block.doorEastDoorHingeLeftOpen.ID){
+                    modelLoader = baseModel.copyModel();
+                    modelLoader.rotateModel(180, 0, 1, 0);
+                    modelLoader.translateModel(0.0625f, 0, 0.5f);
+                } else if(doorOpen && lowerBlock == Block.doorEastDoorHingeRightOpen.ID){
+                    modelLoader = baseModel.copyModel();
+                    modelLoader.translateModel(0.9375f, 0, 0.5f);
+                } else {
+                    modelLoader = baseModel.copyModel();
+                    modelLoader.rotateModel(270, 0, 1, 0);
+                    modelLoader.translateModel(0.5f, 0, 0.0625f);
+                }
+            }
+            case "West" -> {
+                if(doorOpen && lowerBlock == Block.doorWestDoorHingeLeftOpen.ID){
+                    modelLoader = baseModel.copyModel();
+                    modelLoader.translateModel(0.9375f, 0, 0.5f);
+                } else if(doorOpen && lowerBlock == Block.doorWestDoorHingeRightOpen.ID){
+                    modelLoader = baseModel.copyModel();
+                    modelLoader.rotateModel(180, 0, 1, 0);
+                    modelLoader.translateModel(0.0625f, 0, 0.5f);
+                } else {
+                    modelLoader = baseModel.copyModel();
+                    modelLoader.rotateModel(90, 0, 1, 0);
+                    modelLoader.translateModel(0.5f, 0, 0.9375f);
+                }
+            }
+            default -> {
+                throw new IllegalStateException("Unknown Face Direction on door");
+            }
+        }
+    }
+
+    private static boolean intersectsBlockBoundingBox(Block block, double x, double y, double z) {
+        double localX = x - MathUtil.floorDouble(x);
+        double localY = y - MathUtil.floorDouble(y);
+        double localZ = z - MathUtil.floorDouble(z);
+
+        return block.standardCollisionBoundingBox.pointInsideBoundingBox(localX, localY, localZ);
+    }
+
     public static void renderBlockOutline(){
         RenderEngine.WorldTessellator tessellator = RenderEngine.WorldTessellator.instance;
         int locationX = Integer.MIN_VALUE;
@@ -1327,7 +1342,7 @@ public final class GuiInGame extends Gui {
         ModelLoader modelLoader;
         if (!CosmicEvolution.instance.save.activeWorld.paused) {
             double[] rayCast = CosmicEvolution.camera.rayCast(3);
-            final double multiplier = 0.05F;
+            final double multiplier = 0.01;
             final double xDif = (rayCast[0] - CosmicEvolution.instance.save.thePlayer.x);
             final double yDif = (rayCast[1] - (CosmicEvolution.instance.save.thePlayer.y + CosmicEvolution.instance.save.thePlayer.height/2));
             final double zDif = (rayCast[2] - CosmicEvolution.instance.save.thePlayer.z);
@@ -1335,10 +1350,16 @@ public final class GuiInGame extends Gui {
             int blockX = 0;
             int blockY = 0;
             int blockZ = 0;
-            for (int loopPass = 0; loopPass < 30; loopPass++) {
-                blockX = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x + xDif * multiplier * loopPass);
-                blockY = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.y  + CosmicEvolution.instance.save.thePlayer.height/2 + yDif * multiplier * loopPass);
-                blockZ = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z + zDif * multiplier * loopPass);
+            for (int loopPass = 0; loopPass < 300; loopPass++) {
+
+                double cx = CosmicEvolution.instance.save.thePlayer.x + xDif * multiplier * loopPass;
+                double cy = CosmicEvolution.instance.save.thePlayer.y  + CosmicEvolution.instance.save.thePlayer.height/2 + yDif * multiplier * loopPass;
+                double cz = CosmicEvolution.instance.save.thePlayer.z + zDif * multiplier * loopPass;
+
+
+                blockX = MathUtil.floorDouble(cx);
+                blockY = MathUtil.floorDouble(cy);
+                blockZ = MathUtil.floorDouble(cz);
 
                 Block checkedBlock = Block.list[CosmicEvolution.instance.save.activeWorld.getBlockID(blockX, blockY, blockZ)];
 
@@ -1347,7 +1368,7 @@ public final class GuiInGame extends Gui {
                     return;
                 }
 
-                if (isBlockVisible(blockX, blockY, blockZ)) {
+                if (isBlockVisible(blockX, blockY, blockZ) && intersectsBlockBoundingBox(checkedBlock, cx, cy, cz)) {
                     if(checkedBlock.ID != Block.air.ID && !(checkedBlock instanceof BlockWater)){
                             locationX = blockX;
                             locationY = blockY;
@@ -1383,72 +1404,8 @@ public final class GuiInGame extends Gui {
 
                     if(Block.list[block].ID == Block.doorPrimitiveUpper.ID || (block >= Block.doorNorthDoorHingeLeftClosed.ID && block <= Block.doorWestDoorHingeRightOpen.ID)){
                         short lowerBlock = Block.list[block].ID == Block.doorPrimitiveUpper.ID ?  CosmicEvolution.instance.save.activeWorld.getBlockID(locationX, locationY - 1, locationZ) : block;
-
                         ModelLoader baseModel = (block >= Block.doorNorthDoorHingeLeftClosed.ID && block <= Block.doorWestDoorHingeRightOpen.ID) ? Block.primitiveDoorLower : modelLoader;
-
-                        boolean doorOpen = Block.list[lowerBlock].isDoorOpen;
-                        switch (Block.list[lowerBlock].faceDirection){
-                            case "North" -> {
-                                if(doorOpen && lowerBlock == Block.doorNorthDoorHingeLeftOpen.ID){
-                                    modelLoader = baseModel.copyModel();
-                                    modelLoader.rotateModel(270, 0, 1, 0);
-                                    modelLoader.translateModel(0.5f, 0, 0.9375f);
-                                } else if(doorOpen && lowerBlock == Block.doorNorthDoorHingeRightOpen.ID){
-                                    modelLoader = baseModel.copyModel();
-                                    modelLoader.rotateModel(90, 0, 1, 0);
-                                    modelLoader.translateModel(0.5f, 0, 0.0625f);
-                                } else {
-                                    modelLoader = baseModel.copyModel();
-                                    modelLoader.translateModel(0.0625f, 0, 0.5f);
-                                }
-                            }
-                            case "South" -> {
-                                if(doorOpen && lowerBlock == Block.doorSouthDoorHingeLeftOpen.ID){
-                                    modelLoader = baseModel.copyModel();
-                                    modelLoader.rotateModel(90, 0, 1, 0);
-                                    modelLoader.translateModel(0.5f, 0, 0.0625f);
-                                } else if(doorOpen && lowerBlock == Block.doorSouthDoorHingeRightOpen.ID){
-                                    modelLoader = baseModel.copyModel();
-                                    modelLoader.rotateModel(270, 0, 1, 0);
-                                    modelLoader.translateModel(0.5f, 0, 0.9375f);
-                                } else {
-                                    modelLoader = baseModel.copyModel();
-                                    modelLoader.rotateModel(180, 0, 1, 0);
-                                    modelLoader.translateModel(0.9375f, 0, 0.5f);
-                                }
-                            }
-                            case "East" -> {
-                                if(doorOpen && lowerBlock == Block.doorEastDoorHingeLeftOpen.ID){
-                                    modelLoader = baseModel.copyModel();
-                                    modelLoader.rotateModel(180, 0, 1, 0);
-                                    modelLoader.translateModel(0.0625f, 0, 0.5f);
-                                } else if(doorOpen && lowerBlock == Block.doorEastDoorHingeRightOpen.ID){
-                                    modelLoader = baseModel.copyModel();
-                                    modelLoader.translateModel(0.9375f, 0, 0.5f);
-                                } else {
-                                    modelLoader = baseModel.copyModel();
-                                    modelLoader.rotateModel(270, 0, 1, 0);
-                                    modelLoader.translateModel(0.5f, 0, 0.0625f);
-                                }
-                            }
-                            case "West" -> {
-                                if(doorOpen && lowerBlock == Block.doorWestDoorHingeLeftOpen.ID){
-                                    modelLoader = baseModel.copyModel();
-                                    modelLoader.translateModel(0.9375f, 0, 0.5f);
-                                } else if(doorOpen && lowerBlock == Block.doorWestDoorHingeRightOpen.ID){
-                                    modelLoader = baseModel.copyModel();
-                                    modelLoader.rotateModel(180, 0, 1, 0);
-                                    modelLoader.translateModel(0.0625f, 0, 0.5f);
-                                } else {
-                                    modelLoader = baseModel.copyModel();
-                                    modelLoader.rotateModel(90, 0, 1, 0);
-                                    modelLoader.translateModel(0.5f, 0, 0.9375f);
-                                }
-                            }
-                            default -> {
-                                throw new IllegalStateException("Unknown Face Direction on door");
-                            }
-                        }
+                        handleDoorModel(modelLoader, lowerBlock, baseModel);
                     }
 
 
@@ -1589,7 +1546,7 @@ public final class GuiInGame extends Gui {
                 if(face == null)continue;
 
                 float textureID = craftingItem.outputRecipe.requiredItems[i] == Item.block.ID ?
-                        Block.list[craftingItem.outputRecipe.requiredItemMetadata[i]].getBlockTexture(face.faceType) : Block.itemBlock.getBlockTexture(face.texture);
+                        Block.list[craftingItem.outputRecipe.requiredItemMetadata[i]].getBlockTexture(0, 0, 0, face.faceType) : Block.itemBlock.getBlockTexture(0, 0, 0, face.texture);
 
                 tessellator.addVertexTextureArrayWithUV(colorRGB, face.vertices[0].x, face.vertices[0].y, face.vertices[0].z, textureID, face.normal.x, face.normal.y, face.normal.z, skyLight,face.UVs[0][0], face.UVs[0][1]);
                 tessellator.addVertexTextureArrayWithUV(colorRGB, face.vertices[1].x, face.vertices[1].y, face.vertices[1].z, textureID, face.normal.x, face.normal.y, face.normal.z, skyLight,face.UVs[1][0], face.UVs[1][1]);
@@ -1791,6 +1748,8 @@ public final class GuiInGame extends Gui {
         int x = (index % 32);
         int y = (index >> 10);
         int z = ((index % 1024) >> 5);
+
+        if(chunk.topFaceBitMask == null || chunk.bottomFaceBitMask == null || chunk.northFaceBitMask == null || chunk.southFaceBitMask == null || chunk.eastFaceBitMask == null || chunk.westFaceBitMask == null)return;
 
         textureID /= 16F;
 

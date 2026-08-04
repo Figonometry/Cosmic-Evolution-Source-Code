@@ -49,6 +49,10 @@ public final class EntityModelTest extends Entity {
         this.renderShadow();
     }
 
+    @Override
+    public String getEntityType() {
+        return this.getClass().getSimpleName();
+    }
 
 
 }

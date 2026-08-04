@@ -71,6 +71,35 @@ public abstract class MathUtil {
         return (float) (((value % modulus) + modulus) % modulus);
     }
 
+    public static double clamp(double input, double min, double max){
+        return input < max && input > min ? input : input > max ? max : Math.max(input, min);
+    }
+
+    public static long murmurHash3(int x, int y, int z) {
+        long h = 0;
+        h ^= mix(x);
+        h ^= mix(y);
+        h ^= mix(z);
+        return fmix(h);
+    }
+
+    private static long mix(long k) {
+        k *= 0xcc9e2d51L;
+        k = (k << 15) | (k >>> 17);
+        k *= 0x1b873593;
+        return k;
+    }
+
+    private static long fmix(long h) {
+        h ^= h >>> 16;
+        h *= 0x85ebca6bL;
+        h ^= h >>> 13;
+        h *= 0xc2b2ae35L;
+        h ^= h >>> 16;
+        return h;
+    }
+
+
     public static int RGBToInt(float red, float green, float blue){
         int r = (int) (red * 255);
         int g = (int) (green * 255);

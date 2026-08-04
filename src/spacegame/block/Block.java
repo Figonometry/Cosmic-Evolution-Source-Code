@@ -106,6 +106,7 @@ public class Block {
     public static final ModelLoader cropGrowth6Model = new ModelLoader(modelFolderPath + "cropGrowth6.obj", false);
     public static final ModelLoader cropGrowth7Model = new ModelLoader(modelFolderPath + "cropGrowth7.obj", false);
     public static final ModelLoader cropGrowth8Model = new ModelLoader(modelFolderPath + "cropGrowth8.obj", false);
+    public static final ModelLoader snowLayerModel = new ModelLoader(modelFolderPath + "snowLayerModel.obj", false);
 
     public static final ModelLoader size15NormalModel = standardBlockModel.alterStandardBlockModel(1,0,1);
     public static final ModelLoader size14NormalModel = standardBlockModel.alterStandardBlockModel(2,0,2);
@@ -164,6 +165,7 @@ public class Block {
     public static final AxisAlignedBB southDoor = new AxisAlignedBB(0.875,0,0, 1, 1, 1);
     public static final AxisAlignedBB eastDoor = new AxisAlignedBB(0,0,0,1,1,0.125);
     public static final AxisAlignedBB westDoor = new AxisAlignedBB(0, 0, 0.875, 1, 1, 1);
+    public static final AxisAlignedBB snowLayerBB = new AxisAlignedBB(0,0,0,1,0.0625,1);
 
     public static final Block[] list = new Block[Short.MAX_VALUE];
     public static final Block air = new Block((short) 0, -1, blockFolderPath + "air.txt");
@@ -176,7 +178,7 @@ public class Block {
     public static final Block dirt = new BlockDirt((short) 7, 1,blockFolderPath + "dirt.txt");
     public static final Block water = new BlockWater((short) 8, 4, blockFolderPath + "water.txt");
     public static final Block sand = new Block((short) 9, 5, blockFolderPath + "sand.txt"); //I don't like sand
-    public static final Block snow = new Block((short) 10, 6, blockFolderPath + "snow.txt");
+    public static final Block snow = new BlockSnow((short) 10, 6, blockFolderPath + "snow.txt");
     public static final Block stone = new Block((short) 11, 7, blockFolderPath + "stone.txt");
     public static final Block oakLogFullSizeNormal = new BlockLog((short) 12, 8, blockFolderPath + "oakLogFullSizeNormal.txt");
     public static final Block oakLogSize15Normal = new BlockLog((short) 13, 8, blockFolderPath + "oakLogSize15Normal.txt");
@@ -229,8 +231,8 @@ public class Block {
     public static final Block leaf = new BlockLeaf((short) 60, 10,blockFolderPath + "leaf.txt"); //Leaf Erikson
     public static final Block berryBush = new BlockBerryBush((short) 61, 25, blockFolderPath + "berryBush.txt");
     public static final Block berryBushNoBerries = new BlockBerryBush((short) 62, 11, blockFolderPath + "berryBush.txt");
-    public static final Block unused_field_1 = null; //Unused 63
-    public static final Block unused_field_2 = null; //64
+    public static final Block snowLayer = new BlockSnow((short)63, 6, blockFolderPath + "snowLayer.txt");
+    public static final Block ice = new BlockIce((short)64, 98, blockFolderPath + "ice.txt"); //ice ice baby
     public static final Block unused_field_3 = null; //65
     public static final Block unused_field_4 = null; //66
     public static final Block fire = new Block((short)67, 18, blockFolderPath + "fire.txt");
@@ -475,6 +477,7 @@ public class Block {
 
             if (properties[0].equals("boundingBox")) {
                 switch (properties[1]){
+                    case "snowLayerBB" -> this.standardCollisionBoundingBox = snowLayerBB;
                     case "slab" -> this.standardCollisionBoundingBox = slab;
                     case "quarterBlock" -> this.standardCollisionBoundingBox = quarterBlock;
                     case "threeQuartersBlock" -> this.standardCollisionBoundingBox = threeQuartersBlock;
@@ -513,6 +516,7 @@ public class Block {
                     case "saplingModel" -> this.blockModel = saplingModel;
                     case "primitiveCraftingTable" -> this.blockModel = primitiveCraftingTableModel;
                     case "tilledSoilModel" -> this.blockModel = tilledSoilModel;
+                    case "snowLayerModel" -> this.blockModel = snowLayerModel;
 
                     case "waterDefault" -> this.blockModel = waterDefault;
                     case "waterFlowNorth1" -> this.blockModel = waterFlowNorth1;
@@ -612,6 +616,7 @@ public class Block {
                     case "itemPickup" -> this.stepSound = Sound.itemPickup;
                     case "fallDamage" -> this.stepSound = Sound.fallDamage;
                     case "clay" -> this.stepSound = Sound.clay;
+                    case "ice" -> this.stepSound = Sound.ice;
                 }
             }
 
@@ -650,11 +655,11 @@ public class Block {
         }
     }
 
-    public int getBlockTexture(short block, int face) {
-        return list[block].getBlockTexture(face);
+    public int getBlockTexture(short block, int x, int y, int z, int face) {
+        return list[block].getBlockTexture(x,y,z, face);
     }
 
-    public int getBlockTexture(int face) {
+    public int getBlockTexture(int x, int y, int z, int face) {
         return this.textureID;
     }
 
@@ -734,7 +739,9 @@ public class Block {
             world.removeChestLocation(x,y,z);
         }
 
-        world.setBlockWithNotify(x, y, z, list[world.getBlockID(x,y,z)].waterlogged ? water.ID : air.ID, true);
+
+        short currentBlockID = world.getBlockID(x,y,z);
+        world.setBlockWithNotify(x, y, z, list[currentBlockID].waterlogged || list[currentBlockID] instanceof BlockIce ? water.ID :  air.ID, true);
 
 
         if(this.isSolid) {

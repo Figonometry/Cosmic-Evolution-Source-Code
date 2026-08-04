@@ -322,7 +322,7 @@ public final class BlockDoor extends Block {
     }
 
     @Override
-    public int getBlockTexture(int face){
+    public int getBlockTexture(int x, int y, int z, int face){
 
         //The door top contains the texture and the lower block contains the orientation
         return this.textureID;

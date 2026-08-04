@@ -327,7 +327,7 @@ public final class GuiCraftingTableRecipeSelection extends GuiCrafting {
                     faces = model.getModelFaceOfType(face);
                     for (int j = 0; j < faces.length; j++) {
                         if (faces[j] == null) continue;
-                        textureID = Block.list[this.selectableRecipes[i].blockID].getBlockTexture(this.selectableRecipes[i].blockID, face);
+                        textureID = Block.list[this.selectableRecipes[i].blockID].getBlockTexture(this.selectableRecipes[i].blockID, 0, 0, 0, face);
 
 
                         switch (faces[j].faceType){
@@ -504,7 +504,7 @@ public final class GuiCraftingTableRecipeSelection extends GuiCrafting {
                     if (modelFace == null) continue;
 
 
-                    textureID = model.usesMultipleTextures ? modelFace.texture : Block.list[hoveredRecipe.requiredItemMetadata[i]].getBlockTexture(hoveredRecipe.requiredItemMetadata[i], modelFace.faceType);
+                    textureID = model.usesMultipleTextures ? modelFace.texture : Block.list[hoveredRecipe.requiredItemMetadata[i]].getBlockTexture(hoveredRecipe.requiredItemMetadata[i], 0, 0, 0, modelFace.faceType);
 
                     switch (modelFace.faceType){
                         case RenderBlocks.TOP_FACE -> {

@@ -31,7 +31,7 @@ public final class BlockWater extends BlockFluid implements ITimeUpdate {
 
     //There are multiple copies of the water texture to allow for texture coordinate movements in the shader under the different water states
     @Override
-    public int getBlockTexture(int face){
+    public int getBlockTexture(int x, int y, int z, int face){
         switch (face){
             case RenderBlocks.NORTH_FACE, RenderBlocks.SOUTH_FACE, RenderBlocks.EAST_FACE, RenderBlocks.WEST_FACE -> {
                 if(this.ID != Block.fullWater.ID){

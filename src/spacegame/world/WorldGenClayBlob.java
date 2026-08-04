@@ -3,99 +3,122 @@ package spacegame.world;
 import spacegame.block.Block;
 import spacegame.core.CosmicEvolution;
 import spacegame.util.LongHasher;
+import spacegame.util.MathUtil;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Random;
 
 public final class WorldGenClayBlob extends WorldGen {
-    public ArrayList<int[]> blockPos = new ArrayList<>();
-
+    public HashSet<Chunk> touchedChunks = new HashSet<>();
+    public HashMap<Long, Chunk> chunkCache = new HashMap<>();
+    private int startX;
+    private int startY;
+    private int startZ;
+    private int radius;
 
     public WorldGenClayBlob(Chunk chunk, WorldEarth earth, int index){
         if(chunk.blocks[index] != Block.grass.ID)return;
         this.worldEarth = earth;
         this.index = index;
         this.chunk = chunk;
-        this.rand = new Random(new LongHasher().hash(CosmicEvolution.instance.save.seed, String.valueOf(chunk.x + chunk.y + chunk.z + index)));
+        this.seed = new LongHasher().hash(CosmicEvolution.instance.save.seed, String.valueOf(chunk.x + chunk.y + chunk.z + index));
+        this.rand = new Random(this.seed);
+        this.chunkMinX = this.chunk.x << 5;
+        this.chunkMinY = this.chunk.y << 5;
+        this.chunkMinZ = this.chunk.z << 5;
+        this.chunkMaxX = (this.chunk.x << 5) + 31;
+        this.chunkMaxY = (this.chunk.y << 5) + 31;
+        this.chunkMaxZ = (this.chunk.z << 5) + 31;
         this.startGenerate();
     }
     @Override
     public void startGenerate() {
-        int x = this.chunk.getBlockXFromIndex(index);
-        int y = this.chunk.getBlockYFromIndex(index);
-        int z = this.chunk.getBlockZFromIndex(index);
-        int radius = this.rand.nextInt(3, 6);
-        this.generateClay(x,y,z,radius);
+        this.startX = this.chunk.getBlockXFromIndex(index);
+        this.startY = this.chunk.getBlockYFromIndex(index);
+        this.startZ = this.chunk.getBlockZFromIndex(index);
+        this.radius = this.rand.nextInt(3, 6);
         this.generate();
     }
 
-    private void generateClay(int x, int y, int z, int radius){
-        final int xStart = x;
-        final int yStart = y;
-        final int zStart = z;
-        final int boxStartX = x - radius;
-        final int boxStartY = y - radius;
-        final int boxStartZ = z - radius;
-        final int boxEndX = x + radius;
-        final int boxEndY = y + radius;
-        final int boxEndZ = z + radius;
 
-        for(x = boxStartX; x <= boxEndX; x++){
-            for(y = boxStartY; y <= boxEndY; y++){
-                for(z = boxStartZ; z <= boxEndZ; z++){
-                    if(this.doesBlockIntersectSphere(x,y,z, xStart, yStart, zStart, radius) && !this.isBlockAlreadyInUse(x,y,z)){
+    private boolean doesBlockIntersectSphere(int x, int y, int z, int startX, int startY, int startZ, int radiusSq){
+        return MathUtil.distance3DSquared(x,y,z,startX,startY,startZ) <= radiusSq;
+    }
+
+    @Override
+    public void generate() {
+        final int xStart = this.startX;
+        final int yStart = this.startY;
+        final int zStart = this.startZ;
+        final int boxStartX = this.startX - radius;
+        final int boxStartY = this.startY - radius;
+        final int boxStartZ = this.startZ - radius;
+        final int boxEndX = this.startX + radius;
+        final int boxEndY = this.startY + radius;
+        final int boxEndZ = this.startZ + radius;
+
+        for(int x = boxStartX; x <= boxEndX; x++){
+            for(int y = boxStartY; y <= boxEndY; y++){
+                for(int z = boxStartZ; z <= boxEndZ; z++){
+                    if(this.doesBlockIntersectSphere(x,y,z, xStart, yStart, zStart, this.radius * this.radius)){
                         if(this.worldEarth.getBlockID(x,y,z) == Block.grass.ID){
-                            this.blockPos.add(new int[]{x,y,z, Block.grassWithClay.ID});
+                            if(this.isBlockInCallingChunkExcludeEdge(x,y,z)){
+                                this.chunk.blocks[Chunk.getBlockIndexFromCoordinates(x,y,z)] = Block.grassWithClay.ID;
+                            } else {
+                                this.worldEarth.setBlock(x,y,z, Block.grassWithClay.ID);
+                            }
+
+                            int chunkX = x >> 5;
+                            int chunkY = y >> 5;
+                            int chunkZ = z >> 5;
+
+                            long key = (((long)chunkX) << 42) ^ (((long)chunkY) << 21) ^ (long)chunkZ;
+
+                            chunk = this.chunkCache.get(key);
+                            if(chunk == null){
+                                chunk = this.worldEarth.findChunkFromChunkCoordinates(chunkX, chunkY, chunkZ);
+                                this.chunkCache.put(key, chunk);
+                            }
+
+                            this.touchedChunks.add(chunk);
+                            chunk.firstRender = true;
+
                         } else if(this.worldEarth.getBlockID(x,y,z) == Block.dirt.ID){
-                            this.blockPos.add(new int[]{x,y,z, Block.clay.ID});
+                            if(this.isBlockInCallingChunkExcludeEdge(x,y,z)){
+                                this.chunk.blocks[Chunk.getBlockIndexFromCoordinates(x,y,z)] = Block.clay.ID;
+                            } else {
+                                this.worldEarth.setBlock(x,y,z, Block.clay.ID);
+                            }
+
+                            int chunkX = x >> 5;
+                            int chunkY = y >> 5;
+                            int chunkZ = z >> 5;
+
+                            long key = (((long)chunkX) << 42) ^ (((long)chunkY) << 21) ^ (long)chunkZ;
+
+                            chunk = this.chunkCache.get(key);
+                            if(chunk == null){
+                                chunk = this.worldEarth.findChunkFromChunkCoordinates(chunkX, chunkY, chunkZ);
+                                this.chunkCache.put(key, chunk);
+                            }
+
+                            this.touchedChunks.add(chunk);
+                            chunk.firstRender = true;
                         }
                     }
                 }
             }
         }
-    }
 
-    private boolean doesBlockIntersectSphere(int x, int y, int z, int startX, int startY, int startZ, int radius){
-        float a = Math.abs(x -startX);
-        float b = Math.abs(y - startY);
-        float c = Math.abs(z - startZ);
-        float distance = (float) Math.sqrt(a * a + b * b + c * c);
-        return distance <= radius;
-    }
 
-    @Override
-    public void generate() {
-        Chunk chunk;
-        int[] blockData;
-        for (int i = 0; i < this.blockPos.size(); i++) {
-            blockData = this.blockPos.get(i);
-            this.worldEarth.setBlock(blockData[0], blockData[1], blockData[2], (short)blockData[3]);
-            chunk = this.worldEarth.findChunkFromChunkCoordinates(blockData[0] >> 5, blockData[1] >> 5, blockData[2] >> 5);
-            this.addChunkToRebuildQueue(chunk);
+        for(Chunk rebuildChunk : this.touchedChunks){
+            this.addChunkToRebuildQueue(rebuildChunk);
         }
 
-        for (int i = 0; i < this.blockPos.size(); i++) {
-            blockData = this.blockPos.get(i);
-            this.worldEarth.notifySurroundingBlockWithoutRebuild(blockData[0], blockData[1], blockData[2]);
-        }
-
-        this.blockPos.clear();
         markAllChunksInRebuildQueueDirty();
     }
 
-    private boolean isBlockAlreadyInUse(int x, int y, int z){
-        int[] blockData;
-        for(int i = 0; i < this.blockPos.size(); i++){
-            blockData = this.blockPos.get(i);
-            if(blockData[0] == x && blockData[1] == y && blockData[2] == z){
-                return true;
-            }
-        }
-        return false;
-    }
 
-    @Override
-    public boolean checkAreaClear() {
-        return false;
-    }
 }

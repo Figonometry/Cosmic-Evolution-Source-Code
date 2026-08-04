@@ -113,7 +113,7 @@ public final class CosmicEvolution implements Runnable {
         threadPool = new ThreadPoolExecutor(workerCount, workerCount, 0L, TimeUnit.MILLISECONDS, new PriorityBlockingQueue<>());
         this.dirtyChunksSchedulerThread = new Thread(new ChunkJobThreadScheduler());
         this.dirtyChunksSchedulerThread.start();
-        this.title = "Cosmic Evolution Alpha v0.51";
+        this.title = "Cosmic Evolution Alpha v0.52";
         GameSettings.loadOptionsFromFile(this.launcherDirectory);
         this.clearLogFiles(new File(this.launcherDirectory + "/crashReports"));
         this.initLWJGL();
@@ -277,14 +277,14 @@ public final class CosmicEvolution implements Runnable {
 
 
     public void startSave(int saveSlotNumber, String saveName, long seed, SaveSettings saveSettings) {
-        double x = -667829;
+        double x = -150;
         double z = 0;
         this.save = new Save(this, saveSlotNumber, saveName, seed, x, z, saveSettings);
         this.everything = new Universe();
         this.save.thePlayer = new EntityPlayer(this, 0, 0, 0);
         this.save.thePlayer.setPlayerActualPos(x,2, z);
         this.setNewGui(new GuiWorldLoading(this));
-        this.save.setActiveWorld(new WorldEarth(this, 4006976));
+        this.save.setActiveWorld(new WorldEarth(this, 400704));
         this.save.activeWorld.paused = true;
 
         Thread textureLoadThread = new Thread(new ThreadGenerateCelestialBodyTextures(this.everything.earth, true));
@@ -311,7 +311,7 @@ public final class CosmicEvolution implements Runnable {
         }
         this.save.thePlayer.setPlayerActualPos(x, y, z); //This needs to read and set the position using the player's actual location read from file
         this.setNewGui(new GuiWorldLoading(this));
-        this.save.setActiveWorld(new WorldEarth(this, 4006976));
+        this.save.setActiveWorld(new WorldEarth(this, 400704));
         this.save.activeWorld.paused = true;
 
         Thread textureLoadThread = new Thread(new ThreadGenerateCelestialBodyTextures(this.everything.earth, false));
@@ -430,7 +430,7 @@ public final class CosmicEvolution implements Runnable {
                   //      this.save.activeWorld.findChunkFromChunkCoordinates(MathUtil.floorDouble(this.modelTest.x) >> 5, MathUtil.floorDouble(this.modelTest.y) >> 5, MathUtil.floorDouble(this.modelTest.z) >> 5).removeEntity(this.modelTest);
                   //      this.modelTest = null;
                   //  }
-                  //  Shader.terrainShader = this.renderEngine.reloadShader(Shader.terrainShader);
+                 //   Shader.terrainShader = this.renderEngine.reloadShader(Shader.terrainShader);
                     KeyListener.setKeyReleased(GLFW.GLFW_KEY_U);
                 }
             }

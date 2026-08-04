@@ -3,8 +3,10 @@ package spacegame.entity;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
+import spacegame.block.BlockIce;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
+import spacegame.core.Timer;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
@@ -28,6 +30,11 @@ public abstract class Entity {
     public double deltaX;
     public double deltaY;
     public double deltaZ;
+    public double prevDeltaX;
+    public double prevDeltaY;
+    public double prevDeltaZ;
+    public long timeReleasedXAxis = Long.MIN_VALUE;
+    public long timeReleasedZAxis = Long.MIN_VALUE;
     public double prevX;
     public double prevY;
     public double prevZ;
@@ -58,6 +65,10 @@ public abstract class Entity {
     public static int shadow;
     public long despawnTime;
     public Entity lastEntityToHit;
+    public boolean isOnTheRocks; //This is on ice
+    public double prevRawDeltaX;
+    public double prevRawDeltaY;
+    public double prevRawDeltaZ;
     public static ArrayList<AxisAlignedBB> surroundingBlocks = new ArrayList<>();
 
     public void tick() {
@@ -161,9 +172,47 @@ public abstract class Entity {
 
 
     protected void updateGroundPosition(float rawDeltaX, float rawDeltaY, float rawDeltaZ){
-        this.deltaZ = 0.0F;
-        this.deltaX = 0.0F;
-        this.deltaY = 0.0F;
+
+        this.isOnTheRocks = Block.list[CosmicEvolution.instance.save.activeWorld.getBlockID(MathUtil.floorDouble(this.x), MathUtil.floorDouble(this.y) - 1, MathUtil.floorDouble(this.z))] instanceof BlockIce;
+
+        this.deltaX = 0;
+        this.deltaY = 0;
+        this.deltaZ = 0;
+
+        double slipFactor = 0.95;
+
+         if(this.isOnTheRocks) {
+            if(rawDeltaX == 0f) {
+                rawDeltaX = (float) (this.prevRawDeltaX * slipFactor);
+                if(this.timeReleasedXAxis == Long.MIN_VALUE){
+                    this.timeReleasedXAxis = CosmicEvolution.instance.save.time;
+                }
+            } else {
+                this.timeReleasedXAxis = Long.MIN_VALUE;
+            }
+
+            if(rawDeltaZ == 0f) {
+                rawDeltaZ = (float) (this.prevRawDeltaZ * slipFactor);
+                if(this.timeReleasedZAxis == Long.MIN_VALUE){
+                    this.timeReleasedZAxis = CosmicEvolution.instance.save.time;
+                }
+            } else {
+                this.timeReleasedZAxis = Long.MIN_VALUE;
+            }
+
+            if(Math.abs(rawDeltaX) < 0.0001){
+                rawDeltaX = 0;
+                this.timeReleasedXAxis = Long.MIN_VALUE;
+            }
+
+            if(Math.abs(rawDeltaZ) < 0.0001){
+                rawDeltaZ = 0;
+                this.timeReleasedZAxis = Long.MIN_VALUE;
+            }
+        } else {
+             this.timeReleasedXAxis = Long.MIN_VALUE;
+             this.timeReleasedZAxis = Long.MIN_VALUE;
+         }
 
         double speed = this.speed;
 
@@ -173,8 +222,14 @@ public abstract class Entity {
            }
         }
 
+
+        this.prevRawDeltaX = rawDeltaX;
+        this.prevRawDeltaY = rawDeltaY;
+        this.prevRawDeltaZ = rawDeltaZ;
+
+
         float distance = rawDeltaX * rawDeltaX + rawDeltaZ * rawDeltaZ;
-        if (distance >= 0.01F) {
+        if (distance >= 0.0001f) {
             distance = (float) (speed / Math.sqrt(distance));
             rawDeltaX *= distance;
             rawDeltaZ *= distance;
@@ -184,6 +239,15 @@ public abstract class Entity {
             this.deltaZ += rawDeltaZ * cosine + rawDeltaX * sine;
         }
 
+        if(this.timeReleasedXAxis != Long.MIN_VALUE){
+           double mult = Math.pow(slipFactor, (CosmicEvolution.instance.save.time - this.timeReleasedXAxis) + 1);
+           this.deltaX *= mult;
+        }
+
+        if(this.timeReleasedZAxis != Long.MIN_VALUE){
+            double mult = Math.pow(slipFactor, (CosmicEvolution.instance.save.time - this.timeReleasedZAxis) + 1);
+            this.deltaZ *= mult;
+        }
     }
 
     protected void doGravity(){
@@ -276,9 +340,7 @@ public abstract class Entity {
         shadow = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/item/shadow.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
     }
 
-    public String getEntityType(){
-        return "Entity";
-    }
+    public abstract String getEntityType();
 
     public void saveToNBT(NBTTagCompound nbtTagCompound){
 

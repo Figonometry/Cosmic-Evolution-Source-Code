@@ -348,7 +348,7 @@ public final class EntityDeer extends EntityLiving implements IDecayable, IHarve
 
     @Override
     public String getEntityType(){
-        return "EntityDeer";
+        return this.getClass().getSimpleName();
     }
 
     @Override

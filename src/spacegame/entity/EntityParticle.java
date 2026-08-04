@@ -328,6 +328,11 @@ public final class EntityParticle extends EntityNonLiving {
         }
     }
 
+    @Override
+    public String getEntityType() {
+        return this.getClass().getSimpleName();
+    }
+
 
     private  void resetLight() {
         red = 1F;

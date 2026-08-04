@@ -146,6 +146,8 @@ public abstract class World {
 
         this.raining = this.chunkController.renderWorldScene.overrideSkyColor && averagePrecipitation > 0.5f && averageStrength > 0.5f;
 
+        this.raining = false;
+
         if(this.prevRaining != this.raining) {
             this.timeStartedRaining = this.ce.save.time;
         }
@@ -417,7 +419,7 @@ public abstract class World {
         return this.chunkController.findChunkFromChunkCoordinates(x, y, z);
     }
 
-    public ChunkColumnSkylightMap findChunkSkyLightMap(int x, int z) {
+    public synchronized ChunkColumnSkylightMap findChunkSkyLightMap(int x, int z) {
         return this.chunkController.findChunkSkyLightMap(x, z);
     }
 
@@ -661,6 +663,7 @@ public abstract class World {
     }
 
     private void addRainQuad(double x, double y, double z){
+        if(true)return;
         for(int i = 0; i < this.chunkController.renderWorldScene.rainQuads.length; i++){
             if(this.chunkController.renderWorldScene.rainQuads[i] != null)continue;
 
@@ -1532,47 +1535,127 @@ public abstract class World {
         }
     }
 
-    public double getAverageTemperature(int x, int y, int z){
-        if(this instanceof WorldEarth){
-            return ((((WorldEarth) this).globalTemperatureMap.getNoiseRaw(((WorldEarth) this).convertBlockZToGlobalMap(z), ((WorldEarth) this).convertBlockXToGlobalMap(x)) + (((WorldEarth) this).temperatureNoise1.getNoiseRaw(x / 4, z / 4)))) * 0.5;
+    public double getAverageTemperature(int x, int y, int z) { //Returns average temperature by not calculating seasonal variation
+        if (!(this instanceof WorldEarth)) return 0;
+
+        WorldEarth earth = (WorldEarth) this;
+
+        // --- 1. Continuous global map sampling (correct coordinate order) ---
+        double gx = earth.convertBlockXToGlobalMap(x);
+        double gz = earth.convertBlockZToGlobalMap(z);
+
+        double globalTemp = earth.globalTemperatureMap.getNoiseRaw(gx, gz);
+        double localTemp  = earth.temperatureNoise1.getNoiseRaw(x, z);
+        double localTemp2 = earth.temperatureNoise2.getNoiseRaw(x, z);
+
+        // Blend global + local
+        double temp = (globalTemp + localTemp + localTemp2) * 0.85;
+
+        // --- 2. Altitude falloff ---
+        if (y > 0) {
+            temp -= (y / 5.0) * 0.01;
         }
-        return 0;
+
+        // --- 3. Cosine latitude model (matches global map) ---
+        // Convert world X coordinate into [-π/2, π/2]
+        double lat = Math.PI * ((double)Math.abs(x) / this.size - 0.5);
+        double latitudeFactor = Math.cos(lat);        // 1 at equator, 0 at poles
+
+        double tempChangeFromLat = latitudeFactor;    // warm at equator
+        double varianceFromLat   = 1.0 - latitudeFactor;
+
+        temp -=  lat < 1 ? tempChangeFromLat : lat;
+
+
+        return temp;
     }
 
     public double getAverageRainfall(int x, int z){
-        if(this instanceof WorldEarth){
-            return ((((WorldEarth) this).globalRainfallMap.getNoiseRaw(((WorldEarth) this).convertBlockZToGlobalMap(z), ((WorldEarth) this).convertBlockXToGlobalMap(x)) + (((WorldEarth) this).rainfallNoise1.getNoiseRaw(x / 4, z / 4)))) * 0.5;
+        if(this instanceof WorldEarth) {
+            WorldEarth earth = (WorldEarth) this;
+
+            double gx = earth.convertBlockXToGlobalMap(x);
+            double gz = earth.convertBlockZToGlobalMap(z);
+
+            double globalRainfall = earth.globalRainfallMap.getNoiseRaw(gx, gz);
+            double localRainfall  = earth.rainfallNoise1.getNoiseRaw(x, z);
+            double localRainfall2 = earth.rainfallNoise2.getNoiseRaw(x, z);
+
+            // Blend global + local
+
+            return (globalRainfall + localRainfall + localRainfall2) * 0.85;
         }
         return 0;
     }
 
     public double getRainfall(int x, int z){
         if(this instanceof WorldEarth) {
-            return ((((WorldEarth) this).globalRainfallMap.getNoiseRaw(((WorldEarth) this).convertBlockZToGlobalMap(z), ((WorldEarth) this).convertBlockXToGlobalMap(x)) + (((WorldEarth) this).rainfallNoise1.getNoiseRaw(x / 4, z / 4)))) * 0.5;
+            WorldEarth earth = (WorldEarth) this;
+
+            double gx = earth.convertBlockXToGlobalMap(x);
+            double gz = earth.convertBlockZToGlobalMap(z);
+
+            double globalRainfall = earth.globalRainfallMap.getNoiseRaw(gx, gz);
+            double localRainfall  = earth.rainfallNoise1.getNoiseRaw(x, z);
+            double localRainfall2 = earth.rainfallNoise2.getNoiseRaw(x, z);
+
+            // Blend global + local
+
+            return (globalRainfall + localRainfall + localRainfall2) * 0.85;
         }
         return 0;
     }
 
     public double getTemperatureWithoutTimeOfDay(int x, int y, int z){
-        if(this instanceof WorldEarth) {
-            double temp = ((((WorldEarth) this).globalTemperatureMap.getNoiseRaw(((WorldEarth) this).convertBlockZToGlobalMap(z), ((WorldEarth) this).convertBlockXToGlobalMap(x)) + (((WorldEarth) this).temperatureNoise1.getNoiseRaw(x / 4, z / 4)))) * 0.5;
-            if (y > 0) {
-                temp -= ((y / 5d) * 0.01);
-            }
-            double latitude = Math.abs(x);
-            latitude = (int) ((latitude / (this.size / 2f)) * 90f);
-            double varianceFromLat = this.getTempVarianceFromLat(latitude);
-            double tempChangeFromLat = this.getTempChangeFromLatitude(latitude);
-            double partOfOrbit = this.getPortionOfOrbit(); //0 - 0.25 spring, 0.25 - 0.5 summer, 0.5 - 0.75 fall, 0.75 - 1.0/0.0 winter
-            double radians = Math.toRadians(360 * partOfOrbit);
+        if (!(this instanceof WorldEarth)) return 0;
 
-            temp += tempChangeFromLat;
-            temp = x < 0 ? temp + (MathUtil.sin(radians) * varianceFromLat) : temp + (MathUtil.sin(radians + Math.PI) * varianceFromLat);
+        WorldEarth earth = (WorldEarth) this;
 
+        // --- 1. Continuous global map sampling (correct coordinate order) ---
+        double gx = earth.convertBlockXToGlobalMap(x);
+        double gz = earth.convertBlockZToGlobalMap(z);
 
-            return temp;
+        double globalTemp = earth.globalTemperatureMap.getNoiseRaw(gx, gz);
+        double localTemp  = earth.temperatureNoise1.getNoiseRaw(x, z);
+        double localTemp2 = earth.temperatureNoise2.getNoiseRaw(x, z);
+
+        // Blend global + local
+        double temp = (globalTemp + localTemp + localTemp2) * 0.85;
+
+        // --- 2. Altitude falloff ---
+        if (y > 0) {
+            temp -= (y / 5.0) * 0.01;
         }
-        return 0;
+
+        // --- 3. Cosine latitude model (matches global map) ---
+        // Convert world X coordinate into [-π/2, π/2]
+        double lat = Math.PI * ((double)Math.abs(x) / this.size - 0.5);
+        double latitudeFactor = Math.cos(lat);        // 1 at equator, 0 at poles
+
+        double tempChangeFromLat = latitudeFactor;    // warm at equator
+        double varianceFromLat   = 1.0 - latitudeFactor;
+
+        temp -=  lat < 1 ?tempChangeFromLat : lat;
+
+
+
+        // --- 4. Seasonal variation (cosine‑aligned) ---
+        double partOfOrbit = this.getPortionOfOrbit();   // 0 → 1
+        double radians = Math.toRadians(360 * partOfOrbit);
+
+        double latNorm = Math.abs(x) / (size / 2.0);  // 0 at equator, 1 at poles
+        double seasonalAmplitude = varianceFromLat * latNorm;
+
+        // scale by baseline temperature
+        double baseline = temp; // before seasonal term
+        double maxSeasonal = baseline * 0.5; // seasonal can only change temp by ±50%
+
+        double seasonal = MathUtil.sin(radians) * seasonalAmplitude;
+        seasonal = MathUtil.clamp(seasonal, -maxSeasonal, maxSeasonal);
+
+        temp += seasonal;
+
+        return temp;
     }
 
     public double getDisplayTemperature(int x, int y, int z){
@@ -1580,27 +1663,56 @@ public abstract class World {
     }
 
 
-    public double getTemperatureWithTimeOfDay(int x, int y, int z){
-        if(this instanceof WorldEarth) {
-            double temp = ((((WorldEarth) this).globalTemperatureMap.getNoiseRaw(((WorldEarth) this).convertBlockZToGlobalMap(x), ((WorldEarth) this).convertBlockXToGlobalMap(x)) + (((WorldEarth) this).temperatureNoise1.getNoiseRaw(x / 4, z / 4)))) * 0.5;
-            if (y > 0) {
-                temp -= ((y / 5d) * 0.01);
-            }
-            double latitude = Math.abs(x);
-            latitude = (int) ((latitude / (this.size / 2f)) * 90f);
-            double varianceFromLat = this.getTempVarianceFromLat(latitude);
-            double tempChangeFromLat = this.getTempChangeFromLatitude(latitude);
-            double partOfOrbit = this.getPortionOfOrbit(); //0 - 0.25 spring, 0.25 - 0.5 summer, 0.5 - 0.75 fall, 0.75 - 1.0/0.0 winter
-            double radians = Math.toRadians(360 * partOfOrbit);
+    public double getTemperatureWithTimeOfDay(int x, int y, int z) {
+        if (!(this instanceof WorldEarth)) return 0;
 
-            temp += tempChangeFromLat;
-            temp = x < 0 ? temp + (MathUtil.sin(radians) * varianceFromLat) : temp + (MathUtil.sin(radians + Math.PI) * varianceFromLat);
+        WorldEarth earth = (WorldEarth) this;
 
+        // --- 1. Continuous global map sampling (correct coordinate order) ---
+        double gx = earth.convertBlockXToGlobalMap(x);
+        double gz = earth.convertBlockZToGlobalMap(z);
 
-            return temp;
+        double globalTemp = earth.globalTemperatureMap.getNoiseRaw(gx, gz);
+        double localTemp  = earth.temperatureNoise1.getNoiseRaw(x, z);
+        double localTemp2 = earth.temperatureNoise2.getNoiseRaw(x, z);
+
+        // Blend global + local
+        double temp = (globalTemp + localTemp + localTemp2) * 0.85;
+
+        // --- 2. Altitude falloff ---
+        if (y > 0) {
+            temp -= (y / 5.0) * 0.01;
         }
-        return 0;
+
+        // --- 3. Cosine latitude model (matches global map) ---
+        // Convert world X coordinate into [-π/2, π/2]
+        double lat = Math.PI * ((double)Math.abs(x) / this.size - 0.5);
+        double latitudeFactor = Math.cos(lat);        // 1 at equator, 0 at poles
+
+        double tempChangeFromLat = latitudeFactor;    // warm at equator
+        double varianceFromLat   = 1.0 - latitudeFactor;
+
+        temp -=  lat < 1 ?tempChangeFromLat : lat;
+
+        // --- 4. Seasonal variation (cosine‑aligned) ---
+        double partOfOrbit = this.getPortionOfOrbit();   // 0 → 1
+        double radians = Math.toRadians(360 * partOfOrbit);
+
+        double latNorm = Math.abs(x) / (size / 2.0);  // 0 at equator, 1 at poles
+        double seasonalAmplitude = varianceFromLat * latNorm;
+
+// scale by baseline temperature
+        double baseline = temp; // before seasonal term
+        double maxSeasonal = baseline * 0.5; // seasonal can only change temp by ±50%
+
+        double seasonal = MathUtil.sin(radians) * seasonalAmplitude;
+        seasonal = MathUtil.clamp(seasonal, -maxSeasonal, maxSeasonal);
+
+        temp += seasonal;
+
+        return temp;
     }
+
 
 
     public double getTemperature(int x, int y, int z){
@@ -2024,8 +2136,8 @@ public abstract class World {
         double rayLength = dir.length();
         dir.normalize();
 
-        final double step = 0.05f * rayLength;
-        final int maxSteps = 30;
+        final double step = 0.01f * rayLength;
+        final int maxSteps = 300;
 
         double px = ce.save.thePlayer.x;
         double py = (ce.save.thePlayer.y + ce.save.thePlayer.height / 2) - (this.ce.save.thePlayer.isShifting ? EntityPlayer.SHIFT_DISTANCE : 0);
@@ -2099,6 +2211,8 @@ public abstract class World {
 
             // --- LEFT CLICK: BREAK BLOCK ---
             if (isLeftClick) {
+
+
 
                 if (GuiInGame.isBlockVisible(bx, by, bz) &&
                         block.ID != Block.air.ID &&
@@ -2319,6 +2433,7 @@ public abstract class World {
             p.timeStartedBreakingBlock = this.ce.save.time;
         }
 
+
         if(Block.list[this.getBlockID(bx, by, bz)] instanceof BlockCraftingTable && this.getBlockID(bx, by + 1, bz) == Block.craftingItem.ID)return;
 
 
@@ -2337,6 +2452,7 @@ public abstract class World {
             }
 
             p.breakTimer++;
+
 
 
             if (block.hardness > (p.hardnessThreshold + Item.list[held].hardness)) {
@@ -2567,6 +2683,34 @@ public abstract class World {
         if(chunk == null)return;
 
         chunk.markDirty();
+    }
+
+    public void killEntitiesOfType(String entityType){
+        if(entityType != null) {
+            if (entityType.equals(CosmicEvolution.instance.save.thePlayer.getEntityType())) return;
+        }
+
+        Chunk chunk;
+        java.util.List<ChunkRegion> snapshot = new ArrayList<>(this.chunkController.regionMap.values());
+        for(ChunkRegion region : snapshot){
+            if(region != null){
+                for(int j = 0; j < region.chunks.length; j++){
+                    chunk = region.chunks[j];
+                    if(chunk != null){
+                        for(int k = 0; k < chunk.entities.size(); k++){
+                            if(entityType == null){
+                                chunk.entities.get(k).despawn = true;
+                                continue;
+                            }
+
+                            if(chunk.entities.get(k).getEntityType().equals(entityType)){
+                                chunk.entities.get(k).despawn = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
 }

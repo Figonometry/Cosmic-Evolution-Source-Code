@@ -238,7 +238,7 @@ public final class GuiCraftingPottery extends GuiCrafting {
                 faces = model.getModelFaceOfType(face);
                 for (int j = 0; j < faces.length; j++) {
                     if (faces[j] == null) continue;
-                    textureID = Block.list[this.selectableRecipes[i].blockID].getBlockTexture(this.selectableRecipes[i].blockID, face);
+                    textureID = Block.list[this.selectableRecipes[i].blockID].getBlockTexture(this.selectableRecipes[i].blockID, 0, 0, 0, face);
 
                     vertex1 = new Vector3f(faces[j].vertices[0].x, faces[j].vertices[0].y, faces[j].vertices[0].z).mul(38).rotateY((float) (0.25 * Math.PI)).rotateX((float) (0.20 * Math.PI)).add(position);
                     vertex2 = new Vector3f(faces[j].vertices[1].x, faces[j].vertices[1].y, faces[j].vertices[1].z).mul(38).rotateY((float) (0.25 * Math.PI)).rotateX((float) (0.20 * Math.PI)).add(position);
@@ -399,7 +399,7 @@ public final class GuiCraftingPottery extends GuiCrafting {
                 for (int face = 0; face < model.modelFaces.length; face++) {
                     modelFace = model.modelFaces[face];
                     if (modelFace == null) continue;
-                    textureID = model.usesMultipleTextures ? modelFace.texture : Block.list[hoveredRecipe.requiredItemMetadata[i]].getBlockTexture(hoveredRecipe.requiredItemMetadata[i], modelFace.faceType);
+                    textureID = model.usesMultipleTextures ? modelFace.texture : Block.list[hoveredRecipe.requiredItemMetadata[i]].getBlockTexture(hoveredRecipe.requiredItemMetadata[i], 0, 0, 0, modelFace.faceType);
 
                     switch (modelFace.faceType){
                         case RenderBlocks.TOP_FACE -> {

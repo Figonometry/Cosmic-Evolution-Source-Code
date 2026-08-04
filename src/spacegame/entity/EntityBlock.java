@@ -108,7 +108,7 @@ public final class EntityBlock extends EntityNonLiving {
 
     @Override
     public String getEntityType(){
-        return "EntityBlock";
+        return this.getClass().getSimpleName();
     }
 
     @Override

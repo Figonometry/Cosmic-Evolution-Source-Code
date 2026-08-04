@@ -31,6 +31,7 @@ public final class GuiCommandList extends Gui {
         commandFormats.add("/toggleTime");
         commandFormats.add("/summonEntity <name> <x> <y> <z>");
         commandFormats.add("/clear");
+        commandFormats.add("/killEntities <Type>");
     }
 
 
