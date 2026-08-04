@@ -267,14 +267,13 @@ public final class GuiCraftingReeds extends GuiCrafting {
         fontRenderer.drawCenteredString("Select Recipe", 0, 128, -15, 16777215, 50, 255);
 
         RecipeSelector hoveredRecipe = this.getSelectedRecipeSelector();
-        if(hoveredRecipe != null) {
-            if (hoveredRecipe.requiredItems != null && hoveredRecipe.requiredItemCount != null) {
+        if(hoveredRecipe != null) { //Background renders but not display name
                 tessellator.toggleOrtho();
                 String displayedName = hoveredRecipe.displayName;
                 float x = MathUtil.getOpenGLMouseX();
                 float y = MathUtil.getOpenGLMouseY();
                 int font = 50;
-                float height = font + 64 + (hoveredRecipe.requiredItemCount.length * 64);
+                float height = font + 64 + (hoveredRecipe.requiredItems != null ? (hoveredRecipe.requiredItemCount.length * 64) : 0);
                 float width = font * ((displayedName.length() + 2) * 0.34f);
 
                 tessellator.addVertex2DTexture(0, x, y, -500, 3);
@@ -290,6 +289,8 @@ public final class GuiCraftingReeds extends GuiCrafting {
 
                 y += height - 50;
                 fontRenderer.drawString(displayedName, x, y, -9, 16777215, font, 255);
+
+            if (hoveredRecipe.requiredItems != null && hoveredRecipe.requiredItemCount != null) {
                 y -= 60;
                 fontRenderer.drawString("Requires", x, y, -9, 16777215, font, 255);
                 y -= 64;

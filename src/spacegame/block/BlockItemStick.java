@@ -1,7 +1,7 @@
 package spacegame.block;
 
 import spacegame.core.MouseListener;
-import spacegame.entity.EntityItem;
+import spacegame.entity.EntityBlock;
 import spacegame.entity.EntityPlayer;
 import spacegame.item.Item;
 import spacegame.world.World;
@@ -17,7 +17,7 @@ public final class BlockItemStick extends Block {
 
             if(playerHeldItem == Item.stoneFragments.ID){
                 world.setBlockWithNotify(x,y,z, Block.air.ID, false);
-                world.addEntity(new EntityItem(x + 0.5, y + 0.1, z + 0.5, Item.block.ID, Block.torchStandardUnlit.ID, (byte) 1, Item.NULL_ITEM_DURABILITY, 0, null));
+                world.addEntity(new EntityBlock(x + 0.5, y + 0.1, z + 0.5, Block.torchStandardUnlit.ID, (byte) 1));
                 MouseListener.rightClickReleased = false;
             }
         }

@@ -967,6 +967,10 @@ public final class Chunk implements Comparable<Chunk> {
     public void renderOpaque(int sunX, int sunY, int sunZ) {
         if(this.elementBufferOpaque == null || this.vertexBufferOpaque == null || this.opaqueVAOID == -10 || this.opaqueVBOID == -10 || this.opaqueEBOID == -10 || this.opaqueVAOID == 0 || this.opaqueVBOID == 0 || this.opaqueEBOID == 0)return;
 
+        if (elementBufferOpaque.limit() == 0) return;
+        if (vertexBufferOpaque.limit() == 0) return;
+
+
         int componentsPerVertex = 6;
         int vertexCount = this.vertexBufferOpaque.limit() / componentsPerVertex;
 
@@ -995,6 +999,11 @@ public final class Chunk implements Comparable<Chunk> {
 
     public void renderTransparent(int sunX, int sunY, int sunZ) {
         if(this.elementBufferTransparent == null || this.vertexBufferTransparent == null || this.transparentVAOID == -10 || this.transparentVBOID == -10 || this.transparentEBOID == -10 || this.transparentVAOID == 0 || this.transparentVBOID == 0 || this.transparentEBOID == 0)return;
+
+        if (elementBufferTransparent.limit() == 0) return;
+        if (vertexBufferTransparent.limit() == 0) return;
+
+
 
         int componentsPerVertex = 6;
         int vertexCount = this.vertexBufferTransparent.limit() / componentsPerVertex;
@@ -1027,6 +1036,8 @@ public final class Chunk implements Comparable<Chunk> {
     public void renderShadowMap(int sunX, int sunY, int sunZ) {
         if (this.elementBufferOpaque == null || this.opaqueVAOID == -10 || this.opaqueVBOID == -10 || this.opaqueEBOID == -10 || this.opaqueVAOID == 0 || this.opaqueVBOID == 0 || this.opaqueEBOID == 0) return;
         if (this.elementBufferOpaque.limit() == 0) return;
+
+
 
         int indexCount  = this.elementBufferTransparent.limit();
         int vertexCount = this.vertexBufferTransparent.limit();

@@ -290,7 +290,7 @@ public final class ChunkTerrainHandler {
             x = chunk.getBlockXFromIndex(i);
             y = chunk.getBlockYFromIndex(i);
             z = chunk.getBlockZFromIndex(i);
-            if (this.earth.doesBlockHaveSkyAccess(x, y + 1, z) && this.isFrozenBiome(x, y, z) && this.earth.getBlockID(x, y + 1 , z) == Block.air.ID && (Block.list[chunk.blocks[i]].isSolid) || Block.list[chunk.blocks[i]] instanceof BlockWater) { //place snow and ice, air still overwrites into snow
+            if (this.earth.doesBlockHaveSkyAccess(x, y + 1, z) && this.isFrozenBiome(x, y, z) && this.earth.getBlockID(x, y + 1 , z) == Block.air.ID && (Block.list[chunk.blocks[i]].isSolid || Block.list[chunk.blocks[i]] instanceof BlockWater)) { //place snow and ice
                 if (Block.list[chunk.blocks[i]] instanceof BlockWater) {
                     chunk.blocks[i] = Block.ice.ID;
                 } else {

@@ -4,6 +4,7 @@ import org.joml.Vector3d;
 import org.joml.Vector3f;
 import spacegame.block.Block;
 import spacegame.block.BlockCraftingTable;
+import spacegame.block.BlockTorch;
 import spacegame.block.BlockWater;
 import spacegame.core.*;
 import spacegame.entity.*;
@@ -2088,6 +2089,7 @@ public abstract class World {
                     if(playerHeldItem != Item.NULL_ITEM_REFERENCE){
                         if(Item.list[playerHeldItem].toolType.equals("knife") && this.ce.save.thePlayer.isShifting){
                             ((IHarvestable) entities.get(i)).dropItems(entities.get(i).x, entities.get(i).y, entities.get(i).z, this, this.ce.save.thePlayer);
+                            MouseListener.rightClickReleased = false;
                         }
                     }
                 }
@@ -2228,7 +2230,7 @@ public abstract class World {
             }
 
             // --- RIGHT CLICK: PLACE BLOCK  ---
-            else if(this.getBlockID(bx, by, bz) != Block.air.ID && !(Block.list[this.getBlockID(bx,by,bz)] instanceof BlockWater)) {
+            else if(this.getBlockID(bx, by, bz) != Block.air.ID && !(Block.list[this.getBlockID(bx,by,bz)] instanceof BlockWater) && !(Block.list[this.getBlockID(bx, by, bz)] instanceof BlockTorch)) {
                 block.handleSpecialRightClickFunctions(bx, by, bz, this, CosmicEvolution.instance.save.thePlayer);
                 this.handleBlockPlacement(bx, by, bz, cx, cy, cz);
                 break;
@@ -2304,6 +2306,7 @@ public abstract class World {
 
 
     public void handleIntersectForInWorldCrafting3DItem(double worldX, double worldY, double worldZ, Vector3d dir, InWorld3DCraftingItem craftingBlock, boolean isLeftClick, int bx, int by, int bz) {
+        if(craftingBlock == null)return;
 
         long now = System.currentTimeMillis();
         if (now - MouseListener.lastTimeClicked < 250) {
