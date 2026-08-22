@@ -2,6 +2,7 @@ package spacegame.world;
 
 import org.joml.Vector3d;
 import spacegame.block.Block;
+import spacegame.block.BlockAxisAlignedBBList;
 import spacegame.entity.Entity;
 import spacegame.entity.EntityLiving;
 
@@ -29,7 +30,7 @@ public final class AxisAlignedBB {
 
 
     public void adjustBlockBoundingBox(int x, int y, int z, short blockID, double entityX, double entityZ) {
-        if (!Block.list[blockID].isSolid && Block.list[blockID].standardCollisionBoundingBox.equals(Block.standardBlock)) {
+        if (!Block.list[blockID].isSolid && Block.list[blockID].standardCollisionBoundingBox.equals(BlockAxisAlignedBBList.standardBlock)) {
             this.minX = x;
             this.maxX = x + 1;
             this.minY = y;

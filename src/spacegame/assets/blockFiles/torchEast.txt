@@ -1,9 +1,0 @@
-itemMetadata:2
-isSolid:false
-isLightBlock:true
-lightBlockValue:12
-lightColor:16760877
-blockName:TORCH
-blockModel:torchEastBlockModel
-alwaysRenderFace:true
-displayName:Torch

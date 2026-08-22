@@ -1,6 +1,9 @@
 package spacegame.world.blockstate;
 
-public final class DoorTransition {
+import spacegame.core.CosmicEvolution;
+import spacegame.world.Chunk;
+
+public final class DoorTransition extends BlockState {
     public int x;
     public int y;
     public int z;
@@ -23,5 +26,14 @@ public final class DoorTransition {
         this.hingeRight = hingeRight;
 
         this.completeTime = this.timeStarted + timeToComplete;
+    }
+
+
+    @Override
+    public void onTick(Chunk callingChunk){
+        if(this.completeTime <= CosmicEvolution.instance.save.time){
+            callingChunk.removeBlockState(this.x, this.y, this.z, MultiState.DOOR_TRANSITION_STATE);
+            callingChunk.markDirty();
+        }
     }
 }

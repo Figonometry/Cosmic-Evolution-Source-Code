@@ -7,6 +7,8 @@ import org.lwjgl.opengl.GL46;
 import org.lwjgl.stb.STBImage;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
+import spacegame.render.texturelists.BlockTextureList;
+import spacegame.render.texturelists.ItemTextureList;
 import spacegame.util.MathUtil;
 
 import java.io.File;
@@ -391,135 +393,214 @@ public final class RenderEngine {
     public static String getBlockName(int textureNumber, String textureFolderpath) {
         if(textureFolderpath.contains("blocks")){
             return switch (textureNumber) {
-                case 0 -> "grass";
-                case 1 -> "dirt";
-                case 2 -> "grassSideTop";
-                case 3 -> "torch";
-                case 4 -> "water"; //Top
-                case 5 -> "sand";
-                case 6 -> "snow";
-                case 7 -> "stone";
-                case 8 -> "logSide";
-                case 9 -> "logTop";
-                case 10 -> "leaf";
-                case 11 -> "berryBushSideBase";
-                case 12 -> "berryBushTopBase";
-                case 13 -> "clay";
-                case 14 -> "claySideBottom";
-                case 15 -> "strawTexture";
-                case 16 -> "campFireBase";
-                case 17 -> "firedRedClay";
-                case 18 -> "fire";
-                case 19 -> "emptyColor";
-                case 20 -> "grassSideBottom";
-                case 21 -> "cactus";
-                case 22 -> "cactusTop";
-                case 23 -> "cactusBottom";
-                case 24 -> "leafTransparent";
-                case 25 -> "berryBushSide";
-                case 26 -> "berryBushTop";
-                case 27 -> "berryBushFlowerSide";
-                case 28 -> "berryBushFlowerTop";
-                case 29 -> "itemStick";
-                case 30 -> "tallGrass";
-                case 31 -> "fireWood";
-                case 32 -> "strawChest";
-                case 33 -> "reedLower";
-                case 34 -> "reedUpper";
-                case 35 -> "seed";
-                case 36 -> "reedGrowing";
-                case 37 -> "sapling";
-                case 38 -> "torchUnlit";
-                case 39 -> "torchBurnedOut";
-                case 40 -> "primitiveCraftingTable";
-                case 41 -> "UNUSED";
-                case 42 -> "primitiveDoorBase";
-                case 43 -> "twine";
+                case BlockTextureList.GRASS_FULL_TOP_TEXTURE -> "grassFullTop";
+                case BlockTextureList.SOIL_MEDIUM_FERTILITY_TEXTURE -> "soilMediumFertility";
+                case BlockTextureList.GRASS_FULL_SIDE_TEXTURE -> "grassFullSide";
+                case BlockTextureList.TORCH_TEXTURE -> "torch";
+                case BlockTextureList.WATER_TOP_TEXTURE -> "water"; //Top
+                case BlockTextureList.SAND_TEXTURE -> "sand";
+                case BlockTextureList.SNOW_TEXTURE -> "snow";
+                case BlockTextureList.STONE_TEXTURE -> "stone";
+                case BlockTextureList.OAK_LOG_SIDE_TEXTURE -> "logSide";
+                case BlockTextureList.OAK_LOG_TOP_TEXTURE -> "logTop";
+                case BlockTextureList.LEAF_OPAQUE_TEXTURE -> "leafOpaque";
+                case BlockTextureList.BERRY_BUSH_TOP_BASE_TEXTURE -> "berryBushTopBase";
+                case BlockTextureList.BERRY_BUSH_SIDE_BASE_TEXTURE -> "berryBushSideBase";
+                case BlockTextureList.CLAY_TEXTURE -> "clay";
+                case BlockTextureList.OBSIDIAN_STONE -> "obsidianStone";
+                case BlockTextureList.STRAW_TEXTURE -> "strawTexture";
+                case BlockTextureList.CAMPFIRE_BASE_TEXTURE -> "campFireBase";
+                case BlockTextureList.FIRED_RED_CLAY_TEXTURE -> "firedRedClay";
+                case BlockTextureList.FIRE_TEXTURE -> "fire";
+                case BlockTextureList.EMPTY_COLOR_TEXTURE -> "emptyColor";
+                case BlockTextureList.OBSIDIAN_GRAVEL -> "obsidianGravel";
+                case BlockTextureList.CACTUS_SIDE_TEXTURE -> "cactusSide";
+                case BlockTextureList.CACTUS_TOP_TEXTURE -> "cactusTop";
+                case BlockTextureList.CACTUS_BOTTOM_TEXTURE -> "cactusBottom";
+                case BlockTextureList.LEAF_TRANSPARENT_TEXTURE -> "leafTransparent";
+                case BlockTextureList.BERRY_BUSH_SIDE_TEXTURE -> "berryBushSide";
+                case BlockTextureList.BERRY_BUSH_TOP_TEXTURE -> "berryBushTop";
+                case BlockTextureList.BERRY_BUSH_FLOWER_TOP_TEXTURE -> "berryBushFlowerTop";
+                case BlockTextureList.BERRY_BUSH_FLOWER_SIDE_TEXTURE -> "berryBushFlowerSide";
+                case BlockTextureList.ITEM_STICK_TEXTURE -> "itemStick";
+                case BlockTextureList.TALL_GRASS_TEXTURE -> "tallGrass";
+                case BlockTextureList.FIREWOOD_TEXTURE -> "fireWood";
+                case BlockTextureList.REED_CHEST_TEXTURE -> "reedChest";
+                case BlockTextureList.GRASS_SMALL_PATCHES_TOP_TEXTURE -> "grassSmallPatchesTop";
+                case BlockTextureList.GRASS_SMALL_PATCHES_SIDE_TEXTURE -> "grassSmallPatchesSide";
+                case BlockTextureList.GRASS_LARGE_PATCHES_TOP_TEXTURE -> "grassLargePatchesTop";
+                case BlockTextureList.GRASS_LARGE_PATCHES_SIDE_TEXTURE -> "grassLargePatchesSide";
+                case BlockTextureList.SNOWY_GRASS_SMALL_PATCHES_SIDE_TEXTURE -> "snowyGrassSmallPatchesSide";
+                case BlockTextureList.TORCH_UNLIT_TEXTURE -> "torchUnlit";
+                case BlockTextureList.TORCH_BURNED_OUT_TEXTURE -> "torchBurnedOut";
+                case BlockTextureList.PRIMITIVE_CRAFTING_TABLE -> "primitiveCraftingTable";
+                case BlockTextureList.SNOWY_GRASS_LARGE_PATCHES_SIDE_TEXTURE -> "snowyGrassLargePatchesSide";
+                case BlockTextureList.PRIMITIVE_DOOR_BASE_TEXTURE -> "primitiveDoorBase";
+                case BlockTextureList.TWINE_TEXTURE -> "twine";
                 //Items
-                case 44 -> "item-stone";
-                case 45 -> "item-berry";
-                case 46 -> "item-leaf";
-                case 47 -> "item-fireWood";
-                case 48 -> "item-rawGameMeat";
-                case 49 -> "item-cookedGameMeat";
-                case 50 -> "item-straw";
-                case 51 -> "item-twine";
-                case 52 -> "item-reedTop";
-                case 53 -> "item-clay";
-                case 54 -> "item-firedRedClay";
-                case 55 -> "item-mud";
-                case 56 -> "item-reedStalk";
-                case 57 -> "item-log";
-                case 58 -> "item-deerPeltTop";
-                case 59 -> "item-animalPeltUnder";
-                case 60 -> "item-wolfPeltTop";
-                case 61 -> "item-rot";
-                case 62 -> "item-primitiveDoorBase";
-                case 63 -> "waterSide"; //Side
-                case 64 -> "water"; //Bottom
-                case 65 -> "water"; //northFlow
-                case 66 -> "water"; //southFlow
-                case 67 -> "water"; //eastFlow
-                case 68 -> "water"; //westFlow
-                case 69 -> "waterSide";
-                case 70 -> "tilledSoil";
-                case 71 -> "item-seedWheatFamily";
-                case 72 -> "item-bone";
-                case 73 -> "item-boneMeal";
-                case 74 -> "wildGrass";
-                case 75 -> "einkornWheat-1";
-                case 76 -> "cropSeed";
-                case 77 -> "fertilizer";
-                case 78 -> "einkornWheat-2";
-                case 79 -> "einkornWheat-3";
-                case 80 -> "einkornWheat-4";
-                case 81 -> "einkornWheat-5";
-                case 82 -> "einkornWheat-6";
-                case 83 -> "einkornWheat-7";
-                case 84 -> "einkornWheat-8";
-                case 85 -> "item-einkornWheat";
-                case 86 -> "wheat-1";
-                case 87 -> "wheat-2";
-                case 88 -> "wheat-3";
-                case 89 -> "wheat-4";
-                case 90 -> "wheat-5";
-                case 91 -> "wheat-6";
-                case 92 -> "wheat-7";
-                case 93 -> "wheat-8";
-                case 94 -> "item-wheat";
-                case 95 -> "deadCrop";
-                case 96 -> "snowyGrassSide";
-                case 97 -> "snowyGrassSideWithClay";
-                case 98 -> "ice";
+                case BlockTextureList.ITEM_STONE_TEXTURE -> "item-stone";
+                case BlockTextureList.ITEM_BERRY_TEXTURE -> "item-berry";
+                case BlockTextureList.ITEM_LEAF_TEXTURE -> "item-leaf";
+                case BlockTextureList.ITEM_FIREWOOD_TEXTURE -> "item-fireWood";
+                case BlockTextureList.ITEM_RAW_GAME_MEAT_TEXTURE -> "item-rawGameMeat";
+                case BlockTextureList.ITEM_COOKED_GAME_MEAT_TEXTURE -> "item-cookedGameMeat";
+                case BlockTextureList.ITEM_STRAW_TEXTURE -> "item-straw";
+                case BlockTextureList.ITEM_TWINE_TEXTURE -> "item-twine";
+                case BlockTextureList.ITEM_REED_TOP_TEXTURE -> "item-reedTop";
+                case BlockTextureList.ITEM_CLAY_TEXTURE -> "item-clay";
+                case BlockTextureList.ITEM_FIRED_RED_CLAY_TEXTURE -> "item-firedRedClay";
+                case BlockTextureList.ITEM_MUD_TEXTURE -> "item-mud";
+                case BlockTextureList.ITEM_REED_STALK_TEXTURE -> "item-reedStalk";
+                case BlockTextureList.ITEM_LOG_TEXTURE -> "item-log";
+                case BlockTextureList.ITEM_DEER_PELT_TOP_TEXTURE -> "item-deerPeltTop";
+                case BlockTextureList.ITEM_ANIMAL_PELT_UNDER_TEXTURE -> "item-animalPeltUnder";
+                case BlockTextureList.ITEM_WOLF_PELT_TOP_TEXTURE -> "item-wolfPeltTop";
+                case BlockTextureList.ITEM_ROT_TEXTURE -> "item-rot";
+                case BlockTextureList.ITEM_PRIMITIVE_DOOR_BASE_TEXTURE -> "item-primitiveDoorBase";
+                case BlockTextureList.WATER_SIDE_TEXTURE -> "waterSide"; //Side
+                case BlockTextureList.WATER_BOTTOM_TEXTURE -> "water"; //Bottom
+                case BlockTextureList.WATER_NORTH_FLOW_TEXTURE -> "water"; //northFlow
+                case BlockTextureList.WATER_SOUTH_FLOW_TEXTURE -> "water"; //southFlow
+                case BlockTextureList.WATER_EAST_FLOW_TEXTURE -> "water"; //eastFlow
+                case BlockTextureList.WATER_WEST_FLOW_TEXTURE -> "water"; //westFlow
+                case BlockTextureList.WATER_SIDE_TEXTURE_2 -> "waterSide";
+                case BlockTextureList.TILLED_SOIL_TEXTURE -> "tilledSoil";
+                case BlockTextureList.ITEM_SEED_WHEAT_FAMILY_TEXTURE -> "item-seedWheatFamily";
+                case BlockTextureList.ITEM_BONE_TEXTURE -> "item-bone";
+                case BlockTextureList.ITEM_BONEMEAL_TEXTURE -> "item-boneMeal";
+                case BlockTextureList.WILD_GRASS_TEXTURE -> "wildGrass";
+                case BlockTextureList.EINKORN_WHEAT_1_TEXTURE -> "einkornWheat-1";
+                case BlockTextureList.CROP_SEED_TEXTURE -> "cropSeed";
+                case BlockTextureList.FERTILIZER_TEXTURE -> "fertilizer";
+                case BlockTextureList.EINKORN_WHEAT_2_TEXTURE -> "einkornWheat-2";
+                case BlockTextureList.EINKORN_WHEAT_3_TEXTURE -> "einkornWheat-3";
+                case BlockTextureList.EINKORN_WHEAT_4_TEXTURE -> "einkornWheat-4";
+                case BlockTextureList.EINKORN_WHEAT_5_TEXTURE -> "einkornWheat-5";
+                case BlockTextureList.EINKORN_WHEAT_6_TEXTURE -> "einkornWheat-6";
+                case BlockTextureList.EINKORN_WHEAT_7_TEXTURE -> "einkornWheat-7";
+                case BlockTextureList.EINKORN_WHEAT_8_TEXTURE -> "einkornWheat-8";
+                case BlockTextureList.ITEM_EINKORN_WHEAT -> "item-einkornWheat";
+                case BlockTextureList.WHEAT_1_TEXTURE -> "wheat-1";
+                case BlockTextureList.WHEAT_2_TEXTURE -> "wheat-2";
+                case BlockTextureList.WHEAT_3_TEXTURE -> "wheat-3";
+                case BlockTextureList.WHEAT_4_TEXTURE -> "wheat-4";
+                case BlockTextureList.WHEAT_5_TEXTURE -> "wheat-5";
+                case BlockTextureList.WHEAT_6_TEXTURE -> "wheat-6";
+                case BlockTextureList.WHEAT_7_TEXTURE -> "wheat-7";
+                case BlockTextureList.WHEAT_8_TEXTURE -> "wheat-8";
+                case BlockTextureList.ITEM_WHEAT_TEXTURE -> "item-wheat";
+                case BlockTextureList.DEAD_CROP -> "deadCrop";
+                case BlockTextureList.SNOWY_GRASS_FULL_SIDE_TEXTURE -> "snowyGrassFullSide";
+                case BlockTextureList.SNOWY_GRASS_FULL_SIDE_WITH_CLAY_TEXTURE -> "snowyGrassSideWithClay";
+                case BlockTextureList.ICE_TEXTURE -> "ice";
+                case BlockTextureList.SOIL_LOW_FERTILITY_TEXTURE -> "soilLowFertility";
+                case BlockTextureList.SOIL_BARREN_FERTILITY_TEXTURE -> "soilBarrenFertility";
+                case BlockTextureList.SOIL_HIGH_FERTILITY_TEXTURE -> "soilHighFertility";
+                case BlockTextureList.SOIL_BARREN_FERTILITY_FULL_GRASS_LOWER -> "soilBarrenFertilityFullGrassLower";
+                case BlockTextureList.SOIL_BARREN_FERTILITY_LARGE_GRASS_PATCHES_LOWER_SIDE -> "soilBarrenFertilityLargeGrassPatchesLowerSide";
+                case BlockTextureList.SOIL_BARREN_FERTILITY_SMALL_GRASS_PATCHES_LOWER_SIDE -> "soilBarrenFertilitySmallGrassPatchesLowerSide";
+                case BlockTextureList.SOIL_BARREN_FERTILITY_LARGE_GRASS_PATCHES_LOWER_TOP -> "soilBarrenFertilityLargeGrassPatchesLowerTop";
+                case BlockTextureList.SOIL_BARREN_FERTILITY_SMALL_GRASS_PATCHES_LOWER_TOP -> "soilBarrenFertilitySmallGrassPatchesLowerTop";
+                case BlockTextureList.SOIL_LOW_FERTILITY_FULL_GRASS_LOWER -> "soilLowFertilityFullGrassLower";
+                case BlockTextureList.SOIL_LOW_FERTILITY_LARGE_GRASS_PATCHES_LOWER_SIDE -> "soilLowFertilityLargeGrassPatchesLowerSide";
+                case BlockTextureList.SOIL_LOW_FERTILITY_SMALL_GRASS_PATCHES_LOWER_SIDE -> "soilLowFertilitySmallGrassPatchesLowerSide";
+                case BlockTextureList.SOIL_LOW_FERTILITY_LARGE_GRASS_PATCHES_LOWER_TOP -> "soilLowFertilityLargeGrassPatchesLowerTop";
+                case BlockTextureList.SOIL_LOW_FERTILITY_SMALL_GRASS_PATCHES_LOWER_TOP -> "soilLowFertilitySmallGrassPatchesLowerTop";
+                case BlockTextureList.SOIL_MEDIUM_FERTILITY_FULL_GRASS_LOWER -> "soilMediumFertilityFullGrassLower";
+                case BlockTextureList.SOIL_MEDIUM_FERTILITY_LARGE_GRASS_PATCHES_LOWER_SIDE -> "soilMediumFertilityLargeGrassPatchesLowerSide";
+                case BlockTextureList.SOIL_MEDIUM_FERTILITY_SMALL_GRASS_PATCHES_LOWER_SIDE -> "soilMediumFertilitySmallGrassPatchesLowerSide";
+                case BlockTextureList.SOIL_MEDIUM_FERTILITY_LARGE_GRASS_PATCHES_LOWER_TOP -> "soilMediumFertilityLargeGrassPatchesLowerTop";
+                case BlockTextureList.SOIL_MEDIUM_FERTILITY_SMALL_GRASS_PATCHES_LOWER_TOP -> "soilMediumFertilitySmallGrassPatchesLowerTop";
+                case BlockTextureList.SOIL_HIGH_FERTILITY_FULL_GRASS_LOWER -> "soilHighFertilityFullGrassLower";
+                case BlockTextureList.SOIL_HIGH_FERTILITY_LARGE_GRASS_PATCHES_LOWER_SIDE -> "soilHighFertilityLargeGrassPatchesLowerSide";
+                case BlockTextureList.SOIL_HIGH_FERTILITY_SMALL_GRASS_PATCHES_LOWER_SIDE -> "soilHighFertilitySmallGrassPatchesLowerSide";
+                case BlockTextureList.SOIL_HIGH_FERTILITY_LARGE_GRASS_PATCHES_LOWER_TOP -> "soilHighFertilityLargeGrassPatchesLowerTop";
+                case BlockTextureList.SOIL_HIGH_FERTILITY_SMALL_GRASS_PATCHES_LOWER_TOP -> "soilHighFertilitySmallGrassPatchesLowerTop";
+                case BlockTextureList.CLAY_FULL_GRASS_LOWER -> "clayFullGrassLower";
+                case BlockTextureList.CLAY_LARGE_GRASS_PATCHES_LOWER_SIDE -> "clayLargeGrassPatchesLowerSide";
+                case BlockTextureList.CLAY_SMALL_GRASS_PATCHES_LOWER_SIDE -> "claySmallGrassPatchesLowerSide";
+                case BlockTextureList.CLAY_LARGE_GRASS_PATCHES_LOWER_TOP -> "clayLargeGrassPatchesLowerTop";
+                case BlockTextureList.CLAY_SMALL_GRASS_PATCHES_LOWER_TOP -> "claySmallGrassPatchesLowerTop";
+                case BlockTextureList.ANDESITE_STONE -> "andesiteStone";
+                case BlockTextureList.ANDESITE_GRAVEL -> "andesiteGravel";
+                case BlockTextureList.ANDESITE_SAND -> "andesiteSand";
+                case BlockTextureList.GRANITE_STONE -> "graniteStone";
+                case BlockTextureList.GRANITE_GRAVEL -> "graniteGravel";
+                case BlockTextureList.GRANITE_SAND -> "graniteSand";
+                case BlockTextureList.PERIODITE_STONE -> "perioditeStone";
+                case BlockTextureList.PERIODITE_GRAVEL -> "perioditeGravel";
+                case BlockTextureList.PERIODITE_SAND -> "perioditeSand";
+                case BlockTextureList.OBSIDIAN_SAND -> "obsidianSand";
+                case BlockTextureList.BASALT_STONE -> "basaltStone";
+                case BlockTextureList.BASALT_GRAVEL -> "basaltGravel";
+                case BlockTextureList.BASALT_SAND -> "basaltSand";
+                case BlockTextureList.GABBRO_STONE -> "gabbroStone";
+                case BlockTextureList.GABBRO_GRAVEL -> "gabbroGravel";
+                case BlockTextureList.GABBRO_SAND -> "gabbroSand";
+                case BlockTextureList.CHALK_STONE -> "chalkStone";
+                case BlockTextureList.CHALK_GRAVEL -> "chalkGravel";
+                case BlockTextureList.CHALK_SAND -> "chalkSand";
+                case BlockTextureList.CHERT_STONE ->  "chertStone";
+                case BlockTextureList.CHERT_GRAVEL -> "chertGravel";
+                case BlockTextureList.CHERT_SAND -> "chertSand";
+                case BlockTextureList.CLAYSTONE_STONE -> "claystoneStone";
+                case BlockTextureList.CLAYSTONE_GRAVEL -> "claystoneGravel";
+                case BlockTextureList.CLAYSTONE_SAND -> "claystoneSand";
+                case BlockTextureList.CONGLOMERATE_STONE -> "conglomerateStone";
+                case BlockTextureList.CONGLOMERATE_GRAVEL -> "conglomerateGravel";
+                case BlockTextureList.CONGLOMERATE_SAND -> "conglomerateSand";
+                case BlockTextureList.SHALE_STONE_SIDE_TEXTURE -> "shaleStoneSide";
+                case BlockTextureList.SHALE_STONE_TOP_TEXTURE -> "shaleStoneTop";
+                case BlockTextureList.SHALE_GRAVEL_TEXTURE -> "shaleGravel";
+                case BlockTextureList.SHALE_SAND_TEXTURE -> "shaleSand";
+                case BlockTextureList.SHALE_STONE_BOTTOM_TEXTURE -> "shaleStoneBottom";
+                case BlockTextureList.LIMESTONE_STONE -> "limestoneStone";
+                case BlockTextureList.LIMESTONE_GRAVEL -> "limestoneGravel";
+                case BlockTextureList.LIMESTONE_SAND -> "limestoneSand";
+                case BlockTextureList.SANDSTONE_STONE -> "sandstoneStone";
+                case BlockTextureList.SANDSTONE_GRAVEL -> "sandstoneGravel";
+                case BlockTextureList.SANDSTONE_SAND -> "sandstoneSand";
+                case BlockTextureList.MARBLE_STONE -> "marbleStone";
+                case BlockTextureList.MARBLE_GRAVEL -> "marbleGravel";
+                case BlockTextureList.MARBLE_SAND -> "marbleSand";
+                case BlockTextureList.SLATE_STONE -> "slateStone";
+                case BlockTextureList.SLATE_GRAVEL -> "slateGravel";
+                case BlockTextureList.SLATE_SAND -> "slateSand";
+                case BlockTextureList.PHYLLITE_STONE -> "phylliteStone";
+                case BlockTextureList.PHYLLITE_GRAVEL -> "phylliteGravel";
+                case BlockTextureList.PHYLLITE_SAND -> "phylliteSand";
+                case BlockTextureList.SERPENTINITE_STONE -> "serpentiniteStone";
+                case BlockTextureList.SERPENTINITE_GRAVEL -> "serpentiniteGravel";
+                case BlockTextureList.SERPENTINITE_SAND -> "serpentiniteSand";
                 default -> "missing";
             };
         } else if(textureFolderpath.contains("item")){
             return switch (textureNumber) {
                 case 0,1 -> "missing";
-                case 2 -> "stone";
-                case 3 -> "berry";
-                case 4 -> "leaf";
-                case 5 -> "fireWood";
-                case 6 -> "rawGameMeat";
-                case 7 -> "cookedGameMeat";
-                case 8 -> "straw";
-                case 9 -> "twine";
-                case 10 -> "reedTop";
-                case 11 -> "clay";
-                case 12 -> "firedRedClay";
-                case 13 -> "mud";
-                case 14 -> "reedStalk";
-                case 15 -> "log";
-                case 16 -> "deerPeltTop";
-                case 17 -> "animalPeltUnder";
-                case 18 -> "wolfPeltTop";
-                case 19 -> "rot";
-                case 20 -> "primitiveDoorBase";
-                case 21 -> "seedWheatFamily";
-                case 22 -> "bone";
-                case 23 -> "boneMeal";
-                case 24 -> "einkornWheat";
-                case 25 -> "wheat";
+                case ItemTextureList.STONE_TEXTURE -> "stone";
+                case ItemTextureList.BERRY_TEXTURE -> "berry";
+                case ItemTextureList.LEAF_TEXTURE -> "leaf";
+                case ItemTextureList.FIREWOOD_TEXTURE -> "fireWood";
+                case ItemTextureList.RAW_GAME_MEAT_TEXTURE -> "rawGameMeat";
+                case ItemTextureList.COOKED_GAME_MEAT_TEXTURE -> "cookedGameMeat";
+                case ItemTextureList.STRAW_TEXTURE -> "straw";
+                case ItemTextureList.TWINE_TEXTURE -> "twine";
+                case ItemTextureList.REED_TOP_TEXTURE -> "reedTop";
+                case ItemTextureList.CLAY_TEXTURE -> "clay";
+                case ItemTextureList.FIRED_RED_CLAY_TEXTURE -> "firedRedClay";
+                case ItemTextureList.MUD_TEXTURE -> "mud";
+                case ItemTextureList.REED_STALK_TEXTURE -> "reedStalk";
+                case ItemTextureList.LOG_TEXTURE -> "log";
+                case ItemTextureList.DEER_PELT_TOP_TEXTURE -> "deerPeltTop";
+                case ItemTextureList.ANIMAL_PELT_UNDER_TEXTURE -> "animalPeltUnder";
+                case ItemTextureList.WOLF_PELT_TOP_TEXTURE -> "wolfPeltTop";
+                case ItemTextureList.ROT_TEXTURE -> "rot";
+                case ItemTextureList.PRIMITIVE_DOOR_BASE_TEXTURE -> "primitiveDoorBase";
+                case ItemTextureList.SEED_WHEAT_FAMILY_TEXTURE -> "seedWheatFamily";
+                case ItemTextureList.BONE_TEXTURE -> "bone";
+                case ItemTextureList.BONEMEAL_TEXTURE -> "boneMeal";
+                case ItemTextureList.EINKORN_WHEAT_TEXTURE -> "einkornWheat";
+                case ItemTextureList.WHEAT_TEXTURE -> "wheat";
                 default -> "missing";
             };
         }
@@ -539,6 +620,7 @@ public final class RenderEngine {
         private int texture2DAtlasVAO;
         private int textureCubeMapVAO;
         private int textureCelestialBodyVAO;
+        private int toolTipVAO;
         public int vboID;
         public int eboID;
         public boolean isOrtho;
@@ -556,39 +638,103 @@ public final class RenderEngine {
          */
 
         private Tessellator() {
-            this.vboID = CosmicEvolution.instance.renderEngine.createBuffers();
-            this.eboID = CosmicEvolution.instance.renderEngine.createBuffers();
+            RenderEngine renderEngine = CosmicEvolution.instance.renderEngine;
 
-            this.texture2DVAO = CosmicEvolution.instance.renderEngine.createVAO();
-            this.texture2DAtlasVAO = CosmicEvolution.instance.renderEngine.createVAO();
-            this.textureCubeMapVAO = CosmicEvolution.instance.renderEngine.createVAO();
-            this.textureCelestialBodyVAO = CosmicEvolution.instance.renderEngine.createVAO();
+
+            this.vboID = renderEngine.createBuffers();
+            this.eboID = renderEngine.createBuffers();
+
+            this.texture2DVAO = renderEngine.createVAO();
+            this.texture2DAtlasVAO = renderEngine.createVAO();
+            this.textureCubeMapVAO = renderEngine.createVAO();
+            this.textureCelestialBodyVAO = renderEngine.createVAO();
+            this.toolTipVAO = renderEngine.createVAO();
 
             int positionsSize = 3;
             int colorSize = 4;
             int texIndexSize = 1;
             int texCoordsSize = 2;
             int normalSize = 3;
+            int imageSize = 1;
             int vertexSizeBytes = (positionsSize + colorSize + texCoordsSize + texIndexSize) * Float.BYTES;
 
-            CosmicEvolution.instance.renderEngine.setVertexAttribute(this.texture2DAtlasVAO, 0, positionsSize, vertexSizeBytes, 0, this.vboID);
-            CosmicEvolution.instance.renderEngine.setVertexAttribute(this.texture2DAtlasVAO, 1, colorSize, vertexSizeBytes, positionsSize * Float.BYTES, this.vboID);
-            CosmicEvolution.instance.renderEngine.setVertexAttribute(this.texture2DAtlasVAO, 2, texCoordsSize, vertexSizeBytes, (positionsSize + colorSize) * Float.BYTES, this.vboID);
-            CosmicEvolution.instance.renderEngine.setVertexAttribute(this.texture2DAtlasVAO, 3, texIndexSize, vertexSizeBytes, (positionsSize + colorSize + texCoordsSize) * Float.BYTES, this.vboID);
+            renderEngine.setVertexAttribute(this.texture2DAtlasVAO, 0, positionsSize, vertexSizeBytes, 0, this.vboID);
+            renderEngine.setVertexAttribute(this.texture2DAtlasVAO, 1, colorSize, vertexSizeBytes, positionsSize * Float.BYTES, this.vboID);
+            renderEngine.setVertexAttribute(this.texture2DAtlasVAO, 2, texCoordsSize, vertexSizeBytes, (positionsSize + colorSize) * Float.BYTES, this.vboID);
+            renderEngine.setVertexAttribute(this.texture2DAtlasVAO, 3, texIndexSize, vertexSizeBytes, (positionsSize + colorSize + texCoordsSize) * Float.BYTES, this.vboID);
 
             vertexSizeBytes = (positionsSize + colorSize + texCoordsSize) * Float.BYTES;
 
-            CosmicEvolution.instance.renderEngine.setVertexAttribute(this.texture2DVAO, 0, positionsSize, vertexSizeBytes, 0, this.vboID);
-            CosmicEvolution.instance.renderEngine.setVertexAttribute(this.texture2DVAO, 1, colorSize, vertexSizeBytes, positionsSize * Float.BYTES, this.vboID);
-            CosmicEvolution.instance.renderEngine.setVertexAttribute(this.texture2DVAO, 2, texCoordsSize, vertexSizeBytes, (positionsSize + colorSize) * Float.BYTES, this.vboID);
+            renderEngine.setVertexAttribute(this.texture2DVAO, 0, positionsSize, vertexSizeBytes, 0, this.vboID);
+            renderEngine.setVertexAttribute(this.texture2DVAO, 1, colorSize, vertexSizeBytes, positionsSize * Float.BYTES, this.vboID);
+            renderEngine.setVertexAttribute(this.texture2DVAO, 2, texCoordsSize, vertexSizeBytes, (positionsSize + colorSize) * Float.BYTES, this.vboID);
 
 
             vertexSizeBytes = positionsSize * Float.BYTES;
-            CosmicEvolution.instance.renderEngine.setVertexAttribute(this.textureCubeMapVAO, 0, positionsSize, vertexSizeBytes, 0, this.vboID);
+            renderEngine.setVertexAttribute(this.textureCubeMapVAO, 0, positionsSize, vertexSizeBytes, 0, this.vboID);
 
             vertexSizeBytes = (positionsSize + normalSize) * Float.BYTES;
-            CosmicEvolution.instance.renderEngine.setVertexAttribute(this.textureCelestialBodyVAO, 0, positionsSize, vertexSizeBytes, 0, this.vboID);
-            CosmicEvolution.instance.renderEngine.setVertexAttribute(this.textureCelestialBodyVAO, 1, normalSize, vertexSizeBytes, positionsSize * Float.BYTES, this.vboID);
+            renderEngine.setVertexAttribute(this.textureCelestialBodyVAO, 0, positionsSize, vertexSizeBytes, 0, this.vboID);
+            renderEngine.setVertexAttribute(this.textureCelestialBodyVAO, 1, normalSize, vertexSizeBytes, positionsSize * Float.BYTES, this.vboID);
+
+
+            vertexSizeBytes = (positionsSize + colorSize + texCoordsSize + texIndexSize + imageSize) * Float.BYTES;
+            renderEngine.setVertexAttribute(this.toolTipVAO, 0, positionsSize, vertexSizeBytes, 0, this.vboID);
+            renderEngine.setVertexAttribute(this.toolTipVAO, 1, colorSize, vertexSizeBytes, positionsSize * Float.BYTES, this.vboID);
+            renderEngine.setVertexAttribute(this.toolTipVAO, 2, texCoordsSize, vertexSizeBytes, (positionsSize + colorSize) * Float.BYTES, this.vboID);
+            renderEngine.setVertexAttribute(this.toolTipVAO, 3, texIndexSize, vertexSizeBytes, (positionsSize + colorSize + texCoordsSize) * Float.BYTES, this.vboID);
+            renderEngine.setVertexAttribute(this.toolTipVAO, 4, imageSize, vertexSizeBytes, (positionsSize + colorSize + texCoordsSize + texIndexSize) * Float.BYTES, this.vboID);
+        }
+
+
+        public void addVertexTooltipAtlas(int colorValue, float x, float y, float z, int corner, Texture texture, float textureID, int image){
+            if(colorValue > 16777215){
+                colorValue = 16777215;
+            }
+            if(colorValue < 0){
+                colorValue = 0;
+            }
+
+            final float red = MathUtil.intToFloatRGBA((colorValue >> 16) & 255);
+            final float green = MathUtil.intToFloatRGBA((colorValue >> 8) & 255);
+            final float blue = MathUtil.intToFloatRGBA(colorValue & 255);
+
+            this.vertexBuffer.put(x);
+            this.vertexBuffer.put(y);
+            this.vertexBuffer.put(z);
+            this.vertexBuffer.put(red);
+            this.vertexBuffer.put(green);
+            this.vertexBuffer.put(blue);
+            this.vertexBuffer.put(1f);
+            this.vertexBuffer.put(texture.texCoords[corner].x);
+            this.vertexBuffer.put(texture.texCoords[corner].y);
+            this.vertexBuffer.put(textureID);
+            this.vertexBuffer.put(image);
+        }
+
+        public void addVertexTooltipArray(int colorValue, float x, float y, float z, float uvX, float uvY, float textureID, int image){
+            if(colorValue > 16777215){
+                colorValue = 16777215;
+            }
+            if(colorValue < 0){
+                colorValue = 0;
+            }
+
+            final float red = MathUtil.intToFloatRGBA((colorValue >> 16) & 255);
+            final float green = MathUtil.intToFloatRGBA((colorValue >> 8) & 255);
+            final float blue = MathUtil.intToFloatRGBA(colorValue & 255);
+
+            this.vertexBuffer.put(x);
+            this.vertexBuffer.put(y);
+            this.vertexBuffer.put(z);
+            this.vertexBuffer.put(red);
+            this.vertexBuffer.put(green);
+            this.vertexBuffer.put(blue);
+            this.vertexBuffer.put(1f);
+            this.vertexBuffer.put(uvX);
+            this.vertexBuffer.put(uvY);
+            this.vertexBuffer.put(textureID);
+            this.vertexBuffer.put(image);
         }
 
 
@@ -945,6 +1091,77 @@ public final class RenderEngine {
             GL46.glDrawElements(GL46.GL_TRIANGLES, this.elementBuffer.limit(), GL46.GL_UNSIGNED_INT, 0);
 
             GL46.glBindTexture(GL46.GL_TEXTURE_2D, 0);
+            GL46.glDisable(GL46.GL_ALPHA_TEST);
+            this.reset();
+        }
+
+        public void drawToolTip(){
+            GL46.glBindVertexArray(this.toolTipVAO);
+
+            this.vertexBuffer.flip();
+            this.elementBuffer.flip();
+
+            int indexCount  = this.elementBuffer.limit();
+            int vertexCount = this.vertexBuffer.limit();
+
+            if (indexCount == 0 || vertexCount == 0) {
+                this.reset();
+                return;
+            }
+
+
+            int maxIndex = -1;
+            for (int i = this.elementBuffer.position(); i < this.elementBuffer.limit(); i++) {
+                int idx = this.elementBuffer.get(i);
+                if (idx > maxIndex) maxIndex = idx;
+            }
+            if (maxIndex >= vertexCount) {
+                this.reset();
+                return;
+            }
+
+            GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, this.vboID);
+            GL46.glBufferData(GL46.GL_ARRAY_BUFFER, this.vertexBuffer, GL46.GL_STATIC_DRAW);
+
+            GL46.glBindBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, this.eboID);
+            GL46.glBufferData(GL46.GL_ELEMENT_ARRAY_BUFFER, this.elementBuffer, GL46.GL_STATIC_DRAW);
+
+            GL46.glActiveTexture(GL46.GL_TEXTURE0);
+            GL46.glBindTexture(GL46.GL_TEXTURE_2D, Assets.fontTextureLoader);
+
+            GL46.glActiveTexture(GL46.GL_TEXTURE1);
+            GL46.glBindTexture(GL46.GL_TEXTURE_2D, Assets.textBox);
+
+            GL46.glActiveTexture(GL46.GL_TEXTURE2);
+            GL46.glBindTexture(GL46.GL_TEXTURE_2D_ARRAY, Assets.blockTextureArray);
+
+            GL46.glActiveTexture(GL46.GL_TEXTURE3);
+            GL46.glBindTexture(GL46.GL_TEXTURE_2D_ARRAY, Assets.itemTextureArray);
+
+            GL46.glActiveTexture(GL46.GL_TEXTURE4);
+            GL46.glBindTexture(GL46.GL_TEXTURE_2D, Assets.mouseIcon);
+
+            GL46.glUseProgram(Shader.toolTipShader.shaderProgramID);
+
+            GL46.glEnable(GL46.GL_ALPHA_TEST);
+            GL46.glAlphaFunc(GL46.GL_GREATER, 0f);
+
+            GL46.glDrawElements(GL46.GL_TRIANGLES, this.elementBuffer.limit(), GL46.GL_UNSIGNED_INT, 0);
+            //Starts bound at texture 4
+            GL46.glBindTexture(GL46.GL_TEXTURE_2D, 0);
+
+            GL46.glActiveTexture(GL46.GL_TEXTURE3);
+            GL46.glBindTexture(GL46.GL_TEXTURE_2D_ARRAY, 0);
+
+            GL46.glActiveTexture(GL46.GL_TEXTURE2);
+            GL46.glBindTexture(GL46.GL_TEXTURE_2D_ARRAY, 0);
+
+            GL46.glActiveTexture(GL46.GL_TEXTURE1);
+            GL46.glBindTexture(GL46.GL_TEXTURE_2D, 0);
+
+            GL46.glActiveTexture(GL46.GL_TEXTURE0);
+            GL46.glBindTexture(GL46.GL_TEXTURE_2D, 0);
+
             GL46.glDisable(GL46.GL_ALPHA_TEST);
             this.reset();
         }

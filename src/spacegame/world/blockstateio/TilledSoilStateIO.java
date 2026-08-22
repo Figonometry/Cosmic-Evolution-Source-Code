@@ -2,19 +2,21 @@ package spacegame.world.blockstateio;
 
 import spacegame.nbt.NBTTagCompound;
 import spacegame.world.Chunk;
+import spacegame.world.blockstate.BlockState;
+import spacegame.world.blockstate.MultiState;
+import spacegame.world.blockstate.ReedState;
 import spacegame.world.blockstate.TilledSoilState;
-import spacegame.world.blockstatewrapper.TilledSoilStateSafe;
 
-import java.util.Iterator;
 import java.util.Map;
 
 public class TilledSoilStateIO {
 
     public void saveTilledSoilStates(Chunk chunk, NBTTagCompound nbtTagCompound){
         TilledSoilState tilledSoilState;
-        TilledSoilState[] tilledSoilStates = this.getAllTilledSoilStatesInArray(chunk);
+        int totalCount = chunk.getBlockStateCount(MultiState.TILLED_SOIL_STATE);
+        TilledSoilState[] tilledSoilStates = this.getAllTilledSoilStatesInArray(chunk, totalCount);
         int tilledSoilStateCount = 0;
-        NBTTagCompound[] tilledSoilStateTags = new NBTTagCompound[chunk.tilledSoilStates.size()];
+        NBTTagCompound[] tilledSoilStateTags = new NBTTagCompound[totalCount];
         for(int i = 0; i < tilledSoilStateTags.length; i++){
             tilledSoilState = tilledSoilStates[i];
             tilledSoilStateTags[i] = new NBTTagCompound();
@@ -24,6 +26,7 @@ public class TilledSoilStateIO {
             tilledSoilStateTags[i].setFloat("nitrogenPercent", tilledSoilState.nitrogenPercent);
             tilledSoilStateTags[i].setFloat("phosphorusPercent", tilledSoilState.phosphorusPercent);
             tilledSoilStateTags[i].setInteger("fertilizerID", tilledSoilState.fertilizerID);
+            tilledSoilStateTags[i].setFloat("maxNutrientLevel", tilledSoilState.maxNutrientLevel);
 
             nbtTagCompound.setTag("tilledSoilState" + tilledSoilStateCount, tilledSoilStateTags[i]);
             tilledSoilStateCount++;
@@ -41,26 +44,25 @@ public class TilledSoilStateIO {
             float potassiumPercent = tilledSoilStateLoadedTag.getFloat("potassiumPercent");
             float nitrogenPercent = tilledSoilStateLoadedTag.getFloat("nitrogenPercent");
             float phosphorusPercent = tilledSoilStateLoadedTag.getFloat("phosphorusPercent");
+            float maxNutrientLevel = tilledSoilStateLoadedTag.getFloat("maxNutrientLevel");
             int fertilizerID = tilledSoilStateLoadedTag.getInteger("fertilizerID");
-            chunk.addTilledSoilState(new TilledSoilState(index,moisturePercent,potassiumPercent,nitrogenPercent,phosphorusPercent,fertilizerID), index);
+            TilledSoilState tilledSoilState = new TilledSoilState(index,moisturePercent,potassiumPercent,nitrogenPercent,phosphorusPercent,fertilizerID);
+            tilledSoilState.maxNutrientLevel = maxNutrientLevel;
+            chunk.addBlockState(index, MultiState.TILLED_SOIL_STATE, tilledSoilState);
         }
     }
 
 
-    public TilledSoilState[] getAllTilledSoilStatesInArray(Chunk chunk){
-        int index = 0;
-        TilledSoilState tilledSoilState;
-        TilledSoilState[] tilledSoilStates1 = new TilledSoilState[chunk.tilledSoilStates.size()];
-        Iterator<Map.Entry<Integer, TilledSoilStateSafe>> iterator = chunk.tilledSoilStates.entrySet().iterator();
-        while(iterator.hasNext()){
-            Map.Entry<Integer, TilledSoilStateSafe> entry = iterator.next();
-            tilledSoilState = entry.getValue().value;
-            if(tilledSoilState != null){
-                tilledSoilStates1[index] = tilledSoilState;
-                index++;
-            }
+    public TilledSoilState[] getAllTilledSoilStatesInArray(Chunk chunk, int totalCount){
+        BlockState[] base = chunk.getAllBlockStatesOfType(MultiState.TILLED_SOIL_STATE, totalCount);
+        TilledSoilState[] returnArray = new TilledSoilState[base.length];
+
+        for (int i = 0; i < base.length; i++) {
+            returnArray[i] = (TilledSoilState) base[i];
         }
-        return tilledSoilStates1;
+
+
+        return returnArray;
     }
 
 }

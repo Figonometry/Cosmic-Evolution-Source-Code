@@ -4,19 +4,19 @@ import spacegame.item.crafting.InWorldCraftingRecipe;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.render.RenderEngine;
 import spacegame.world.Chunk;
+import spacegame.world.blockstate.BlockState;
 import spacegame.world.blockstate.InWorld3DCraftingItem;
-import spacegame.world.blockstatewrapper.InWorld3DCraftingItemSafe;
+import spacegame.world.blockstate.MultiState;
 
-import java.util.Iterator;
-import java.util.Map;
 
 public class Crafting3DItemsIO {
 
     public void saveCrafting3DItems(Chunk chunk, NBTTagCompound nbtTagCompound){
         InWorld3DCraftingItem inWorld3DCraftingItem;
-        InWorld3DCraftingItem[] inWorld3DCraftingItems = this.getAll3DCraftingItemsInArray(chunk);
+        int totalCount = chunk.getBlockStateCount(MultiState.CRAFTING_3D_ITEM_STATE);
+        InWorld3DCraftingItem[] inWorld3DCraftingItems = this.getAll3DCraftingItemsInArray(chunk,totalCount);
         int inWorldCrafting3DItemCount = 0;
-        NBTTagCompound[] inWorldCrafting3DItemTags = new NBTTagCompound[chunk.crafting3DItems.size()];
+        NBTTagCompound[] inWorldCrafting3DItemTags = new NBTTagCompound[totalCount];
         for(int i = 0; i < inWorldCrafting3DItemTags.length; i++){
 
             inWorld3DCraftingItem = inWorld3DCraftingItems[i];
@@ -61,23 +61,19 @@ public class Crafting3DItemsIO {
                 inWorld3DCraftingItem.subVoxelIndices[j] = inWorldCrafting3DItemLoadedTag.getIntArray("craftingLayer" + j);
             }
 
-            chunk.addInWorldCrafting3DItem(inWorld3DCraftingItem);
+            chunk.addBlockState(index, MultiState.CRAFTING_3D_ITEM_STATE, inWorld3DCraftingItem);
         }
     }
 
-    public InWorld3DCraftingItem[] getAll3DCraftingItemsInArray(Chunk chunk){
-        int index = 0;
-        InWorld3DCraftingItem crafting3DItem;
-        InWorld3DCraftingItem[] inWorldCrafting3DItems = new InWorld3DCraftingItem[chunk.crafting3DItems.size()];
-        Iterator<Map.Entry<Integer, InWorld3DCraftingItemSafe>> iterator = chunk.crafting3DItems.entrySet().iterator();
-        while(iterator.hasNext()){
-            Map.Entry<Integer, InWorld3DCraftingItemSafe> entry = iterator.next();
-            crafting3DItem = entry.getValue().value;
-            if(crafting3DItem != null){
-                inWorldCrafting3DItems[index] = crafting3DItem;
-                index++;
-            }
+    public InWorld3DCraftingItem[] getAll3DCraftingItemsInArray(Chunk chunk, int totalCount){
+        BlockState[] base = chunk.getAllBlockStatesOfType(MultiState.CRAFTING_3D_ITEM_STATE, totalCount);
+        InWorld3DCraftingItem[] returnArray = new InWorld3DCraftingItem[base.length];
+
+        for (int i = 0; i < base.length; i++) {
+            returnArray[i] = (InWorld3DCraftingItem) base[i];
         }
-        return inWorldCrafting3DItems;
+
+
+        return returnArray;
     }
 }

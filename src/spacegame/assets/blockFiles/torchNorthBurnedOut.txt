@@ -1,6 +1,0 @@
-droppedItemID:-1
-isSolid:false
-blockName:TORCH_UNLIT
-blockModel:torchNorthBlockModel
-alwaysRenderFace:true
-displayName:Torch (Burned Out)

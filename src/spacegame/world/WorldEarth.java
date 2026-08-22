@@ -82,7 +82,22 @@ public final class WorldEarth extends World {
         World.noiseMapsCompleted++;
         this.treeDensityNoise2 = new NoiseMap2D(438, 438, 5, 32, 1, 32, longHasher.hash(this.ce.save.seed, "EarthLike17"));
         World.noiseMapsCompleted++;
+
         World.worldLoadPhase = 1;
+    }
+
+
+    @Override
+    public void loadGeologicProvinces(){
+        LongHasher longHasher = new LongHasher();
+        this.chunkController.chunkEarthTerrainHandler.geologicProvinces[0] = new GeologicProvince(longHasher.hash(this.ce.save.seed, "EarthGeologicProvince1"), -256, this.chunkController.chunkEarthTerrainHandler.geologicRegistry);
+        this.chunkController.chunkEarthTerrainHandler.geologicProvinces[1] = new GeologicProvince(longHasher.hash(this.ce.save.seed, "EarthGeologicProvince2"), -192, this.chunkController.chunkEarthTerrainHandler.geologicRegistry);
+        this.chunkController.chunkEarthTerrainHandler.geologicProvinces[2] = new GeologicProvince(longHasher.hash(this.ce.save.seed, "EarthGeologicProvince3"), -128, this.chunkController.chunkEarthTerrainHandler.geologicRegistry);
+        this.chunkController.chunkEarthTerrainHandler.geologicProvinces[3] = new GeologicProvince(longHasher.hash(this.ce.save.seed, "EarthGeologicProvince4"), -64, this.chunkController.chunkEarthTerrainHandler.geologicRegistry);
+        this.chunkController.chunkEarthTerrainHandler.geologicProvinces[4] = new GeologicProvince(longHasher.hash(this.ce.save.seed, "EarthGeologicProvince5"), 0, this.chunkController.chunkEarthTerrainHandler.geologicRegistry);
+        this.chunkController.chunkEarthTerrainHandler.geologicProvinces[5] = new GeologicProvince(longHasher.hash(this.ce.save.seed, "EarthGeologicProvince6"), 64, this.chunkController.chunkEarthTerrainHandler.geologicRegistry);
+        this.chunkController.chunkEarthTerrainHandler.geologicProvinces[6] = new GeologicProvince(longHasher.hash(this.ce.save.seed, "EarthGeologicProvince7"), 192, this.chunkController.chunkEarthTerrainHandler.geologicRegistry);
+        this.chunkController.chunkEarthTerrainHandler.geologicProvinces[7] = new GeologicProvince(longHasher.hash(this.ce.save.seed, "EarthGeologicProvince8"), 256, this.chunkController.chunkEarthTerrainHandler.geologicRegistry);
     }
 
     @Override

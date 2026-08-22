@@ -3,6 +3,7 @@ package spacegame.render;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 import spacegame.core.CosmicEvolution;
+import spacegame.core.GameSettings;
 
 public final class Camera {
     private CosmicEvolution ce;
@@ -14,6 +15,7 @@ public final class Camera {
     public FrustumIntersectionDouble frustumInt = new FrustumIntersectionDouble();
     public FrustumRayBuilderDouble ray = new FrustumRayBuilderDouble();
     public double farPlaneDistance = 1048576D;
+    public double nearPlaneDistance;
 
     public Camera(Vector3d position, CosmicEvolution ce, double nearDistance) {
         this.ce = ce;
@@ -22,13 +24,20 @@ public final class Camera {
         this.guiProjectionMatrix = new Matrix4d();
         this.viewMatrix = new Matrix4d();
         this.frustum = new Matrix4d();
+        this.nearPlaneDistance = nearDistance;
         this.setViewMatrix();
-        this.adjustProjection(0.7D, nearDistance);
+        this.adjustProjection(GameSettings.fov, nearDistance);
         this.adjustGuiMatrix();
     }
 
     public void setFarPlaneDistance(double farPlaneDistance) {
         this.farPlaneDistance = farPlaneDistance;
+    }
+
+
+    public void readjustProjectionMatrices(){
+        this.adjustProjection(GameSettings.fov, this.nearPlaneDistance);
+        this.adjustGuiMatrix();
     }
 
 
@@ -40,6 +49,7 @@ public final class Camera {
 
     public void adjustGuiMatrix() {
         this.guiProjectionMatrix.setOrtho((double) -CosmicEvolution.width / 2, (double) CosmicEvolution.width / 2, (double) -CosmicEvolution.height / 2, (double) CosmicEvolution.height / 2, 0.1F, this.farPlaneDistance);
+        Shader.toolTipShader.uploadMat4d("uProjection", this.guiProjectionMatrix);
     }
 
     public void setViewMatrix() {

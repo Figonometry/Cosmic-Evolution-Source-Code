@@ -5,13 +5,17 @@ import spacegame.core.Timer;
 import spacegame.entity.EntityBlock;
 import spacegame.entity.EntityItem;
 import spacegame.entity.EntityPlayer;
+import spacegame.gui.GuiMutateCrop;
 import spacegame.item.IDecayItem;
 import spacegame.item.Item;
 import spacegame.item.ItemSeed;
 import spacegame.item.itemstate.SeedState;
+import spacegame.render.texturelists.BlockTextureList;
+import spacegame.world.Chunk;
 import spacegame.world.World;
 import spacegame.world.blockstate.Crop;
 import spacegame.world.blockstate.CropState;
+import spacegame.world.blockstate.MultiState;
 import spacegame.world.blockstate.TilledSoilState;
 
 public class BlockCrop extends Block implements ITimeUpdate {
@@ -21,7 +25,7 @@ public class BlockCrop extends Block implements ITimeUpdate {
 
     @Override
     public void onLeftClick(int x, int y, int z, World world, EntityPlayer player){
-        CropState cropState = world.getCropState(x,y,z);
+        CropState cropState = (CropState) world.getBlockState(x,y,z, MultiState.CROP_STATE);
 
         Crop targetCrop = Crop.getCropFromName(cropState.name);
         EntityItem entityItem;
@@ -106,15 +110,15 @@ public class BlockCrop extends Block implements ITimeUpdate {
 
     @Override
     public void onTimeUpdate(int x, int y, int z, World world) {
-        TilledSoilState tilledSoilState = world.getTilledSoilState(x,y - 1,z);
+        TilledSoilState tilledSoilState = (TilledSoilState) world.getBlockState(x,y - 1,z, MultiState.TILLED_SOIL_STATE);
         if(tilledSoilState == null){
-            world.addTimeEvent(x,y,z, world.ce.save.time + this.getUpdateTime());
+            world.addTimeEvent(x,y,z, world.ce.save.time + this.getUpdateTime(x,y,z,world));
             return;
         }
 
-        CropState cropState = world.getCropState(x,y,z);
+        CropState cropState = (CropState) world.getBlockState(x,y,z, MultiState.CROP_STATE);
         if(cropState == null){
-            world.addTimeEvent(x,y,z, world.ce.save.time + this.getUpdateTime());
+            world.addTimeEvent(x,y,z, world.ce.save.time + this.getUpdateTime(x,y,z,world));
             return;
         }
 
@@ -151,18 +155,18 @@ public class BlockCrop extends Block implements ITimeUpdate {
     }
 
     @Override
-    public long getUpdateTime() {
+    public long getUpdateTime(int x, int y, int z, World world) {
         return Timer.GAME_DAY;
     }
 
     @Override
-    public String getDisplayStringText() {
+    public String getDisplayStringText(int x, int y, int z, World world) {
         return "";
     }
 
     @Override
     public String getDisplayName(int x, int y, int z){
-        CropState cropState = CosmicEvolution.instance.save.activeWorld.getCropState(x,y,z);
+        CropState cropState = (CropState) CosmicEvolution.instance.save.activeWorld.getBlockState(x,y,z, MultiState.CROP_STATE);
         if(cropState == null)return "";
         Crop crop = Crop.getCropFromName(cropState.name);
         if(crop == null)return "";
@@ -171,44 +175,68 @@ public class BlockCrop extends Block implements ITimeUpdate {
         return crop.displayName + " Growth Stage: " + cropState.growthStage + "/" + crop.maxStages;
     }
 
+    @Override
+    public void addBlockStates(int x, int y, int z, World world, EntityPlayer player, Chunk chunk){
+        short heldItem = player.getHeldItem();
+        TilledSoilState tilledSoilState = (TilledSoilState) world.getBlockState(x, y - 1, z, MultiState.TILLED_SOIL_STATE);
+
+        SeedState seedState = (SeedState)player.getHeldItemState();
+
+        if(seedState == null)throw new IllegalStateException("Itemstate in the player's hand is null");
+
+        String cropName = ((ItemSeed)Item.list[heldItem]).getCropName();
+
+        boolean canMutate = tilledSoilState.fertilizerID == TilledSoilState.BONEMEAL;
+        if(canMutate && !seedState.canMutate){
+            GuiMutateCrop guiMutateCrop = new GuiMutateCrop(world.ce, x, y, z, world, player, Crop.getCropFromName(cropName));
+            if(!guiMutateCrop.close) {
+                world.ce.setNewGui(guiMutateCrop);
+            } else {
+                tilledSoilState.fertilizerID = TilledSoilState.NO_FERTILIZER;
+            }
+        } else {
+            chunk.addBlockState(x,y,z, MultiState.CROP_STATE, new CropState(Chunk.getBlockIndexFromCoordinates(x,y,z), cropName, canMutate, seedState.targetCrop, 0, seedState.percentToTargetCrop));
+        }
+    }
+
     public int getBlockTexture(int x, int y, int z, World world){
-        CropState cropState = world.getCropState(x,y,z);
-        if(cropState == null)return 4; //if this fails for whatever reason it should be really obvious because this is the water texture
+        CropState cropState = (CropState) world.getBlockState(x,y,z, MultiState.CROP_STATE);
+        if(cropState == null)return BlockTextureList.WATER_TOP_TEXTURE; //if this fails for whatever reason it should be really obvious because this is the water texture
 
         Crop crop = Crop.getCropFromName(cropState.name);
-        if(crop == null)return 4;
+        if(crop == null)return BlockTextureList.WATER_TOP_TEXTURE;
 
-        if(cropState.growthStage == 0)return 76;
+        if(cropState.growthStage == 0)return BlockTextureList.CROP_SEED_TEXTURE;
 
         switch (crop.displayName){
             case "Wild Grass" -> {
-                return  74;
+                return  BlockTextureList.WILD_GRASS_TEXTURE;
             }
             case "Einkorn Wheat", "Emmer Wheat" -> {
                 switch (cropState.growthStage){
                     case 1 -> {
-                        return 75;
+                        return BlockTextureList.EINKORN_WHEAT_1_TEXTURE;
                     }
                     case 2 -> {
-                        return 78;
+                        return BlockTextureList.EINKORN_WHEAT_2_TEXTURE;
                     }
                     case 3 -> {
-                        return 79;
+                        return BlockTextureList.EINKORN_WHEAT_3_TEXTURE;
                     }
                     case 4 -> {
-                        return  80;
+                        return  BlockTextureList.EINKORN_WHEAT_4_TEXTURE;
                     }
                     case 5 -> {
-                        return 81;
+                        return BlockTextureList.EINKORN_WHEAT_5_TEXTURE;
                     }
                     case 6 -> {
-                        return 82;
+                        return BlockTextureList.EINKORN_WHEAT_6_TEXTURE;
                     }
                     case 7 -> {
-                        return 83;
+                        return BlockTextureList.EINKORN_WHEAT_7_TEXTURE;
                     }
                     case 8 -> {
-                        return 84;
+                        return BlockTextureList.EINKORN_WHEAT_8_TEXTURE;
                     }
                     default -> {
                         return 4;
@@ -218,28 +246,28 @@ public class BlockCrop extends Block implements ITimeUpdate {
             case "Standard Wheat", "Spelt Wheat" -> {
                 switch (cropState.growthStage) {
                     case 1 -> {
-                        return 86;
+                        return BlockTextureList.WHEAT_1_TEXTURE;
                     }
                     case 2 -> {
-                        return 87;
+                        return BlockTextureList.WHEAT_2_TEXTURE;
                     }
                     case 3 -> {
-                        return 88;
+                        return BlockTextureList.WHEAT_3_TEXTURE;
                     }
                     case 4 -> {
-                        return 89;
+                        return BlockTextureList.WHEAT_4_TEXTURE;
                     }
                     case 5 -> {
-                        return 90;
+                        return BlockTextureList.WHEAT_5_TEXTURE;
                     }
                     case 6 -> {
-                        return 91;
+                        return BlockTextureList.WHEAT_6_TEXTURE;
                     }
                     case 7 -> {
-                        return 92;
+                        return BlockTextureList.WHEAT_7_TEXTURE;
                     }
                     case 8 -> {
-                        return 93;
+                        return BlockTextureList.WHEAT_8_TEXTURE;
                     }
                     default -> {
                         return 4;

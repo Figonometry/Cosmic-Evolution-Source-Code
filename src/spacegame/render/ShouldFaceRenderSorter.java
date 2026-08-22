@@ -2,13 +2,14 @@ package spacegame.render;
 
 import spacegame.block.Block;
 import spacegame.block.BlockLog;
+import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
 
 public final class ShouldFaceRenderSorter {
 
 
 
-    public boolean shouldFaceRender(short firstBlock, short secondBlock, int face){
+    public boolean shouldFaceRender(short firstBlock, short secondBlock, int face, int x1, int y1, int z1, int x2, int y2, int z2){
         if(Block.list[firstBlock].alwaysRenderFace){
             return true;
         }
@@ -19,14 +20,14 @@ public final class ShouldFaceRenderSorter {
             case "WATER" -> this.shouldFaceRenderWater(secondBlockName, face);
             case "WATER_FULL" -> this.shouldFaceRenderWaterFull(secondBlockName, face);
             case "FLOWING_WATER" -> this.shouldFaceRenderFlowingWater(secondBlockName, face);
-            case "OAK_LOG" -> this.shouldFaceRenderLog(firstBlock,secondBlock, face);
+            case "OAK_LOG" -> this.shouldFaceRenderLog(firstBlock,secondBlock, face, x1, y1, z1,x2,y2,z2);
             case "LEAF" -> this.shouldFaceRenderLeaf(firstBlock, secondBlock, face);
-            default -> shouldFaceRenderStandard(firstBlock, secondBlock, face);
+            default -> shouldFaceRenderStandard(firstBlock, secondBlock, face, x1, y1, z1, x2, y2, z2);
         };
 
     }
 
-    private boolean shouldFaceRenderStandard(short firstBlock, short secondBlock, int face){
+    private boolean shouldFaceRenderStandard(short firstBlock, short secondBlock, int face, int x1, int y1, int z1, int x2, int y2, int z2){
         if(Block.list[secondBlock].alwaysRenderFace){
             return true;
         }
@@ -37,21 +38,20 @@ public final class ShouldFaceRenderSorter {
                     "DOOR_NORTH_CLOSED_HINGE_LEFT", "DOOR_NORTH_CLOSED_HINGE_RIGHT", "DOOR_NORTH_OPEN_HINGE_LEFT", "DOOR_NORTH_OPEN_HINGE_RIGHT",
                     "DOOR_SOUTH_CLOSED_HINGE_LEFT", "DOOR_SOUTH_CLOSED_HINGE_RIGHT", "DOOR_SOUTH_OPEN_HINGE_LEFT", "DOOR_SOUTH_OPEN_HINGE_RIGHT",
                     "DOOR_WEST_CLOSED_HINGE_LEFT", "DOOR_WEST_CLOSED_HINGE_RIGHT", "DOOR_WEST_OPEN_HINGE_LEFT", "DOOR_WEST_OPEN_HINGE_RIGHT", "TILLED_SOIL" -> true;
-            case "OAK_LOG" ->
-                    (secondBlock != Block.oakLogFullSizeNormal.ID && secondBlock != Block.oakLogFullSizeNorthSouth.ID && secondBlock != Block.oakLogFullSizeEastWest.ID);
+            case "OAK_LOG" -> BlockLog.sizeOfLog(x2, y2, z2, CosmicEvolution.instance.save.activeWorld) != 16;
             case "SNOW_LAYER" -> Block.list[firstBlock].ID != Block.snowLayer.ID;
             default -> false;
         };
     }
 
-    private boolean shouldFaceRenderLog(short firstBlock, short secondBlock, int face){
+    private boolean shouldFaceRenderLog(short firstBlock, short secondBlock, int face, int x1, int y1, int z1, int x2, int y2, int z2){
         if(Block.list[secondBlock].alwaysRenderFace){
             return true;
         }
         String secondBlockName = Block.list[secondBlock].blockName;
         return switch (secondBlockName) {
             case "OAK_LOG" ->
-                    firstBlock != secondBlock && BlockLog.facingDirectionOfLog(firstBlock) == BlockLog.facingDirectionOfLog(secondBlock);
+                   BlockLog.facingDirectionOfLog(x1,y1,z1, CosmicEvolution.instance.save.activeWorld) == BlockLog.facingDirectionOfLog(x2,y2,z2, CosmicEvolution.instance.save.activeWorld);
             case "LEAF" -> GameSettings.transparentLeaves;
             case "AIR", "WATER", "WATER_FULL", "DOOR_EAST_CLOSED_HINGE_LEFT", "DOOR_EAST_CLOSED_HINGE_RIGHT", "DOOR_EAST_OPEN_HINGE_LEFT", "DOOR_EAST_OPEN_HINGE_RIGHT",
                     "DOOR_NORTH_CLOSED_HINGE_LEFT", "DOOR_NORTH_CLOSED_HINGE_RIGHT", "DOOR_NORTH_OPEN_HINGE_LEFT", "DOOR_NORTH_OPEN_HINGE_RIGHT",

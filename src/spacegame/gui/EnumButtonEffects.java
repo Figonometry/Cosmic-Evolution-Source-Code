@@ -32,6 +32,9 @@ public enum EnumButtonEffects {
     KEY_JUMP,
     KEY_INVENTORY,
     KEY_DROP,
+    KEY_SIT,
+    KEY_SHIFT,
+    KEY_SPRINT,
     BACK_TO_GAME,
     QUIT_TO_MAIN_MENU,
     SAVE_1,
@@ -57,5 +60,6 @@ public enum EnumButtonEffects {
     SAVE_OPTIONS,
     DROP_INVENTORY_ON_DEATH,
     TESTING_MODE,
-    COMMAND_LIST;
+    COMMAND_LIST,
+    BLOCK_TOOLTIPS;
 }

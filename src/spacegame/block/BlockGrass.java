@@ -2,24 +2,26 @@ package spacegame.block;
 
 import org.lwjgl.glfw.GLFW;
 import spacegame.core.CosmicEvolution;
-import spacegame.core.KeyListener;
+import spacegame.core.eventlisteners.KeyListener;
 import spacegame.entity.EntityPlayer;
+import spacegame.gui.ToolTip;
+import spacegame.gui.ToolTipGroup;
 import spacegame.item.Item;
+import spacegame.item.ItemIDList;
+import spacegame.render.texturelists.MouseAndKeyIconTextureList;
 import spacegame.world.World;
+import spacegame.world.blockstate.BerryBushState;
+import spacegame.world.blockstate.LogState;
+import spacegame.world.blockstate.MultiState;
 
 public final class BlockGrass extends Block implements ITickable {
+    public static final int GRASS_FULL = 0;
+    public static final int GRASS_LARGE_PATCHES = 1;
+    public static final int GRASS_SMALL_PATCHES = 2;
     public BlockGrass(short ID, int textureID, String filepath) {
         super(ID, textureID, filepath);
     }
 
-    @Override
-    public int getBlockTexture(int x, int y, int z, int face) {
-        return switch (face) {
-            case 0 -> this.textureID - 2; //Top grass
-            case 1 -> this.textureID - 1; //Dirt
-            default -> Block.list[CosmicEvolution.instance.save.activeWorld.getBlockID(x,y + 1,z)] instanceof BlockSnow ? 96 : this.textureID; //Side texture
-        };
-    }
 
     @Override
     public void handleSpecialRightClickFunctions(int x, int y, int z, World world, EntityPlayer player){
@@ -36,7 +38,7 @@ public final class BlockGrass extends Block implements ITickable {
         if (CosmicEvolution.globalRand.nextInt(166) == 0) {
             if (world.getBlockLightValue(x, y + 1, z) <= 4 && this.canBlockDecayGrass(x, y + 1, z, world)) {
                 if(world.chunkFullySurrounded(x >> 5, y >> 5, z >> 5)) {
-                    world.setBlockWithNotify(x, y, z, Block.dirt.ID, false);
+                    world.setBlockWithNotify(x, y, z, getBlockIDForDecay(this.ID), false);
                 }
             }
         }
@@ -52,12 +54,108 @@ public final class BlockGrass extends Block implements ITickable {
         }
     }
 
-    private boolean canBlockDecayGrass(int x, int y, int z, World world){
+    protected boolean canBlockDecayGrass(int x, int y, int z, World world){
         short blockID = world.getBlockID(x, y, z);
-        if(blockID >= Block.oakLogFullSizeNormal.ID && blockID <= Block.oakLogSize1EastWest.ID && (blockID != Block.oakLogFullSizeNormal.ID && blockID != Block.oakLogFullSizeNorthSouth.ID && blockID != Block.oakLogFullSizeEastWest.ID)){
-            return false;
+        if(Block.list[blockID] instanceof BlockLog){
+            LogState logState = (LogState) world.getBlockState(x,y,z, MultiState.LOG_STATE);
+            if(logState == null)return false;
+            return logState.size == 16;
         } else {
             return Block.list[blockID].isSolid;
         }
+    }
+
+
+    public static int getGrassLevel(short ID){
+        switch (ID){
+            case BlockIDList.CLAY_GRASS_FULL, BlockIDList.GRASS_BARREN_FERTILITY_FULL, BlockIDList.GRASS_LOW_FERTILITY_FULL, BlockIDList.GRASS_MEDIUM_FERTILITY_FULL, BlockIDList.GRASS_HIGH_FERTILITY_FULL -> {
+                return GRASS_FULL;
+            }
+            case BlockIDList.CLAY_GRASS_LARGE_PATCHES, BlockIDList.GRASS_BARREN_FERTILITY_LARGE_PATCH, BlockIDList.GRASS_LOW_FERTILITY_LARGE_PATCH, BlockIDList.GRASS_MEDIUM_FERTILITY_LARGE_PATCH, BlockIDList.GRASS_HIGH_FERTILITY_LARGE_PATCH -> {
+                return GRASS_LARGE_PATCHES;
+            }
+            case BlockIDList.CLAY_GRASS_SMALL_PATCHES, BlockIDList.GRASS_BARREN_FERTILITY_SMALL_PATCH, BlockIDList.GRASS_LOW_FERTILITY_SMALL_PATCH, BlockIDList.GRASS_MEDIUM_FERTILITY_SMALL_PATCH, BlockIDList.GRASS_HIGH_FERTILITY_SMALL_PATCH -> {
+                return GRASS_SMALL_PATCHES;
+            }
+            default -> {
+                throw new IllegalStateException("How in the everloving fuck did this grass related error occur");
+            }
+        }
+    }
+
+    @Override
+    public void registerBlockTooltips(){
+        this.tooltips = new ToolTipGroup[1][1];
+        this.tooltips[0][0] = new ToolTipGroup();
+
+        ToolTip toolTip = new ToolTip();
+
+        toolTip.addMouseIcon(MouseAndKeyIconTextureList.RIGHT_CLICK);
+        toolTip.addText("with");
+        toolTip.addItemID(ItemIDList.STONE_HOE);
+        toolTip.addText("to till the soil");
+
+        this.tooltips[0][0].addToolTip(toolTip);
+    }
+
+
+    @Override
+    public ToolTipGroup[] getBlockToolTips(int x, int y, int z, World world, EntityPlayer player){
+        return player.getHeldItem() == Item.stoneHoeHead.ID ? this.tooltips[0] : null;
+    }
+
+
+
+    public static short getBlockIDForDecay(short grassBlockID){
+        //Logic here is to decrease the grass level until it turns into regular soil
+        switch (grassBlockID){
+
+            default -> {
+                return grassBlockID;
+            }
+
+            case BlockIDList.GRASS_HIGH_FERTILITY_FULL -> {
+                return BlockIDList.GRASS_HIGH_FERTILITY_LARGE_PATCH;
+            }
+            case BlockIDList.GRASS_HIGH_FERTILITY_LARGE_PATCH -> {
+                return BlockIDList.GRASS_HIGH_FERTILITY_SMALL_PATCH;
+            }
+            case BlockIDList.GRASS_HIGH_FERTILITY_SMALL_PATCH -> {
+                return BlockIDList.HIGH_FERTILITY_SOIL;
+            }
+
+            case BlockIDList.GRASS_MEDIUM_FERTILITY_FULL -> {
+                return BlockIDList.GRASS_MEDIUM_FERTILITY_LARGE_PATCH;
+            }
+            case BlockIDList.GRASS_MEDIUM_FERTILITY_LARGE_PATCH -> {
+                return BlockIDList.GRASS_MEDIUM_FERTILITY_SMALL_PATCH;
+            }
+            case BlockIDList.GRASS_MEDIUM_FERTILITY_SMALL_PATCH -> {
+                return BlockIDList.MEDIUM_FERTILITY_SOIL;
+            }
+
+            case BlockIDList.GRASS_LOW_FERTILITY_FULL -> {
+                return BlockIDList.GRASS_LOW_FERTILITY_LARGE_PATCH;
+            }
+            case BlockIDList.GRASS_LOW_FERTILITY_LARGE_PATCH -> {
+                return BlockIDList.GRASS_LOW_FERTILITY_SMALL_PATCH;
+            }
+            case BlockIDList.GRASS_LOW_FERTILITY_SMALL_PATCH -> {
+                return BlockIDList.LOW_FERTILITY_SOIL;
+            }
+
+            case BlockIDList.GRASS_BARREN_FERTILITY_FULL -> {
+                return BlockIDList.GRASS_BARREN_FERTILITY_LARGE_PATCH;
+            }
+            case BlockIDList.GRASS_BARREN_FERTILITY_LARGE_PATCH -> {
+                return BlockIDList.GRASS_BARREN_FERTILITY_SMALL_PATCH;
+            }
+            case BlockIDList.GRASS_BARREN_FERTILITY_SMALL_PATCH -> {
+                return BlockIDList.BARREN_SOIL;
+            }
+        }
+
+
+
     }
 }

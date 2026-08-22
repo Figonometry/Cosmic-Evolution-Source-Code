@@ -4,6 +4,7 @@ import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
+import spacegame.block.BlockGrass;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
 import spacegame.render.Assets;
@@ -170,7 +171,7 @@ public final class EntityParticle extends EntityNonLiving {
             }
 
             if(this.associatedBlock == Block.itemStick.ID){
-                blockID = Block.oakLogFullSizeNormal.textureID;
+                blockID = Block.oakLog.textureID;
             }
 
             if(this.useLight) {
@@ -185,11 +186,11 @@ public final class EntityParticle extends EntityNonLiving {
             int colorValue = (int)(this.red * 255) << 16 | (int)(this.green * 255) << 8 | (int)(this.blue * 255);
 
 
-            ModelLoader blockModel = Block.grass.blockModel.copyModel();
+            ModelLoader blockModel = Block.barrenSoil.blockModel.copyModel();
 
             float skyLightValue = this.getLightValueFromMap(world.getBlockSkyLightValue(MathUtil.floorDouble(this.x), MathUtil.floorDouble(this.y), MathUtil.floorDouble(this.z)));
 
-            blockModel =  Block.grass.blockModel.copyModel();
+            blockModel =  Block.barrenSoil.blockModel.copyModel();
             blockModel.scaleModel(this.size);
 
             float shiftXLow = this.shiftX * 0.03125f;
@@ -280,7 +281,7 @@ public final class EntityParticle extends EntityNonLiving {
             Vector3d vertex5;
 
 
-           ModelLoader blockModel =  Block.grass.blockModel.copyModel();
+           ModelLoader blockModel =  Block.barrenSoil.blockModel.copyModel();
            blockModel.scaleModel(this.size);
 
             float shiftXLow = this.shiftX * 0.03125f;
@@ -343,12 +344,12 @@ public final class EntityParticle extends EntityNonLiving {
     private  void setVertexLight1Arg(byte light, float x, float y, float z, float[] lightColor) {
         float finalLight = getLightValueFromMap(light);
 
-        if(Block.list[this.associatedBlock].colorize){
+        if(Block.list[this.associatedBlock].isColorized(MathUtil.floorFloat(x), MathUtil.floorFloat(y), MathUtil.floorFloat(z), CosmicEvolution.instance.save.activeWorld)){
             World world = CosmicEvolution.instance.save.activeWorld;
             int bx = MathUtil.floorDouble(this.x);
             int by = MathUtil.floorDouble(this.y);
             int bz = MathUtil.floorDouble(this.z);
-            int color = this.associatedBlock == Block.grass.ID  || this.associatedBlock == Block.tallGrass.ID || this.associatedBlock == Block.grassWithClay.ID ? PlantColorizer.getGrassColor(world.getTemperature(bx, by, bz), world.getRainfall(bx, bz)) : PlantColorizer.getOakLeafColor(world.getTemperature(bx, by, bz), world.getRainfall(bx, bz));
+            int color = Block.list[this.associatedBlock] instanceof BlockGrass || this.associatedBlock == Block.tallGrass.ID || this.associatedBlock == Block.clay.ID ? PlantColorizer.getGrassColor(world.getTemperature(bx, by, bz), world.getRainfall(bx, bz)) : PlantColorizer.getOakLeafColor(world.getTemperature(bx, by, bz), world.getRainfall(bx, bz));
             this.red = ((color >> 16) & 255) / 255f;
             this.green = ((color >> 8) & 255) / 255f;
             this.blue = (color & 255) / 255f;

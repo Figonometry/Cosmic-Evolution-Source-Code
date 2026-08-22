@@ -2,19 +2,21 @@ package spacegame.world.blockstateio;
 
 import spacegame.nbt.NBTTagCompound;
 import spacegame.world.Chunk;
+import spacegame.world.blockstate.BlockState;
+import spacegame.world.blockstate.FlowingWaterState;
 import spacegame.world.blockstate.HeatableBlockLocation;
-import spacegame.world.blockstatewrapper.HeatableBlockLocationSafe;
+import spacegame.world.blockstate.MultiState;
 
-import java.util.Iterator;
 import java.util.Map;
 
 public class HeatableBlockIO {
 
     public void saveHeatableBlocks(Chunk chunk, NBTTagCompound nbtTagCompound){
         HeatableBlockLocation heatableBlockLocation;
-        HeatableBlockLocation[] heatableBlockLocations = this.getAllHeatableBlockLocationsInArray(chunk);
+        int totalCount = chunk.getBlockStateCount(MultiState.HEATABLE_BLOCK_STATE);
+        HeatableBlockLocation[] heatableBlockLocations = this.getAllHeatableBlockLocationsInArray(chunk, totalCount);
         int heatableBlockCount = 0;
-        NBTTagCompound[] heatableBlockTags = new NBTTagCompound[chunk.heatableBlocks.size()];
+        NBTTagCompound[] heatableBlockTags = new NBTTagCompound[totalCount];
         for(int i = 0; i < heatableBlockTags.length; i++){
 
             heatableBlockLocation = heatableBlockLocations[i];
@@ -56,23 +58,19 @@ public class HeatableBlockIO {
             heatableBlockLocation.heating = heating;
             heatableBlockLocation.fuelStartTime = fuelStartTime;
             heatableBlockLocation.heatStartTime = heatStartTime;
-            chunk.addHeatableBlock(heatableBlockLocation);
+            chunk.addBlockState(index, MultiState.HEATABLE_BLOCK_STATE, heatableBlockLocation);
         }
     }
 
-    private HeatableBlockLocation[] getAllHeatableBlockLocationsInArray(Chunk chunk){
-        int index = 0;
-        HeatableBlockLocation heatableBlockLocation;
-        HeatableBlockLocation[] heatableBlockLocations = new HeatableBlockLocation[chunk.heatableBlocks.size()];
-        Iterator<Map.Entry<Integer, HeatableBlockLocationSafe>> iterator = chunk.heatableBlocks.entrySet().iterator();
-        while(iterator.hasNext()){
-            Map.Entry<Integer, HeatableBlockLocationSafe> entry = iterator.next();
-            heatableBlockLocation = entry.getValue().value;
-            if(heatableBlockLocation != null){
-                heatableBlockLocations[index] = heatableBlockLocation;
-                index++;
-            }
+    private HeatableBlockLocation[] getAllHeatableBlockLocationsInArray(Chunk chunk, int totalCount){
+        BlockState[] base = chunk.getAllBlockStatesOfType(MultiState.HEATABLE_BLOCK_STATE, totalCount);
+        HeatableBlockLocation[] returnArray = new HeatableBlockLocation[base.length];
+
+        for (int i = 0; i < base.length; i++) {
+            returnArray[i] = (HeatableBlockLocation) base[i];
         }
-        return heatableBlockLocations;
+
+
+        return returnArray;
     }
 }

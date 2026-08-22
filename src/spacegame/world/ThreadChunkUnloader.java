@@ -4,6 +4,7 @@ import spacegame.core.CosmicEvolution;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.util.Logger;
+import spacegame.world.blockstate.MultiState;
 import spacegame.world.blockstateio.*;
 
 import java.io.File;
@@ -45,6 +46,13 @@ public final class ThreadChunkUnloader implements Runnable {
                 NBTTagCompound cropStates = new NBTTagCompound();
                 NBTTagCompound tilledSoilStates = new NBTTagCompound();
                 NBTTagCompound campfireStates = new NBTTagCompound();
+                NBTTagCompound torchStates = new NBTTagCompound();
+                NBTTagCompound logStates = new NBTTagCompound();
+                NBTTagCompound berryBushStates = new NBTTagCompound();
+                NBTTagCompound pitKilnStates = new NBTTagCompound();
+                NBTTagCompound reedGrowthStates = new NBTTagCompound();
+                NBTTagCompound doorStates = new NBTTagCompound();
+                NBTTagCompound flowingWaterStates = new NBTTagCompound();
 
                 chunkTag.setTag("Chunk", chunkData);
                 chunkData.setTag("Entity", entity);
@@ -56,6 +64,13 @@ public final class ThreadChunkUnloader implements Runnable {
                 chunkData.setTag("CropStates", cropStates);
                 chunkData.setTag("TilledSoilStates", tilledSoilStates);
                 chunkData.setTag("CampfireStates", campfireStates);
+                chunkData.setTag("TorchStates", torchStates);
+                chunkData.setTag("LogStates", logStates);
+                chunkData.setTag("BerryBushStates", berryBushStates);
+                chunkData.setTag("PitKilnStates", pitKilnStates);
+                chunkData.setTag("ReedGrowthStates", reedGrowthStates);
+                chunkData.setTag("DoorStates", doorStates);
+                chunkData.setTag("FlowingWaterStates", flowingWaterStates);
 
                 chunkData.setInteger("x", this.chunks[chunkIndex].x);
                 chunkData.setInteger("y", this.chunks[chunkIndex].y);
@@ -80,7 +95,7 @@ public final class ThreadChunkUnloader implements Runnable {
                     new ChunkEntitiesIO().saveEntities(this.chunks[chunkIndex], entity);
                 }
 
-                if(this.chunks[chunkIndex].chestLocations.size() > 0){
+                if(this.chunks[chunkIndex].doesChunkContainStateOfType(MultiState.CHEST_STATE)){
                     new ChestLocationIO().saveChestLocations(this.chunks[chunkIndex], chest);
                 }
 
@@ -88,28 +103,56 @@ public final class ThreadChunkUnloader implements Runnable {
                     new TimeUpdateIO().saveTimeEvents(this.chunks[chunkIndex], timeEvents);
                 }
 
-                if(this.chunks[chunkIndex].heatableBlocks.size() > 0){
+                if(this.chunks[chunkIndex].doesChunkContainStateOfType(MultiState.HEATABLE_BLOCK_STATE)){
                     new HeatableBlockIO().saveHeatableBlocks(this.chunks[chunkIndex], heatableBlocks);
                 }
 
-                if(this.chunks[chunkIndex].crafting3DItems.size() > 0){
+                if(this.chunks[chunkIndex].doesChunkContainStateOfType(MultiState.CRAFTING_3D_ITEM_STATE)){
                     new Crafting3DItemsIO().saveCrafting3DItems(this.chunks[chunkIndex], crafting3DItems);
                 }
 
-                if(this.chunks[chunkIndex].craftingItems.size() > 0){
+                if(this.chunks[chunkIndex].doesChunkContainStateOfType(MultiState.CRAFTING_ITEM_STATE)){
                     new CraftingItemsIO().saveCraftingItems(this.chunks[chunkIndex], craftingItems);
                 }
 
-                if(this.chunks[chunkIndex].cropStates.size() > 0){
+                if(this.chunks[chunkIndex].doesChunkContainStateOfType(MultiState.CROP_STATE)){
                     new CropStateIO().saveCropStates(this.chunks[chunkIndex], cropStates);
                 }
 
-                if(this.chunks[chunkIndex].tilledSoilStates.size() > 0){
+                if(this.chunks[chunkIndex].doesChunkContainStateOfType(MultiState.TILLED_SOIL_STATE)){
                     new TilledSoilStateIO().saveTilledSoilStates(this.chunks[chunkIndex], tilledSoilStates);
                 }
 
-                if(this.chunks[chunkIndex].campfireStates.size() > 0){
+                if(this.chunks[chunkIndex].doesChunkContainStateOfType(MultiState.CAMPFIRE_STATE)){
                     new CampfireStateIO().saveCampfireStates(this.chunks[chunkIndex], campfireStates);
+                }
+
+                if(this.chunks[chunkIndex].doesChunkContainStateOfType(MultiState.TORCH_STATE)){
+                    new TorchStateIO().saveTorchStates(this.chunks[chunkIndex], torchStates);
+                }
+
+                if(this.chunks[chunkIndex].doesChunkContainStateOfType(MultiState.LOG_STATE)){
+                    new LogStateIO().saveLogStates(this.chunks[chunkIndex], logStates);
+                }
+
+                if(this.chunks[chunkIndex].doesChunkContainStateOfType(MultiState.BERRY_BUSH_STATE)){
+                    new BerryBushStateIO().saveBerryBushStates(this.chunks[chunkIndex], berryBushStates);
+                }
+
+                if(this.chunks[chunkIndex].doesChunkContainStateOfType(MultiState.PIT_KILN_STATE)){
+                    new PitKilnStateIO().savePitKilnStates(this.chunks[chunkIndex], pitKilnStates);
+                }
+
+                if(this.chunks[chunkIndex].doesChunkContainStateOfType(MultiState.REED_GROWTH_STATE)){
+                    new ReedGrowthStateIO().saveReedGrowthStates(this.chunks[chunkIndex], reedGrowthStates);
+                }
+
+                if(this.chunks[chunkIndex].doesChunkContainStateOfType(MultiState.DOOR_STATE)){
+                    new DoorStateIO().saveDoorStates(this.chunks[chunkIndex], doorStates);
+                }
+
+                if(this.chunks[chunkIndex].doesChunkContainStateOfType(MultiState.FLOWING_WATER_STATE)){
+                    new FlowingWaterStateIO().saveFlowingWaterStates(this.chunks[chunkIndex], flowingWaterStates);
                 }
 
                 NBTIO.writeCompressed(chunkTag, outputStream);

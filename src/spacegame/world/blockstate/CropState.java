@@ -1,6 +1,6 @@
 package spacegame.world.blockstate;
 
-public final class CropState {
+public final class CropState extends BlockState {
     public int index;
     public String name;
     public boolean canMutate;

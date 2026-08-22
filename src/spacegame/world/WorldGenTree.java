@@ -1,9 +1,11 @@
 package spacegame.world;
 
 import spacegame.block.Block;
-import spacegame.block.BlockLog;
+import spacegame.block.BlockGrass;
 import spacegame.core.CosmicEvolution;
 import spacegame.util.LongHasher;
+import spacegame.world.blockstate.LogState;
+import spacegame.world.blockstate.MultiState;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,7 +24,7 @@ public class WorldGenTree extends WorldGen {
     public int trunkTop;
 
     public WorldGenTree(Chunk chunk, WorldEarth worldEarth, int index, boolean fromWorldGen) {
-        if(chunk.blocks[index] != Block.grass.ID && chunk.blocks[index] != Block.dirt.ID)return; //Guard clause to prevent trees from generating when they shouldnt
+        if(!(Block.list[chunk.blocks[index]] instanceof BlockGrass))return; //Guard clause to prevent trees from generating when they shouldnt
         this.worldEarth = worldEarth;
         this.index = index;
         this.chunk = chunk;
@@ -42,7 +44,7 @@ public class WorldGenTree extends WorldGen {
     }
 
     public WorldGenTree(Chunk chunk, WorldEarth worldEarth, int index) {
-        if(chunk.blocks[index] != Block.grass.ID && chunk.blocks[index] != Block.dirt.ID)return; //Guard clause to prevent trees from generating when they shouldnt
+        if(!(Block.list[chunk.blocks[index]] instanceof BlockGrass))return; //Guard clause to prevent trees from generating when they shouldnt
         this.worldEarth = worldEarth;
         this.index = index;
         this.chunk = chunk;
@@ -87,7 +89,7 @@ public class WorldGenTree extends WorldGen {
             z = z + (negative ? rand.nextInt(-7, -1) : rand.nextInt(1, 7));
             y = this.worldEarth.chunkController.findChunkSkyLightMap(x >> 5, z >> 5).getHeightValue(x,z);
 
-            if(this.worldEarth.getBlockID(x,y,z) == Block.grass.ID && this.worldEarth.getBlockID(x, y + 1, z) == Block.air.ID){
+            if(Block.list[this.worldEarth.getBlockID(x,y,z)] instanceof BlockGrass && this.worldEarth.getBlockID(x, y + 1, z) == Block.air.ID){
                 this.worldEarth.setBlockWithNotify(x, y + 1, z, Block.itemStick.ID, false);
             }
         }
@@ -142,8 +144,7 @@ public class WorldGenTree extends WorldGen {
         int x = startingX;
         int y = startingY;
         int z = startingZ;
-        short block = BlockLog.getIDFromParameters(size, 1);
-        if(block == Block.oakLogFullSizeNormal.ID || block == Block.oakLogFullSizeNorthSouth.ID || block == Block.oakLogFullSizeEastWest.ID){
+        if(this.size == 16){
             this.decayIntoDirt = true;
         }
         Chunk chunk;
@@ -151,7 +152,7 @@ public class WorldGenTree extends WorldGen {
         boolean inCallingChunk;
         for(int i = 0; i < this.height; i++){
             if(decreaseLogSize){
-                block = BlockLog.getIDFromParameters(this.size - (i/2), 1);
+                this.size--;
                 decreaseLogSize = false;
             } else {
                 decreaseLogSize = true;
@@ -160,9 +161,11 @@ public class WorldGenTree extends WorldGen {
             inCallingChunk = this.isBlockInCallingChunkExcludeEdge(x,y,z);
 
             if(inCallingChunk){
-                this.chunk.blocks[Chunk.getBlockIndexFromCoordinates(x,y,z)] = block;
+                this.chunk.blocks[Chunk.getBlockIndexFromCoordinates(x,y,z)] = Block.oakLog.ID;
+                this.chunk.addBlockState(x,y,z, MultiState.LOG_STATE, new LogState(LogState.FACE_DIRECTION_TOP_AND_BOTTOM, this.size, Chunk.getBlockIndexFromCoordinates(x,y,z)));
             } else {
-                this.worldEarth.setBlock(x,y,z, block);
+                this.worldEarth.setBlock(x,y,z, Block.oakLog.ID);
+                this.worldEarth.addBlockState(x,y,z, MultiState.LOG_STATE, new LogState(LogState.FACE_DIRECTION_TOP_AND_BOTTOM, this.size, Chunk.getBlockIndexFromCoordinates(x,y,z)));
             }
 
             int chunkX = x >> 5;
@@ -270,7 +273,7 @@ public class WorldGenTree extends WorldGen {
 
     private boolean canBlockGenerate(int x, int y, int z){
         short blockID = this.isBlockInCallingChunk(x,y,z) ? this.chunk.blocks[Chunk.getBlockIndexFromCoordinates(x,y,z)] : this.worldEarth.getBlockID(x,y,z);
-        return blockID == Block.air.ID || (blockID >= Block.oakLogFullSizeNormal.ID && blockID <= Block.oakLogSize1EastWest.ID) || blockID == Block.leaf.ID;
+        return blockID == Block.air.ID || blockID == Block.oakLog.ID || blockID == Block.leaf.ID;
     }
 
 }

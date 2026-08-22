@@ -1,7 +1,7 @@
 package spacegame.gui;
 
 import spacegame.core.CosmicEvolution;
-import spacegame.core.MouseListener;
+import spacegame.core.eventlisteners.MouseListener;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
 
@@ -15,6 +15,7 @@ public final class MoveableObject {
     public float width;
     public float height;
 
+    //No longer used in the code but still keeping around for usage later
     public MoveableObject(float x, float y, float width, float height){
         this.x = x;
         this.y = y;

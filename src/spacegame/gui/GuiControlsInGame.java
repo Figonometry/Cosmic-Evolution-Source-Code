@@ -16,6 +16,9 @@ public final class GuiControlsInGame extends Gui {
     private Button inventoryKey;
     private Button back;
     private Button dropKey;
+    private Button sitKey;
+    private Button shiftKey;
+    private Button sprintKey;
     private Button mouseSensitivity;
     public int title;
     public int background;
@@ -29,9 +32,12 @@ public final class GuiControlsInGame extends Gui {
         this.rightKey = new Button(EnumButtonEffects.KEY_RIGHT.name(), 250, 64, 150, 0, this, this.ce);
         this.jumpKey = new Button(EnumButtonEffects.KEY_JUMP.name(), 250, 64, -150, -100, this, this.ce);
         this.inventoryKey = new Button(EnumButtonEffects.KEY_INVENTORY.name(), 250, 64, 150, -100, this, this.ce);
-        this.dropKey = new Button(EnumButtonEffects.KEY_DROP.name(), 550, 64, 0, -200, this, this.ce);
+        this.dropKey = new Button(EnumButtonEffects.KEY_DROP.name(), 250, 64, -150, -200, this, this.ce);
+        this.sitKey = new Button(EnumButtonEffects.KEY_SIT.name(), 250, 64, 150, -200, this, this.ce);
+        this.shiftKey = new Button(EnumButtonEffects.KEY_SHIFT.name(), 250, 64, -150, -300, this, this.ce);
+        this.sprintKey = new Button(EnumButtonEffects.KEY_SPRINT.name(), 250, 64, 150, -300, this, this.ce);
         this.mouseSensitivity = new Button(EnumButtonEffects.MOUSE_SENSITIVITY.name(), 550, 64, 0, 200, this, this.ce);
-        this.back = new Button(EnumButtonEffects.BACK.name(), 550, 64, 0, -300, this, this.ce);
+        this.back = new Button(EnumButtonEffects.BACK.name(), 550, 64, 0, -400, this, this.ce);
     }
 
     @Override
@@ -90,6 +96,9 @@ public final class GuiControlsInGame extends Gui {
         this.inventoryKey.renderButton();
         this.jumpKey.renderButton();
         this.dropKey.renderButton();
+        this.sitKey.renderButton();
+        this.sprintKey.renderButton();
+        this.shiftKey.renderButton();
         this.mouseSensitivity.renderButton();
         this.back.renderButton();
     }
@@ -110,6 +119,12 @@ public final class GuiControlsInGame extends Gui {
             return this.inventoryKey;
         } else if(this.dropKey.isMouseHoveredOver() && this.dropKey.active){
             return this.dropKey;
+        } else if(this.sitKey.isMouseHoveredOver() && this.sitKey.active){
+            return this.sitKey;
+        } else if(this.sprintKey.isMouseHoveredOver() && this.sprintKey.active){
+            return this.sprintKey;
+        } else if(this.shiftKey.isMouseHoveredOver() && this.shiftKey.active) {
+            return this.shiftKey;
         } else if(this.mouseSensitivity.isMouseHoveredOver() && this.mouseSensitivity.active){
             return this.mouseSensitivity;
         } else if(this.back.isMouseHoveredOver() && this.back.active){

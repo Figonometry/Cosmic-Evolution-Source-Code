@@ -9,7 +9,10 @@ import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
 import spacegame.block.BlockDoor;
 import spacegame.block.BlockWater;
+import spacegame.block.IBurnDamage;
 import spacegame.core.*;
+import spacegame.core.eventlisteners.KeyListener;
+import spacegame.core.eventlisteners.MouseListener;
 import spacegame.entity.animations.PlayerAnimation;
 import spacegame.entity.animations.PlayerAnimationSittingDown;
 import spacegame.entity.animations.PlayerAnimationStandingUp;
@@ -94,6 +97,7 @@ public final class EntityPlayer extends EntityLiving {
     public double sitMovement;
     public int drawbackTimer;
     public boolean drawingBack;
+    public boolean sprinting;
 
     public EntityPlayer(CosmicEvolution cosmicEvolution, double x, double y, double z) {
         super(Integer.MAX_VALUE);
@@ -452,7 +456,7 @@ public final class EntityPlayer extends EntityLiving {
             if(this.ce.currentGui instanceof GuiInGame) {
                 this.updateYawAndPitch();
 
-                if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_G) && KeyListener.keyReleased[GLFW.GLFW_KEY_G] && this.playerAnimation == null){
+                if(KeyListener.isKeyPressed(GameSettings.sitKey.keyCode) && KeyListener.keyReleased[GameSettings.sitKey.keyCode] && this.playerAnimation == null){
 
                     if(!this.sitting){
                         this.playerAnimation = new PlayerAnimationSittingDown(false, false, false, 15);
@@ -460,7 +464,7 @@ public final class EntityPlayer extends EntityLiving {
                         this.playerAnimation = new PlayerAnimationStandingUp(false, false, false, 15);
                     }
 
-                    KeyListener.setKeyReleased(GLFW.GLFW_KEY_G);
+                    KeyListener.setKeyReleased(GameSettings.sitKey.keyCode);
                 }
 
                 if(this.playerAnimation instanceof PlayerAnimationSittingDown){
@@ -552,7 +556,7 @@ public final class EntityPlayer extends EntityLiving {
             this.checkHealth();
             this.updateSwingTimer();
             this.checkItemDurability();
-            this.walkingAnimationTimer++;
+            this.walkingAnimationTimer += this.sprinting ? 2 : 1;
             if(!this.stopLeftArm && !this.stopRightArm && !this.stopLeftLeg && !this.stopRightLeg && !this.animate){
                 this.walkingAnimationTimer = 0;
             }
@@ -668,9 +672,14 @@ public final class EntityPlayer extends EntityLiving {
             KeyListener.setKeyReleased(GameSettings.dropKey.keyCode);
         }
 
-        this.isShifting = KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT);
+        this.isShifting = KeyListener.isKeyPressed(GameSettings.shiftKey.keyCode);
 
         this.speed = this.speedOverride ? this.speed : this.isShifting || this.isLeavingWater || this.inWater || (this.moveEntityUp && !this.isJumping) ? 0.025 : 0.1;
+
+        if(KeyListener.isKeyPressed(GameSettings.sprintKey.keyCode)){
+            this.sprinting = true;
+            this.speed *= 1.5;
+        }
 
         if(this.freeMove) {
             this.developerDebugMovement();
@@ -705,6 +714,8 @@ public final class EntityPlayer extends EntityLiving {
         if((rawDeltaX != 0.0f || rawDeltaZ != 0.0f) && this.sitting && !(this.playerAnimation instanceof  PlayerAnimationStandingUp)){
             this.playerAnimation = new PlayerAnimationStandingUp(false, false, false, 15);
         }
+
+
 
         if(this.sitting){
             rawDeltaX = 0.0f;
@@ -759,10 +770,26 @@ public final class EntityPlayer extends EntityLiving {
             this.drowningTimer = 0;
         }
 
-        if(this.blockUnderPlayer == Block.campfire.ID || this.blockUnderPlayer == Block.pitKilnLit.ID || headBlock == Block.campfire.ID ||
-                headBlock == Block.pitKilnLit.ID || footBlock == Block.campfire.ID || footBlock == Block.pitKilnLit.ID){
-            this.damage(5);
+
+        if(Block.list[this.blockUnderPlayer] instanceof IBurnDamage){
+            if(((IBurnDamage) Block.list[this.blockUnderPlayer]).canDamage(playerX,
+                    MathUtil.floorDouble(this.y - (this.height/2) - 0.1), playerZ, CosmicEvolution.instance.save.activeWorld)){
+                this.damage(5);
+            }
         }
+
+        if(Block.list[headBlock] instanceof IBurnDamage){
+            if(((IBurnDamage) Block.list[headBlock]).canDamage(playerX, playerYHead, playerZ, CosmicEvolution.instance.save.activeWorld)){
+                this.damage(5);
+            }
+        }
+
+        if(Block.list[footBlock] instanceof IBurnDamage){
+            if(((IBurnDamage) Block.list[footBlock]).canDamage(playerX, playerYFoot, playerZ, CosmicEvolution.instance.save.activeWorld)){
+                this.damage(5);
+            }
+        }
+
 
         if(this.inWater){
             this.isOnGround = false;
@@ -852,6 +879,10 @@ public final class EntityPlayer extends EntityLiving {
         }
 
         this.isStarving = this.saturation == 0;
+
+        if(this.ce.save.time % 60 == 0 && this.sprinting){
+            this.saturation -= 1;
+        }
 
         if(this.ce.save.time % 600 == 0){
             this.health += this.isHealing ? 1 : 0;
@@ -1036,7 +1067,7 @@ public final class EntityPlayer extends EntityLiving {
                     this.prevBlockLookingAt[0] = this.blockLookingAt[0];
                     this.prevBlockLookingAt[1] = this.blockLookingAt[1];
                     this.prevBlockLookingAt[2] = this.blockLookingAt[2];
-                    break;
+                    return;
                 }
             }
         }
@@ -1079,11 +1110,11 @@ public final class EntityPlayer extends EntityLiving {
 
             if (GuiInGame.isBlockVisible(bx, by, bz) && block.ID != Block.air.ID && !(block instanceof BlockWater)) {
                 this.blockIDPlayerLookingAt = block.ID;
-                break;
+                return this.blockIDPlayerLookingAt;
             }
         }
 
-        return this.blockIDPlayerLookingAt;
+        return Block.air.ID;
     }
 
     public int[] getPlayerLookingAtBlockCoords(){
@@ -1125,7 +1156,7 @@ public final class EntityPlayer extends EntityLiving {
                 this.blockLookingAtCoords[0] = bx;
                 this.blockLookingAtCoords[1] = by;
                 this.blockLookingAtCoords[2] = bz;
-                break;
+                return this.blockLookingAtCoords;
             }
         }
 

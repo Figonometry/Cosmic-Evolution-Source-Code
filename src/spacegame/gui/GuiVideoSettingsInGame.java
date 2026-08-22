@@ -22,6 +22,7 @@ public final class GuiVideoSettingsInGame extends Gui {
     public Button wavyWater;
     public Button wavyLeaves;
     public Button transparentLeaves;
+    public Button blockTooltips;
     public int title;
     public int background;
     public int page = 1;
@@ -43,6 +44,7 @@ public final class GuiVideoSettingsInGame extends Gui {
         //Page 2
         this.wavyWater = new Button(EnumButtonEffects.WAVY_WATER.name(), 512, 64, -587,150, this, this.ce);
         this.wavyLeaves = new Button(EnumButtonEffects.WAVY_LEAVES.name(), 512, 64, 0, 150, this, this.ce);
+        this.blockTooltips = new Button(EnumButtonEffects.BLOCK_TOOLTIPS.name(), 512, 64, 587, 150, this, this.ce);
 
 
         this.back = new Button(EnumButtonEffects.BACK.name(), 512, 64, 0, -400, this, this.ce);
@@ -117,6 +119,7 @@ public final class GuiVideoSettingsInGame extends Gui {
             case 2 -> {
                 this.wavyWater.renderButton();
                 this.wavyLeaves.renderButton();
+                this.blockTooltips.renderButton();
                 this.pageLeft.renderButton();
             }
         }
@@ -158,6 +161,8 @@ public final class GuiVideoSettingsInGame extends Gui {
                     return this.wavyWater;
                 } else if (this.wavyLeaves.isMouseHoveredOver() && this.wavyLeaves.active) {
                     return this.wavyLeaves;
+                } else if (this.blockTooltips.isMouseHoveredOver() && this.blockTooltips.active) {
+                    return this.blockTooltips;
                 } else if (this.pageLeft.isMouseHoveredOver() && this.pageLeft.active) {
                     return this.pageLeft;
                 }

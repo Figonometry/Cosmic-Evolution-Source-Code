@@ -1,6 +1,7 @@
 package spacegame.world;
 
 import spacegame.block.Block;
+import spacegame.block.BlockGrass;
 import spacegame.block.ITickable;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
@@ -57,13 +58,13 @@ public final class ChunkController {
     public int drawCalls;
     public int timer = 2400;
     public RenderWorldScene renderWorldScene = new RenderWorldScene(this);
-    public ChunkTerrainHandler chunkTerrainHandler;
+    public ChunkEarthTerrainHandler chunkEarthTerrainHandler;
     public int entityCap;
     public int numLoadedEntities;
 
     public ChunkController(World parentWorld) {
         this.parentWorld = parentWorld;
-        this.chunkTerrainHandler = new ChunkTerrainHandler(this, this.parentWorld);
+        this.chunkEarthTerrainHandler = new ChunkEarthTerrainHandler(this, this.parentWorld);
     }
 
 
@@ -203,7 +204,7 @@ public final class ChunkController {
                         spawnX = x + (CosmicEvolution.globalRand.nextBoolean() ? CosmicEvolution.globalRand.nextInt(5, 10) : CosmicEvolution.globalRand.nextInt(-10, -5));
                         spawnZ = z + (CosmicEvolution.globalRand.nextBoolean() ? CosmicEvolution.globalRand.nextInt(5, 10) : CosmicEvolution.globalRand.nextInt(-10, -5));
                         spawnY = this.findChunkSkyLightMap(spawnX >> 5, spawnZ >> 5).getHeightValue(spawnX, spawnZ);
-                        if (this.parentWorld.getBlockID(spawnX, spawnY, spawnZ) == Block.grass.ID && this.parentWorld.getBlockID(spawnX, spawnY + 1, spawnZ) == Block.air.ID) {
+                        if (Block.list[this.parentWorld.getBlockID(spawnX, spawnY, spawnZ)] instanceof BlockGrass && this.parentWorld.getBlockID(spawnX, spawnY + 1, spawnZ) == Block.air.ID) {
                             Chunk chunk1 = this.findChunkFromChunkCoordinates(spawnX >> 5, spawnY >> 5, spawnZ >> 5);
                             if (chunk1 != null && this.renderWorldScene.sunYVector > 0) {
                                 chunk1.addEntityToList(new EntityDeer(spawnX + 0.5, spawnY + 1.5, spawnZ + 0.5, false, true));
@@ -298,7 +299,7 @@ public final class ChunkController {
                 if (chunk != null) {
                     if (this.parentWorld.chunkFullySurrounded(chunk.x, chunk.y, chunk.z) && !chunk.populated) {
                         CosmicEvolution.threadJobs.incrementAndGet();
-                        ChunkJobThreadScheduler.chunkJobQueue.add(new ChunkJob((float) MathUtil.distance3DSquared(playerChunkX << 5, playerChunkY << 5, playerChunkZ << 5, chunk.x << 5, chunk.y << 5, chunk.z << 5), new ThreadPopulateChunk(chunk, this.parentWorld)));
+                        ThreadChunkJobScheduler.chunkJobQueue.add(new ChunkJob((float) MathUtil.distance3DSquared(playerChunkX << 5, playerChunkY << 5, playerChunkZ << 5, chunk.x << 5, chunk.y << 5, chunk.z << 5), new ThreadPopulateChunk(chunk, this.parentWorld)));
                         this.nonPopulatedChunks.remove(chunk);
                         break; //Only execute the first available chunk and pop, 60 ticks pass in a second, most chunks should populate within a second, this reduces load on each frame since population is an intensive process and runs synchronously
                     }
@@ -382,7 +383,7 @@ public final class ChunkController {
                     chunk.needsToUpdate = false;
                     chunk.updating = true;
                     CosmicEvolution.threadJobs.incrementAndGet();
-                    ChunkJobThreadScheduler.chunkJobQueue.add(new ChunkJob((float) MathUtil.distance3DSquared(playerChunkX << 5, playerChunkY << 5, playerChunkZ << 5, chunk.x << 5, chunk.y << 5, chunk.z << 5), new ThreadRebuildChunk(chunk, this.parentWorld)));
+                    ThreadChunkJobScheduler.chunkJobQueue.add(new ChunkJob((float) MathUtil.distance3DSquared(playerChunkX << 5, playerChunkY << 5, playerChunkZ << 5, chunk.x << 5, chunk.y << 5, chunk.z << 5), new ThreadRebuildChunk(chunk, this.parentWorld)));
                     rebuildsStarted++;
                     if(rebuildsStarted >=  maxNewRebuildsThisTick)break;
                 } else {
@@ -555,7 +556,7 @@ public final class ChunkController {
 
 
     public void addChunk(Chunk chunk) {
-        this.chunkTerrainHandler.setTerrain(chunk.blocks, chunk);
+        this.chunkEarthTerrainHandler.setTerrain(chunk.blocks, chunk);
 
         if (chunk.empty) {
             chunk.emptyChunk();
@@ -697,6 +698,13 @@ public final class ChunkController {
                         NBTTagCompound cropStates = chunkData.getCompoundTag("CropStates");
                         NBTTagCompound tilledSoilStates = chunkData.getCompoundTag("TilledSoilStates");
                         NBTTagCompound campfireStates = chunkData.getCompoundTag("CampfireStates");
+                        NBTTagCompound torchStates = chunkData.getCompoundTag("TorchStates");
+                        NBTTagCompound logStates = chunkData.getCompoundTag("LogStates");
+                        NBTTagCompound berryBushStates = chunkData.getCompoundTag("BerryBushStates");
+                        NBTTagCompound pitKilnStates = chunkData.getCompoundTag("PitKilnStates");
+                        NBTTagCompound reedGrowthStates = chunkData.getCompoundTag("ReedGrowthStates");
+                        NBTTagCompound doorStates = chunkData.getCompoundTag("DoorStates");
+                        NBTTagCompound flowingWaterStates = chunkData.getCompoundTag("FlowingWaterStates");
 
                         chunk = new Chunk(x, y, z, CosmicEvolution.instance.save.activeWorld);
 
@@ -751,6 +759,35 @@ public final class ChunkController {
                             new CampfireStateIO().loadCampfireStates(chunk, campfireStates);
                         }
 
+                        if(torchStates != null){
+                            new TorchStateIO().loadTorchStates(chunk, torchStates);
+                        }
+
+                        if(logStates != null){
+                            new LogStateIO().loadLogStates(chunk, logStates);
+                        }
+
+                        if(berryBushStates != null){
+                            new BerryBushStateIO().loadBerryBushStates(chunk, berryBushStates);
+                        }
+
+                        if(pitKilnStates != null){
+                            new PitKilnStateIO().loadPitKilnStates(chunk, pitKilnStates);
+                        }
+
+                        if(reedGrowthStates != null){
+                            new ReedGrowthStateIO().loadReedGrowthStates(chunk, reedGrowthStates);
+                        }
+
+                        if(doorStates != null){
+                            new DoorStateIO().loadDoorStates(chunk, doorStates);
+                        }
+
+                        if(flowingWaterStates != null){
+                            new FlowingWaterStateIO().loadFlowingWaterStates(chunk, flowingWaterStates);
+                        }
+
+
                         inputStream.close();
                     }
                 } catch (IOException e){
@@ -798,7 +835,7 @@ public final class ChunkController {
             if (!this.isChunkColumnFullyLoaded(this.generateChunksX, this.generateChunksZ)) {
                 this.findChunkSkyLightMap(this.generateChunksX, this.generateChunksZ);
                 CosmicEvolution.threadJobs.incrementAndGet();
-                ChunkJobThreadScheduler.chunkJobQueue.add(new ChunkJob((float) MathUtil.distance2DSquared(playerChunkX << 5, playerChunkZ << 5, this.generateChunksX << 5, this.generateChunksZ << 5), new ThreadChunkColumnLoader(this.generateChunksX, this.generateChunksZ, this)));
+                ThreadChunkJobScheduler.chunkJobQueue.add(new ChunkJob((float) MathUtil.distance2DSquared(playerChunkX << 5, playerChunkZ << 5, this.generateChunksX << 5, this.generateChunksZ << 5), new ThreadChunkColumnLoader(this.generateChunksX, this.generateChunksZ, this)));
             }
 
             switch (this.sideOfLoop) {
@@ -861,7 +898,7 @@ public final class ChunkController {
             }
         }
         CosmicEvolution.threadJobs.incrementAndGet();
-        ChunkJobThreadScheduler.chunkJobQueue.add(new ChunkJob(10000 ,new ThreadChunkUnloader(unloadingChunks)));
+        ThreadChunkJobScheduler.chunkJobQueue.add(new ChunkJob(10000 ,new ThreadChunkUnloader(unloadingChunks)));
 
 
 
@@ -952,7 +989,7 @@ public final class ChunkController {
             }
         }
         CosmicEvolution.threadJobs.incrementAndGet();
-        ChunkJobThreadScheduler.chunkJobQueue.add(new ChunkJob(10000, new ThreadChunkUnloader(unloadingChunks)));
+        ThreadChunkJobScheduler.chunkJobQueue.add(new ChunkJob(10000, new ThreadChunkUnloader(unloadingChunks)));
     }
 
     public void saveAllRegionsWithoutUnload() {
@@ -975,7 +1012,7 @@ public final class ChunkController {
             if (chunk != null) {
                 if (chunk.modifiedSinceLastSave) {
                     CosmicEvolution.threadJobs.incrementAndGet();
-                    ChunkJobThreadScheduler.chunkJobQueue.add(new ChunkJob((float) MathUtil.distance3DSquared(playerChunkX << 5, playerChunkY << 5, playerChunkZ << 5, chunk.x << 5, chunk.y << 5, chunk.z << 5), new ThreadChunkSave(chunk)));
+                    ThreadChunkJobScheduler.chunkJobQueue.add(new ChunkJob((float) MathUtil.distance3DSquared(playerChunkX << 5, playerChunkY << 5, playerChunkZ << 5, chunk.x << 5, chunk.y << 5, chunk.z << 5), new ThreadChunkSave(chunk)));
                     chunk.modifiedSinceLastSave = false;
                 }
             }

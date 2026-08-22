@@ -2,16 +2,13 @@ package spacegame.world;
 
 import org.joml.Vector3d;
 import org.joml.Vector3f;
-import spacegame.block.Block;
-import spacegame.block.BlockCraftingTable;
-import spacegame.block.BlockTorch;
-import spacegame.block.BlockWater;
+import spacegame.block.*;
 import spacegame.core.*;
+import spacegame.core.eventlisteners.MouseListener;
 import spacegame.entity.*;
 import spacegame.entity.ai.AIPassive;
 import spacegame.entity.animations.PlayerAnimationThrustingSpearHold;
 import spacegame.gui.GuiInGame;
-import spacegame.item.Inventory;
 import spacegame.item.Item;
 import spacegame.item.ItemSpear;
 import spacegame.nbt.NBTIO;
@@ -187,8 +184,6 @@ public abstract class World {
 
         this.prevRaining = raining;
 
-        this.chunkController.renderWorldScene.transitionSkyColor();
-
         this.activeWeatherSystems.trimToSize();
 
         if((MathUtil.floorDouble(this.ce.save.thePlayer.x) >> 5 != MathUtil.floorDouble(this.ce.save.thePlayer.prevX) >> 5) || (MathUtil.floorDouble(this.ce.save.thePlayer.z) >> 5 != MathUtil.floorDouble(this.ce.save.thePlayer.prevZ) >> 5)){
@@ -294,6 +289,8 @@ public abstract class World {
 
     public abstract void loadWorld();
 
+    public abstract void loadGeologicProvinces();
+
 
 
     public void toggleWorldPause(){
@@ -324,20 +321,20 @@ public abstract class World {
                 lightMap.updateLightMap(x, this.findNextHighestSolidBlock(x, y, z), z);
             }
 
-            if(this.getBlockID(x - 1, y, z) == Block.water.ID || this.getBlockID(x - 1, y, z) == Block.fullWater.ID){
-                this.addTimeEvent(x - 1, y, z, this.ce.save.time +  ((BlockWater)Block.water).getUpdateTime());
+            if(this.getBlockID(x - 1, y, z) == Block.flowingWater.ID || this.getBlockID(x - 1, y, z) == Block.fullWater.ID){
+                this.addTimeEvent(x - 1, y, z, this.ce.save.time +  ((BlockFlowingWater)Block.flowingWater).getUpdateTime(x,y,z,this));
             }
 
-            if(this.getBlockID(x + 1, y, z) == Block.water.ID || this.getBlockID(x + 1, y, z) == Block.fullWater.ID){
-                this.addTimeEvent(x + 1, y, z, this.ce.save.time +  ((BlockWater)Block.water).getUpdateTime());
+            if(this.getBlockID(x + 1, y, z) == Block.flowingWater.ID || this.getBlockID(x + 1, y, z) == Block.fullWater.ID){
+                this.addTimeEvent(x + 1, y, z, this.ce.save.time +  ((BlockFlowingWater)Block.flowingWater).getUpdateTime(x,y,z,this));
             }
 
-            if(this.getBlockID(x, y, z - 1) == Block.water.ID || this.getBlockID(x, y, z - 1) == Block.fullWater.ID){
-                this.addTimeEvent(x, y, z - 1, this.ce.save.time +  ((BlockWater)Block.water).getUpdateTime());
+            if(this.getBlockID(x, y, z - 1) == Block.flowingWater.ID || this.getBlockID(x, y, z - 1) == Block.fullWater.ID){
+                this.addTimeEvent(x, y, z - 1, this.ce.save.time +  ((BlockFlowingWater)Block.flowingWater).getUpdateTime(x,y,z,this));
             }
 
-            if(this.getBlockID(x, y, z + 1) == Block.water.ID || this.getBlockID(x, y, z + 1) == Block.fullWater.ID){
-                this.addTimeEvent(x, y, z + 1, this.ce.save.time +  ((BlockWater)Block.water).getUpdateTime());
+            if(this.getBlockID(x, y, z + 1) == Block.flowingWater.ID || this.getBlockID(x, y, z + 1) == Block.fullWater.ID){
+                this.addTimeEvent(x, y, z + 1, this.ce.save.time +  ((BlockFlowingWater)Block.flowingWater).getUpdateTime(x,y,z,this));
             }
         } else if (Block.list[blockID].isSolid) {
             if (lightMap.isHeightGreater(x, y, z)) {
@@ -370,20 +367,20 @@ public abstract class World {
             if (lightMap.isHeight(x, y, z)) {
                 lightMap.updateLightMap(x, this.findNextHighestSolidBlock(x, y, z), z);
             }
-            if(this.getBlockID(x - 1, y, z) == Block.water.ID || this.getBlockID(x - 1, y, z) == Block.fullWater.ID){
-                this.addTimeEvent(x - 1, y, z, this.ce.save.time +  ((BlockWater)Block.water).getUpdateTime());
+            if(this.getBlockID(x - 1, y, z) == Block.flowingWater.ID || this.getBlockID(x - 1, y, z) == Block.fullWater.ID){
+                this.addTimeEvent(x - 1, y, z, this.ce.save.time +  ((BlockFlowingWater)Block.flowingWater).getUpdateTime(x,y,z,this));
             }
 
-            if(this.getBlockID(x + 1, y, z) == Block.water.ID || this.getBlockID(x + 1, y, z) == Block.fullWater.ID){
-                this.addTimeEvent(x + 1, y, z, this.ce.save.time +  ((BlockWater)Block.water).getUpdateTime());
+            if(this.getBlockID(x + 1, y, z) == Block.flowingWater.ID || this.getBlockID(x + 1, y, z) == Block.fullWater.ID){
+                this.addTimeEvent(x + 1, y, z, this.ce.save.time +  ((BlockFlowingWater)Block.flowingWater).getUpdateTime(x,y,z,this));
             }
 
-            if(this.getBlockID(x, y, z - 1) == Block.water.ID || this.getBlockID(x, y, z - 1) == Block.fullWater.ID){
-                this.addTimeEvent(x, y, z - 1, this.ce.save.time +  ((BlockWater)Block.water).getUpdateTime());
+            if(this.getBlockID(x, y, z - 1) == Block.flowingWater.ID || this.getBlockID(x, y, z - 1) == Block.fullWater.ID){
+                this.addTimeEvent(x, y, z - 1, this.ce.save.time +  ((BlockFlowingWater)Block.flowingWater).getUpdateTime(x,y,z,this));
             }
 
-            if(this.getBlockID(x, y, z + 1) == Block.water.ID || this.getBlockID(x, y, z + 1) == Block.fullWater.ID){
-                this.addTimeEvent(x, y, z + 1, this.ce.save.time +  ((BlockWater)Block.water).getUpdateTime());
+            if(this.getBlockID(x, y, z + 1) == Block.flowingWater.ID || this.getBlockID(x, y, z + 1) == Block.fullWater.ID){
+                this.addTimeEvent(x, y, z + 1, this.ce.save.time +  ((BlockFlowingWater)Block.flowingWater).getUpdateTime(x,y,z,this));
             }
         } else if (Block.list[blockID].isSolid) {
             if (lightMap.isHeightGreater(x, y, z)) {
@@ -395,17 +392,17 @@ public abstract class World {
         }
 
         if(destroyWater){
-            if(Block.list[this.getBlockID(x - 1, y, z)] instanceof BlockWater){
-                this.addTimeEvent(x - 1, y, z, this.ce.save.time +  ((BlockWater)Block.water).getUpdateTime());
+            if(Block.list[this.getBlockID(x - 1, y, z)] instanceof BlockFlowingWater){
+                this.addTimeEvent(x - 1, y, z, this.ce.save.time +  ((BlockFlowingWater)Block.flowingWater).getUpdateTime(x,y,z,this));
             }
-            if(Block.list[this.getBlockID(x + 1, y, z)] instanceof BlockWater){
-                this.addTimeEvent(x + 1, y, z, this.ce.save.time +  ((BlockWater)Block.water).getUpdateTime());
+            if(Block.list[this.getBlockID(x + 1, y, z)] instanceof BlockFlowingWater){
+                this.addTimeEvent(x + 1, y, z, this.ce.save.time +  ((BlockFlowingWater)Block.flowingWater).getUpdateTime(x,y,z,this));
             }
-            if(Block.list[this.getBlockID(x, y, z - 1)] instanceof BlockWater){
-                this.addTimeEvent(x, y, z - 1, this.ce.save.time +  ((BlockWater)Block.water).getUpdateTime());
+            if(Block.list[this.getBlockID(x, y, z - 1)] instanceof BlockFlowingWater){
+                this.addTimeEvent(x, y, z - 1, this.ce.save.time +  ((BlockFlowingWater)Block.flowingWater).getUpdateTime(x,y,z,this));
             }
-            if(Block.list[this.getBlockID(x, y, z + 1)] instanceof BlockWater){
-                this.addTimeEvent(x, y, z + 1, this.ce.save.time +  ((BlockWater)Block.water).getUpdateTime());
+            if(Block.list[this.getBlockID(x, y, z + 1)] instanceof BlockFlowingWater){
+                this.addTimeEvent(x, y, z + 1, this.ce.save.time +  ((BlockFlowingWater)Block.flowingWater).getUpdateTime(x,y,z,this));
             }
         }
 
@@ -414,6 +411,8 @@ public abstract class World {
         if(playerInitiated){
             this.setPlayerIsInRoomState();
         }
+
+        Block.list[blockID].onBlockUpdate(x,y,z,this);
     }
 
     public Chunk findChunkFromChunkCoordinates(int x, int y, int z) {
@@ -855,6 +854,7 @@ public abstract class World {
 
 
     public void notifySurroundingBlock(int x, int y, int z) {
+        Block.list[this.getBlockID(x,y,z)].onBlockUpdate(x,y,z,this);
         Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
         if(chunk != null){
             if(chunk.empty){
@@ -865,6 +865,7 @@ public abstract class World {
     }
 
     public void notifySurroundingBlockWithoutRebuild(int x, int y, int z) {
+        Block.list[this.getBlockID(x,y,z)].onBlockUpdate(x,y,z,this);
         Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
         if(chunk.empty){
             chunk.initChunk();
@@ -1892,29 +1893,6 @@ public abstract class World {
         this.chunkController.renderWorld();
     }
 
-    public void addInWorldCraftingItem(int x, int y, int z, InWorldCraftingItem craftingItem){
-        this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).addCraftingItem(craftingItem);
-    }
-
-    public void removeInWorldCraftingItem(int x, int y, int z){
-        this.findChunkFromChunkCoordinates( x >> 5, y >> 5, z >> 5).removeCraftingItem(x,y,z);
-    }
-
-    public InWorldCraftingItem getInWorldCraftingItem(int x, int y, int z){
-        return this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).getInWorldCraftingItem(x,y,z);
-    }
-
-    public void addInWorldCrafting3DItem(int x, int y, int z, InWorld3DCraftingItem craftingItem){
-        this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).addInWorldCrafting3DItem(craftingItem);
-    }
-
-    public void removeInWorldCrafting3DItem(int x, int y, int z){
-        this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).removeInWorldCrafting3DItem(Chunk.getBlockIndexFromCoordinates(x,y,z));
-    }
-
-    public InWorld3DCraftingItem getInWorldCrafting3DItem(int x, int y, int z){
-        return this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).getInWorldCrafting3DItem(Chunk.getBlockIndexFromCoordinates(x,y,z));
-    }
 
     public void addTimeEvent(int x, int y, int z, long updateTime){
         Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5,z >> 5);
@@ -1940,45 +1918,29 @@ public abstract class World {
         chunk.updateTimeEvent(x,y,z, updateTime);
     }
 
-    public void addChestLocation(int x, int y, int z, Inventory inventory){
-        this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).addChestLocation(x,y,z, inventory);
-    }
-
-    public void removeChestLocation(int x, int y, int z){
-        this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).removeChestLocation(Chunk.getBlockIndexFromCoordinates(x,y,z));
-    }
-
-    public ChestLocation getChestLocation(int x, int y, int z){
-        return this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).getChestLocation(x,y,z);
-    }
-
-    public void addHeatableBlock(int x, int y, int z){
-        this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).addHeatableBlock(x,y,z);
-    }
-
-    public void removeHeatableBlock(int x, int y, int z){
-        this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).removeHeatableBlock(x,y,z);
-    }
-
-    public HeatableBlockLocation getHeatableBlock(int x, int y , int z){
-        return this.findChunkFromChunkCoordinates(x >> 5 ,y >> 5, z >> 5).getHeatableBlock(x,y,z);
-    }
 
     public void clearChestLocation(int x, int y, int z){ //Destroys the item before deleting the chest inventory in case a item data transfer occurs internally between two chest locations
-        ChestLocation chestLocation = this.getChestLocation(x,y,z);
+        Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
+        if(chunk == null)return;
+
+        ChestLocation chestLocation = (ChestLocation) chunk.getBlockState(x,y,z, MultiState.CHEST_STATE);
+        if(chestLocation == null)return;
+
         chestLocation.inventory.itemStacks[0].item = null;
         chestLocation.inventory.itemStacks[0].count = 0;
         chestLocation.inventory.itemStacks[0].metadata = Item.NULL_ITEM_METADATA;
         chestLocation.inventory.itemStacks[0].durability = Item.NULL_ITEM_DURABILITY;
-        this.removeChestLocation(x,y,z);
+
+
+        this.removeBlockState(x,y,z, MultiState.CHEST_STATE);
     }
 
     public boolean isBlockSuitableForPitKiln(int x, int y, int z){
-        return Block.list[this.getBlockID(x - 1, y, z)].blockModel.equals(Block.standardBlockModel) &&
-                Block.list[this.getBlockID(x + 1, y, z)].blockModel.equals(Block.standardBlockModel) &&
-                Block.list[this.getBlockID(x, y - 1, z)].blockModel.equals(Block.standardBlockModel) &&
-                Block.list[this.getBlockID(x, y, z - 1)].blockModel.equals(Block.standardBlockModel) &&
-                Block.list[this.getBlockID(x, y, z + 1)].blockModel.equals(Block.standardBlockModel);
+        return Block.list[this.getBlockID(x - 1, y, z)].blockModel.equals(BlockModelList.standardBlockModel) &&
+                Block.list[this.getBlockID(x + 1, y, z)].blockModel.equals(BlockModelList.standardBlockModel) &&
+                Block.list[this.getBlockID(x, y - 1, z)].blockModel.equals(BlockModelList.standardBlockModel) &&
+                Block.list[this.getBlockID(x, y, z - 1)].blockModel.equals(BlockModelList.standardBlockModel) &&
+                Block.list[this.getBlockID(x, y, z + 1)].blockModel.equals(BlockModelList.standardBlockModel);
     }
 
     public boolean isBlockAbleToBecomePitKiln(Block block, int x, int y, int z){
@@ -1986,7 +1948,7 @@ public abstract class World {
             return true;
         }
         if(block.ID == Block.brickPile.ID){
-            ChestLocation chestLocation = this.getChestLocation(x,y,z);
+            ChestLocation chestLocation = (ChestLocation) this.getBlockState(x,y,z, MultiState.CHEST_STATE);
             return chestLocation.inventory.itemStacks[0].count <= 12 && chestLocation.inventory.itemStacks[0].item == Item.rawClayAdobeBrick;
         }
 
@@ -1998,7 +1960,7 @@ public abstract class World {
             return 1;
         }
         if(blockID == Block.brickPile.ID){
-            ChestLocation chestLocation = this.getChestLocation(x,y,z);
+            ChestLocation chestLocation = (ChestLocation) this.getBlockState(x,y,z, MultiState.CHEST_STATE);
             return chestLocation.inventory.itemStacks[0].count;
         }
         return 1;
@@ -2009,13 +1971,13 @@ public abstract class World {
             return Item.block.ID;
         }
         if(blockID == Block.brickPile.ID){
-            ChestLocation chestLocation = this.getChestLocation(x,y,z);
+            ChestLocation chestLocation = (ChestLocation) this.getBlockState(x,y,z, MultiState.CHEST_STATE);
             return chestLocation.inventory.itemStacks[0].item.ID;
         }
         return 1;
     }
 
-    private Chunk[] getSurroundingChunksAndCurrentChunk(int x, int y, int z){
+    public Chunk[] getSurroundingChunksAndCurrentChunk(int x, int y, int z){
         Chunk[] chunks = new Chunk[27];
         chunks[0] = this.findChunkFromChunkCoordinates(x - 1, y - 1, z - 1);
         chunks[1] = this.findChunkFromChunkCoordinates(x, y - 1, z - 1);
@@ -2056,7 +2018,7 @@ public abstract class World {
         return chunks;
     }
 
-    private ArrayList<Entity> getEntitiesInChunks(Chunk[] chunks){
+    public ArrayList<Entity> getEntitiesInChunks(Chunk[] chunks){
         ArrayList<Entity> entities = new ArrayList<>();
 
         for(int i = 0; i < chunks.length; i++){
@@ -2138,7 +2100,7 @@ public abstract class World {
         double rayLength = dir.length();
         dir.normalize();
 
-        final double step = 0.01f * rayLength;
+        final double step = 0.005f * rayLength;
         final int maxSteps = 300;
 
         double px = ce.save.thePlayer.x;
@@ -2183,7 +2145,7 @@ public abstract class World {
                     this.handleIntersectForInWorldCrafting3DItem(
                             hit[0], hit[1], hit[2],
                             dir,
-                            getInWorldCrafting3DItem(bx, by, bz),
+                            (InWorld3DCraftingItem) this.getBlockState(bx, by, bz, MultiState.CRAFTING_3D_ITEM_STATE),
                             isLeftClick, bx, by, bz
                     );
                 }
@@ -2193,13 +2155,13 @@ public abstract class World {
 
             //The only reason this isnt in a separate method is that the loop must break when the output is completed in order to prevent the player from opening the menu up again
             if(block.ID == Block.craftingItem.ID && !isLeftClick){
-                InWorldCraftingItem craftingItem = this.getInWorldCraftingItem(bx, by, bz);
+                InWorldCraftingItem craftingItem = (InWorldCraftingItem) this.getBlockState(bx, by, bz, MultiState.CRAFTING_ITEM_STATE);
 
                 long now = System.currentTimeMillis();
-                if (now - MouseListener.lastTimeClicked < 250) {
+                if (now - MouseListener.lastTimeLeftClickedSystemTime < 250) {
                     return;
                 }
-                MouseListener.lastTimeClicked = now;
+                MouseListener.lastTimeLeftClickedSystemTime = now;
 
                 if(playerHeldItem == Item.NULL_ITEM_REFERENCE)return;
 
@@ -2262,6 +2224,12 @@ public abstract class World {
         int py = by + Block.faceOffsetY[face];
         int pz = bz + Block.faceOffsetZ[face];
 
+        if(this.getBlockID(bx, by, bz) == Block.snowLayer.ID){
+            px = bx;
+            py = by;
+            pz = bz;
+        }
+
         // Prevent placing inside player
         if (wouldBlockIntersectPlayer(px, py, pz)) return;
 
@@ -2309,10 +2277,10 @@ public abstract class World {
         if(craftingBlock == null)return;
 
         long now = System.currentTimeMillis();
-        if (now - MouseListener.lastTimeClicked < 250) {
+        if (now - MouseListener.lastTimeLeftClickedSystemTime < 250) {
             return;
         }
-        MouseListener.lastTimeClicked = now;
+        MouseListener.lastTimeLeftClickedSystemTime = now;
 
 
         // --- 2. Local coords ---
@@ -2507,7 +2475,7 @@ public abstract class World {
 
     public void generateParticlesOnBlockBreakingAnimation(short blockID, int x, int y, int z, int hitFace) {
 
-        if(blockID >= Block.doorNorthDoorHingeLeftClosed.ID && blockID <= Block.doorWestDoorHingeRightOpen.ID){
+        if(Block.list[blockID] instanceof BlockDoor){
             blockID = this.getBlockID(x, y + 1, z);
         }
 
@@ -2619,67 +2587,38 @@ public abstract class World {
         return MathUtil.distance3DSquared(deerX, deerY, deerZ, originX, originY, originZ) <= 256;
     }
 
-    public void addDoorTransition(DoorTransition doorTransition, int x, int y, int z){
-        this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).addDoorTransition(doorTransition);
-    }
 
-    public DoorTransition getDoorTransition(int x, int y, int z){
-        return this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).getDoorTransition(x,y,z);
-    }
-
-    public void addCropState(CropState cropState, int x, int y, int z){
+    public void addBlockState(int x, int y, int z, int stateType, BlockState blockState){
         Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
         if(chunk == null)return;
-        chunk.addCropState(cropState,x,y,z);
+        chunk.addBlockState(x,y,z, stateType, blockState);
     }
 
-    public CropState getCropState(int x, int y, int z){
+    public BlockState getBlockState(int x, int y, int z, int stateType){
         Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
         if(chunk == null)return null;
-        return chunk.getCropState(x,y,z);
+        return chunk.getBlockState(x,y,z,stateType);
     }
 
-    public void removeCropState(int x, int y, int z){
+    public void removeBlockState(int x, int y, int z, int stateType){
         Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
         if(chunk == null)return;
-        chunk.removeCropState(x,y,z);
+        chunk.removeBlockState(x,y,z, stateType);
     }
 
-    public void addTilledSoilState(TilledSoilState tilledSoilState, int x, int y, int z){
+
+    public void clearAllBlockStates(int x, int y, int z){
+        this.clearChestLocation(x,y,z);
         Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
-        if(chunk == null)return;
-        chunk.addTilledSoilState(tilledSoilState,x,y,z);
+        if(chunk == null){
+            System.out.println("Unable to clear block states at " + x + " " + y + " " + z + ". Chunk object returned as null");
+            return;
+        }
+
+        chunk.clearAllBlockStates(x,y,z);
     }
 
-    public void removeTilledSoilState(int x, int y, int z){
-        Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
-        if(chunk == null)return;
-        chunk.removeTilledSoilState(x,y,z);
-    }
 
-    public TilledSoilState getTilledSoilState(int x, int y, int z){
-        Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
-        if(chunk == null)return null;
-        return chunk.getTilledSoilState(x,y,z);
-    }
-
-    public void addCampfireState(CampfireState campfireState, int x, int y, int z){
-        Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
-        if(chunk == null)return;
-        chunk.addCampfireState(campfireState,x,y,z);
-    }
-
-    public void removeCampfireState(int x, int y, int z){
-        Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
-        if(chunk == null)return;
-        chunk.removeCampfireState(x,y,z);
-    }
-
-    public CampfireState getCampfireState(int x, int y, int z){
-        Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
-        if(chunk == null)return null;
-        return chunk.getCampfireState(x,y,z);
-    }
 
     public void notifyChunk(int x, int y, int z){
         Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);

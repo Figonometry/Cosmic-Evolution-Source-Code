@@ -7,7 +7,7 @@ import java.util.Random;
 public final class NoiseMap2D {
     public int width;
     public int height;
-    public double[][] elevation;
+    public float[][] elevation;
     public int octaves;
 
     public NoiseMap2D(int width, int height, int octaves, double scalingFactor, double exponent, double floor, long seed) {
@@ -19,7 +19,7 @@ public final class NoiseMap2D {
         this.width = width;
         this.height = height;
         this.octaves = octaves;
-        this.elevation = new double[width][height];
+        this.elevation = new float[width][height];
 
         for (int z = 0; z < height; z++) {
             for (int x = 0; x < width; x++) {
@@ -49,7 +49,7 @@ public final class NoiseMap2D {
             }
         }
 
-        double[][] out = new double[width][height];
+        float[][] out = new float[width][height];
 
         for (int z = 0; z < height; z++) {
             for (int x = 0; x < width; x++) {
@@ -59,7 +59,7 @@ public final class NoiseMap2D {
                 double u = this.elevation[x][(z + height - 1) % height];
                 double d = this.elevation[x][(z + 1) % height];
 
-                out[x][z] = (c + l + r + u + d) / 5.0;
+                out[x][z] = (float) ((c + l + r + u + d) / 5.0);
             }
         }
 
@@ -68,7 +68,7 @@ public final class NoiseMap2D {
     }
 
 
-    public NoiseMap2D(int width, int height, double[][] noise){
+    public NoiseMap2D(int width, int height, float[][] noise){
         this.width = width;
         this.height = height;
         this.elevation = noise;
@@ -78,7 +78,7 @@ public final class NoiseMap2D {
     public void scaleByExponent(double exponent){
         for(int i = 0; i < this.elevation.length; i++){
             for(int j = 0; j < this.elevation[i].length; j++){
-                this.elevation[i][j] = Math.pow(this.elevation[i][j], exponent);
+                this.elevation[i][j] = (float) Math.pow(this.elevation[i][j], exponent);
             }
         }
     }
@@ -108,30 +108,11 @@ public final class NoiseMap2D {
 
 
 
-    public int getNoise(int x, int z) {
-        if (x < 0) {
-            x *= -1;
-        }
-        if (z < 0) {
-            z *= -1;
-        }
-
-        x %= this.width * 2;
-        z %= this.height * 2;
-        if (x > this.width - 1) {
-            x = x - ((x - (this.width - 1)) * 2);
-            x++;
-        }
-        if (z > this.height - 1) {
-            z = z - ((z - (this.height - 1)) * 2);
-            z++;
-        }
-
-        x &= this.width - 1;
-        z &= this.height - 1;
-
-        return (int) this.elevation[x][z];
+    public int getNoiseIntCasted(double x, double z) {
+        double value = getNoiseRaw(x, z);
+        return (int)Math.round(value);
     }
+
 
 
 

@@ -2,10 +2,11 @@ package spacegame.render;
 
 import org.lwjgl.BufferUtils;
 import spacegame.block.Block;
+import spacegame.block.BlockGrass;
 import spacegame.core.CosmicEvolution;
 import spacegame.util.Logger;
 import spacegame.world.Chunk;
-import spacegame.world.ChunkJobThreadScheduler;
+import spacegame.world.ThreadChunkJobScheduler;
 import spacegame.world.World;
 
 public final class ThreadRebuildChunk implements Runnable {
@@ -26,7 +27,7 @@ public final class ThreadRebuildChunk implements Runnable {
             this.workingChunk.markDirty();
         } finally {
             CosmicEvolution.threadJobs.decrementAndGet();
-            ChunkJobThreadScheduler.activeRebuilds.decrementAndGet();
+            ThreadChunkJobScheduler.activeRebuilds.decrementAndGet();
         }
     }
 
@@ -69,7 +70,7 @@ public final class ThreadRebuildChunk implements Runnable {
                 blockX = this.workingChunk.getBlockXFromIndex(index);
                 blockY = this.workingChunk.getBlockYFromIndex(index);
                 blockZ = this.workingChunk.getBlockZFromIndex(index);
-                needsToSetUpdateTime = Block.list[this.workingChunk.blocks[index]].ID == Block.grass.ID || Block.list[this.workingChunk.blocks[index]].ID == Block.leaf.ID;
+                needsToSetUpdateTime = Block.list[this.workingChunk.blocks[index]] instanceof BlockGrass || Block.list[this.workingChunk.blocks[index]].ID == Block.leaf.ID;
                 if (Block.list[this.workingChunk.blocks[index]].canGreedyMesh && this.shouldStaringBlockGreedyMesh(index, RenderBlocks.TOP_FACE)) {
                     this.addBlockToRenderData(this.workingChunk.blocks[index], index, RenderBlocks.TOP_FACE, this.calculateGreedyMeshSize(blockX, blockY, blockZ, RenderBlocks.TOP_FACE), renderBlocks);
                 } else {
@@ -89,7 +90,7 @@ public final class ThreadRebuildChunk implements Runnable {
                 blockX = this.workingChunk.getBlockXFromIndex(index);
                 blockY = this.workingChunk.getBlockYFromIndex(index);
                 blockZ = this.workingChunk.getBlockZFromIndex(index);
-                needsToSetUpdateTime = Block.list[this.workingChunk.blocks[index]].ID == Block.grass.ID || Block.list[this.workingChunk.blocks[index]].ID == Block.leaf.ID;
+                needsToSetUpdateTime = Block.list[this.workingChunk.blocks[index]] instanceof BlockGrass || Block.list[this.workingChunk.blocks[index]].ID == Block.leaf.ID;
                 if (Block.list[this.workingChunk.blocks[index]].canGreedyMesh && this.shouldStaringBlockGreedyMesh(index, RenderBlocks.BOTTOM_FACE)) {
                     this.addBlockToRenderData(this.workingChunk.blocks[index], index, RenderBlocks.BOTTOM_FACE, this.calculateGreedyMeshSize(blockX, blockY, blockZ, RenderBlocks.BOTTOM_FACE), renderBlocks);
                 } else {
@@ -109,7 +110,7 @@ public final class ThreadRebuildChunk implements Runnable {
                 blockX = this.workingChunk.getBlockXFromIndex(index);
                 blockY = this.workingChunk.getBlockYFromIndex(index);
                 blockZ = this.workingChunk.getBlockZFromIndex(index);
-                needsToSetUpdateTime = Block.list[this.workingChunk.blocks[index]].ID == Block.grass.ID || Block.list[this.workingChunk.blocks[index]].ID == Block.leaf.ID;
+                needsToSetUpdateTime = Block.list[this.workingChunk.blocks[index]] instanceof BlockGrass || Block.list[this.workingChunk.blocks[index]].ID == Block.leaf.ID;
                 if (Block.list[this.workingChunk.blocks[index]].canGreedyMesh && this.shouldStaringBlockGreedyMesh(index, RenderBlocks.NORTH_FACE)) {
                     this.addBlockToRenderData(this.workingChunk.blocks[index], index, RenderBlocks.NORTH_FACE, this.calculateGreedyMeshSize(blockX, blockY, blockZ, RenderBlocks.NORTH_FACE), renderBlocks);
                 } else {
@@ -129,7 +130,7 @@ public final class ThreadRebuildChunk implements Runnable {
                 blockX = this.workingChunk.getBlockXFromIndex(index);
                 blockY = this.workingChunk.getBlockYFromIndex(index);
                 blockZ = this.workingChunk.getBlockZFromIndex(index);
-                needsToSetUpdateTime = Block.list[this.workingChunk.blocks[index]].ID == Block.grass.ID || Block.list[this.workingChunk.blocks[index]].ID == Block.leaf.ID;
+                needsToSetUpdateTime = Block.list[this.workingChunk.blocks[index]] instanceof BlockGrass || Block.list[this.workingChunk.blocks[index]].ID == Block.leaf.ID;
                 if (Block.list[this.workingChunk.blocks[index]].canGreedyMesh && this.shouldStaringBlockGreedyMesh(index, RenderBlocks.SOUTH_FACE)) {
                     this.addBlockToRenderData(this.workingChunk.blocks[index], index, RenderBlocks.SOUTH_FACE, this.calculateGreedyMeshSize(blockX, blockY, blockZ, RenderBlocks.SOUTH_FACE), renderBlocks);
                 } else {
@@ -149,7 +150,7 @@ public final class ThreadRebuildChunk implements Runnable {
                 blockX = this.workingChunk.getBlockXFromIndex(index);
                 blockY = this.workingChunk.getBlockYFromIndex(index);
                 blockZ = this.workingChunk.getBlockZFromIndex(index);
-                needsToSetUpdateTime = Block.list[this.workingChunk.blocks[index]].ID == Block.grass.ID || Block.list[this.workingChunk.blocks[index]].ID == Block.leaf.ID;
+                needsToSetUpdateTime = Block.list[this.workingChunk.blocks[index]] instanceof BlockGrass || Block.list[this.workingChunk.blocks[index]].ID == Block.leaf.ID;
                 if (Block.list[this.workingChunk.blocks[index]].canGreedyMesh && this.shouldStaringBlockGreedyMesh(index, RenderBlocks.EAST_FACE)) {
                     this.addBlockToRenderData(this.workingChunk.blocks[index], index, RenderBlocks.EAST_FACE, this.calculateGreedyMeshSize(blockX, blockY, blockZ, RenderBlocks.EAST_FACE), renderBlocks);
                 } else {
@@ -168,7 +169,7 @@ public final class ThreadRebuildChunk implements Runnable {
                 blockX = this.workingChunk.getBlockXFromIndex(index);
                 blockY = this.workingChunk.getBlockYFromIndex(index);
                 blockZ = this.workingChunk.getBlockZFromIndex(index);
-                needsToSetUpdateTime = Block.list[this.workingChunk.blocks[index]].ID == Block.grass.ID || Block.list[this.workingChunk.blocks[index]].ID == Block.leaf.ID;
+                needsToSetUpdateTime = Block.list[this.workingChunk.blocks[index]] instanceof BlockGrass || Block.list[this.workingChunk.blocks[index]].ID == Block.leaf.ID;
                 if (Block.list[this.workingChunk.blocks[index]].canGreedyMesh && this.shouldStaringBlockGreedyMesh(index, RenderBlocks.WEST_FACE)) {
                     this.addBlockToRenderData(this.workingChunk.blocks[index], index, RenderBlocks.WEST_FACE, this.calculateGreedyMeshSize(blockX, blockY, blockZ, RenderBlocks.WEST_FACE), renderBlocks);
                 } else {
@@ -210,16 +211,15 @@ public final class ThreadRebuildChunk implements Runnable {
                 renderBlocks.renderLogOnCampfire(this.workingChunk, this.parentWorld, block, index, face);
             }
             case "BERRY_BUSH" -> renderBlocks.renderBerryBush(this.workingChunk, this.parentWorld, block, index, face);
+            case "CLAY_GRASS" -> renderBlocks.renderClayGrass(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);
             case "GRASS" -> renderBlocks.renderGrassBlock(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);
-            case "GRASS_WITH_CLAY" -> renderBlocks.renderGrassBlockWithClay(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);
-            case "UNLIT_PIT_KILN", "PIT_KILN" -> renderBlocks.renderPitKiln(this.workingChunk, this.parentWorld, block, index, face);
+            case "PIT_KILN" -> renderBlocks.renderPitKiln(this.workingChunk, this.parentWorld, block, index, face);
             case "ITEM_STONE" -> renderBlocks.renderItemStone(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);
             case "ITEM_STICK" -> renderBlocks.renderItemStick(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);
             case "LOG_PILE" -> renderBlocks.renderLogPile(this.workingChunk, this.parentWorld, block, index, face);
             case "ITEM_BLOCK" -> renderBlocks.renderItemBlock(this.workingChunk, this.parentWorld, block, index, face);
             case "BRICK_PILE" -> renderBlocks.renderBrickPile(this.workingChunk, this.parentWorld, block, index, face);
-            case "BERRY_BUSH_GROWING" -> renderBlocks.renderBerryBushGrowing(this.workingChunk, this.parentWorld, block, index, face);
-            case "REEDS_GROWTH" -> renderBlocks.renderReedGrowing(this.workingChunk, this.parentWorld, block, index, face);
+            case "REEDS" -> renderBlocks.renderReeds(this.workingChunk, this.parentWorld, block, index, face);
             case "CRAFTING_ITEM_3D" -> renderBlocks.render3DCraftingItem(this.workingChunk, this.parentWorld, block, index, face);
             case "CRAFTING_ITEM" -> renderBlocks.renderCraftingItem(this.workingChunk, this.parentWorld, block, index, face);
             case "LEAF" -> renderBlocks.renderLeaf(this.workingChunk, this.parentWorld, block, index, face);

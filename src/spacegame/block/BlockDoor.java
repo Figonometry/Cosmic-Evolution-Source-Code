@@ -1,14 +1,16 @@
 package spacegame.block;
 
 import spacegame.core.CosmicEvolution;
-import spacegame.core.MouseListener;
+import spacegame.core.eventlisteners.MouseListener;
 import spacegame.core.Sound;
 import spacegame.entity.EntityItem;
 import spacegame.entity.EntityPlayer;
 import spacegame.item.Item;
 import spacegame.world.AxisAlignedBB;
 import spacegame.world.World;
+import spacegame.world.blockstate.DoorState;
 import spacegame.world.blockstate.DoorTransition;
+import spacegame.world.blockstate.MultiState;
 
 public final class BlockDoor extends Block {
 
@@ -21,7 +23,7 @@ public final class BlockDoor extends Block {
     @Override
     public void onLeftClick(int x, int y, int z, World world, EntityPlayer thePlayer){
         //If it's the facing block we need to get the information from the above block
-        if((this.ID >= Block.doorNorthDoorHingeLeftClosed.ID && this.ID <= Block.doorWestDoorHingeRightOpen.ID)){
+        if(this.ID == Block.doorPrimitiveLower.ID){
             short block = world.getBlockID(x, y + 1, z);
 
             world.addEntity(new EntityItem(x + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), y + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), z + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), list[block].droppedItemID, Item.NULL_ITEM_METADATA, (byte) 1, Item.list[list[block].droppedItemID].durability, 0, null));
@@ -43,7 +45,7 @@ public final class BlockDoor extends Block {
         }
 
 
-        if(world.getDoorTransition(x,y,z) != null)return;
+        if(world.getBlockState(x,y,z, MultiState.DOOR_TRANSITION_STATE) != null)return;
         if(!MouseListener.rightClickReleased)return;
 
         if(world.getBlockID(x, y + 1, z) == Block.doorPrimitiveUpper.ID){
@@ -55,144 +57,55 @@ public final class BlockDoor extends Block {
             }
         }
 
-        if(this.isDoorOpen){
-            if(this.ID == Block.doorNorthDoorHingeLeftOpen.ID){
-                world.addDoorTransition(new DoorTransition(x, y, z, CosmicEvolution.instance.save.time, true, false, true, false), x, y, z);
-                world.setBlockWithNotify(x,y,z, Block.doorNorthDoorHingeLeftClosed.ID, true);
+        DoorState doorState = (DoorState) world.getBlockState(x,y,z, MultiState.DOOR_STATE);
+        if(doorState == null)return;
+        world.addBlockState(x,y,z, MultiState.DOOR_TRANSITION_STATE,
+                new DoorTransition(x,y,z, CosmicEvolution.instance.save.time, doorState.isOpen, !doorState.isOpen, doorState.hingeLeft, doorState.hingeRight));
 
-                if(world.getBlockID(x,y,z - 1) == Block.doorNorthDoorHingeRightOpen.ID){
-                    world.addDoorTransition(new DoorTransition(x, y, z - 1, CosmicEvolution.instance.save.time, true, false, false, true), x, y, z);
-                    world.setBlockWithNotify(x,y,z - 1, Block.doorNorthDoorHingeRightClosed.ID, true);
-                }
+        doorState.isOpen = !doorState.isOpen;
 
-            } else if(this.ID == Block.doorNorthDoorHingeRightOpen.ID){
-                world.addDoorTransition(new DoorTransition(x, y, z, CosmicEvolution.instance.save.time, true, false, false, true), x, y, z);
-                world.setBlockWithNotify(x,y,z, Block.doorNorthDoorHingeRightClosed.ID, true);
+        short northID = world.getBlockID(x - 1, y,z);
+        short southID = world.getBlockID(x + 1, y,z);
+        short eastID = world.getBlockID(x,y, z - 1);
+        short westID = world.getBlockID(x,y, z + 1);
 
-                if(world.getBlockID(x,y,z + 1) == Block.doorNorthDoorHingeLeftOpen.ID){
-                    world.addDoorTransition(new DoorTransition(x, y, z + 1, CosmicEvolution.instance.save.time, true, false, true, false), x, y, z);
-                    world.setBlockWithNotify(x,y,z + 1, Block.doorNorthDoorHingeLeftClosed.ID, true);
-                }
-            } else if(this.ID == Block.doorSouthDoorHingeLeftOpen.ID){
-                world.addDoorTransition(new DoorTransition(x, y, z, CosmicEvolution.instance.save.time, true, false, true, false), x, y, z);
-                world.setBlockWithNotify(x,y,z, Block.doorSouthDoorHingeLeftClosed.ID, true);
+        if(Block.list[northID] instanceof BlockDoor){
+            DoorState northState = (DoorState) world.getBlockState(x - 1, y,z, MultiState.DOOR_STATE);
+            world.addBlockState(x,y,z, MultiState.DOOR_TRANSITION_STATE,
+                    new DoorTransition(x,y,z, CosmicEvolution.instance.save.time, northState.isOpen, !northState.isOpen, northState.hingeLeft, northState.hingeRight));
 
-                if(world.getBlockID(x,y,z + 1) == Block.doorSouthDoorHingeRightOpen.ID){
-                    world.addDoorTransition(new DoorTransition(x, y, z + 1, CosmicEvolution.instance.save.time, true, false, false, true), x, y, z);
-                    world.setBlockWithNotify(x,y,z + 1, Block.doorSouthDoorHingeRightClosed.ID, true);
-                }
-            } else if(this.ID == Block.doorSouthDoorHingeRightOpen.ID){
-                world.addDoorTransition(new DoorTransition(x, y, z, CosmicEvolution.instance.save.time, true, false, false, true), x, y, z);
-                world.setBlockWithNotify(x,y,z, Block.doorSouthDoorHingeRightClosed.ID, true);
-
-                if(world.getBlockID(x,y,z - 1) == Block.doorSouthDoorHingeLeftOpen.ID){
-                    world.addDoorTransition(new DoorTransition(x, y, z - 1, CosmicEvolution.instance.save.time, true, false, true, false), x, y, z);
-                    world.setBlockWithNotify(x,y,z - 1, Block.doorSouthDoorHingeLeftClosed.ID, true);
-                }
-            }else if(this.ID == Block.doorEastDoorHingeLeftOpen.ID){
-                world.addDoorTransition(new DoorTransition(x, y, z, CosmicEvolution.instance.save.time, true, false, true, false), x, y, z);
-                world.setBlockWithNotify(x,y,z, Block.doorEastDoorHingeLeftClosed.ID, true);
-
-                if(world.getBlockID(x + 1, y, z) == Block.doorEastDoorHingeRightOpen.ID){
-                    world.addDoorTransition(new DoorTransition(x + 1, y, z, CosmicEvolution.instance.save.time, true, false, false, true), x, y, z);
-                    world.setBlockWithNotify(x + 1,y,z, Block.doorEastDoorHingeRightClosed.ID, true);
-                }
-            } else if(this.ID == Block.doorEastDoorHingeRightOpen.ID){
-                world.addDoorTransition(new DoorTransition(x, y, z, CosmicEvolution.instance.save.time, true, false, false, true), x, y, z);
-                world.setBlockWithNotify(x,y,z, Block.doorEastDoorHingeRightClosed.ID, true);
-
-                if(world.getBlockID(x - 1, y, z) == Block.doorEastDoorHingeLeftOpen.ID){
-                    world.addDoorTransition(new DoorTransition(x - 1, y, z, CosmicEvolution.instance.save.time, true, false, true, false), x, y, z);
-                    world.setBlockWithNotify(x - 1,y,z, Block.doorEastDoorHingeLeftClosed.ID, true);
-                }
-            }else if(this.ID == Block.doorWestDoorHingeLeftOpen.ID){
-                world.addDoorTransition(new DoorTransition(x, y, z, CosmicEvolution.instance.save.time, true, false, true, false), x, y, z);
-                world.setBlockWithNotify(x,y,z, Block.doorWestDoorHingeLeftClosed.ID, true);
-
-                if(world.getBlockID(x - 1, y, z) == Block.doorWestDoorHingeRightOpen.ID){
-                    world.addDoorTransition(new DoorTransition(x - 1, y, z, CosmicEvolution.instance.save.time, true, false, false, true), x, y, z);
-                    world.setBlockWithNotify(x - 1,y,z, Block.doorWestDoorHingeRightClosed.ID, true);
-                }
-            } else if(this.ID == Block.doorWestDoorHingeRightOpen.ID){
-                world.addDoorTransition(new DoorTransition(x, y, z, CosmicEvolution.instance.save.time, true, false, false, true), x, y, z);
-                world.setBlockWithNotify(x,y,z, Block.doorWestDoorHingeRightClosed.ID, true);
-
-                if(world.getBlockID(x + 1, y, z) == Block.doorWestDoorHingeLeftOpen.ID){
-                    world.addDoorTransition(new DoorTransition(x + 1, y, z, CosmicEvolution.instance.save.time, true, false, true, false), x, y, z);
-                    world.setBlockWithNotify(x + 1,y,z, Block.doorWestDoorHingeLeftClosed.ID, true);
-                }
-            }
-        } else {
-            if(this.ID == Block.doorNorthDoorHingeLeftClosed.ID){
-                world.addDoorTransition(new DoorTransition(x, y, z, CosmicEvolution.instance.save.time, false, true, true, false), x, y, z);
-                world.setBlockWithNotify(x,y,z, Block.doorNorthDoorHingeLeftOpen.ID, true);
-
-                if(world.getBlockID(x, y, z - 1) == Block.doorNorthDoorHingeRightClosed.ID){
-                    world.addDoorTransition(new DoorTransition(x, y, z - 1, CosmicEvolution.instance.save.time, false, true, false, true), x, y, z);
-                    world.setBlockWithNotify(x,y,z - 1, Block.doorNorthDoorHingeRightOpen.ID, true);
-                }
-            } else if(this.ID == Block.doorNorthDoorHingeRightClosed.ID){
-                world.addDoorTransition(new DoorTransition(x, y, z, CosmicEvolution.instance.save.time, false, true, false, true), x, y, z);
-                world.setBlockWithNotify(x,y,z, Block.doorNorthDoorHingeRightOpen.ID, true);
-
-                if(world.getBlockID(x, y, z + 1) == Block.doorNorthDoorHingeLeftClosed.ID){
-                    world.addDoorTransition(new DoorTransition(x, y, z + 1, CosmicEvolution.instance.save.time, false, true, true, false), x, y, z);
-                    world.setBlockWithNotify(x,y,z + 1, Block.doorNorthDoorHingeLeftOpen.ID, true);
-                }
-            } else if(this.ID == Block.doorSouthDoorHingeLeftClosed.ID){
-                world.addDoorTransition(new DoorTransition(x, y, z, CosmicEvolution.instance.save.time, false, true, true, false), x, y, z);
-                world.setBlockWithNotify(x,y,z, Block.doorSouthDoorHingeLeftOpen.ID, true);
-
-                if(world.getBlockID(x, y, z + 1) == Block.doorSouthDoorHingeRightClosed.ID){
-                    world.addDoorTransition(new DoorTransition(x, y, z + 1, CosmicEvolution.instance.save.time, false, true, false, true), x, y, z);
-                    world.setBlockWithNotify(x,y,z + 1, Block.doorSouthDoorHingeRightOpen.ID, true);
-                }
-            } else if(this.ID == Block.doorSouthDoorHingeRightClosed.ID){
-                world.addDoorTransition(new DoorTransition(x, y, z, CosmicEvolution.instance.save.time, false, true, false, true), x, y, z);
-                world.setBlockWithNotify(x,y,z, Block.doorSouthDoorHingeRightOpen.ID, true);
-
-                if(world.getBlockID(x, y, z - 1) == Block.doorSouthDoorHingeLeftClosed.ID){
-                    world.addDoorTransition(new DoorTransition(x, y, z - 1, CosmicEvolution.instance.save.time, false, true, false, true), x, y, z);
-                    world.setBlockWithNotify(x,y,z - 1, Block.doorSouthDoorHingeLeftOpen.ID, true);
-                }
-            }else if(this.ID == Block.doorEastDoorHingeLeftClosed.ID){
-                world.addDoorTransition(new DoorTransition(x, y, z, CosmicEvolution.instance.save.time, false, true, true, false), x, y, z);
-                world.setBlockWithNotify(x,y,z, Block.doorEastDoorHingeLeftOpen.ID, true);
-
-                if(world.getBlockID(x + 1, y, z) == Block.doorEastDoorHingeRightClosed.ID){
-                    world.addDoorTransition(new DoorTransition(x + 1, y, z, CosmicEvolution.instance.save.time, false, true, false, true), x, y, z);
-                    world.setBlockWithNotify(x + 1,y,z, Block.doorEastDoorHingeRightOpen.ID, true);
-                }
-            } else if(this.ID == Block.doorEastDoorHingeRightClosed.ID){
-                world.addDoorTransition(new DoorTransition(x, y, z, CosmicEvolution.instance.save.time, false, true, false, true), x, y, z);
-                world.setBlockWithNotify(x,y,z, Block.doorEastDoorHingeRightOpen.ID, true);
-
-                if(world.getBlockID(x - 1, y, z) == Block.doorEastDoorHingeLeftClosed.ID){
-                    world.addDoorTransition(new DoorTransition(x - 1, y, z, CosmicEvolution.instance.save.time, false, true, true, false), x, y, z);
-                    world.setBlockWithNotify(x - 1,y,z, Block.doorEastDoorHingeLeftOpen.ID, true);
-                }
-            }else if(this.ID == Block.doorWestDoorHingeLeftClosed.ID){
-                world.addDoorTransition(new DoorTransition(x, y, z, CosmicEvolution.instance.save.time, false, true, true, false), x, y, z);
-                world.setBlockWithNotify(x,y,z, Block.doorWestDoorHingeLeftOpen.ID, true);
-
-                if(world.getBlockID(x - 1, y, z) == Block.doorWestDoorHingeRightClosed.ID){
-                    world.addDoorTransition(new DoorTransition(x - 1, y, z, CosmicEvolution.instance.save.time, false, true, false, true), x, y, z);
-                    world.setBlockWithNotify(x - 1,y,z, Block.doorWestDoorHingeRightOpen.ID, true);
-                }
-            } else if(this.ID == Block.doorWestDoorHingeRightClosed.ID){
-                world.addDoorTransition(new DoorTransition(x, y, z, CosmicEvolution.instance.save.time, false, true, false, true), x, y, z);
-                world.setBlockWithNotify(x,y,z, Block.doorWestDoorHingeRightOpen.ID, true);
-
-                if(world.getBlockID(x + 1, y, z) == Block.doorWestDoorHingeLeftClosed.ID){
-                    world.addDoorTransition(new DoorTransition(x + 1, y, z, CosmicEvolution.instance.save.time, false, true, true, false), x, y, z);
-                    world.setBlockWithNotify(x + 1,y,z, Block.doorWestDoorHingeLeftOpen.ID, true);
-                }
-            }
+            northState.isOpen = !northState.isOpen;
         }
+
+        if(Block.list[southID] instanceof BlockDoor){
+            DoorState southState = (DoorState) world.getBlockState(x + 1, y,z, MultiState.DOOR_STATE);
+            world.addBlockState(x,y,z, MultiState.DOOR_TRANSITION_STATE,
+                    new DoorTransition(x,y,z, CosmicEvolution.instance.save.time, southState.isOpen, !southState.isOpen, southState.hingeLeft, southState.hingeRight));
+
+            southState.isOpen = !southState.isOpen;
+        }
+
+        if(Block.list[eastID] instanceof BlockDoor){
+            DoorState eastState = (DoorState) world.getBlockState(x, y,z - 1, MultiState.DOOR_STATE);
+            world.addBlockState(x,y,z, MultiState.DOOR_TRANSITION_STATE,
+                    new DoorTransition(x,y,z, CosmicEvolution.instance.save.time, eastState.isOpen, !eastState.isOpen, eastState.hingeLeft, eastState.hingeRight));
+
+            eastState.isOpen = !eastState.isOpen;
+        }
+
+        if(Block.list[westID] instanceof BlockDoor){
+            DoorState westState = (DoorState) world.getBlockState(x, y,z + 1, MultiState.DOOR_STATE);
+            world.addBlockState(x,y,z, MultiState.DOOR_TRANSITION_STATE,
+                    new DoorTransition(x,y,z, CosmicEvolution.instance.save.time, westState.isOpen, !westState.isOpen, westState.hingeLeft, westState.hingeRight));
+
+            westState.isOpen = !westState.isOpen;
+        }
+
+        world.notifyChunk(x,y,z);
 
 
         MouseListener.rightClickReleased = false;
-        if(this.isDoorOpen){//Inverted due to the state change
+        if(!doorState.isOpen){//Inverted due to the state change
             CosmicEvolution.instance.soundPlayer.playSound(x, y, z, new Sound(Sound.doorOpen, false, 1), 0.75f);
         } else {
             CosmicEvolution.instance.soundPlayer.playSound(x, y, z, new Sound(Sound.doorOpen, false, 1), 1f);
@@ -205,116 +118,116 @@ public final class BlockDoor extends Block {
     public void adjustBoundingBox(int x, int y, int z, AxisAlignedBB axisAlignedBB) {
         short blockID = CosmicEvolution.instance.save.activeWorld.getBlockID(x, y, z);
 
-        Block block = this;
+        DoorState doorState = (DoorState) CosmicEvolution.instance.save.activeWorld.getBlockState(x,y,z, MultiState.DOOR_STATE);
         if (blockID == Block.doorPrimitiveUpper.ID) {
-            block = Block.list[CosmicEvolution.instance.save.activeWorld.getBlockID(x, y - 1, z)];
+            doorState = (DoorState) CosmicEvolution.instance.save.activeWorld.getBlockState(x, y -1, z, MultiState.DOOR_STATE);
         }
 
-        if (!block.isDoorOpen) {
-            switch (block.faceDirection) {
-                case "North" -> {
-                    axisAlignedBB.minX = x + Block.northDoor.minX;
-                    axisAlignedBB.minY = y + Block.northDoor.minY;
-                    axisAlignedBB.minZ = z + Block.northDoor.minZ;
-                    axisAlignedBB.maxX = x + Block.northDoor.maxX;
-                    axisAlignedBB.maxY = y + Block.northDoor.maxY;
-                    axisAlignedBB.maxZ = z + Block.northDoor.maxZ;
+        if (!doorState.isOpen) {
+            switch (doorState.facingDirection) {
+                case DoorState.FACE_DIRECTION_NORTH -> {
+                    axisAlignedBB.minX = x + BlockAxisAlignedBBList.northDoor.minX;
+                    axisAlignedBB.minY = y + BlockAxisAlignedBBList.northDoor.minY;
+                    axisAlignedBB.minZ = z + BlockAxisAlignedBBList.northDoor.minZ;
+                    axisAlignedBB.maxX = x + BlockAxisAlignedBBList.northDoor.maxX;
+                    axisAlignedBB.maxY = y + BlockAxisAlignedBBList.northDoor.maxY;
+                    axisAlignedBB.maxZ = z + BlockAxisAlignedBBList.northDoor.maxZ;
                 }
 
-                case "South" -> {
-                    axisAlignedBB.minX = x + Block.southDoor.minX;
-                    axisAlignedBB.minY = y + Block.southDoor.minY;
-                    axisAlignedBB.minZ = z + Block.southDoor.minZ;
-                    axisAlignedBB.maxX = x + Block.southDoor.maxX;
-                    axisAlignedBB.maxY = y + Block.southDoor.maxY;
-                    axisAlignedBB.maxZ = z + Block.southDoor.maxZ;
+                case  DoorState.FACE_DIRECTION_SOUTH -> {
+                    axisAlignedBB.minX = x + BlockAxisAlignedBBList.southDoor.minX;
+                    axisAlignedBB.minY = y + BlockAxisAlignedBBList.southDoor.minY;
+                    axisAlignedBB.minZ = z + BlockAxisAlignedBBList.southDoor.minZ;
+                    axisAlignedBB.maxX = x + BlockAxisAlignedBBList.southDoor.maxX;
+                    axisAlignedBB.maxY = y + BlockAxisAlignedBBList.southDoor.maxY;
+                    axisAlignedBB.maxZ = z + BlockAxisAlignedBBList.southDoor.maxZ;
                 }
-                case "East" -> {
-                    axisAlignedBB.minX = x + Block.eastDoor.minX;
-                    axisAlignedBB.minY = y + Block.eastDoor.minY;
-                    axisAlignedBB.minZ = z + Block.eastDoor.minZ;
-                    axisAlignedBB.maxX = x + Block.eastDoor.maxX;
-                    axisAlignedBB.maxY = y + Block.eastDoor.maxY;
-                    axisAlignedBB.maxZ = z + Block.eastDoor.maxZ;
+                case  DoorState.FACE_DIRECTION_EAST -> {
+                    axisAlignedBB.minX = x + BlockAxisAlignedBBList.eastDoor.minX;
+                    axisAlignedBB.minY = y + BlockAxisAlignedBBList.eastDoor.minY;
+                    axisAlignedBB.minZ = z + BlockAxisAlignedBBList.eastDoor.minZ;
+                    axisAlignedBB.maxX = x + BlockAxisAlignedBBList.eastDoor.maxX;
+                    axisAlignedBB.maxY = y + BlockAxisAlignedBBList.eastDoor.maxY;
+                    axisAlignedBB.maxZ = z + BlockAxisAlignedBBList.eastDoor.maxZ;
                 }
-                case "West" -> {
-                    axisAlignedBB.minX = x + Block.westDoor.minX;
-                    axisAlignedBB.minY = y + Block.westDoor.minY;
-                    axisAlignedBB.minZ = z + Block.westDoor.minZ;
-                    axisAlignedBB.maxX = x + Block.westDoor.maxX;
-                    axisAlignedBB.maxY = y + Block.westDoor.maxY;
-                    axisAlignedBB.maxZ = z + Block.westDoor.maxZ;
+                case  DoorState.FACE_DIRECTION_WEST -> {
+                    axisAlignedBB.minX = x + BlockAxisAlignedBBList.westDoor.minX;
+                    axisAlignedBB.minY = y + BlockAxisAlignedBBList.westDoor.minY;
+                    axisAlignedBB.minZ = z + BlockAxisAlignedBBList.westDoor.minZ;
+                    axisAlignedBB.maxX = x + BlockAxisAlignedBBList.westDoor.maxX;
+                    axisAlignedBB.maxY = y + BlockAxisAlignedBBList.westDoor.maxY;
+                    axisAlignedBB.maxZ = z + BlockAxisAlignedBBList.westDoor.maxZ;
                 }
             }
         } else {
-            switch (block.faceDirection) {
-                case "North" -> {
-                    if(this.ID == Block.doorNorthDoorHingeLeftOpen.ID){
-                        axisAlignedBB.minX = x + Block.westDoor.minX;
-                        axisAlignedBB.minY = y + Block.westDoor.minY;
-                        axisAlignedBB.minZ = z + Block.westDoor.minZ;
-                        axisAlignedBB.maxX = x + Block.westDoor.maxX;
-                        axisAlignedBB.maxY = y + Block.westDoor.maxY;
-                        axisAlignedBB.maxZ = z + Block.westDoor.maxZ;
-                    } else if(this.ID == Block.doorNorthDoorHingeRightOpen.ID){
-                        axisAlignedBB.minX = x + Block.eastDoor.minX;
-                        axisAlignedBB.minY = y + Block.eastDoor.minY;
-                        axisAlignedBB.minZ = z + Block.eastDoor.minZ;
-                        axisAlignedBB.maxX = x + Block.eastDoor.maxX;
-                        axisAlignedBB.maxY = y + Block.eastDoor.maxY;
-                        axisAlignedBB.maxZ = z + Block.eastDoor.maxZ;
+            switch (doorState.facingDirection) {
+                case DoorState.FACE_DIRECTION_NORTH -> {
+                    if(doorState.hingeLeft){
+                        axisAlignedBB.minX = x + BlockAxisAlignedBBList.westDoor.minX;
+                        axisAlignedBB.minY = y + BlockAxisAlignedBBList.westDoor.minY;
+                        axisAlignedBB.minZ = z + BlockAxisAlignedBBList.westDoor.minZ;
+                        axisAlignedBB.maxX = x + BlockAxisAlignedBBList.westDoor.maxX;
+                        axisAlignedBB.maxY = y + BlockAxisAlignedBBList.westDoor.maxY;
+                        axisAlignedBB.maxZ = z + BlockAxisAlignedBBList.westDoor.maxZ;
+                    } else if(doorState.hingeRight){
+                        axisAlignedBB.minX = x + BlockAxisAlignedBBList.eastDoor.minX;
+                        axisAlignedBB.minY = y + BlockAxisAlignedBBList.eastDoor.minY;
+                        axisAlignedBB.minZ = z + BlockAxisAlignedBBList.eastDoor.minZ;
+                        axisAlignedBB.maxX = x + BlockAxisAlignedBBList.eastDoor.maxX;
+                        axisAlignedBB.maxY = y + BlockAxisAlignedBBList.eastDoor.maxY;
+                        axisAlignedBB.maxZ = z + BlockAxisAlignedBBList.eastDoor.maxZ;
                     }
                 }
 
-                case "South" -> {
-                    if(this.ID == Block.doorSouthDoorHingeLeftOpen.ID){
-                        axisAlignedBB.minX = x + Block.eastDoor.minX;
-                        axisAlignedBB.minY = y + Block.eastDoor.minY;
-                        axisAlignedBB.minZ = z + Block.eastDoor.minZ;
-                        axisAlignedBB.maxX = x + Block.eastDoor.maxX;
-                        axisAlignedBB.maxY = y + Block.eastDoor.maxY;
-                        axisAlignedBB.maxZ = z + Block.eastDoor.maxZ;
-                    } else if(this.ID == Block.doorSouthDoorHingeRightOpen.ID){
-                        axisAlignedBB.minX = x + Block.westDoor.minX;
-                        axisAlignedBB.minY = y + Block.westDoor.minY;
-                        axisAlignedBB.minZ = z + Block.westDoor.minZ;
-                        axisAlignedBB.maxX = x + Block.westDoor.maxX;
-                        axisAlignedBB.maxY = y + Block.westDoor.maxY;
-                        axisAlignedBB.maxZ = z + Block.westDoor.maxZ;
+                case DoorState.FACE_DIRECTION_SOUTH -> {
+                    if(doorState.hingeLeft){
+                        axisAlignedBB.minX = x + BlockAxisAlignedBBList.eastDoor.minX;
+                        axisAlignedBB.minY = y + BlockAxisAlignedBBList.eastDoor.minY;
+                        axisAlignedBB.minZ = z + BlockAxisAlignedBBList.eastDoor.minZ;
+                        axisAlignedBB.maxX = x + BlockAxisAlignedBBList.eastDoor.maxX;
+                        axisAlignedBB.maxY = y + BlockAxisAlignedBBList.eastDoor.maxY;
+                        axisAlignedBB.maxZ = z + BlockAxisAlignedBBList.eastDoor.maxZ;
+                    } else if(doorState.hingeRight){
+                        axisAlignedBB.minX = x + BlockAxisAlignedBBList.westDoor.minX;
+                        axisAlignedBB.minY = y + BlockAxisAlignedBBList.westDoor.minY;
+                        axisAlignedBB.minZ = z + BlockAxisAlignedBBList.westDoor.minZ;
+                        axisAlignedBB.maxX = x + BlockAxisAlignedBBList.westDoor.maxX;
+                        axisAlignedBB.maxY = y + BlockAxisAlignedBBList.westDoor.maxY;
+                        axisAlignedBB.maxZ = z + BlockAxisAlignedBBList.westDoor.maxZ;
                     }
                 }
-                case "East" -> {
-                    if(this.ID == Block.doorEastDoorHingeLeftOpen.ID){
-                        axisAlignedBB.minX = x + Block.northDoor.minX;
-                        axisAlignedBB.minY = y + Block.northDoor.minY;
-                        axisAlignedBB.minZ = z + Block.northDoor.minZ;
-                        axisAlignedBB.maxX = x + Block.northDoor.maxX;
-                        axisAlignedBB.maxY = y + Block.northDoor.maxY;
-                        axisAlignedBB.maxZ = z + Block.northDoor.maxZ;
-                    } else if(this.ID == Block.doorEastDoorHingeRightOpen.ID){
-                        axisAlignedBB.minX = x + Block.southDoor.minX;
-                        axisAlignedBB.minY = y + Block.southDoor.minY;
-                        axisAlignedBB.minZ = z + Block.southDoor.minZ;
-                        axisAlignedBB.maxX = x + Block.southDoor.maxX;
-                        axisAlignedBB.maxY = y + Block.southDoor.maxY;
-                        axisAlignedBB.maxZ = z + Block.southDoor.maxZ;
+                case DoorState.FACE_DIRECTION_EAST -> {
+                    if(doorState.hingeLeft){
+                        axisAlignedBB.minX = x + BlockAxisAlignedBBList.northDoor.minX;
+                        axisAlignedBB.minY = y + BlockAxisAlignedBBList.northDoor.minY;
+                        axisAlignedBB.minZ = z + BlockAxisAlignedBBList.northDoor.minZ;
+                        axisAlignedBB.maxX = x + BlockAxisAlignedBBList.northDoor.maxX;
+                        axisAlignedBB.maxY = y + BlockAxisAlignedBBList.northDoor.maxY;
+                        axisAlignedBB.maxZ = z + BlockAxisAlignedBBList.northDoor.maxZ;
+                    } else if(doorState.hingeRight){
+                        axisAlignedBB.minX = x + BlockAxisAlignedBBList.southDoor.minX;
+                        axisAlignedBB.minY = y + BlockAxisAlignedBBList.southDoor.minY;
+                        axisAlignedBB.minZ = z + BlockAxisAlignedBBList.southDoor.minZ;
+                        axisAlignedBB.maxX = x + BlockAxisAlignedBBList.southDoor.maxX;
+                        axisAlignedBB.maxY = y + BlockAxisAlignedBBList.southDoor.maxY;
+                        axisAlignedBB.maxZ = z + BlockAxisAlignedBBList.southDoor.maxZ;
                     }
                 }
-                case "West" -> {
-                    if(this.ID == Block.doorWestDoorHingeLeftOpen.ID){
-                        axisAlignedBB.minX = x + Block.southDoor.minX;
-                        axisAlignedBB.minY = y + Block.southDoor.minY;
-                        axisAlignedBB.minZ = z + Block.southDoor.minZ;
-                        axisAlignedBB.maxX = x + Block.southDoor.maxX;
-                        axisAlignedBB.maxY = y + Block.southDoor.maxY;
-                        axisAlignedBB.maxZ = z + Block.southDoor.maxZ;
-                    } else if(this.ID == Block.doorWestDoorHingeRightOpen.ID){
-                        axisAlignedBB.minX = x + Block.northDoor.minX;
-                        axisAlignedBB.minY = y + Block.northDoor.minY;
-                        axisAlignedBB.minZ = z + Block.northDoor.minZ;
-                        axisAlignedBB.maxX = x + Block.northDoor.maxX;
-                        axisAlignedBB.maxY = y + Block.northDoor.maxY;
-                        axisAlignedBB.maxZ = z + Block.northDoor.maxZ;
+                case DoorState.FACE_DIRECTION_WEST -> {
+                    if(doorState.hingeLeft){
+                        axisAlignedBB.minX = x + BlockAxisAlignedBBList.southDoor.minX;
+                        axisAlignedBB.minY = y + BlockAxisAlignedBBList.southDoor.minY;
+                        axisAlignedBB.minZ = z + BlockAxisAlignedBBList.southDoor.minZ;
+                        axisAlignedBB.maxX = x + BlockAxisAlignedBBList.southDoor.maxX;
+                        axisAlignedBB.maxY = y + BlockAxisAlignedBBList.southDoor.maxY;
+                        axisAlignedBB.maxZ = z + BlockAxisAlignedBBList.southDoor.maxZ;
+                    } else if(doorState.hingeRight){
+                        axisAlignedBB.minX = x + BlockAxisAlignedBBList.northDoor.minX;
+                        axisAlignedBB.minY = y + BlockAxisAlignedBBList.northDoor.minY;
+                        axisAlignedBB.minZ = z + BlockAxisAlignedBBList.northDoor.minZ;
+                        axisAlignedBB.maxX = x + BlockAxisAlignedBBList.northDoor.maxX;
+                        axisAlignedBB.maxY = y + BlockAxisAlignedBBList.northDoor.maxY;
+                        axisAlignedBB.maxZ = z + BlockAxisAlignedBBList.northDoor.maxZ;
                     }
                 }
             }
@@ -323,10 +236,11 @@ public final class BlockDoor extends Block {
 
     @Override
     public int getBlockTexture(int x, int y, int z, int face){
-
-        //The door top contains the texture and the lower block contains the orientation
+        //The door top contains the texture and the lower block contains the direction, hinge side, and open/close state
         return this.textureID;
     }
+
+
 
 
 }

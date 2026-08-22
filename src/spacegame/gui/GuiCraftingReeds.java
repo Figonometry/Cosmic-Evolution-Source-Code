@@ -16,6 +16,7 @@ import spacegame.render.model.ModelLoader;
 import spacegame.util.MathUtil;
 import spacegame.world.Chunk;
 import spacegame.world.blockstate.InWorld3DCraftingItem;
+import spacegame.world.blockstate.MultiState;
 
 public final class GuiCraftingReeds extends GuiCrafting {
     public RecipeSelector[] selectableRecipes;
@@ -459,7 +460,7 @@ public final class GuiCraftingReeds extends GuiCrafting {
                     craftingBlock.activateCraftingLayer(0);
                     craftingBlock.activeCraftingLayer++;
                 }
-                CosmicEvolution.instance.save.activeWorld.addInWorldCrafting3DItem(this.x, this.y, this.z, craftingBlock);
+                CosmicEvolution.instance.save.activeWorld.addBlockState(this.x, this.y, this.z, MultiState.CRAFTING_3D_ITEM_STATE, craftingBlock);
                 GLFW.glfwSetInputMode(CosmicEvolution.instance.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
                 CosmicEvolution.instance.setNewGui(new GuiInGame(CosmicEvolution.instance));
                 recipeSelector.removeRequiredItemsFromInventory(CosmicEvolution.instance.save.thePlayer);

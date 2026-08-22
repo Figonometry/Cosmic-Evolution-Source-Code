@@ -3,6 +3,7 @@ package spacegame.render;
 import org.joml.*;
 import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
+import spacegame.block.BlockModelList;
 import spacegame.celestial.CelestialObject;
 import spacegame.celestial.Sun;
 import spacegame.core.CosmicEvolution;
@@ -27,6 +28,7 @@ import java.util.List;
 
 public final class RenderWorldScene {
     public ChunkController controller;
+    public Skybox skybox = new Skybox();
     public ArrayList<Chunk> chunksToRender = new ArrayList<>();
     public ArrayList<Chunk> chunksThatContainEntities = new ArrayList<>();
     public ArrayList<Sun> nearbyStars = new ArrayList<>();
@@ -61,24 +63,16 @@ public final class RenderWorldScene {
     public static int rainTexture;
     public RainQuad[] rainQuads = new RainQuad[33 * 33 * 33];
     public ArrayList<EntityParticle> rainParticles = new ArrayList<>();
+    public Vector3f skyBase = new Vector3f();
 
     public RenderWorldScene(ChunkController controller){
         this.controller = controller;
+        this.skybox.setupRenderStates(this);
     }
 
     public void renderWorldWithChunks(Chunk[] sortedChunks) {
         for(int i = 0; i < this.nearbyStars.size(); i++){
             this.setShadowMap(this.nearbyStars.get(i),this.nearbyStarPos.get(i));
-        }
-
-        this.nearbyStars.clear();
-        this.nearbyStarPos.clear();
-
-        this.renderNearbyCelestialObjects();
-
-        if (CosmicEvolution.instance.currentGui instanceof GuiInGame) {
-            GuiInGame.renderBlockOutline();
-            GuiInGame.renderBlockBreakingOutline();
         }
 
         this.controller.drawCalls = 0;
@@ -110,13 +104,13 @@ public final class RenderWorldScene {
         Shader.worldShader2DTexture.uploadFloat("fogDistance", GameSettings.renderDistance * 20f);
         Shader.worldShader2DTexture.uploadBoolean("useFog", true);
 
-        Shader.terrainShader.uploadFloat("fogRed", this.controller.parentWorld.skyColor[0]);
-        Shader.terrainShader.uploadFloat("fogGreen", this.controller.parentWorld.skyColor[1]);
-        Shader.terrainShader.uploadFloat("fogBlue", this.controller.parentWorld.skyColor[2]);
+        Shader.terrainShader.uploadFloat("fogRed", this.skyBase.x);
+        Shader.terrainShader.uploadFloat("fogGreen", this.skyBase.y);
+        Shader.terrainShader.uploadFloat("fogBlue", this.skyBase.z);
 
-        Shader.worldShader2DTexture.uploadFloat("fogRed", this.controller.parentWorld.skyColor[0]);
-        Shader.worldShader2DTexture.uploadFloat("fogGreen", this.controller.parentWorld.skyColor[1]);
-        Shader.worldShader2DTexture.uploadFloat("fogBlue", this.controller.parentWorld.skyColor[2]);
+        Shader.worldShader2DTexture.uploadFloat("fogRed", this.skyBase.x);
+        Shader.worldShader2DTexture.uploadFloat("fogGreen", this.skyBase.y);
+        Shader.worldShader2DTexture.uploadFloat("fogBlue", this.skyBase.z);
 
         Shader.terrainShader.uploadDouble("time", (double) Timer.elapsedTime % 8388608);
 
@@ -125,7 +119,7 @@ public final class RenderWorldScene {
         float rainFogFactor = this.controller.parentWorld.raining ? ((CosmicEvolution.instance.save.time - this.controller.parentWorld.timeStartedRaining) / 60f) * 0.75f : 0.75f - (((CosmicEvolution.instance.save.time - this.controller.parentWorld.timeStartedRaining) / 60f) * 0.75f);
         Shader.terrainShader.uploadFloat("rainFogFactor", rainFogFactor);
 
-        boolean isPlayerHoldingLight = CosmicEvolution.instance.save.thePlayer.getHeldBlock() == Block.torchStandard.ID;
+        boolean isPlayerHoldingLight = CosmicEvolution.instance.save.thePlayer.getHeldBlock() == Block.torch.ID;
         Shader.terrainShader.uploadBoolean("isHoldingLight", isPlayerHoldingLight);
         Shader.worldShaderTextureArray.uploadBoolean("isHoldingLight", isPlayerHoldingLight);
         Shader.worldShader2DTexture.uploadBoolean("isHoldingLight", isPlayerHoldingLight);
@@ -154,7 +148,7 @@ public final class RenderWorldScene {
         int playerChunkZ = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z) >> 5;
 
         GL46.glEnable(GL46.GL_ALPHA_TEST);
-        GL46.glAlphaFunc(GL46.GL_GREATER, 0.1F);
+        GL46.glAlphaFunc(GL46.GL_GREATER, 0);
 
         for (int i = 0; i < sortedChunks.length; i++) {
             chunk = sortedChunks[i];
@@ -250,33 +244,19 @@ public final class RenderWorldScene {
 
         this.chunksToRender.clear();
         this.renderSkybox(CosmicEvolution.instance.everything.getObjectAssociatedWithWorld(this.controller.parentWorld), playerLon, playerLat);
-        for(int i = 0; i < this.nearbyStarPos.size(); i++) {
-            this.renderSunrise(new Vector3f(this.nearbyStarPos.get(i)).normalize().y, this.nearbyStarPos.get(i));
+
+        this.nearbyStars.clear();
+        this.nearbyStarPos.clear();
+
+        this.renderNearbyCelestialObjects();
+
+        if (CosmicEvolution.instance.currentGui instanceof GuiInGame) {
+            GuiInGame.renderBlockOutline();
+            GuiInGame.renderBlockBreakingOutline();
         }
 
         this.renderClouds();
         this.renderRain();
-    }
-
-    private  float getLightValueFromMap(byte lightValue) {
-        return switch (lightValue) {
-            case 0, 1 -> 0.1F;
-            case 2 -> 0.11F;
-            case 3 -> 0.13F;
-            case 4 -> 0.16F;
-            case 5 -> 0.2F;
-            case 6 -> 0.24F;
-            case 7 -> 0.29F;
-            case 8 -> 0.35F;
-            case 9 -> 0.42F;
-            case 10 -> 0.5F;
-            case 11 -> 0.58F;
-            case 12 -> 0.67F;
-            case 13 -> 0.77F;
-            case 14 -> 0.88F;
-            case 15 -> 1.0F;
-            default -> 0.1F;
-        };
     }
 
 
@@ -318,7 +298,7 @@ public final class RenderWorldScene {
             position.y = (float) ((this.rainQuads[i].y - playerY) - (CosmicEvolution.instance.save.thePlayer.y % 1));
             position.z = (float) ((this.rainQuads[i].z - playerZ) - (CosmicEvolution.instance.save.thePlayer.z % 1));
 
-            rainModel = Block.xCrossBlockModel.copyModel();
+            rainModel = BlockModelList.xCrossBlockModel.copyModel();
 
             for(int j = 0; j < rainModel.modelFaces.length; j++){
                 modelFace = rainModel.modelFaces[j];
@@ -348,6 +328,49 @@ public final class RenderWorldScene {
 
         Shader.worldShader2DTexture.uploadBoolean("useFog", true);
     }
+
+
+    private void setupFogColor(Vector3f normalizedSunVector) {
+        Vector3f dir = new Vector3f(0f, 0f, 1f);
+
+        // --- Day/Night factor ---
+        float sunHeight = normalizedSunVector.y;
+        float nightFactor = smoothstep(-0.25f, 0.05f, sunHeight);
+
+        // --- Base day fog color ---
+        Vector3f horizonColor = new Vector3f(0.45f, 0.55f, 0.75f);
+        Vector3f zenithColor  = new Vector3f(0.15f, 0.25f, 0.45f);
+        float h = Math.max(0f, Math.min(1f, dir.y));
+        Vector3f dayFog = new Vector3f(horizonColor).lerp(zenithColor, h);
+
+        // --- Night fog color ---
+        Vector3f nightFog = new Vector3f(0.0f, 0.0f, 0.0f);
+
+        // --- Blend day → night ---
+        this.skyBase = new Vector3f(nightFog).lerp(dayFog, nightFactor);
+
+        // --- Directional factors ---
+        float towardSun = Math.max(dir.dot(normalizedSunVector), 0f);
+        float awayFromSun = Math.max(dir.dot(new Vector3f(normalizedSunVector).negate()), 0f);
+
+        // --- Warm/Cool bands ---
+        float warmSpread = smoothstep(0.1f, -0.3f, sunHeight);
+        float horizonFactor = 1f - h;
+
+        Vector3f warmColor = new Vector3f(1f, 0.5f, 0.2f);
+        this.skyBase.fma(towardSun * warmSpread * horizonFactor * nightFactor, warmColor);
+
+        Vector3f coolColor = new Vector3f(0.2f, 0.3f, 0.5f);
+        this.skyBase.fma(awayFromSun * warmSpread * 0.5f * nightFactor, coolColor);
+    }
+
+
+
+    private float smoothstep(float edge0, float edge1, float x) {
+        x = Math.max(0f, Math.min(1f, (x - edge0) / (edge1 - edge0)));
+        return x * x * (3f - 2f * x);
+    }
+
 
     private void renderClouds(){
         if(true)return; //disable, upload a matrix transform instead of shoving vertex and element data to the GPU every frame, do the same with rain
@@ -472,9 +495,9 @@ public final class RenderWorldScene {
     }
 
     public void renderNearbyCelestialObjects(){
-        Shader.worldShaderCubeMapTexture.uploadFloat("fogRed", this.controller.parentWorld.skyColor[0]);
-        Shader.worldShaderCubeMapTexture.uploadFloat("fogGreen", this.controller.parentWorld.skyColor[1]);
-        Shader.worldShaderCubeMapTexture.uploadFloat("fogBlue", this.controller.parentWorld.skyColor[2]);
+        Shader.worldShaderCubeMapTexture.uploadFloat("fogRed", this.skyBase.x);
+        Shader.worldShaderCubeMapTexture.uploadFloat("fogGreen", this.skyBase.y);
+        Shader.worldShaderCubeMapTexture.uploadFloat("fogBlue", this.skyBase.z);
         Vector3f playerPositionInChunk = new Vector3f(MathUtil.positiveMod(CosmicEvolution.instance.save.thePlayer.x, 32), MathUtil.positiveMod(CosmicEvolution.instance.save.thePlayer.y, 32), MathUtil.positiveMod(CosmicEvolution.instance.save.thePlayer.z, 32));
         Shader.worldShaderCubeMapTexture.uploadVec3f("playerPositionInChunk", playerPositionInChunk);
         Matrix4d preservedViewMatrix = CosmicEvolution.camera.viewMatrix.get(new Matrix4d());
@@ -587,59 +610,20 @@ public final class RenderWorldScene {
                         }
                     }
                     Shader.worldShaderCubeMapTexture.uploadVec3f("position", celestialObjectPosition);
-                    if(this.blendCelestialObjects) {
+                    if(!(renderingObject instanceof Sun)) {
                         GL46.glEnable(GL46.GL_BLEND);
                         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE);
                     }
                     GL46.glEnable(GL46.GL_CULL_FACE);
                     GL46.glCullFace(GL46.GL_FRONT);
-                    if(this.transitionSkyColor){
-                        Shader.worldShaderCubeMapTexture.uploadBoolean("blendColorForSkyTransition", true);
-                    }
                     tessellator.drawCubeMapTextureCelestialBody(renderingObject.mappedTexture, Shader.worldShaderCubeMapTexture, CosmicEvolution.camera);
-                    if(this.transitionSkyColor){
-                        Shader.worldShaderCubeMapTexture.uploadBoolean("blendColorForSkyTransition", false);
-                    }
                     GL46.glDisable(GL46.GL_CULL_FACE);
-                    if(this.blendCelestialObjects) {
+                    if(!(renderingObject instanceof Sun)) {
                         GL46.glDisable(GL46.GL_BLEND);
                     }
                 }
 
                 CosmicEvolution.camera.viewMatrix = preservedViewMatrix;
-                if(renderingObject instanceof Sun && !this.overrideSkyColor){ //Sun corona
-
-                    RenderEngine.WorldTessellator tessellator = RenderEngine.WorldTessellator.instance;
-                    float size = 100000000F * 0.0001F;
-                    Quaterniond inverseRotation = new Quaterniond(viewMatrixRotation).invert();
-
-                    Vector3d vertex1SunFlare = new Vector3d(-size, -size, 0).rotate(inverseRotation).add(celestialObjectPosition);
-                    Vector3d vertex2SunFlare = new Vector3d(size, size, 0).rotate(inverseRotation).add(celestialObjectPosition);
-                    Vector3d vertex3SunFlare = new Vector3d(-size, size, 0).rotate(inverseRotation).add(celestialObjectPosition);
-                    Vector3d vertex4SunFlare = new Vector3d(size, -size, 0).rotate(inverseRotation).add(celestialObjectPosition);
-
-                    int color = this.getSunColor();
-
-                    tessellator.addVertex2DTexture(color, (float) vertex1SunFlare.x, (float) vertex1SunFlare.y, (float) vertex1SunFlare.z, 3, 0, 0, 0, this.baseLight, 255); //Lighting doesnt need to be calculated because this is the light source in the system
-                    tessellator.addVertex2DTexture(color, (float) vertex2SunFlare.x, (float) vertex2SunFlare.y, (float) vertex2SunFlare.z, 1, 0, 0, 0, this.baseLight, 255);
-                    tessellator.addVertex2DTexture(color, (float) vertex3SunFlare.x, (float) vertex3SunFlare.y, (float) vertex3SunFlare.z, 2, 0, 0, 0, this.baseLight, 255);
-                    tessellator.addVertex2DTexture(color, (float) vertex4SunFlare.x, (float) vertex4SunFlare.y, (float) vertex4SunFlare.z, 0, 0, 0, 0, this.baseLight, 255);
-                    tessellator.addElementsCW();
-                    GL46.glEnable(GL46.GL_BLEND);
-                    GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_COLOR);
-                    Shader.worldShader2DTexture.uploadBoolean("useFog", false);
-                    Shader.worldShader2DTexture.uploadBoolean("performNormals", false);
-                    Shader.worldShader2DTexture.uploadVec3f("chunkOffset", new Vector3f());
-                    Shader.worldShader2DTexture.uploadVec3f("playerPositionInChunk", new Vector3f());
-                    if(this.transitionSkyColor){
-                        Shader.worldShader2DTexture.uploadBoolean("blendColorForSkyTransition", true);
-                    }
-                    tessellator.drawTexture2D(Sun.sunFlare, Shader.worldShader2DTexture, CosmicEvolution.camera);
-                    if(this.transitionSkyColor){
-                        Shader.worldShader2DTexture.uploadBoolean("blendColorForSkyTransition", false);
-                    }
-                    GL46.glDisable(GL46.GL_BLEND);
-                }
             }
         }
         this.setSkyLightLevel(starPositions);
@@ -650,51 +634,7 @@ public final class RenderWorldScene {
     }
 
     private void renderSkybox(CelestialObject currentCelestialObject, double playerLon, double playerLat) {
-        if (this.shouldSkyboxRender && !this.overrideSkyColor) {
-            GL46.glDepthMask(false);
-            GL46.glEnable(GL46.GL_BLEND);
-            GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_COLOR);
-
-            RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
-            Vector3f vertex1;
-            Vector3f vertex2;
-            Vector3f vertex3;
-            Vector3f vertex4;
-            Matrix4f modelMatrix = new Matrix4f();
-            modelMatrix.rotateX((float) -(Math.toRadians(playerLon) + Math.toRadians((360 * ((double) CosmicEvolution.instance.save.time / currentCelestialObject.rotationPeriod)) % 360)));
-
-            float latRad = (float) Math.toRadians(playerLat);
-
-            float orbitalPhase = (CosmicEvolution.instance.save.time % currentCelestialObject.orbitalPeriod) / (float)currentCelestialObject.orbitalPeriod;
-
-            float declination = (float) (currentCelestialObject.axialTiltX * Math.sin((orbitalPhase * (2 * Math.PI))));
-
-            float tiltAngle = (float) (latRad - Math.toRadians(declination));
-
-            modelMatrix.rotateZ(tiltAngle);
-
-            for (int latitude = -90; latitude < 90; latitude += 45) {
-                for (int longitude = 0; longitude < 360; longitude += 45) {
-                    vertex1 = this.getPositionOnSphere(latitude + 45, longitude, 400000);
-                    vertex2 = this.getPositionOnSphere(latitude + 45, longitude + 45, 400000);
-                    vertex3 = this.getPositionOnSphere(latitude, longitude, 400000);
-                    vertex4 = this.getPositionOnSphere(latitude, longitude + 45, 400000);
-                    tessellator.addVertexCubeMap((vertex4.x), (vertex4.y), (vertex4.z));
-                    tessellator.addVertexCubeMap((vertex1.x), (vertex1.y), (vertex1.z));
-                    tessellator.addVertexCubeMap((vertex2.x), (vertex2.y), (vertex2.z));
-                    tessellator.addVertexCubeMap((vertex3.x), (vertex3.y), (vertex3.z));
-                    tessellator.addElementsCW();
-                }
-            }
-
-            Shader.worldSkybox.uploadVec3f("position", new Vector3f());
-            Shader.worldSkybox.uploadMat4f("uModel", modelMatrix);
-            tessellator.drawCubeMapTexture(GuiUniverseMap.skybox, Shader.worldSkybox, CosmicEvolution.camera);
-            Shader.worldSkybox.uploadBoolean("skybox", false);
-
-            GL46.glDisable(GL46.GL_BLEND);
-            GL46.glDepthMask(true);
-        }
+       this.skybox.renderSkybox(currentCelestialObject,playerLon,playerLat);
     }
 
     private void setSkyLightLevel(ArrayList<Vector3f> starPositions){
@@ -716,8 +656,8 @@ public final class RenderWorldScene {
 
         closestStar.normalize();
 
+        this.setupFogColor(closestStar);
         byte calculatedSkyLightLevel = this.calculateSkyLightLevel(closestStar.y);
-        this.setClearColor(closestStar.y);
         this.shouldSkyboxRender = this.shouldSkyboxRender(closestStar.y);
         this.blendCelestialObjects = this.shouldCelestialObjectsBlend(closestStar.y); //This uses the exact same logic
         this.shouldShadowsRender = this.shouldShadowsRender(closestStar.y);
@@ -838,6 +778,8 @@ public final class RenderWorldScene {
         this.sunRed = interpolatedR;
         this.sunGreen = interpolatedG;
         this.sunBlue = interpolatedB;
+
+        Shader.worldSkyboxInner.uploadVec3f("sunFlareColor", new Vector3f(lightColor.x, lightColor.y, lightColor.z));
     }
 
     private byte calculateSkyLightLevel(float yVecComponent){
@@ -879,236 +821,6 @@ public final class RenderWorldScene {
         return 0;
     }
 
-    public void setClearColor(float yVecComponent){
-        if(this.transitionSkyColor)return;
-        float upperColorR = 1;
-        float upperColorG = 1;
-        float upperColorB = 1;
-        float lowerColorR = 1;
-        float lowerColorG = 1;
-        float lowerColorB = 1;
-
-        boolean overrideSkyColor = true;
-        boolean night = false;
-
-        if(yVecComponent <= 0.15 && yVecComponent > 0.08){
-            upperColorR = this.cloudy ? this.targetSkyColor[0] : this.controller.parentWorld.defaultSkyColor[0];
-            upperColorG = this.cloudy ? this.targetSkyColor[1] : this.controller.parentWorld.defaultSkyColor[1];
-            upperColorB = this.cloudy ? this.targetSkyColor[2] : this.controller.parentWorld.defaultSkyColor[2];
-            lowerColorR = 255f / 255f;
-            lowerColorG = 233f / 255f;
-            lowerColorB = 127f / 255f;
-        } else if(yVecComponent <= 0.08 && yVecComponent > 0.01){
-            upperColorR = 255f / 255f;
-            upperColorG = 233f / 255f;
-            upperColorB = 127f / 255f;
-            lowerColorR = Color.orange.getRed() / 255f;
-            lowerColorG = Color.orange.getGreen() / 255f;
-            lowerColorB = Color.orange.getBlue() / 255f;
-        } else if(yVecComponent <= 0.01 && yVecComponent > -0.06){
-            upperColorR = Color.orange.getRed() / 255f;
-            upperColorG = Color.orange.getGreen() / 255f;
-            upperColorB = Color.orange.getBlue() / 255f;
-            lowerColorR = 255f / 255f;
-            lowerColorG = 77f / 255f;
-            lowerColorB = 53f / 255f;
-        } else if(yVecComponent <= -0.06 && yVecComponent > -0.13){
-            upperColorR = 255f / 255f;
-            upperColorG = 77f / 255f;
-            upperColorB = 53f / 255f;
-            lowerColorR = 255f / 255f;
-            lowerColorG = 77f / 255f;
-            lowerColorB = 53f / 255f;
-        } else if(yVecComponent <= -0.13 && yVecComponent > -0.2){
-            upperColorR = 255f / 255f;
-            upperColorG = 77f / 255f;
-            upperColorB = 53f / 255f;
-            lowerColorR = 0;
-            lowerColorG = 0;
-            lowerColorB = 0;
-        } else if(yVecComponent > 0.15){
-            overrideSkyColor = false;
-            upperColorR = this.controller.parentWorld.defaultSkyColor[0];
-            upperColorG = this.controller.parentWorld.defaultSkyColor[1];
-            upperColorB = this.controller.parentWorld.defaultSkyColor[2];
-            lowerColorR = this.controller.parentWorld.defaultSkyColor[0];
-            lowerColorG = this.controller.parentWorld.defaultSkyColor[1];
-            lowerColorB = this.controller.parentWorld.defaultSkyColor[2];
-        } else if(yVecComponent < -0.2){
-            overrideSkyColor = false;
-            night = true;
-            upperColorR = 0;
-            upperColorG = 0;
-            upperColorB = 0;
-            lowerColorR = 0;
-            lowerColorG = 0;
-            lowerColorB = 0;
-        }
-
-        yVecComponent += 0.2;
-        yVecComponent %= 0.07;
-
-        float colorDifR = upperColorR - lowerColorR;
-        float colorDifG = upperColorG - lowerColorG;
-        float colorDifB = upperColorB - lowerColorB;
-
-        float ratio = yVecComponent / 0.07f;
-
-        float interpolatedR = (lowerColorR + (colorDifR * ratio)) * this.baseLight;
-        float interpolatedG = (lowerColorG + (colorDifG * ratio)) * this.baseLight;
-        float interpolatedB = (lowerColorB + (colorDifB * ratio)) * this.baseLight;
-        this.controller.parentWorld.skyColor[0] = interpolatedR;
-        this.controller.parentWorld.skyColor[1] = interpolatedG;
-        this.controller.parentWorld.skyColor[2] = interpolatedB;
-
-        this.unblendedSkyColor[0] = interpolatedR;
-        this.unblendedSkyColor[1] = interpolatedG;
-        this.unblendedSkyColor[2] = interpolatedB;
-
-        if(this.overrideSkyColor && overrideSkyColor){ //If the player is under a dark cloud, defined as strength over 0.25 and precip over 0.5 and if not in the sunset stage
-            this.controller.parentWorld.skyColor[0] *= this.targetSkyColor[0];
-            this.controller.parentWorld.skyColor[1] *= this.targetSkyColor[1];
-            this.controller.parentWorld.skyColor[2] *= this.targetSkyColor[2];
-        } else if(this.overrideSkyColor && !night){
-            this.controller.parentWorld.skyColor[0] = this.targetSkyColor[0];
-            this.controller.parentWorld.skyColor[1] = this.targetSkyColor[1];
-            this.controller.parentWorld.skyColor[2] = this.targetSkyColor[2];
-        }
-
-        CosmicEvolution.setGLClearColor( this.controller.parentWorld.skyColor[0],  this.controller.parentWorld.skyColor[1],  this.controller.parentWorld.skyColor[2], 0.0f);
-    }
-
-    public void transitionSkyColor(){
-        if(!this.transitionSkyColor)return;
-
-        float redDif = this.targetSkyColor[0] - this.originalSkyColor[0];
-        float greenDif = this.targetSkyColor[1] - this.originalSkyColor[1];
-        float blueDif = this.targetSkyColor[2] - this.originalSkyColor[2];
-
-        float ratio = (CosmicEvolution.instance.save.time - this.timeStartedSkyColorTransition) / 60f;
-
-        float interpolatedR = this.originalSkyColor[0] + (redDif * ratio);
-        float interpolatedG = this.originalSkyColor[1] + (greenDif * ratio);
-        float interpolatedB = this.originalSkyColor[2] + (blueDif * ratio);
-
-        this.controller.parentWorld.skyColor[0] = interpolatedR;
-        this.controller.parentWorld.skyColor[1] = interpolatedG;
-        this.controller.parentWorld.skyColor[2] = interpolatedB;
-
-        Shader.worldShader2DTexture.uploadFloat("blendColorRatio", this.cloudy ? ratio : 1f - ratio);
-        Shader.worldShaderCubeMapTexture.uploadFloat("blendColorRatio", this.cloudy ? ratio : 1f - ratio);
-
-        if(ratio >= 1) {
-            this.transitionSkyColor = false;
-            this.overrideSkyColor = this.cloudy;
-        }
-
-
-        CosmicEvolution.setGLClearColor( this.controller.parentWorld.skyColor[0],  this.controller.parentWorld.skyColor[1],  this.controller.parentWorld.skyColor[2], 0.0f);
-    }
-
-    private void renderSunrise(float yVecComponent, Vector3f starPosition){
-        if(!(yVecComponent >= 0.15 || yVecComponent <= -0.2)) {
-            starPosition.mul(0.02f);
-            RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
-            float width = 3000f;
-            float height = 1000f;
-            int sunriseColor = this.calcSunriseColor(yVecComponent);
-            Vector2f flatDirection = new Vector2f(-starPosition.x, -starPosition.z).normalize();
-            float angle = (float) Math.atan2(flatDirection.x, flatDirection.y);
-            Matrix4f rotation = new Matrix4f().rotateY(angle);
-
-            Vector3f vertex1 = new Vector3f(starPosition.x - width, starPosition.y  - height, starPosition.z);
-            Vector3f vertex2 = new Vector3f(starPosition.x + width, starPosition.y  + height, starPosition.z);
-            Vector3f vertex3 = new Vector3f(starPosition.x - width, starPosition.y  + height, starPosition.z);
-            Vector3f vertex4 = new Vector3f(starPosition.x + width, starPosition.y  - height, starPosition.z);
-
-            Vector3f[] vertices = {vertex1, vertex2, vertex3, vertex4};
-
-            for (int i = 0; i < vertices.length; i++) {
-                vertices[i].sub(starPosition);
-                vertices[i].mulPosition(rotation);
-                vertices[i].add(starPosition);
-            }
-
-
-            tessellator.addVertex2DTexture(sunriseColor, vertex1.x, vertex1.y, vertex1.z, 3);
-            tessellator.addVertex2DTexture(sunriseColor, vertex2.x, vertex2.y, vertex2.z, 1);
-            tessellator.addVertex2DTexture(sunriseColor, vertex3.x, vertex3.y, vertex3.z, 2);
-            tessellator.addVertex2DTexture(sunriseColor, vertex4.x, vertex4.y, vertex4.z, 0);
-            tessellator.addElementsCW();
-            GL46.glEnable(GL46.GL_BLEND);
-            GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE);
-            Shader.worldShader2DTexture.uploadBoolean("useFog", false);
-            tessellator.drawTexture2D(Sun.sunFlare, Shader.worldShader2DTexture, CosmicEvolution.camera);
-            GL46.glDisable(GL46.GL_BLEND);
-        }
-    }
-
-    private int calcSunriseColor(float yVecComponent) {
-        float upperColorR = 0;
-        float upperColorG = 0;
-        float upperColorB = 0;
-        float lowerColorR = 0;
-        float lowerColorG = 0;
-        float lowerColorB = 0;
-
-        if(yVecComponent <= 0.15 && yVecComponent > 0.08){
-            upperColorR = 0;
-            upperColorG = 0;
-            upperColorB = 0;
-            lowerColorR = 255f / 255f;
-            lowerColorG = 233f / 255f;
-            lowerColorB = 127f / 255f;
-        } else if(yVecComponent <= 0.08 && yVecComponent > 0.01){
-            upperColorR = 255f / 255f;
-            upperColorG = 233f / 255f;
-            upperColorB = 127f / 255f;
-            lowerColorR = Color.orange.getRed() / 255f;
-            lowerColorG = Color.orange.getGreen() / 255f;
-            lowerColorB = Color.orange.getBlue() / 255f;
-        } else if(yVecComponent <= 0.01 && yVecComponent > -0.06){
-            upperColorR = Color.orange.getRed() / 255f;
-            upperColorG = Color.orange.getGreen() / 255f;
-            upperColorB = Color.orange.getBlue() / 255f;
-            lowerColorR = 255f / 255f;
-            lowerColorG = 77f / 255f;
-            lowerColorB = 53f / 255f;
-        } else if(yVecComponent <= -0.06 && yVecComponent > -0.13){
-            upperColorR = 255f / 255f;
-            upperColorG = 77f / 255f;
-            upperColorB = 53f / 255f;
-            lowerColorR = 87f / 255f;
-            lowerColorG = 0f / 255f;
-            lowerColorB = 127f / 255f;
-        } else if(yVecComponent <= -0.13 && yVecComponent > -0.2){
-            upperColorR = 87f / 255f;
-            upperColorG = 0f / 255f;
-            upperColorB = 127f / 255f;
-            lowerColorR = 0;
-            lowerColorG = 0;
-            lowerColorB = 0;
-        }
-
-        yVecComponent += 0.2;
-        yVecComponent %= 0.07;
-
-        float colorDifR = upperColorR - lowerColorR;
-        float colorDifG = upperColorG - lowerColorG;
-        float colorDifB = upperColorB - lowerColorB;
-
-        float ratio = yVecComponent / 0.07f;
-
-        float interpolatedR = lowerColorR + (colorDifR * ratio);
-        float interpolatedG = lowerColorG + (colorDifG * ratio);
-        float interpolatedB = lowerColorB + (colorDifB * ratio);
-
-        int red = (int) (interpolatedR * 255);
-        int green = (int) (interpolatedG * 255);
-        int blue = (int) (interpolatedB * 255);
-
-        return (red << 16) | (green << 8) | blue;
-    }
 
     public Vector3f getPositionOnSphere(double latitude, double longitude, double R){
         R *= 0.00000001;
@@ -1171,6 +883,14 @@ public final class RenderWorldScene {
         Vector3f lightDir = new Vector3f(closestStar).normalize();
         Shader.worldShaderCubeMapTexture.uploadVec3f("normalizedLightDir", lightDir);
         Shader.worldShaderCubeMapTexture.uploadInt("lightColor", star == null ? 0 : star.lightColor);
+
+
+        Shader.worldSkyboxInner.uploadVec3f("normalizedSunVector", lightDir);
+
+        float sunHeight = lightDir.y;
+        float starVisibility = smoothstep(0.05f, -0.25f, sunHeight); // 1.0 = night, 0.0 = day
+        Shader.worldSkyboxOuter.uploadFloat("starVisibility", starVisibility);
+
     }
 
 }

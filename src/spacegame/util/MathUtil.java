@@ -1,7 +1,7 @@
 package spacegame.util;
 
 import spacegame.core.CosmicEvolution;
-import spacegame.core.MouseListener;
+import spacegame.core.eventlisteners.MouseListener;
 
 public abstract class MathUtil {
     private static final float[] SIN_TABLE = new float[65536];

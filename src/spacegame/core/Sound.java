@@ -41,6 +41,7 @@ public final class Sound {
     public static String stabEntity = "src/spacegame/assets/sound/stabEntity.ogg";
     public static String whoosh = "src/spacegame/assets/sound/whoosh.ogg";
     public static String projectilePing = "src/spacegame/assets/sound/projectilePing.ogg";
+    public static String gravel = "src/spacegame/assets/sound/gravel.ogg";
     public static boolean canPlaySound = true;
     public String filepath;
     public int bufferID;

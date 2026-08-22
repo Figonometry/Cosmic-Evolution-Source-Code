@@ -32,8 +32,9 @@ public final class RenderEntityItem {
     public int chunkZ;
     public float entityYaw;
     public float entityPitch;
+    public boolean renderFromFallingBlock;
 
-    public RenderEntityItem(double x, double y, double z, ModelLoader entityModel, boolean render3D, boolean isBlock, short itemID, short itemMetadata, double entityHeight, double entityWidth, float entityYaw, float entityPitch){
+    public RenderEntityItem(double x, double y, double z, ModelLoader entityModel, boolean render3D, boolean isBlock, short itemID, short itemMetadata, double entityHeight, double entityWidth, float entityYaw, float entityPitch, boolean renderFromFallingBlock){
         this.x = x;
         this.y = y;
         this.z = z;
@@ -46,6 +47,7 @@ public final class RenderEntityItem {
         this.entityWidth = entityWidth;
         this.entityYaw = entityYaw;
         this.entityPitch = entityPitch;
+        this.renderFromFallingBlock = renderFromFallingBlock;
     }
 
 
@@ -157,7 +159,9 @@ public final class RenderEntityItem {
 
         ModelLoader model = Block.list[this.blockID].blockModel.copyModel();
         model.translateModel( -0.5f, 0, -0.5f);
-        model.scaleModel(0.25f);
+        if(!this.renderFromFallingBlock) {
+            model.scaleModel(0.25f);
+        }
 
         Shader.worldShaderTextureArray.uploadBoolean("useFog", true);
         Shader.worldShaderTextureArray.uploadFloat("fogRed", CosmicEvolution.instance.save.activeWorld.skyColor[0]);

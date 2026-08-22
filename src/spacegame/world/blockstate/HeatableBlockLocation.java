@@ -10,7 +10,7 @@ import spacegame.item.IHeatable;
 import spacegame.item.Item;
 import spacegame.world.Chunk;
 
-public final class HeatableBlockLocation { //Trigger every 15 ticks, also is a "chest" slot 0 is fuel, slot 1 is input, slot 2 is output
+public final class HeatableBlockLocation extends BlockState { //Trigger every 15 ticks, also is a "chest" slot 0 is fuel, slot 1 is input, slot 2 is output
     public int index;
     public float currentTemperature;
     public short currentFuelBurning;
@@ -24,8 +24,15 @@ public final class HeatableBlockLocation { //Trigger every 15 ticks, also is a "
         this.index = index;
     }
 
+
+    @Override
+    public void onTick(Chunk callingChunk){
+        if((CosmicEvolution.instance.save.time & 14) != 0)return;
+        this.heatItem(callingChunk);
+    }
+
     private void consumeFuel(IFuel fuel, Chunk chunk) {
-        ChestLocation location = chunk.getChestLocation(this.index);
+        ChestLocation location = (ChestLocation) chunk.getBlockState(this.index, MultiState.CHEST_STATE);
 
         if (location.inventory.itemStacks[1].item != null) {
             this.currentFuelBurning = fuel.getFuelItemID();
@@ -38,7 +45,7 @@ public final class HeatableBlockLocation { //Trigger every 15 ticks, also is a "
             }
 
             if(Block.list[chunk.blocks[index]] instanceof BlockCampFire){
-                CampfireState campfireState = chunk.getCampfireState(index);
+                CampfireState campfireState = (CampfireState) chunk.getBlockState(index, MultiState.CAMPFIRE_STATE);
                 if(campfireState == null)return;
                 campfireState.logCount--;
                 if(campfireState.logCount == 0){
@@ -66,7 +73,7 @@ public final class HeatableBlockLocation { //Trigger every 15 ticks, also is a "
 
     public void heatItem(Chunk chunk) {
         this.heating = CosmicEvolution.instance.save.time < this.fuelBurnoutTime;
-        ChestLocation chestLocation = chunk.getChestLocation(this.index);
+        ChestLocation chestLocation = (ChestLocation) chunk.getBlockState(this.index, MultiState.CHEST_STATE);
         if (chestLocation == null) return;
 
         if (!this.heating) {
@@ -98,7 +105,7 @@ public final class HeatableBlockLocation { //Trigger every 15 ticks, also is a "
     }
 
     private void cookItem(Chunk chunk, IHeatable heatableItem) { //Transfer from chest slot 1 to slot 2, if slot 2 is empty change item in slot 2 to correct output item. block cooking if the current output item does not match the expected item
-        ChestLocation chestLocation = chunk.getChestLocation(this.index);
+        ChestLocation chestLocation = (ChestLocation) chunk.getBlockState(this.index, MultiState.CHEST_STATE);
 
 
         short outputItem = heatableItem.getOutputItem();

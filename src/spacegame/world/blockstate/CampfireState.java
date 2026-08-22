@@ -1,6 +1,6 @@
 package spacegame.world.blockstate;
 
-public final class CampfireState {
+public final class CampfireState extends BlockState {
     public int index;
     public boolean isLit;
     public int logCount;

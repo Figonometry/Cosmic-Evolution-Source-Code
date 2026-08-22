@@ -3,11 +3,11 @@ package spacegame.world.blockstateio;
 import spacegame.item.crafting.CraftingBlockRecipes;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.world.Chunk;
+import spacegame.world.blockstate.BlockState;
+import spacegame.world.blockstate.InWorld3DCraftingItem;
 import spacegame.world.blockstate.InWorldCraftingItem;
-import spacegame.world.blockstatewrapper.InWorldCraftingItemSafe;
+import spacegame.world.blockstate.MultiState;
 
-import java.util.Iterator;
-import java.util.Map;
 
 public class CraftingItemsIO {
 
@@ -15,9 +15,10 @@ public class CraftingItemsIO {
 
     public void saveCraftingItems(Chunk chunk, NBTTagCompound nbtTagCompound){
         InWorldCraftingItem inWorldCraftingItem;
-        InWorldCraftingItem[] craftingItems1 = this.getAllCraftingItemsInArray(chunk);
+        int totalCount = chunk.getBlockStateCount(MultiState.CRAFTING_ITEM_STATE);
+        InWorldCraftingItem[] craftingItems1 = this.getAllCraftingItemsInArray(chunk, totalCount);
         int inWorldCraftingItemCount = 0;
-        NBTTagCompound[] inWorldCraftingItemTags = new NBTTagCompound[chunk.craftingItems.size()];
+        NBTTagCompound[] inWorldCraftingItemTags = new NBTTagCompound[totalCount];
         for(int i = 0; i < inWorldCraftingItemTags.length; i++){
 
             inWorldCraftingItem = craftingItems1[i];
@@ -61,23 +62,19 @@ public class CraftingItemsIO {
             }
 
 
-            chunk.addCraftingItem(inWorldCraftingItem);
+            chunk.addBlockState(index, MultiState.CRAFTING_ITEM_STATE, inWorldCraftingItem);
         }
     }
 
-    public InWorldCraftingItem[] getAllCraftingItemsInArray(Chunk chunk){
-        int index = 0;
-        InWorldCraftingItem craftingItem;
-        InWorldCraftingItem[] inWorldCraftingItems = new InWorldCraftingItem[chunk.craftingItems.size()];
-        Iterator<Map.Entry<Integer, InWorldCraftingItemSafe>> iterator = chunk.craftingItems.entrySet().iterator();
-        while(iterator.hasNext()){
-            Map.Entry<Integer, InWorldCraftingItemSafe> entry = iterator.next();
-            craftingItem = entry.getValue().value;
-            if(craftingItem != null){
-                inWorldCraftingItems[index] = craftingItem;
-                index++;
-            }
+    public InWorldCraftingItem[] getAllCraftingItemsInArray(Chunk chunk, int totalCount){
+        BlockState[] base = chunk.getAllBlockStatesOfType(MultiState.CRAFTING_ITEM_STATE, totalCount);
+        InWorldCraftingItem[] returnArray = new InWorldCraftingItem[base.length];
+
+        for (int i = 0; i < base.length; i++) {
+            returnArray[i] = (InWorldCraftingItem) base[i];
         }
-        return inWorldCraftingItems;
+
+
+        return returnArray;
     }
 }

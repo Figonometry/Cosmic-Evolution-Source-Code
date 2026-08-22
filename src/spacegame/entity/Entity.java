@@ -6,7 +6,6 @@ import spacegame.block.Block;
 import spacegame.block.BlockIce;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
-import spacegame.core.Timer;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;

@@ -1,125 +1,285 @@
 package spacegame.block;
 
+import org.lwjgl.glfw.GLFW;
 import spacegame.core.CosmicEvolution;
-import spacegame.core.MouseListener;
-import spacegame.core.Timer;
+import spacegame.core.eventlisteners.KeyListener;
 import spacegame.entity.EntityPlayer;
+import spacegame.gui.ToolTip;
+import spacegame.gui.ToolTipGroup;
 import spacegame.item.Item;
-import spacegame.render.RenderBlocks;
+import spacegame.item.ItemIDList;
+import spacegame.render.texturelists.BlockTextureList;
+import spacegame.render.texturelists.MouseAndKeyIconTextureList;
 import spacegame.world.World;
-import spacegame.world.blockstate.Crop;
-import spacegame.world.blockstate.CropState;
-import spacegame.world.blockstate.TilledSoilState;
+import spacegame.world.blockstate.LogState;
+import spacegame.world.blockstate.MultiState;
 
-public final class BlockSoil extends Block implements ITimeUpdate, ITickable  {
+public final class BlockSoil extends Block implements ITickable {
     public BlockSoil(short ID, int textureID, String filepath) {
         super(ID, textureID, filepath);
     }
 
-
-    public int getBlockTexture(int x, int y, int face, int z){
-        if(face != RenderBlocks.TOP_FACE)return this.textureID;
-
-        TilledSoilState tilledSoilState = CosmicEvolution.instance.save.activeWorld.getTilledSoilState(x,y,z);
-
-        if(tilledSoilState == null)return this.textureID;
-
-        switch (tilledSoilState.fertilizerID){
-            case TilledSoilState.BONEMEAL -> {
-                return 77;
-            }
-            default -> {
-                return 70;
+    @Override
+    public void tick(int x, int y, int z, World world) {
+        if (CosmicEvolution.globalRand.nextInt(166) == 0) {
+            byte blockLight = world.getBlockLightValue(x,y + 1, z);
+            byte skyLight = world.getBlockSkyLightValue(x, y + 1,z);
+            if((blockLight >= 9 || skyLight >= 9) && !this.canBlockDecayGrass(x,y,z,world)){
+                world.setBlockWithNotify(x,y,z, getBlockIDForGrassSpread(this.ID), false);
             }
         }
-    }
-
-    @Override
-    public void handleSpecialRightClickFunctions(int x, int y, int z, World world, EntityPlayer player){
-        short heldItem = player.getHeldItem();
-
-        if(heldItem != Item.NULL_ITEM_REFERENCE && MouseListener.rightClickReleased){
-            if(heldItem == Item.boneMeal.ID){
-                TilledSoilState tilledSoilState = world.getTilledSoilState(x,y,z);
-                if(tilledSoilState == null)return;
-
-                tilledSoilState.fertilizerID = TilledSoilState.BONEMEAL;
-                player.removeItemFromInventory();
-                world.notifyChunk(x,y,z);
-                MouseListener.rightClickReleased = false;
-            }
-        }
-    }
-
-    @Override
-    public void onTimeUpdate(int x, int y, int z, World world) {
-        TilledSoilState tilledSoilState = world.getTilledSoilState(x,y,z);
-        if(tilledSoilState == null){
-            world.addTimeEvent(x,y,z, world.ce.save.time + this.getUpdateTime());
-            return;
-        }
-
-        boolean cropAbove = world.getBlockID(x,y + 1, z) == Block.cropGrowth.ID;
-
-        if(cropAbove){
-            CropState cropState = world.getCropState(x, y + 1, z);
-            if(cropState == null)return;
-            Crop crop = Crop.getCropFromName(cropState.name);
-            if(crop == null)return;
-
-            tilledSoilState.nitrogenPercent -= 0.01f;
-            tilledSoilState.phosphorusPercent -= 0.01f;
-            tilledSoilState.potassiumPercent -= 0.01f;
-        } else {
-            tilledSoilState.nitrogenPercent += 0.01f;
-            tilledSoilState.phosphorusPercent += 0.01f;
-            tilledSoilState.potassiumPercent += 0.01f;
-
-            if(tilledSoilState.nitrogenPercent > 1f)tilledSoilState.nitrogenPercent = 1f;
-            if(tilledSoilState.phosphorusPercent > 1f)tilledSoilState.phosphorusPercent = 1f;
-            if(tilledSoilState.potassiumPercent > 1f)tilledSoilState.potassiumPercent = 1f;
-        }
-
-        world.addTimeEvent(x,y,z, world.ce.save.time + this.getUpdateTime());
-    }
-
-    @Override
-    public long getUpdateTime() {
-        return Timer.GAME_DAY;
-    }
-
-    @Override
-    public String getDisplayStringText() {
-        return null;
     }
 
     @Override
     public String getDisplayName(int x, int y, int z){
-        TilledSoilState tilledSoilState = CosmicEvolution.instance.save.activeWorld.getTilledSoilState(x,y,z);
-        if(tilledSoilState == null)return "null";
+        switch (this.ID){
+            case BlockIDList.BARREN_SOIL -> {
+                return "Barren Soil";
+            }
+            case BlockIDList.LOW_FERTILITY_SOIL -> {
+                return "Low Fertility Soil";
+            }
+            case BlockIDList.MEDIUM_FERTILITY_SOIL -> {
+                return "Medium Fertility Soil";
+            }
+            case BlockIDList.HIGH_FERTILITY_SOIL -> {
+                return "High Fertility Soil";
+            }
 
-        return "K: " + tilledSoilState.potassiumPercent * 100 + "%   N: " + tilledSoilState.nitrogenPercent * 100 + "%   P: " +
-                tilledSoilState.phosphorusPercent * 100 + "%   Moisture: " + tilledSoilState.moisturePercent * 100 + "%";
+            default -> {
+                return this.displayName;
+            }
+        }
+
     }
 
     @Override
-    public void tick(int x, int y, int z, World world) {
-        if((world.ce.save.time & 59) != 0)return;
+    public void registerBlockTooltips(){
+        this.tooltips = new ToolTipGroup[2][1];
+        this.tooltips[0][0] = new ToolTipGroup();
+        this.tooltips[1][0] = new ToolTipGroup();
+
+        ToolTip toolTip = new ToolTip();
+
+        toolTip.addMouseIcon(MouseAndKeyIconTextureList.RIGHT_CLICK);
+        toolTip.addText("with");
+        toolTip.addItemID(ItemIDList.STONE_HOE);
+        toolTip.addText("to till the soil");
+
+        this.tooltips[0][0].addToolTip(toolTip);
 
 
-        boolean isWatered = world.raining || world.getBlockID(x - 1, y, z) == Block.water.ID || world.getBlockID(x + 1, y, z) == Block.water.ID ||
-                world.getBlockID(x, y, z - 1) == Block.water.ID || world.getBlockID(x, y, z + 1) == Block.water.ID;
+        ToolTip toolTip2 = new ToolTip();
 
-        TilledSoilState tilledSoilState = world.getTilledSoilState(x,y,z);
-        if(tilledSoilState == null)return;
-        if(isWatered){
+        toolTip2.addKeyWithBoxOutline("SHIFT");
+        toolTip2.addText("+");
+        toolTip2.addMouseIcon(MouseAndKeyIconTextureList.RIGHT_CLICK);
+        toolTip2.addText("with");
+        toolTip2.addItemID(ItemIDList.REED_CRAFTING_GRID_TOP);
+        toolTip2.addText("to create");
+        toolTip2.addBlockID(BlockIDList.PRIMITIVE_CRAFTING_TABLE);
 
-            tilledSoilState.moisturePercent += 0.01f;
-        } else {
-
-            tilledSoilState.moisturePercent -= 0.01f;
-        }
-        if(tilledSoilState.moisturePercent > 1f)tilledSoilState.moisturePercent = 1f;
-        if(tilledSoilState.moisturePercent < 0f)tilledSoilState.moisturePercent = 0f;
+        this.tooltips[1][0].addToolTip(toolTip2);
     }
+
+
+    @Override
+    public ToolTipGroup[] getBlockToolTips(int x, int y, int z, World world, EntityPlayer player){
+        return player.getHeldItem() == Item.stoneHoeHead.ID ? this.tooltips[0] : player.getHeldItem() == Item.reedCraftingGridTop.ID ? this.tooltips[1] : null;
+    }
+
+
+    @Override
+    public void handleSpecialRightClickFunctions(int x, int y, int z, World world, EntityPlayer player){
+        super.onRightClick(x,y,z, world, player);
+        short playerHeldItem = player.getHeldItem();
+        if(playerHeldItem == Item.reedCraftingGridTop.ID && (KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT))){
+            world.setBlockWithNotify(x,y,z, Block.primitiveCraftingTable.ID, false);
+            player.removeItemFromInventory();
+        }
+    }
+
+
+    public static float getNutrientLevel(short ID){
+        //Handles for both grass and soil
+        switch (ID){
+            case BlockIDList.BARREN_SOIL, BlockIDList.GRASS_BARREN_FERTILITY_SMALL_PATCH, BlockIDList.GRASS_BARREN_FERTILITY_LARGE_PATCH, BlockIDList.GRASS_BARREN_FERTILITY_FULL ->{
+                return 0.05f;
+            }
+            case BlockIDList.LOW_FERTILITY_SOIL , BlockIDList.GRASS_LOW_FERTILITY_SMALL_PATCH, BlockIDList.GRASS_LOW_FERTILITY_LARGE_PATCH, BlockIDList.GRASS_LOW_FERTILITY_FULL ->{
+                return 0.25f;
+            }
+            case BlockIDList.MEDIUM_FERTILITY_SOIL , BlockIDList.GRASS_MEDIUM_FERTILITY_SMALL_PATCH, BlockIDList.GRASS_MEDIUM_FERTILITY_LARGE_PATCH, BlockIDList.GRASS_MEDIUM_FERTILITY_FULL ->{
+                return 0.5f;
+            }
+            case BlockIDList.HIGH_FERTILITY_SOIL, BlockIDList.GRASS_HIGH_FERTILITY_SMALL_PATCH, BlockIDList.GRASS_HIGH_FERTILITY_LARGE_PATCH, BlockIDList.GRASS_HIGH_FERTILITY_FULL ->{
+                return 0.8f;
+            }
+            default -> {
+                return 0.01f;
+            }
+        }
+    }
+
+    protected boolean canBlockDecayGrass(int x, int y, int z, World world){
+        short blockID = world.getBlockID(x, y, z);
+        if(Block.list[blockID] instanceof BlockLog){
+            LogState logState = (LogState) world.getBlockState(x,y,z, MultiState.LOG_STATE);
+            if(logState == null)return false;
+            return logState.size == 16;
+        } else {
+            return Block.list[blockID].isSolid;
+        }
+    }
+
+
+    public static short getBlockIDForGrassSpread(short ID){
+        switch (ID){
+            case BlockIDList.BARREN_SOIL -> {
+                return BlockIDList.GRASS_BARREN_FERTILITY_SMALL_PATCH;
+            }
+            case BlockIDList.LOW_FERTILITY_SOIL -> {
+                return BlockIDList.GRASS_LOW_FERTILITY_SMALL_PATCH;
+            }
+            case BlockIDList.MEDIUM_FERTILITY_SOIL -> {
+                return BlockIDList.GRASS_MEDIUM_FERTILITY_SMALL_PATCH;
+            }
+            case BlockIDList.HIGH_FERTILITY_SOIL -> {
+                return BlockIDList.GRASS_HIGH_FERTILITY_SMALL_PATCH;
+            }
+            default -> {
+                return ID;
+            }
+        }
+    }
+
+
+    public static float getSoilFertility(short ID){
+        //Returns the soil texture for grass blocks
+        switch (ID){
+            case BlockIDList.BARREN_SOIL, BlockIDList.GRASS_BARREN_FERTILITY_SMALL_PATCH, BlockIDList.GRASS_BARREN_FERTILITY_LARGE_PATCH, BlockIDList.GRASS_BARREN_FERTILITY_FULL ->  {
+                return BlockTextureList.SOIL_BARREN_FERTILITY_TEXTURE;
+            }
+            case BlockIDList.LOW_FERTILITY_SOIL, BlockIDList.GRASS_LOW_FERTILITY_SMALL_PATCH, BlockIDList.GRASS_LOW_FERTILITY_LARGE_PATCH, BlockIDList.GRASS_LOW_FERTILITY_FULL ->  {
+                return BlockTextureList.SOIL_LOW_FERTILITY_TEXTURE;
+            }
+            case BlockIDList.MEDIUM_FERTILITY_SOIL, BlockIDList.GRASS_MEDIUM_FERTILITY_SMALL_PATCH, BlockIDList.GRASS_MEDIUM_FERTILITY_LARGE_PATCH, BlockIDList.GRASS_MEDIUM_FERTILITY_FULL ->  {
+                return BlockTextureList.SOIL_MEDIUM_FERTILITY_TEXTURE;
+            }
+            case BlockIDList.HIGH_FERTILITY_SOIL, BlockIDList.GRASS_HIGH_FERTILITY_SMALL_PATCH, BlockIDList.GRASS_HIGH_FERTILITY_LARGE_PATCH, BlockIDList.GRASS_HIGH_FERTILITY_FULL ->  {
+                return BlockTextureList.SOIL_HIGH_FERTILITY_TEXTURE;
+            }
+
+            default -> {
+                throw new IllegalStateException("Invalid soil fertility state");
+            }
+        }
+    }
+
+    public static float getUnderlyingSoilTextureTop(short ID){
+        switch (ID){
+            case BlockIDList.GRASS_BARREN_FERTILITY_SMALL_PATCH -> {
+                return BlockTextureList.SOIL_BARREN_FERTILITY_SMALL_GRASS_PATCHES_LOWER_TOP;
+            }
+
+            case BlockIDList.GRASS_LOW_FERTILITY_SMALL_PATCH -> {
+                return BlockTextureList.SOIL_LOW_FERTILITY_SMALL_GRASS_PATCHES_LOWER_TOP;
+            }
+
+            case BlockIDList.GRASS_MEDIUM_FERTILITY_SMALL_PATCH -> {
+                return BlockTextureList.SOIL_MEDIUM_FERTILITY_SMALL_GRASS_PATCHES_LOWER_TOP;
+            }
+
+            case BlockIDList.GRASS_HIGH_FERTILITY_SMALL_PATCH -> {
+                return BlockTextureList.SOIL_HIGH_FERTILITY_SMALL_GRASS_PATCHES_LOWER_TOP;
+            }
+
+
+
+            case BlockIDList.GRASS_BARREN_FERTILITY_LARGE_PATCH -> {
+                return BlockTextureList.SOIL_BARREN_FERTILITY_LARGE_GRASS_PATCHES_LOWER_TOP;
+            }
+
+            case BlockIDList.GRASS_LOW_FERTILITY_LARGE_PATCH -> {
+                return BlockTextureList.SOIL_LOW_FERTILITY_LARGE_GRASS_PATCHES_LOWER_TOP;
+            }
+
+            case BlockIDList.GRASS_MEDIUM_FERTILITY_LARGE_PATCH -> {
+                return BlockTextureList.SOIL_MEDIUM_FERTILITY_LARGE_GRASS_PATCHES_LOWER_TOP;
+            }
+
+            case BlockIDList.GRASS_HIGH_FERTILITY_LARGE_PATCH -> {
+                return BlockTextureList.SOIL_HIGH_FERTILITY_LARGE_GRASS_PATCHES_LOWER_TOP;
+            }
+
+
+            default -> {
+                throw new IllegalStateException("Invalid soil fertility state");
+            }
+        }
+    }
+
+
+    public static float getUnderlyingSoilTextureSide(short ID){
+            switch (ID){
+                case BlockIDList.GRASS_BARREN_FERTILITY_SMALL_PATCH -> {
+                    return BlockTextureList.SOIL_BARREN_FERTILITY_SMALL_GRASS_PATCHES_LOWER_SIDE;
+                }
+
+                case BlockIDList.GRASS_LOW_FERTILITY_SMALL_PATCH -> {
+                    return BlockTextureList.SOIL_LOW_FERTILITY_SMALL_GRASS_PATCHES_LOWER_SIDE;
+                }
+
+                case BlockIDList.GRASS_MEDIUM_FERTILITY_SMALL_PATCH -> {
+                    return BlockTextureList.SOIL_MEDIUM_FERTILITY_SMALL_GRASS_PATCHES_LOWER_SIDE;
+                }
+
+                case BlockIDList.GRASS_HIGH_FERTILITY_SMALL_PATCH -> {
+                    return BlockTextureList.SOIL_HIGH_FERTILITY_SMALL_GRASS_PATCHES_LOWER_SIDE;
+                }
+
+
+
+                case BlockIDList.GRASS_BARREN_FERTILITY_LARGE_PATCH -> {
+                    return BlockTextureList.SOIL_BARREN_FERTILITY_LARGE_GRASS_PATCHES_LOWER_SIDE;
+                }
+
+                case BlockIDList.GRASS_LOW_FERTILITY_LARGE_PATCH -> {
+                    return BlockTextureList.SOIL_LOW_FERTILITY_LARGE_GRASS_PATCHES_LOWER_SIDE;
+                }
+
+                case BlockIDList.GRASS_MEDIUM_FERTILITY_LARGE_PATCH -> {
+                    return BlockTextureList.SOIL_MEDIUM_FERTILITY_LARGE_GRASS_PATCHES_LOWER_SIDE;
+                }
+
+                case BlockIDList.GRASS_HIGH_FERTILITY_LARGE_PATCH -> {
+                    return BlockTextureList.SOIL_HIGH_FERTILITY_LARGE_GRASS_PATCHES_LOWER_SIDE;
+                }
+
+
+                case BlockIDList.GRASS_BARREN_FERTILITY_FULL -> {
+                    return BlockTextureList.SOIL_BARREN_FERTILITY_FULL_GRASS_LOWER;
+                }
+
+                case BlockIDList.GRASS_LOW_FERTILITY_FULL -> {
+                    return BlockTextureList.SOIL_LOW_FERTILITY_FULL_GRASS_LOWER;
+                }
+
+                case BlockIDList.GRASS_MEDIUM_FERTILITY_FULL -> {
+                    return BlockTextureList.SOIL_MEDIUM_FERTILITY_FULL_GRASS_LOWER;
+                }
+
+                case BlockIDList.GRASS_HIGH_FERTILITY_FULL -> {
+                    return BlockTextureList.SOIL_HIGH_FERTILITY_FULL_GRASS_LOWER;
+                }
+
+                default -> {
+                    throw new IllegalStateException("Invalid soil fertility state");
+                }
+            }
+    }
+
+
+
+
 }

@@ -4,7 +4,7 @@ import org.lwjgl.glfw.GLFW;
 import spacegame.block.Block;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
-import spacegame.core.MouseListener;
+import spacegame.core.eventlisteners.MouseListener;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.render.*;
@@ -221,6 +221,15 @@ public class Button {
             case KEY_DROP -> {
                 GameSettings.setKeyBeingModified(GameSettings.dropKey);
             }
+            case KEY_SIT -> {
+                GameSettings.setKeyBeingModified(GameSettings.sitKey);
+            }
+            case KEY_SHIFT -> {
+                GameSettings.setKeyBeingModified(GameSettings.shiftKey);
+            }
+            case KEY_SPRINT -> {
+                GameSettings.setKeyBeingModified(GameSettings.sprintKey);
+            }
             case BACK_TO_GAME -> {
                 GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
                 this.ce.save.activeWorld.paused = false;
@@ -388,7 +397,7 @@ public class Button {
             case CREATE_NEW_WORLD -> {
                 ((GuiCreateNewWorld)this.Gui).nameWorld.typing = false;
                 ((GuiCreateNewWorld)this.Gui).setSeed.typing = false;
-                this.ce.startSave(((GuiCreateNewWorld)this.Gui).saveSlot, ((GuiCreateNewWorld)this.Gui).nameWorld.text, ((GuiCreateNewWorld)this.Gui).getSeed(), ((GuiCreateNewWorld)this.Gui).saveSettings);
+                this.ce.startNewSave(((GuiCreateNewWorld)this.Gui).saveSlot, ((GuiCreateNewWorld)this.Gui).nameWorld.text, ((GuiCreateNewWorld)this.Gui).getSeed(), ((GuiCreateNewWorld)this.Gui).saveSettings);
             }
             case RENAME_WORLD -> {
                 File saveFolder = new File(this.ce.launcherDirectory + "/saves/save" + ((GuiRenameWorld)this.Gui).saveSlot);
@@ -536,6 +545,9 @@ public class Button {
             }
             case COMMAND_LIST -> {
                 this.ce.setNewGui(new GuiCommandList(this.ce));
+            }
+            case BLOCK_TOOLTIPS -> {
+                GameSettings.blockTooltips = !GameSettings.blockTooltips;
             }
         }
         GameSettings.saveOptions();
@@ -705,6 +717,15 @@ public class Button {
             case KEY_DROP -> {
                 string = "Drop: " + GameSettings.dropKey.key;
             }
+            case KEY_SIT -> {
+                string = "Sit: " + GameSettings.sitKey.key;
+            }
+            case KEY_SHIFT -> {
+                string = "Crouch: " + GameSettings.shiftKey.key;
+            }
+            case KEY_SPRINT -> {
+                string = "Sprint: " + GameSettings.sprintKey.key;
+            }
             case BACK_TO_GAME -> {
                 string = "Back To Game";
             }
@@ -866,6 +887,9 @@ public class Button {
             }
             case COMMAND_LIST -> {
                 string = "Command List";
+            }
+            case BLOCK_TOOLTIPS -> {
+                string = "Block Tooltips: " + GameSettings.blockTooltips;
             }
 
             default -> string = "";

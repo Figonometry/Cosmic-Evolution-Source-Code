@@ -1,7 +1,7 @@
 package spacegame.item;
 
 import spacegame.core.CosmicEvolution;
-import spacegame.core.MouseListener;
+import spacegame.core.eventlisteners.MouseListener;
 import spacegame.entity.EntityPlayer;
 import spacegame.gui.GuiInGame;
 import spacegame.world.World;

@@ -18,6 +18,7 @@ import spacegame.render.model.ModelLoader;
 import spacegame.util.MathUtil;
 import spacegame.world.Chunk;
 import spacegame.world.blockstate.InWorldCraftingItem;
+import spacegame.world.blockstate.MultiState;
 
 import java.util.ArrayList;
 
@@ -132,7 +133,7 @@ public final class GuiCraftingTableRecipeSelection extends GuiCrafting {
         if(recipeSelector != null){
             if(recipeSelector.meetsCriteriaToMakeRecipe(CosmicEvolution.instance.save.thePlayer) &&  !(Block.list[this.ce.save.activeWorld.getBlockID(this.x, this.y + 1, this.z)] instanceof BlockCraftingTable)){
                 this.ce.save.activeWorld.setBlockWithNotify(this.x, this.y + 1, this.z, Block.craftingItem.ID, false);
-                this.ce.save.activeWorld.addInWorldCraftingItem(this.x, this.y + 1, this.z,  new InWorldCraftingItem(CraftingBlockRecipes.getRecipeFromOutputItem(recipeSelector.itemID), Chunk.getBlockIndexFromCoordinates(this.x, this.y + 1, this.z), this.ce.save.activeWorld.findChunkFromChunkCoordinates(this.x >> 5, (this.y + 1) >> 5, this.z >> 5)));
+                this.ce.save.activeWorld.addBlockState(this.x, this.y + 1, this.z, MultiState.CRAFTING_ITEM_STATE, new InWorldCraftingItem(CraftingBlockRecipes.getRecipeFromOutputItem(recipeSelector.itemID), Chunk.getBlockIndexFromCoordinates(this.x, this.y + 1, this.z), this.ce.save.activeWorld.findChunkFromChunkCoordinates(this.x >> 5, (this.y + 1) >> 5, this.z >> 5)));
                 GLFW.glfwSetInputMode(CosmicEvolution.instance.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
                 CosmicEvolution.instance.setNewGui(new GuiInGame(CosmicEvolution.instance));
             }

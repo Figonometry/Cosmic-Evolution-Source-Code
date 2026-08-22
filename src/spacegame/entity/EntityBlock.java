@@ -4,6 +4,7 @@ import spacegame.block.Block;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.Sound;
 import spacegame.item.Item;
+import spacegame.item.itemstate.ItemState;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.render.RenderEntityItem;
 import spacegame.util.MathUtil;
@@ -19,6 +20,7 @@ public final class EntityBlock extends EntityNonLiving {
     public AxisAlignedBB lowerBlock = new AxisAlignedBB();
     public int pickupTimer = 0;
     public byte count;
+    public ItemState itemState;
     public EntityBlock(double x, double y, double z, short block, byte count){
         this.x = x;
         this.y = y;
@@ -35,6 +37,23 @@ public final class EntityBlock extends EntityNonLiving {
         this.yaw = CosmicEvolution.globalRand.nextInt(360);
     }
 
+    public EntityBlock(double x, double y, double z, short block, byte count, ItemState itemState){
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.width = 0.125F;
+        this.height = 0.125F;
+        this.depth = 0.125f;
+        this.entityModel = Entity.standardBlock.copyModel();
+        this.entityModel.scaleModel(0.125f);
+        this.block = block;
+        this.speed = 0.1;
+        this.count = count;
+        this.despawnTime = CosmicEvolution.instance.save.time + 54000;
+        this.yaw = CosmicEvolution.globalRand.nextInt(360);
+        this.itemState = itemState;
+    }
+
 
     private void setEntityState(){
         this.boundingBox.adjustEntityBoundingBox(this.x, this.y, this.z, this.width, this.height, this.depth);
@@ -47,7 +66,7 @@ public final class EntityBlock extends EntityNonLiving {
         this.boundingBox.scale(0.5);
         if(CosmicEvolution.instance.save.thePlayer.boundingBox != null) {
             if (this.boundingBox.clip(CosmicEvolution.instance.save.thePlayer.boundingBox) && this.pickupTimer >= 60) {
-                if (CosmicEvolution.instance.save.thePlayer.addItemToInventory(Item.block.ID, this.block, this.count, Item.NULL_ITEM_DURABILITY, 0, null)) {
+                if (CosmicEvolution.instance.save.thePlayer.addItemToInventory(Item.block.ID, this.block, this.count, Item.NULL_ITEM_DURABILITY, 0, this.itemState)) {
                     CosmicEvolution.instance.soundPlayer.playSound(this.x, this.y, this.z, new Sound(Sound.itemPickup, false, 1f), new Random().nextFloat(1.5F, 1.9F));
                     this.despawn = true;
                 }
@@ -95,7 +114,7 @@ public final class EntityBlock extends EntityNonLiving {
 
     @Override
     public void render() {
-        new RenderEntityItem(this.x, this.y, this.z, this.entityModel, true, true, Item.block.ID, this.block, this.height, this.width, this.yaw, 0).renderEntity();
+        new RenderEntityItem(this.x, this.y, this.z, this.entityModel, true, true, Item.block.ID, this.block, this.height, this.width, this.yaw, 0, false).renderEntity();
         if(Block.list[CosmicEvolution.instance.save.activeWorld.getBlockID(MathUtil.floorDouble(this.x), MathUtil.floorDouble(this.y - 0.1), MathUtil.floorDouble(this.z))].isSolid) {
             this.renderShadow();
         }
@@ -103,7 +122,7 @@ public final class EntityBlock extends EntityNonLiving {
 
     @Override
     public void renderForShadowMap(int sunX, int sunY, int sunZ){
-        new RenderEntityItem(this.x, this.y, this.z, this.entityModel, true, true, Item.block.ID, this.block, this.height, this.width, this.yaw, 0).renderBlockForShadowMap(sunX,sunY,sunZ);
+        new RenderEntityItem(this.x, this.y, this.z, this.entityModel, true, true, Item.block.ID, this.block, this.height, this.width, this.yaw, 0, false).renderBlockForShadowMap(sunX,sunY,sunZ);
     }
 
     @Override

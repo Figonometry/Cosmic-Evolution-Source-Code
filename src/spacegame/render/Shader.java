@@ -25,7 +25,8 @@ public final class Shader {
     public static Shader worldShader2DTexture;
     public static Shader worldShader2DTextureWithAtlas;
     public static Shader worldShaderCubeMapTexture;
-    public static Shader worldSkybox;
+    public static Shader worldSkyboxInner;
+    public static Shader worldSkyboxOuter;
     public static Shader universeShaderCubeMapTexture;
     public static Shader universeShader2DTexture;
     public static Shader universeSkybox;
@@ -36,6 +37,7 @@ public final class Shader {
     public static Shader shadowMapShaderTerrain;
     public static Shader shadowMapShaderTexture2D;
     public static Shader shadowMapShaderTextureArray;
+    public static Shader toolTipShader;
 
 
     public static void loadShaders(){
@@ -43,7 +45,8 @@ public final class Shader {
        worldShader2DTexture = new Shader("src/spacegame/assets/shader/world2DTexture.glsl");
        worldShader2DTextureWithAtlas = new Shader("src/spacegame/assets/shader/world2DTextureWithAtlas.glsl");
        worldShaderCubeMapTexture = new Shader("src/spacegame/assets/shader/worldCubeMapTexture.glsl");
-       worldSkybox = new Shader("src/spacegame/assets/shader/worldSkybox.glsl");
+       worldSkyboxInner = new Shader("src/spacegame/assets/shader/worldSkyboxInner.glsl");
+       worldSkyboxOuter = new Shader("src/spacegame/assets/shader/worldSkyboxOuter.glsl");
        universeShaderCubeMapTexture = new Shader("src/spacegame/assets/shader/universeCubeMapTexture.glsl");
        universeShader2DTexture = new Shader("src/spacegame/assets/shader/universe2DTexture.glsl");
        universeSkybox = new Shader("src/spacegame/assets/shader/universeSkybox.glsl");
@@ -54,6 +57,7 @@ public final class Shader {
        shadowMapShaderTerrain = new Shader("src/spacegame/assets/shader/shadowMapTerrain.glsl");
        shadowMapShaderTexture2D = new Shader("src/spacegame/assets/shader/shadowMapTexture2D.glsl");
        shadowMapShaderTextureArray = new Shader("src/spacegame/assets/shader/shadowMapTextureArray.glsl");
+       toolTipShader = new Shader("src/spacegame/assets/shader/toolTipShader.glsl");
     }
 
 
@@ -62,7 +66,7 @@ public final class Shader {
         CosmicEvolution.instance.renderEngine.reloadShader(worldShader2DTexture);
         CosmicEvolution.instance.renderEngine.reloadShader(worldShader2DTextureWithAtlas);
         CosmicEvolution.instance.renderEngine.reloadShader(worldShaderCubeMapTexture);
-        CosmicEvolution.instance.renderEngine.reloadShader(worldSkybox);
+        CosmicEvolution.instance.renderEngine.reloadShader(worldSkyboxInner);
         CosmicEvolution.instance.renderEngine.reloadShader(universeShaderCubeMapTexture);
         CosmicEvolution.instance.renderEngine.reloadShader(universeShader2DTexture);
         CosmicEvolution.instance.renderEngine.reloadShader(universeSkybox);
@@ -72,6 +76,7 @@ public final class Shader {
         CosmicEvolution.instance.renderEngine.reloadShader(terrainShader);
         CosmicEvolution.instance.renderEngine.reloadShader(shadowMapShaderTerrain);
         CosmicEvolution.instance.renderEngine.reloadShader(shadowMapShaderTexture2D);
+        CosmicEvolution.instance.renderEngine.reloadShader(toolTipShader);
     }
 
     public Shader(String filepath) {

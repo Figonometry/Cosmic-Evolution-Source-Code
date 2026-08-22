@@ -8,26 +8,29 @@ import spacegame.block.*;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
 import spacegame.core.Timer;
-import spacegame.entity.EntityPlayer;
+import spacegame.core.eventlisteners.MouseListener;
+import spacegame.entity.*;
 import spacegame.entity.animations.PlayerAnimationThrustingSpear;
 import spacegame.entity.animations.PlayerAnimationThrustingSpearHold;
 import spacegame.entity.animations.PlayerAnimationTillingSoil;
 import spacegame.item.Item;
 import spacegame.item.ItemHoe;
+import spacegame.item.ItemSeed;
 import spacegame.item.ItemSpear;
 import spacegame.render.*;
 import spacegame.render.model.ModelFace;
 import spacegame.render.model.ModelLoader;
 import spacegame.render.model.ModelPlayer;
 import spacegame.render.model.ModelSegment;
+import spacegame.render.texturelists.MouseAndKeyIconTextureList;
 import spacegame.util.MathUtil;
 import spacegame.world.AxisAlignedBB;
 import spacegame.world.Chunk;
-import spacegame.world.blockstate.InWorld3DCraftingItem;
-import spacegame.world.blockstate.InWorldCraftingItem;
-import spacegame.world.blockstate.TimeUpdateEvent;
+import spacegame.world.World;
+import spacegame.world.blockstate.*;
 
 import java.lang.Math;
+import java.util.ArrayList;
 import java.util.Random;
 
 public final class GuiInGame extends Gui {
@@ -80,7 +83,7 @@ public final class GuiInGame extends Gui {
 
     }
 
-    public static void renderText(){
+    public static void renderDebugText(){
         int leftSide = -970;
         FontRenderer fontRenderer = FontRenderer.instance;
         if(GameSettings.showFPS) {
@@ -119,8 +122,9 @@ public final class GuiInGame extends Gui {
     @Override
     public void drawGui() {
         GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
-        renderText();
+        renderDebugText();
         renderCrosshair();
+        renderBlockAndEntityToolTip();
         renderVignette();
         renderHeldItem();
         renderBlockLookingAtName();
@@ -130,7 +134,7 @@ public final class GuiInGame extends Gui {
     }
 
     public static void renderGuiFromOtherGuis(){
-        renderText();
+        renderDebugText();
         renderVignette();
         renderHeldItem();
         renderBlockLookingAtName();
@@ -273,7 +277,7 @@ public final class GuiInGame extends Gui {
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
         int[] blockCoordinates = CosmicEvolution.instance.save.thePlayer.getPlayerLookingAtBlockCoords();
-        if(Block.list[blockID] instanceof ITimeUpdate && !(Block.list[blockID] instanceof BlockTorch) && !(Block.list[blockID] instanceof BlockSoil && !(Block.list[blockID] instanceof BlockCrop))) {
+        if(Block.list[blockID] instanceof ITimeUpdate && !(Block.list[blockID] instanceof BlockTorch) && !(Block.list[blockID] instanceof BlockTilledSoil && !(Block.list[blockID] instanceof BlockCrop))) {
             StringBuilder stringBuilder = new StringBuilder();
             TimeUpdateEvent updateEvent = CosmicEvolution.instance.save.activeWorld.getTimeEvent(blockCoordinates[0], blockCoordinates[1], blockCoordinates[2]);
             if(updateEvent != null) {
@@ -282,7 +286,7 @@ public final class GuiInGame extends Gui {
                 long hoursUntil = (timeUntil % Timer.GAME_DAY) / Timer.GAME_HOUR;
                 long minutesUntil = (timeUntil % Timer.GAME_HOUR) / Timer.GAME_MINUTE;
 
-                stringBuilder.append(((ITimeUpdate) Block.list[blockID]).getDisplayStringText());
+                stringBuilder.append(((ITimeUpdate) Block.list[blockID]).getDisplayStringText(blockCoordinates[0], blockCoordinates[1], blockCoordinates[2], CosmicEvolution.instance.save.activeWorld));
                 if (daysUntil != 0) {
                     stringBuilder.append(daysUntil).append(daysUntil != 1 ? " Days " : " Day ");
                 }
@@ -337,7 +341,7 @@ public final class GuiInGame extends Gui {
         GL46.glEnable(GL46.GL_BLEND);
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
 
-        InWorldCraftingItem craftingItem = CosmicEvolution.instance.save.activeWorld.getInWorldCraftingItem(bx, by, bz);
+        InWorldCraftingItem craftingItem = (InWorldCraftingItem) CosmicEvolution.instance.save.activeWorld.getBlockState(bx, by, bz, MultiState.CRAFTING_ITEM_STATE);
         if(craftingItem == null)return;
 
         tessellator.toggleOrtho();
@@ -425,7 +429,7 @@ public final class GuiInGame extends Gui {
             if(!craftingItem.itemsFilled[i] && craftingItem.outputRecipe.requiredItems[i] == Item.block.ID) {
                 y -= 30;
 
-                ModelLoader model = Block.list[craftingItem.outputRecipe.requiredItemMetadata[i]].blockModel.copyModel();
+                ModelLoader model = Block.list[craftingItem.outputRecipe.requiredItemMetadata[i]].getBlockModel(0,0,0, CosmicEvolution.instance.save.activeWorld).copyModel();
                 model.translateModel(-0.5f, 0, -0.5f);
                 model.scaleModel(76f);
                 model.rotateModel(45, 0, 1, 0);
@@ -729,7 +733,7 @@ public final class GuiInGame extends Gui {
                 float x = 3f;
                 float y = -2.5f;
                 float z = -3f;
-                if(heldBlock == Block.itemStone.ID || heldBlock == Block.itemClay.ID || heldBlock == Block.treeSeed.ID || heldBlock == Block.berrySeed.ID || heldBlock == Block.reedSeed.ID){
+                if(Block.list[heldBlock] instanceof BlockItemStone || heldBlock == Block.itemClay.ID || heldBlock == Block.treeSeed.ID || heldBlock == Block.berryBush.ID || heldBlock == Block.reedLower.ID){
                     y += 0.5f;
                 }
                 if(heldBlock == Block.itemStick.ID){
@@ -737,8 +741,8 @@ public final class GuiInGame extends Gui {
                     y += 0.5f;
                 }
                 if(GameSettings.viewBob) {
-                    x -= 0.5f * ((MathUtil.sin((float) (((player.viewBobTimer / 60f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
-                    y -= 0.25f * ((MathUtil.sin((float) (((player.viewBobTimer / 60f) - 0.125f) * (Math.PI * 4f))) * 0.5) + 0.5f);
+                    x -= 0.5f * ((MathUtil.sin((float) (((player.viewBobTimer /(player.sprinting ? 30f : 60f)) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
+                    y -= 0.25f * ((MathUtil.sin((float) (((player.viewBobTimer / (player.sprinting ? 30f : 60f)) - 0.125f) * (Math.PI * 4f))) * 0.5) + 0.5f);
                 }
                 z -= 1f * ((MathUtil.sin((float) ((((float)player.swingTimer / (float)player.maxSwingTimer) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
                 Vector3f position = new Vector3f(x,y,z);
@@ -758,15 +762,15 @@ public final class GuiInGame extends Gui {
                     lightLevelFloat = 0.1f;
                 }
                 int channelVal = MathUtil.floatToIntRGBA(lightLevelFloat);
-                if(heldBlock == Block.torchStandard.ID){
+                if(heldBlock == Block.torch.ID){
                     channelVal = 255;
                 }
                 int colorRGB = channelVal << 16 | channelVal << 8 | channelVal;
 
                 RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
-                ModelLoader model = Block.list[heldBlock].blockModel.copyModel();
+                ModelLoader model = Block.list[heldBlock].getBlockModel(0,0,0, CosmicEvolution.instance.save.activeWorld).copyModel();
                 model.translateModel(-0.5f, 0, -0.5f);
-                if(heldBlock == Block.itemStone.ID){
+                if(Block.list[heldBlock] instanceof BlockItemStone ){
                     model.translateModel(0.5f, 0, 0.5f);
                     model.scaleModel(2f);
                 }
@@ -852,8 +856,8 @@ public final class GuiInGame extends Gui {
                 float translateY = -1.25f;
                 float translateZ = -2f;
                 if (GameSettings.viewBob) {
-                    translateX -= 0.125f * ((MathUtil.sin((float) (((player.viewBobTimer / 60f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
-                    translateY -= 0.0625f * ((MathUtil.sin((float) (((player.viewBobTimer / 60f) - 0.125f) * (Math.PI * 4f))) * 0.5) + 0.5f);
+                    translateX -= 0.125f * ((MathUtil.sin((float) (((player.viewBobTimer / (player.sprinting ? 30f : 60f)) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
+                    translateY -= 0.0625f * ((MathUtil.sin((float) (((player.viewBobTimer / (player.sprinting ? 30f : 60f)) - 0.125f) * (Math.PI * 4f))) * 0.5) + 0.5f);
                 }
                 translateZ -= 1f * ((MathUtil.sin((float) ((((float)player.swingTimer / (float)player.maxSwingTimer) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
 
@@ -960,8 +964,8 @@ public final class GuiInGame extends Gui {
                 float y = -2f;
                 float z = -3f;
                 if(GameSettings.viewBob) {
-                    x -= 0.125f * ((MathUtil.sin((float) (((player.viewBobTimer / 60f) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
-                    y -= 0.0625f * ((MathUtil.sin((float) (((player.viewBobTimer / 60f) - 0.125f) * (Math.PI * 4f))) * 0.5) + 0.5f);
+                    x -= 0.125f * ((MathUtil.sin((float) (((player.viewBobTimer / (player.sprinting ? 30f : 60f)) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
+                    y -= 0.0625f * ((MathUtil.sin((float) (((player.viewBobTimer / (player.sprinting ? 30f : 60f)) - 0.125f) * (Math.PI * 4f))) * 0.5) + 0.5f);
                 }
                 if(player.playerAnimation == null) {
                     z -= 1f * ((MathUtil.sin((float) ((((float) player.swingTimer / (float) player.maxSwingTimer) + 0.75f) * (Math.PI * 2f))) * 0.5) + 0.5f);
@@ -1141,7 +1145,7 @@ public final class GuiInGame extends Gui {
             ModelLoader modelLoader;
             if (!CosmicEvolution.instance.save.activeWorld.paused) {
                 double[] rayCast = CosmicEvolution.camera.rayCast(3);
-                final double multiplier = 0.01;
+                final double multiplier = 0.005;
                 final double xDif = (rayCast[0] - CosmicEvolution.instance.save.thePlayer.x);
                 final double yDif = (rayCast[1] - (CosmicEvolution.instance.save.thePlayer.y + CosmicEvolution.instance.save.thePlayer.height/2));
                 final double zDif = (rayCast[2] - CosmicEvolution.instance.save.thePlayer.z);
@@ -1190,7 +1194,7 @@ public final class GuiInGame extends Gui {
                         if(textureID > 6){
                             textureID = 6;
                         }
-                        modelLoader = Block.list[block].blockModel;
+                        modelLoader = Block.list[block].getBlockModel(locationX,locationY,locationZ, chunk.parentWorld);
                         Random rand = new Random(Chunk.getBlockIndexFromCoordinates(locationX, locationY, locationZ));
                         float rotation = rand.nextFloat((float) 0, (float) (2 * Math.PI));
                         float stickScale = 0;
@@ -1201,10 +1205,10 @@ public final class GuiInGame extends Gui {
                         float translateZ = rand.nextFloat(0.25f, 0.75f);
                         Vector3f offset = new Vector3f(translateX, 0f, translateZ);
 
-                        if(Block.list[block].ID == Block.doorPrimitiveUpper.ID || (block >= Block.doorNorthDoorHingeLeftClosed.ID && block <= Block.doorWestDoorHingeRightOpen.ID)){
-                            short lowerBlock = Block.list[block].ID == Block.doorPrimitiveUpper.ID ?  CosmicEvolution.instance.save.activeWorld.getBlockID(locationX, locationY - 1, locationZ) : block;
-                           ModelLoader baseModel = (block >= Block.doorNorthDoorHingeLeftClosed.ID && block <= Block.doorWestDoorHingeRightOpen.ID) ? Block.primitiveDoorLower : modelLoader;
-                           handleDoorModel(modelLoader, lowerBlock, baseModel);
+                        if(block == Block.doorPrimitiveUpper.ID || block == Block.doorPrimitiveLower.ID){
+                            DoorState doorState = (DoorState) CosmicEvolution.instance.save.activeWorld.getBlockState(locationX,  block == Block.doorPrimitiveUpper.ID ? locationY - 1 : locationY, locationZ, MultiState.DOOR_STATE);
+                            ModelLoader baseModel = block == Block.doorPrimitiveLower.ID ? BlockModelList.primitiveDoorLower : modelLoader;
+                            handleDoorModel(modelLoader, doorState, baseModel);
                         }
 
 
@@ -1212,8 +1216,8 @@ public final class GuiInGame extends Gui {
 
                             ModelFace modelFace = modelLoader.modelFaces[i];
 
-                            if(Block.list[block].ID == Block.itemStone.ID){
-                                modelFace = Block.list[block].blockModel.copyModel().modelFaces[i];
+                            if(Block.list[block] instanceof BlockItemStone){
+                                modelFace = Block.list[block].getBlockModel(locationX,locationY,locationZ, chunk.parentWorld).copyModel().modelFaces[i];
                                 for(int j = 0; j < modelFace.vertices.length; j++){
                                     modelFace.vertices[j].rotateY(rotation);
                                 }
@@ -1223,7 +1227,7 @@ public final class GuiInGame extends Gui {
                             }
 
                             if(Block.list[block].ID == Block.itemStick.ID){
-                                ModelLoader model =  Block.list[block].blockModel.copyModel();
+                                ModelLoader model =  Block.list[block].getBlockModel(locationX,locationY,locationZ, chunk.parentWorld).copyModel();
                                 model.scaleModel(stickScale);
                                 modelFace = model.modelFaces[i];
                                 modelFace.normal.rotateY(rotation);
@@ -1259,15 +1263,14 @@ public final class GuiInGame extends Gui {
         }
     }
 
-    private static void handleDoorModel(ModelLoader modelLoader, short lowerBlock, ModelLoader baseModel){
-        boolean doorOpen = Block.list[lowerBlock].isDoorOpen;
-        switch (Block.list[lowerBlock].faceDirection){
-            case "North" -> {
-                if(doorOpen && lowerBlock == Block.doorNorthDoorHingeLeftOpen.ID){
+    private static void handleDoorModel(ModelLoader modelLoader, DoorState doorState, ModelLoader baseModel){
+        switch (doorState.facingDirection){
+            case DoorState.FACE_DIRECTION_NORTH -> {
+                if(doorState.isOpen && doorState.hingeLeft){
                     modelLoader = baseModel.copyModel();
                     modelLoader.rotateModel(270, 0, 1, 0);
                     modelLoader.translateModel(0.5f, 0, 0.9375f);
-                } else if(doorOpen && lowerBlock == Block.doorNorthDoorHingeRightOpen.ID){
+                } else if(doorState.isOpen && doorState.hingeRight){
                     modelLoader = baseModel.copyModel();
                     modelLoader.rotateModel(90, 0, 1, 0);
                     modelLoader.translateModel(0.5f, 0, 0.0625f);
@@ -1276,12 +1279,12 @@ public final class GuiInGame extends Gui {
                     modelLoader.translateModel(0.0625f, 0, 0.5f);
                 }
             }
-            case "South" -> {
-                if(doorOpen && lowerBlock == Block.doorSouthDoorHingeLeftOpen.ID){
+            case DoorState.FACE_DIRECTION_SOUTH -> {
+                if(doorState.isOpen && doorState.hingeLeft){
                     modelLoader = baseModel.copyModel();
                     modelLoader.rotateModel(90, 0, 1, 0);
                     modelLoader.translateModel(0.5f, 0, 0.0625f);
-                } else if(doorOpen && lowerBlock == Block.doorSouthDoorHingeRightOpen.ID){
+                } else if(doorState.isOpen && doorState.hingeRight){
                     modelLoader = baseModel.copyModel();
                     modelLoader.rotateModel(270, 0, 1, 0);
                     modelLoader.translateModel(0.5f, 0, 0.9375f);
@@ -1291,12 +1294,12 @@ public final class GuiInGame extends Gui {
                     modelLoader.translateModel(0.9375f, 0, 0.5f);
                 }
             }
-            case "East" -> {
-                if(doorOpen && lowerBlock == Block.doorEastDoorHingeLeftOpen.ID){
+            case DoorState.FACE_DIRECTION_EAST -> {
+                if(doorState.isOpen && doorState.hingeLeft){
                     modelLoader = baseModel.copyModel();
                     modelLoader.rotateModel(180, 0, 1, 0);
                     modelLoader.translateModel(0.0625f, 0, 0.5f);
-                } else if(doorOpen && lowerBlock == Block.doorEastDoorHingeRightOpen.ID){
+                } else if(doorState.isOpen && doorState.hingeRight){
                     modelLoader = baseModel.copyModel();
                     modelLoader.translateModel(0.9375f, 0, 0.5f);
                 } else {
@@ -1305,11 +1308,11 @@ public final class GuiInGame extends Gui {
                     modelLoader.translateModel(0.5f, 0, 0.0625f);
                 }
             }
-            case "West" -> {
-                if(doorOpen && lowerBlock == Block.doorWestDoorHingeLeftOpen.ID){
+            case DoorState.FACE_DIRECTION_WEST -> {
+                if(doorState.isOpen && doorState.hingeLeft){
                     modelLoader = baseModel.copyModel();
                     modelLoader.translateModel(0.9375f, 0, 0.5f);
-                } else if(doorOpen && lowerBlock == Block.doorWestDoorHingeRightOpen.ID){
+                } else if(doorState.isOpen && doorState.hingeRight){
                     modelLoader = baseModel.copyModel();
                     modelLoader.rotateModel(180, 0, 1, 0);
                     modelLoader.translateModel(0.0625f, 0, 0.5f);
@@ -1342,7 +1345,7 @@ public final class GuiInGame extends Gui {
         ModelLoader modelLoader;
         if (!CosmicEvolution.instance.save.activeWorld.paused) {
             double[] rayCast = CosmicEvolution.camera.rayCast(3);
-            final double multiplier = 0.01;
+            final double multiplier = 0.005;
             final double xDif = (rayCast[0] - CosmicEvolution.instance.save.thePlayer.x);
             final double yDif = (rayCast[1] - (CosmicEvolution.instance.save.thePlayer.y + CosmicEvolution.instance.save.thePlayer.height/2));
             final double zDif = (rayCast[2] - CosmicEvolution.instance.save.thePlayer.z);
@@ -1391,7 +1394,7 @@ public final class GuiInGame extends Gui {
                     Vector3f chunkOffset = new Vector3f(xOffset, yOffset, zOffset);
                     Shader.worldShader2DTexture.uploadVec3f("chunkOffset", chunkOffset);
                     Shader.worldShader2DTexture.uploadBoolean("compressTest", true);
-                    modelLoader = Block.list[block].blockModel;
+                    modelLoader = Block.list[block].getBlockModel(locationX,locationY,locationZ, chunk.parentWorld);
                     Random rand = new Random(Chunk.getBlockIndexFromCoordinates(locationX, locationY, locationZ));
                     float rotation = rand.nextFloat((float) 0, (float) (2 * Math.PI));
                     float stickScale = 0;
@@ -1402,18 +1405,18 @@ public final class GuiInGame extends Gui {
                     float translateZ = rand.nextFloat(0.25f, 0.75f);
                     Vector3f offset = new Vector3f(translateX, 0f, translateZ);
 
-                    if(Block.list[block].ID == Block.doorPrimitiveUpper.ID || (block >= Block.doorNorthDoorHingeLeftClosed.ID && block <= Block.doorWestDoorHingeRightOpen.ID)){
-                        short lowerBlock = Block.list[block].ID == Block.doorPrimitiveUpper.ID ?  CosmicEvolution.instance.save.activeWorld.getBlockID(locationX, locationY - 1, locationZ) : block;
-                        ModelLoader baseModel = (block >= Block.doorNorthDoorHingeLeftClosed.ID && block <= Block.doorWestDoorHingeRightOpen.ID) ? Block.primitiveDoorLower : modelLoader;
-                        handleDoorModel(modelLoader, lowerBlock, baseModel);
+                    if(block == Block.doorPrimitiveUpper.ID || block == Block.doorPrimitiveLower.ID){
+                        DoorState doorState = (DoorState) CosmicEvolution.instance.save.activeWorld.getBlockState(locationX,  block == Block.doorPrimitiveUpper.ID ? locationY - 1 : locationY, locationZ, MultiState.DOOR_STATE);
+                        ModelLoader baseModel = block == Block.doorPrimitiveLower.ID ? BlockModelList.primitiveDoorLower : modelLoader;
+                        handleDoorModel(modelLoader, doorState, baseModel);
                     }
 
 
                     for(int i = 0; i < modelLoader.modelFaces.length; i++){
                         ModelFace modelFace = modelLoader.modelFaces[i];
 
-                        if(Block.list[block].ID == Block.itemStone.ID){
-                            modelFace = Block.list[block].blockModel.copyModel().modelFaces[i];
+                        if(Block.list[block] instanceof BlockItemStone){
+                            modelFace = Block.list[block].getBlockModel(locationX,locationY,locationZ,chunk.parentWorld).copyModel().modelFaces[i];
                             for(int j = 0; j < modelFace.vertices.length; j++){
                                 modelFace.vertices[j].rotateY(rotation);
                             }
@@ -1423,7 +1426,7 @@ public final class GuiInGame extends Gui {
                         }
 
                         if(Block.list[block].ID == Block.itemStick.ID){
-                            ModelLoader model = Block.list[block].blockModel.copyModel();
+                            ModelLoader model = Block.list[block].getBlockModel(locationX,locationY,locationZ,chunk.parentWorld).copyModel();
                             model.scaleModel(stickScale);
                             modelFace = model.modelFaces[i];
                             modelFace.normal.rotateY(rotation);
@@ -1462,8 +1465,83 @@ public final class GuiInGame extends Gui {
         }
     }
 
+
+    private static Entity hasHitEntity(double x, double y, double z){
+        World world = CosmicEvolution.instance.save.activeWorld;
+
+        int chunkX = MathUtil.floorDouble(x) >> 5;
+        int chunkY = MathUtil.floorDouble(y) >> 5;
+        int chunkZ = MathUtil.floorDouble(z) >> 5;
+
+        ArrayList<Entity> entities = world.getEntitiesInChunks(world.getSurroundingChunksAndCurrentChunk(chunkX, chunkY, chunkZ));
+
+        for(int i = 0; i < entities.size(); i++){
+            if(entities.get(i) instanceof EntityLiving){
+                if(((EntityLiving) entities.get(i)).isDead){
+                    if(entities.get(i).boundingBox.pointInsideBoundingBox(x,y,z)) { //This determines if you hit an entity
+                        return entities.get(i);
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    private static void renderBlockAndEntityToolTip(){
+        int locationX = Integer.MIN_VALUE;
+        int locationY = Integer.MIN_VALUE;
+        int locationZ = Integer.MIN_VALUE;
+        short block = Short.MIN_VALUE;
+        if (!CosmicEvolution.instance.save.activeWorld.paused) {
+            double[] rayCast = CosmicEvolution.camera.rayCast(3);
+            final double multiplier = 0.01;
+            final double xDif = (rayCast[0] - CosmicEvolution.instance.save.thePlayer.x);
+            final double yDif = (rayCast[1] - (CosmicEvolution.instance.save.thePlayer.y + CosmicEvolution.instance.save.thePlayer.height/2));
+            final double zDif = (rayCast[2] - CosmicEvolution.instance.save.thePlayer.z);
+
+            int blockX = 0;
+            int blockY = 0;
+            int blockZ = 0;
+            for (int loopPass = 0; loopPass < 300; loopPass++) {
+
+                double cx = CosmicEvolution.instance.save.thePlayer.x + xDif * multiplier * loopPass;
+                double cy = CosmicEvolution.instance.save.thePlayer.y  + CosmicEvolution.instance.save.thePlayer.height/2 + yDif * multiplier * loopPass;
+                double cz = CosmicEvolution.instance.save.thePlayer.z + zDif * multiplier * loopPass;
+
+                Entity entity = hasHitEntity(cx, cy, cz);
+                if(entity instanceof EntityLiving){
+                    renderEntityTooltip((EntityLiving) entity);
+                }
+
+                blockX = MathUtil.floorDouble(cx);
+                blockY = MathUtil.floorDouble(cy);
+                blockZ = MathUtil.floorDouble(cz);
+
+                Block checkedBlock = Block.list[CosmicEvolution.instance.save.activeWorld.getBlockID(blockX, blockY, blockZ)];
+
+
+                if (isBlockVisible(blockX, blockY, blockZ) && intersectsBlockBoundingBox(checkedBlock, cx, cy, cz)) {
+                    if(checkedBlock.ID != Block.air.ID && !(checkedBlock instanceof BlockWater)){
+                        locationX = blockX;
+                        locationY = blockY;
+                        locationZ = blockZ;
+                        block = CosmicEvolution.instance.save.activeWorld.getBlockID(blockX, blockY, blockZ);
+                        break;
+                    }
+                }
+            }
+
+            if(locationX != Integer.MIN_VALUE && locationY != Integer.MIN_VALUE && locationZ != Integer.MIN_VALUE && block != Short.MIN_VALUE){
+                Chunk chunk = CosmicEvolution.instance.save.activeWorld.chunkController.findChunkFromChunkCoordinates(locationX >> 5, locationY >> 5, locationZ >> 5);
+                if(chunk != null) {
+                    renderBlockTooltip(locationX, locationY, locationZ, chunk);
+                }
+            }
+
+        }
+    }
+
     private static void renderCraftingItemOutlines(int x, int y, int z){
-        InWorldCraftingItem craftingItem = CosmicEvolution.instance.save.activeWorld.getInWorldCraftingItem(x,y,z);
+        InWorldCraftingItem craftingItem = (InWorldCraftingItem) CosmicEvolution.instance.save.activeWorld.getBlockState(x,y,z, MultiState.CRAFTING_ITEM_STATE);
 
         if(craftingItem == null)return;
 
@@ -1485,7 +1563,7 @@ public final class GuiInGame extends Gui {
             ModelLoader model;
 
             if(craftingItem.outputRecipe.requiredItems[i] == Item.block.ID){
-                model = Block.list[craftingItem.outputRecipe.requiredItemMetadata[i]].blockModel.copyModel();
+                model = Block.list[craftingItem.outputRecipe.requiredItemMetadata[i]].getBlockModel(0,0,0, CosmicEvolution.instance.save.activeWorld).copyModel();
             } else {
                 model = Item.list[craftingItem.outputRecipe.requiredItems[i]].itemModel.copyModel();
             }
@@ -1692,7 +1770,7 @@ public final class GuiInGame extends Gui {
         int green = 5947183;
         int blue = 52735;
         int index = Chunk.getBlockIndexFromCoordinates(x,y,z);
-        InWorld3DCraftingItem craftingBlock = chunk.getInWorldCrafting3DItem(index);
+        InWorld3DCraftingItem craftingBlock = (InWorld3DCraftingItem) chunk.getBlockState(index, MultiState.CRAFTING_3D_ITEM_STATE);
         if(craftingBlock == null)return;
         RenderEngine.WorldTessellator tessellator = RenderEngine.WorldTessellator.instance;
 
@@ -1712,7 +1790,7 @@ public final class GuiInGame extends Gui {
 
             translationVector.x = ((i % 12) * 0.0625f) + 0.125f;
             translationVector.z = ((i / 12) * 0.0625f) + 0.125f;
-            blockModel = Block.crafting3DItemVoxelModel.copyModel();
+            blockModel = BlockModelList.crafting3DItemVoxelModel.copyModel();
             blockModel.translateModel(translationVector.x, translationVector.y, translationVector.z);
             for(int face = 0; face < 6; face++) {
                 modelFace = blockModel.getModelFace(face);
@@ -1729,6 +1807,515 @@ public final class GuiInGame extends Gui {
         tessellator.drawTexture2D(subVoxelOutline, Shader.worldShader2DTexture, CosmicEvolution.camera);
         GL46.glDisable(GL46.GL_POLYGON_OFFSET_FILL);
         GL46.glDisable(GL46.GL_CULL_FACE);
+    }
+
+    private static void renderEntityTooltip(EntityLiving entityLiving){
+        if(!GameSettings.blockTooltips)return;
+        //Attempt to grab ToolTip array, if null exit function
+
+        ToolTipGroup[] toolTips = entityLiving.getToolTip();
+        if(toolTips == null)return;
+
+        //Transform world coordinates to chunk local coordinate range of 0-31
+
+        //Get the center point of the block, utilize the AABB instead of the center of a full block
+        double xPos = MathUtil.positiveMod(entityLiving.x, 32);
+        double yPos = MathUtil.positiveMod(entityLiving.y, 32);
+        double zPos = MathUtil.positiveMod(entityLiving.z, 32);
+
+        Chunk chunk = CosmicEvolution.instance.save.activeWorld.findChunkFromChunkCoordinates(MathUtil.floorDouble(entityLiving.x) >> 5, MathUtil.floorDouble(entityLiving.y) >> 5, MathUtil.floorDouble(entityLiving.z) >> 5);
+
+        Vector3d centerPoint = new Vector3d(xPos, yPos, zPos);
+
+        //Transform the centerpoint into screenspace coordinates utilizing the same pipeline the GPU uses
+        //This would normally be done with floats however the camera's matrices are doubles to handle precision issues when translating
+
+        //Calculate the chunk offset to transform into appropriate world coordinates relative to the camera
+        EntityPlayer player = CosmicEvolution.instance.save.thePlayer;
+        Camera camera = CosmicEvolution.camera;
+        int offsetX = (chunk.x - player.chunkX) << 5;
+        int offsetY = (chunk.y - player.chunkY) << 5;
+        int offsetZ = (chunk.z - player.chunkZ) << 5;
+        Vector3d chunkOffset = new Vector3d(offsetX, offsetY, offsetZ);
+
+
+        Vector3d worldPos = new Vector3d(centerPoint).add(chunkOffset);
+
+        //Transform world pos by the view matrix
+        Vector4d viewPos = new Vector4d(worldPos, 1.0f);
+        viewPos.mul(camera.viewMatrix);
+
+        //Transform viewPos by the projection matrix
+        Vector4d clipPos = new Vector4d(viewPos).mul(camera.projectionMatrix);
+
+        //Convert clip coordinates to normalized device coordinates
+        float ndcX = (float) (clipPos.x / clipPos.w);
+        float ndcY = (float) (clipPos.y / clipPos.w);
+        float ndcZ = (float) (clipPos.z / clipPos.w);
+
+        //Convert NDC to screen coordinates
+        //These variables are the screen width/height as they are what's assigned to the viewport, which translates to the framebuffers
+        float screenX = (ndcX * 0.5f + 0.5f) * CosmicEvolution.width;
+        float screenY = (ndcY * 0.5f + 0.5f) * CosmicEvolution.height;
+
+        screenX -= (CosmicEvolution.width/2f);
+        screenY -= (CosmicEvolution.height/2f);
+
+        //Assemble vertex data for all tooltips
+        //The top version will be rendered normally with a white color and second version will be rendered just behind it with a gray color, block and item models will not render twice
+        //This makes it easier on the eyes
+        RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
+        ToolTip toolTip;
+        float width;
+        float height = 50;
+        float x;
+        float y;
+        float z = -100;
+        int currentIndex;
+        float size;
+        int color = 16777215;
+        for(int i = 0; i < toolTips.length * 2; i++){
+            int previousImage = -1; //Start at an invalid value
+            currentIndex = i / 2;
+            toolTip = toolTips[currentIndex].getCurrentTooltip();
+            width = calculateToolTipLength(toolTip);
+            x = screenX - (width/2f);
+            y = screenY;
+
+
+            if((i & 1) == 1){ //Shift for secondary draw before moving to the next tooltip
+                x += 3;
+                y -= 3;
+                z -= 1;
+                color = 4210752; //Gray
+            }
+
+
+            final float noSpacing = 0f;
+            final float normalSpacing = 0.34f * 50;
+            final float doubleSpacing = normalSpacing * 4;
+            float spacing = normalSpacing;
+            for(int k = 0; k < toolTip.tooltip.size(); k++){
+                if(k == 0){
+                    previousImage = toolTip.tooltip.get(k);
+                    continue; //Skip the first index, there's nothing before it, assign variable
+                }
+
+
+                if((k & 1) == 0){ //Even index, therefore it's the image integer
+                    if(previousImage != toolTip.tooltip.get(k) && toolTip.tooltip.get(k) != ToolTip.TEXT_BOX_ATLAS){ //If the previousImage does not match the current one use double spacing, otherwise use normal spacing
+                        spacing = doubleSpacing;
+                        if(previousImage == ToolTip.TEXT_BOX_ATLAS){
+                            spacing = normalSpacing;
+                        }
+
+                        if(previousImage == ToolTip.TEXT_BOX_ATLAS && (toolTip.tooltip.get(k - 1) == MouseAndKeyIconTextureList.FULL_BOUND_BOX || toolTip.tooltip.get(k - 1) == MouseAndKeyIconTextureList.BOUND_BOX_RIGHT)){
+                            spacing = doubleSpacing;
+                        }
+
+                    } else if(toolTip.tooltip.get(k) != ToolTip.TEXT_BOX_ATLAS) { //use normal spacing unless it's using the textbox atlas, this will not advance the value since it draws over chars
+                        spacing = normalSpacing;
+                    } else { //Executes if the image is the text box atlas
+                        spacing = noSpacing;
+                    }
+                    previousImage = toolTip.tooltip.get(k); //Assign variable
+                } else {
+                    //Add vertex data and continue so there's no double assignment to the x value
+                    switch (previousImage){
+                        case ToolTip.FONT_ATLAS -> {
+                            size = 50f;
+                            int indexInTexture = toolTip.tooltip.get(k);
+                            tessellator.addVertexTooltipAtlas(color, x + size/2f, y - size/2f, z, 3, Assets.fontTextureAtlas.textures.get(indexInTexture), 0, previousImage);
+                            tessellator.addVertexTooltipAtlas(color, x - size/2f, y + size/2f, z, 1, Assets.fontTextureAtlas.textures.get(indexInTexture), 0, previousImage);
+                            tessellator.addVertexTooltipAtlas(color, x + size/2f, y + size/2f, z, 2, Assets.fontTextureAtlas.textures.get(indexInTexture), 0, previousImage);
+                            tessellator.addVertexTooltipAtlas(color, x - size/2f, y - size/2f, z, 0, Assets.fontTextureAtlas.textures.get(indexInTexture), 0, previousImage);
+                            tessellator.addElementsCW();
+                        }
+                        case ToolTip.TEXT_BOX_ATLAS -> {
+                            x -= spacing;
+                            size = 75f;
+                            int indexInTexture = toolTip.tooltip.get(k);
+                            tessellator.addVertexTooltipAtlas(color, x + size/2f, y - size/2f, z, 3, Assets.textBoxAtlas.textures.get(indexInTexture), 0, previousImage);
+                            tessellator.addVertexTooltipAtlas(color, x - size/2f, y + size/2f, z, 1, Assets.textBoxAtlas.textures.get(indexInTexture), 0, previousImage);
+                            tessellator.addVertexTooltipAtlas(color, x + size/2f, y + size/2f, z, 2, Assets.textBoxAtlas.textures.get(indexInTexture), 0, previousImage);
+                            tessellator.addVertexTooltipAtlas(color, x - size/2f, y - size/2f, z, 0, Assets.textBoxAtlas.textures.get(indexInTexture), 0, previousImage);
+                            tessellator.addElementsCW();
+                            x += spacing;
+                        }
+
+                        case ToolTip.BLOCK_ARRAY -> {
+                            if((i & 1) == 1)break; //Do not render the models twice
+                            int indexInTexture = toolTip.tooltip.get(k);
+                            renderBlockModelForTooltip(tessellator, x,y,z, indexInTexture, previousImage);
+                        }
+
+                        case ToolTip.ITEM_ARRAY -> {
+                            if((i & 1) == 1)break;
+                            int indexInTexture = toolTip.tooltip.get(k);
+                            renderItemModelForTooltip(tessellator,x,y,z, indexInTexture, previousImage);
+                        }
+
+                        case ToolTip.MOUSE_ICON_ATLAS -> {
+                            size = 75f;
+                            int indexInTexture = toolTip.tooltip.get(k);
+                            tessellator.addVertexTooltipAtlas(color, x + size/2f, y - size/2f, z, 3, Assets.mouseIconAtlas.textures.get(indexInTexture), 0, previousImage);
+                            tessellator.addVertexTooltipAtlas(color, x - size/2f, y + size/2f, z, 1, Assets.mouseIconAtlas.textures.get(indexInTexture), 0, previousImage);
+                            tessellator.addVertexTooltipAtlas(color, x + size/2f, y + size/2f, z, 2, Assets.mouseIconAtlas.textures.get(indexInTexture), 0, previousImage);
+                            tessellator.addVertexTooltipAtlas(color, x - size/2f, y - size/2f, z, 0, Assets.mouseIconAtlas.textures.get(indexInTexture), 0, previousImage);
+                            tessellator.addElementsCW();
+                        }
+                    }
+
+
+
+                    continue; //The advancement of the value only needs to be calculated once
+                }
+
+
+                x += spacing;
+            }
+        }
+
+        //draw
+        GL46.glEnable(GL46.GL_BLEND);
+        GL46.glBlendFunc(GL46.GL_SRC_ALPHA, GL46.GL_ONE_MINUS_SRC_ALPHA);
+        tessellator.drawToolTip();
+        GL46.glDisable(GL46.GL_BLEND);
+    }
+
+
+    private static void renderBlockTooltip(int bx, int by, int bz, Chunk chunk){
+        if(!GameSettings.blockTooltips)return;
+        //Attempt to grab ToolTip array, if null exit function
+        short blockID = chunk.getBlockID(bx,by,bz);
+
+        ToolTipGroup[] toolTips = Block.list[blockID].getBlockToolTips(bx, by, bz, chunk.parentWorld, CosmicEvolution.instance.save.thePlayer);
+        if(toolTips == null)return;
+
+        //Transform world coordinates to chunk local coordinate range of 0-31
+        int localX = bx & 31;
+        int localY = by & 31;
+        int localZ = bz & 31;
+
+        //Get the center point of the block, utilize the AABB instead of the center of a full block
+        AxisAlignedBB blockBoundingBox = Block.list[blockID].standardCollisionBoundingBox;
+        double xPos = (float) (localX + ((blockBoundingBox.maxX - blockBoundingBox.minX) / 2.0));
+        double yPos = (float) (localY + ((blockBoundingBox.maxY - blockBoundingBox.minY) / 2.0));
+        double zPos = (float) (localZ + ((blockBoundingBox.maxZ - blockBoundingBox.minZ) / 2.0));
+
+        Vector3d centerPoint = new Vector3d(xPos, yPos, zPos);
+
+        //Transform the centerpoint into screenspace coordinates utilizing the same pipeline the GPU uses
+        //This would normally be done with floats however the camera's matrices are doubles to handle precision issues when translating
+
+        //Calculate the chunk offset to transform into appropriate world coordinates relative to the camera
+        EntityPlayer player = CosmicEvolution.instance.save.thePlayer;
+        Camera camera = CosmicEvolution.camera;
+        int offsetX = (chunk.x - player.chunkX) << 5;
+        int offsetY = (chunk.y - player.chunkY) << 5;
+        int offsetZ = (chunk.z - player.chunkZ) << 5;
+        Vector3d chunkOffset = new Vector3d(offsetX, offsetY, offsetZ);
+
+
+        Vector3d worldPos = new Vector3d(centerPoint).add(chunkOffset);
+
+        //Transform world pos by the view matrix
+        Vector4d viewPos = new Vector4d(worldPos, 1.0f);
+        viewPos.mul(camera.viewMatrix);
+
+        //Transform viewPos by the projection matrix
+        Vector4d clipPos = new Vector4d(viewPos).mul(camera.projectionMatrix);
+
+        //Convert clip coordinates to normalized device coordinates
+        float ndcX = (float) (clipPos.x / clipPos.w);
+        float ndcY = (float) (clipPos.y / clipPos.w);
+        float ndcZ = (float) (clipPos.z / clipPos.w);
+
+        //Convert NDC to screen coordinates
+        //These variables are the screen width/height as they are what's assigned to the viewport, which translates to the framebuffers
+        float screenX = (ndcX * 0.5f + 0.5f) * CosmicEvolution.width;
+        float screenY = (ndcY * 0.5f + 0.5f) * CosmicEvolution.height;
+
+        screenX -= (CosmicEvolution.width/2f);
+        screenY -= (CosmicEvolution.height/2f);
+
+        //Assemble vertex data for all tooltips
+        //The top version will be rendered normally with a white color and second version will be rendered just behind it with a gray color, block and item models will not render twice
+        //This makes it easier on the eyes
+        RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
+        ToolTip toolTip;
+        float width;
+        float height = 50;
+        float x;
+        float y;
+        float z = -100;
+        int currentIndex;
+        float size;
+        int color = 16777215;
+        for(int i = 0; i < toolTips.length * 2; i++){
+            int previousImage = -1; //Start at an invalid value
+            currentIndex = i / 2;
+            toolTip = toolTips[currentIndex].getCurrentTooltip();
+            width = calculateToolTipLength(toolTip);
+            x = screenX - (width/2f);
+            y = screenY;
+
+
+            if((i & 1) == 1){ //Shift for secondary draw before moving to the next tooltip
+                x += 3;
+                y -= 3;
+                z -= 1;
+                color = 4210752; //Gray
+            }
+
+
+            final float noSpacing = 0f;
+            final float normalSpacing = 0.34f * 50;
+            final float doubleSpacing = normalSpacing * 4;
+            float spacing = normalSpacing;
+            for(int k = 0; k < toolTip.tooltip.size(); k++){
+                if(k == 0){
+                    previousImage = toolTip.tooltip.get(k);
+                    continue; //Skip the first index, there's nothing before it, assign variable
+                }
+
+
+                if((k & 1) == 0){ //Even index, therefore it's the image integer
+                    if(previousImage != toolTip.tooltip.get(k) && toolTip.tooltip.get(k) != ToolTip.TEXT_BOX_ATLAS){ //If the previousImage does not match the current one use double spacing, otherwise use normal spacing
+                        spacing = doubleSpacing;
+                        if(previousImage == ToolTip.TEXT_BOX_ATLAS){
+                            spacing = normalSpacing;
+                        }
+
+                        if(previousImage == ToolTip.TEXT_BOX_ATLAS && (toolTip.tooltip.get(k - 1) == MouseAndKeyIconTextureList.FULL_BOUND_BOX || toolTip.tooltip.get(k - 1) == MouseAndKeyIconTextureList.BOUND_BOX_RIGHT)){
+                            spacing = doubleSpacing;
+                        }
+
+                    } else if(toolTip.tooltip.get(k) != ToolTip.TEXT_BOX_ATLAS) { //use normal spacing unless it's using the textbox atlas, this will not advance the value since it draws over chars
+                        spacing = normalSpacing;
+                    } else { //Executes if the image is the text box atlas
+                        spacing = noSpacing;
+                    }
+                    previousImage = toolTip.tooltip.get(k); //Assign variable
+                } else {
+                    //Add vertex data and continue so there's no double assignment to the x value
+                    switch (previousImage){
+                        case ToolTip.FONT_ATLAS -> {
+                            size = 50f;
+                            int indexInTexture = toolTip.tooltip.get(k);
+                            tessellator.addVertexTooltipAtlas(color, x + size/2f, y - size/2f, z, 3, Assets.fontTextureAtlas.textures.get(indexInTexture), 0, previousImage);
+                            tessellator.addVertexTooltipAtlas(color, x - size/2f, y + size/2f, z, 1, Assets.fontTextureAtlas.textures.get(indexInTexture), 0, previousImage);
+                            tessellator.addVertexTooltipAtlas(color, x + size/2f, y + size/2f, z, 2, Assets.fontTextureAtlas.textures.get(indexInTexture), 0, previousImage);
+                            tessellator.addVertexTooltipAtlas(color, x - size/2f, y - size/2f, z, 0, Assets.fontTextureAtlas.textures.get(indexInTexture), 0, previousImage);
+                            tessellator.addElementsCW();
+                        }
+                        case ToolTip.TEXT_BOX_ATLAS -> {
+                            x -= spacing;
+                            size = 75f;
+                            int indexInTexture = toolTip.tooltip.get(k);
+                            tessellator.addVertexTooltipAtlas(color, x + size/2f, y - size/2f, z, 3, Assets.textBoxAtlas.textures.get(indexInTexture), 0, previousImage);
+                            tessellator.addVertexTooltipAtlas(color, x - size/2f, y + size/2f, z, 1, Assets.textBoxAtlas.textures.get(indexInTexture), 0, previousImage);
+                            tessellator.addVertexTooltipAtlas(color, x + size/2f, y + size/2f, z, 2, Assets.textBoxAtlas.textures.get(indexInTexture), 0, previousImage);
+                            tessellator.addVertexTooltipAtlas(color, x - size/2f, y - size/2f, z, 0, Assets.textBoxAtlas.textures.get(indexInTexture), 0, previousImage);
+                            tessellator.addElementsCW();
+                            x += spacing;
+                        }
+
+                        case ToolTip.BLOCK_ARRAY -> {
+                            if((i & 1) == 1)break; //Do not render the models twice
+                            int indexInTexture = toolTip.tooltip.get(k);
+                            renderBlockModelForTooltip(tessellator, x,y,z, indexInTexture, previousImage);
+                        }
+
+                        case ToolTip.ITEM_ARRAY -> {
+                            if((i & 1) == 1)break;
+                            int indexInTexture = toolTip.tooltip.get(k);
+                            renderItemModelForTooltip(tessellator,x,y,z, indexInTexture, previousImage);
+                        }
+
+                        case ToolTip.MOUSE_ICON_ATLAS -> {
+                            size = 75f;
+                            int indexInTexture = toolTip.tooltip.get(k);
+                            tessellator.addVertexTooltipAtlas(color, x + size/2f, y - size/2f, z, 3, Assets.mouseIconAtlas.textures.get(indexInTexture), 0, previousImage);
+                            tessellator.addVertexTooltipAtlas(color, x - size/2f, y + size/2f, z, 1, Assets.mouseIconAtlas.textures.get(indexInTexture), 0, previousImage);
+                            tessellator.addVertexTooltipAtlas(color, x + size/2f, y + size/2f, z, 2, Assets.mouseIconAtlas.textures.get(indexInTexture), 0, previousImage);
+                            tessellator.addVertexTooltipAtlas(color, x - size/2f, y - size/2f, z, 0, Assets.mouseIconAtlas.textures.get(indexInTexture), 0, previousImage);
+                            tessellator.addElementsCW();
+                        }
+                    }
+
+
+
+                    continue; //The advancement of the value only needs to be calculated once
+                }
+
+
+                x += spacing;
+            }
+        }
+
+        //draw
+        GL46.glEnable(GL46.GL_BLEND);
+        GL46.glBlendFunc(GL46.GL_SRC_ALPHA, GL46.GL_ONE_MINUS_SRC_ALPHA);
+        tessellator.drawToolTip();
+        GL46.glDisable(GL46.GL_BLEND);
+    }
+
+
+    //In general if the current atlas being drawn from is different from the previous atlas advance the value by 25, this is the same spacing as a space in the font renderer
+    //If the current and previous atlas are the same advance the value by 12.5, this ensures that text is right next to each other
+    //Do not advance the value if the current atlas is the text box atlas
+    private static float calculateToolTipLength(ToolTip toolTip){
+        float value = 0;
+        final float noSpacing = 0f;
+        final float normalSpacing = 0.34f * 50;
+        final float doubleSpacing = normalSpacing * 4;
+        float spacing;
+
+        int previousImage = -1; //Initialized to an invalid value
+        for(int i = 0; i < toolTip.tooltip.size(); i++){
+            if(i == 0){
+                previousImage = toolTip.tooltip.get(i);
+                continue; //Skip the first index, there's nothing before it, assign variable
+            }
+
+
+            if((i & 1) == 0){ //Even index, therefore it's the image integer
+                if(previousImage != toolTip.tooltip.get(i) && toolTip.tooltip.get(i) != ToolTip.TEXT_BOX_ATLAS){ //If the previousImage does not match the current one use double spacing, otherwise use normal spacing
+                    spacing = doubleSpacing;
+                    if(previousImage == ToolTip.TEXT_BOX_ATLAS){
+                        spacing = normalSpacing;
+                    }
+
+                    if(previousImage == ToolTip.TEXT_BOX_ATLAS && (toolTip.tooltip.get(i - 1) == MouseAndKeyIconTextureList.FULL_BOUND_BOX || toolTip.tooltip.get(i - 1) == MouseAndKeyIconTextureList.BOUND_BOX_RIGHT)){
+                        spacing = doubleSpacing;
+                    }
+
+                } else if(toolTip.tooltip.get(i) != ToolTip.TEXT_BOX_ATLAS) { //use normal spacing unless it's using the textbox atlas, this will not advance the value since it draws over chars
+                    spacing = normalSpacing;
+                } else { //Executes if the image is the text box atlas
+                    spacing = noSpacing;
+                }
+                previousImage = toolTip.tooltip.get(i); //Assign variable
+            } else {
+                continue; //The advancement of the value only needs to be calculated once
+            }
+
+
+            value += spacing;
+        }
+
+        return value;
+    }
+
+    private static void renderBlockModelForTooltip(RenderEngine.Tessellator tessellator, float x, float y, float z, int blockID, int imageID){
+        ModelLoader model = Block.list[blockID].getBlockModel(0,0,0, CosmicEvolution.instance.save.activeWorld).copyModel();
+        model.translateModel(-0.5f, 0, -0.5f);
+        if(Block.list[blockID] instanceof BlockItemStone  || blockID == Block.itemStick.ID){
+            model.translateModel(0.5f, 0, 0.5f);
+            model.scaleModel(2f);
+        }
+        if(blockID == Block.itemClay.ID){
+            model.scaleModel(2f);
+            model.translateModel(0, 0.25f, 0);
+        }
+        ModelFace[] faces;
+        float textureID;
+        Vector3f vertex1;
+        Vector3f vertex2;
+        Vector3f vertex3;
+        Vector3f vertex4;
+        Vector3f position = new Vector3f(x, y - 16,-70);
+        int red = 255;
+        int green = 255;
+        int blue = 255;
+        for(int face = 0; face < 6; face++){
+            faces = model.getModelFaceOfType(face);
+            for(int i = 0; i < faces.length; i++){
+                if(faces[i] == null)continue;
+                textureID = Block.list[blockID].getBlockTexture((short) blockID, 0, 0, 0, face);
+                vertex1 = new Vector3f(faces[i].vertices[0].x, faces[i].vertices[0].y, faces[i].vertices[0].z).mul(38).rotateY((float)(0.25 * Math.PI)).rotateX((float)(0.20 * Math.PI)).add(position);
+                vertex2 = new Vector3f(faces[i].vertices[1].x, faces[i].vertices[1].y, faces[i].vertices[1].z).mul(38).rotateY((float)(0.25 * Math.PI)).rotateX((float)(0.20 * Math.PI)).add(position);
+                vertex3 = new Vector3f(faces[i].vertices[2].x, faces[i].vertices[2].y, faces[i].vertices[2].z).mul(38).rotateY((float)(0.25 * Math.PI)).rotateX((float)(0.20 * Math.PI)).add(position);
+                vertex4 = new Vector3f(faces[i].vertices[3].x, faces[i].vertices[3].y, faces[i].vertices[3].z).mul(38).rotateY((float)(0.25 * Math.PI)).rotateX((float)(0.20 * Math.PI)).add(position);
+
+                tessellator.addVertexTooltipArray(((red << 16) | (green << 8) | blue), vertex1.x, vertex1.y, vertex1.z, faces[i].UVs[0][0], faces[i].UVs[0][1], textureID, imageID);
+                tessellator.addVertexTooltipArray(((red << 16) | (green << 8) | blue), vertex2.x, vertex2.y, vertex2.z, faces[i].UVs[1][0], faces[i].UVs[1][1], textureID, imageID);
+                tessellator.addVertexTooltipArray(((red << 16) | (green << 8) | blue), vertex3.x, vertex3.y, vertex3.z, faces[i].UVs[2][0], faces[i].UVs[2][1], textureID, imageID);
+                tessellator.addVertexTooltipArray(((red << 16) | (green << 8) | blue), vertex4.x, vertex4.y, vertex4.z, faces[i].UVs[3][0], faces[i].UVs[3][1], textureID, imageID);
+                tessellator.addElementsCCW();
+
+                red -= 10;
+                green -= 10;
+                blue -= 10;
+            }
+        }
+    }
+
+
+    private static void renderItemModelForTooltip(RenderEngine.Tessellator tessellator, float x, float y, float z, int itemID, int imageID){
+        Item item = Item.list[itemID];
+        ModelLoader model = item.itemModel.copyModel();
+        model.scaleModel(78f);
+        model.rotateModel(45, 0, 1, 0);
+        model.rotateModel(36, 1, 0, 0);
+
+        if(item instanceof ItemSeed){
+            model.scaleModel(2f);
+        }
+
+        if(item instanceof ItemSpear){
+            model.scaleModel(0.75f);
+        }
+
+        Vector3f position = new Vector3f(x, y, -70);
+        model.translateModel(position.x, position.y, position.z);
+        ModelFace face;
+        float textureID;
+
+        int colorVal = 255;
+
+        int colorRGB = 0;
+
+        int colorTop = ((colorVal) << 16) | ((colorVal) << 8) | colorVal;
+        int colorBottom = ((colorVal - 10) << 16) | ((colorVal - 10) << 8) | colorVal - 10;
+        int colorNorth = ((colorVal - 20) << 16) | ((colorVal - 20) << 8) | colorVal - 20;
+        int colorSouth = ((colorVal - 30) << 16) | ((colorVal - 30) << 8) | colorVal - 30;
+        int colorEast = ((colorVal - 40) << 16) | ((colorVal - 40) << 8) | colorVal - 40;
+        int colorWest = ((colorVal - 50) << 16) | ((colorVal - 50) << 8) | colorVal - 50;
+
+        for (int i = 0; i < model.modelFaces.length; i++) {
+            face = model.modelFaces[i];
+            if (face == null) continue;
+            textureID = face.texture;
+
+            switch (face.faceType){
+                case RenderBlocks.TOP_FACE -> {
+                    colorRGB = colorTop;
+                }
+                case RenderBlocks.BOTTOM_FACE -> {
+                    colorRGB = colorBottom;
+                }
+                case RenderBlocks.NORTH_FACE -> {
+                    colorRGB = colorNorth;
+                }
+                case RenderBlocks.SOUTH_FACE -> {
+                    colorRGB = colorSouth;
+                }
+                case RenderBlocks.EAST_FACE -> {
+                    colorRGB = colorEast;
+                }
+                case RenderBlocks.WEST_FACE -> {
+                    colorRGB = colorWest;
+                }
+            }
+
+            tessellator.addVertexTooltipArray(colorRGB, face.vertices[0].x, face.vertices[0].y, face.vertices[0].z,face.UVs[0][0], face.UVs[0][1],textureID, imageID);
+            tessellator.addVertexTooltipArray(colorRGB, face.vertices[1].x, face.vertices[1].y, face.vertices[1].z,face.UVs[1][0], face.UVs[1][1],textureID, imageID);
+            tessellator.addVertexTooltipArray(colorRGB, face.vertices[2].x, face.vertices[2].y, face.vertices[2].z,face.UVs[2][0], face.UVs[2][1],textureID, imageID);
+            tessellator.addVertexTooltipArray(colorRGB, face.vertices[3].x, face.vertices[3].y, face.vertices[3].z,face.UVs[3][0], face.UVs[3][1],textureID, imageID);
+            tessellator.addElementsCCW();
+        }
     }
 
     public static boolean isBlockVisible(int blockX, int blockY, int blockZ) {

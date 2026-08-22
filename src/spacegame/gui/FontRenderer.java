@@ -442,6 +442,24 @@ public final class FontRenderer {
         tessellator.toggleOrtho();
     }
 
+    public int[] convertStringToAtlasInts(String text){
+        int[] stringGlyphIndex = new int[text.length()];
+
+
+        Integer glyphIndex;
+        for(int i = 0; i < text.length(); i++){
+            glyphIndex = this.glyphLookup.get(text.charAt(i));
+
+            if(glyphIndex == null){
+                glyphIndex = 233; //Fallback to blank space
+            }
+
+            stringGlyphIndex[i] = glyphIndex;
+        }
+
+        return stringGlyphIndex;
+    }
+
 
 
     public void toggleItalics(){

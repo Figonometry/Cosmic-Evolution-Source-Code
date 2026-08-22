@@ -1,10 +1,6 @@
 package spacegame.gui;
 
 import spacegame.core.CosmicEvolution;
-import spacegame.render.Assets;
-import spacegame.render.RenderEngine;
-import spacegame.render.Shader;
-import spacegame.render.Texture;
 
 public abstract class Gui {
     public CosmicEvolution ce;

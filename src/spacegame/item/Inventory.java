@@ -99,7 +99,13 @@ public final class Inventory {
             stack = this.itemStacks[i];
             if (stack.item != null) {
 
-                SeedState seedStateInSlot = (SeedState)this.itemStacks[i].itemState;
+                //Abstract this system for expansion
+                SeedState seedStateInSlot = null;
+                if(this.itemStacks[i].itemState instanceof SeedState){
+                    seedStateInSlot = (SeedState)this.itemStacks[i].itemState;
+                }
+
+
                 if(itemState instanceof SeedState incomingSeedState && seedStateInSlot != null){
                     if(incomingSeedState.canMutate == seedStateInSlot.canMutate && incomingSeedState.targetCrop.equals(seedStateInSlot.targetCrop)) {
 
@@ -115,7 +121,6 @@ public final class Inventory {
                             }
                         }
                     }
-
                 } else {
                     if (stack.item.ID == itemID && stack.metadata == metadata && stack.durability == durability) {
                         if (stack.count + count <= Item.list[itemID].stackLimit) {

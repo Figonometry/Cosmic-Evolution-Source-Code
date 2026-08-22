@@ -5,16 +5,15 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL46;
 import spacegame.block.*;
 import spacegame.core.CosmicEvolution;
-import spacegame.entity.*;
-import spacegame.item.IDecayItem;
-import spacegame.item.Inventory;
-import spacegame.item.Item;
+import spacegame.entity.Entity;
+import spacegame.entity.EntityLiving;
+import spacegame.entity.EntityParticle;
+import spacegame.entity.IDecayable;
 import spacegame.render.RenderBlocks;
 import spacegame.render.Shader;
 import spacegame.render.ShouldFaceRenderSorter;
 import spacegame.util.MathUtil;
 import spacegame.world.blockstate.*;
-import spacegame.world.blockstatewrapper.*;
 
 import java.awt.*;
 import java.nio.FloatBuffer;
@@ -22,7 +21,6 @@ import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class Chunk implements Comparable<Chunk> {
@@ -84,15 +82,8 @@ public final class Chunk implements Comparable<Chunk> {
     public IntBuffer tempElementBufferOpaque;
     public FloatBuffer tempVertexBufferTransparent;
     public IntBuffer tempElementBufferTransparent;
-    public ConcurrentHashMap<Integer, ChestLocationSafe> chestLocations = new ConcurrentHashMap<>();
+    public ConcurrentHashMap<Integer, MultiStateWrapper> blockStates = new ConcurrentHashMap<>();
     public ConcurrentHashMap<Long, ConcurrentHashMap<Integer, TimeUpdateEventSafe>>  updateEvents = new ConcurrentHashMap<>();
-    public ConcurrentHashMap<Integer, HeatableBlockLocationSafe> heatableBlocks = new ConcurrentHashMap<>();
-    public ConcurrentHashMap<Integer, InWorld3DCraftingItemSafe> crafting3DItems = new ConcurrentHashMap<>();
-    public ConcurrentHashMap<Integer, InWorldCraftingItemSafe> craftingItems = new ConcurrentHashMap<>();
-    public ConcurrentHashMap<Integer, DoorTransitionSafe> doorTransitions = new ConcurrentHashMap<>();
-    public ConcurrentHashMap<Integer, CropStateSafe> cropStates = new ConcurrentHashMap<>();
-    public ConcurrentHashMap<Integer, TilledSoilStateSafe> tilledSoilStates = new ConcurrentHashMap<>();
-    public ConcurrentHashMap<Integer, CampfireStateSafe> campfireStates = new ConcurrentHashMap<>();
     public boolean updateImmediately;
     public int opaqueVBOID = -10;
     public int opaqueVAOID = -10;
@@ -150,6 +141,9 @@ public final class Chunk implements Comparable<Chunk> {
 
 
     public void notifyBlock(int x, int y, int z) {
+        int x1 = x;
+        int y1 = y;
+        int z1 = z;
         x %= 32;
         y %= 32;
         z %= 32;
@@ -172,7 +166,7 @@ public final class Chunk implements Comparable<Chunk> {
         int blockIndex = getBlockIndexFromCoordinates(x, y, z);
 
         mask = this.createMask(y);
-        if (this.shouldTopFaceRender(blockIndex)) {
+        if (this.shouldTopFaceRender(blockIndex,x1,y1,z1)) {
             if (this.checkBitValue(topFaceBitmask, mask) == 0) {
                 topFaceBitmask = topFaceBitmask ^ mask;
             }
@@ -182,7 +176,7 @@ public final class Chunk implements Comparable<Chunk> {
             }
         }
 
-        if (this.shouldBottomFaceRender(blockIndex)) {
+        if (this.shouldBottomFaceRender(blockIndex,x1,y1,z1)) {
             if (this.checkBitValue(bottomFaceBitMask, mask) == 0) {
                 bottomFaceBitMask = bottomFaceBitMask ^ mask;
             }
@@ -194,7 +188,7 @@ public final class Chunk implements Comparable<Chunk> {
 
 
         mask = this.createMask(x);
-        if (this.shouldNorthFaceRender(blockIndex)) {
+        if (this.shouldNorthFaceRender(blockIndex,x1,y1,z1)) {
             if (this.checkBitValue(northFaceBitMask, mask) == 0) {
                 northFaceBitMask = northFaceBitMask ^ mask;
             }
@@ -204,7 +198,7 @@ public final class Chunk implements Comparable<Chunk> {
             }
         }
 
-        if (this.shouldSouthFaceRender(blockIndex)) {
+        if (this.shouldSouthFaceRender(blockIndex,x1,y1,z1)) {
             if (this.checkBitValue(southFaceBitMask, mask) == 0) {
                 southFaceBitMask = southFaceBitMask ^ mask;
             }
@@ -216,7 +210,7 @@ public final class Chunk implements Comparable<Chunk> {
 
 
         mask = this.createMask(z);
-        if (this.shouldEastFaceRender(blockIndex)) {
+        if (this.shouldEastFaceRender(blockIndex,x1,y1,z1)) {
             if (this.checkBitValue(eastFaceBitMask, mask) == 0) {
                 eastFaceBitMask = eastFaceBitMask ^ mask;
             }
@@ -226,7 +220,7 @@ public final class Chunk implements Comparable<Chunk> {
             }
         }
 
-        if (this.shouldWestFaceRender(blockIndex)) {
+        if (this.shouldWestFaceRender(blockIndex,x1,y1,z1)) {
             if (this.checkBitValue(westFaceBitMask, mask) == 0) {
                 westFaceBitMask = westFaceBitMask ^ mask;
             }
@@ -245,6 +239,9 @@ public final class Chunk implements Comparable<Chunk> {
     }
 
     public void notifyBlockWithoutRebuild(int x, int y, int z) {
+        int x1 = x;
+        int y1 = y;
+        int z1 = z;
         x %= 32;
         y %= 32;
         z %= 32;
@@ -267,7 +264,7 @@ public final class Chunk implements Comparable<Chunk> {
         int blockIndex = getBlockIndexFromCoordinates(x, y, z);
 
         mask = this.createMask(y);
-        if (this.shouldTopFaceRender(blockIndex)) {
+        if (this.shouldTopFaceRender(blockIndex,x1,y1,z1)) {
             if (this.checkBitValue(topFaceBitmask, mask) == 0) {
                 topFaceBitmask = topFaceBitmask ^ mask;
             }
@@ -277,7 +274,7 @@ public final class Chunk implements Comparable<Chunk> {
             }
         }
 
-        if (this.shouldBottomFaceRender(blockIndex)) {
+        if (this.shouldBottomFaceRender(blockIndex,x1,y1,z1)) {
             if (this.checkBitValue(bottomFaceBitMask, mask) == 0) {
                 bottomFaceBitMask = bottomFaceBitMask ^ mask;
             }
@@ -289,7 +286,7 @@ public final class Chunk implements Comparable<Chunk> {
 
 
         mask = this.createMask(x);
-        if (this.shouldNorthFaceRender(blockIndex)) {
+        if (this.shouldNorthFaceRender(blockIndex,x1,y1,z1)) {
             if (this.checkBitValue(northFaceBitMask, mask) == 0) {
                 northFaceBitMask = northFaceBitMask ^ mask;
             }
@@ -299,7 +296,7 @@ public final class Chunk implements Comparable<Chunk> {
             }
         }
 
-        if (this.shouldSouthFaceRender(blockIndex)) {
+        if (this.shouldSouthFaceRender(blockIndex,x1,y1,z1)) {
             if (this.checkBitValue(southFaceBitMask, mask) == 0) {
                 southFaceBitMask = southFaceBitMask ^ mask;
             }
@@ -311,7 +308,7 @@ public final class Chunk implements Comparable<Chunk> {
 
 
         mask = this.createMask(z);
-        if (this.shouldEastFaceRender(blockIndex)) {
+        if (this.shouldEastFaceRender(blockIndex,x1,y1,z1)) {
             if (this.checkBitValue(eastFaceBitMask, mask) == 0) {
                 eastFaceBitMask = eastFaceBitMask ^ mask;
             }
@@ -321,7 +318,7 @@ public final class Chunk implements Comparable<Chunk> {
             }
         }
 
-        if (this.shouldWestFaceRender(blockIndex)) {
+        if (this.shouldWestFaceRender(blockIndex,x1,y1,z1)) {
             if (this.checkBitValue(westFaceBitMask, mask) == 0) {
                 westFaceBitMask = westFaceBitMask ^ mask;
             }
@@ -573,138 +570,198 @@ public final class Chunk implements Comparable<Chunk> {
         return false;
     }
 
-    private boolean shouldTopFaceRender(int index) {
+    private boolean shouldTopFaceRender(int index, int x1, int y1, int z1) {
         short firstBlock;
         short secondBlock;
         int face = RenderBlocks.TOP_FACE;
 
+        int x2 = 0;
+        int y2 = 0;
+        int z2 = 0;
+
         if (index < 31744) {
             firstBlock = this.blocks[index];
             secondBlock = this.blocks[index + 1024];
+            x2 = this.getBlockXFromIndex(index + 1024);
+            y2 = this.getBlockYFromIndex(index + 1024);
+            z2 = this.getBlockZFromIndex(index + 1024);
         } else {
             Chunk chunk = this.parentWorld.findChunkFromChunkCoordinates(this.x, this.y + 1, this.z);
             if(chunk == null)return true;
             firstBlock = this.blocks[index];
             if(chunk.blocks != null) {
                 secondBlock = chunk.blocks[index - 31744];
+                x2 = chunk.getBlockXFromIndex(index - 31744);
+                y2 = chunk.getBlockYFromIndex(index - 31744);
+                z2 = chunk.getBlockZFromIndex(index - 31744);
             } else {
                 secondBlock = Block.air.ID;
             }
         }
 
-        return this.sorter.shouldFaceRender(firstBlock,secondBlock,face);
+        return this.sorter.shouldFaceRender(firstBlock,secondBlock,face,x1,y1,z1,x2,y2,z2);
     }
 
 
 
-    private boolean shouldBottomFaceRender(int index) {
+    private boolean shouldBottomFaceRender(int index, int x1, int y1, int z1) {
         short firstBlock;
         short secondBlock;
         int face = RenderBlocks.BOTTOM_FACE;
 
+        int x2 = 0;
+        int y2 = 0;
+        int z2 = 0;
+
         if (index > 1023) {
             firstBlock = this.blocks[index];
             secondBlock = this.blocks[index - 1024];
+            x2 = this.getBlockXFromIndex(index - 1024);
+            y2 = this.getBlockYFromIndex(index - 1024);
+            z2 = this.getBlockZFromIndex(index - 1024);
         } else {
             Chunk chunk = this.parentWorld.findChunkFromChunkCoordinates(this.x, this.y - 1, this.z);
             if(chunk == null)return true;
             firstBlock = this.blocks[index];
             if(chunk.blocks != null) {
                 secondBlock = chunk.blocks[index + 31744];
+                x2 = chunk.getBlockXFromIndex(index + 31744);
+                y2 = chunk.getBlockYFromIndex(index + 31744);
+                z2 = chunk.getBlockZFromIndex(index + 31744);
             } else {
                 secondBlock = Block.air.ID;
             }
         }
 
-        return this.sorter.shouldFaceRender(firstBlock,secondBlock,face);
+        return this.sorter.shouldFaceRender(firstBlock,secondBlock,face,x1,y1,z1,x2,y2,z2);
     }
 
-    private boolean shouldNorthFaceRender(int index) {
+    private boolean shouldNorthFaceRender(int index, int x1, int y1, int z1) {
         short firstBlock;
         short secondBlock;
         int face = RenderBlocks.NORTH_FACE;
 
+        int x2 = 0;
+        int y2 = 0;
+        int z2 = 0;
+
         if (index % 32 != 0) {
             firstBlock = this.blocks[index];
             secondBlock = this.blocks[index - 1];
+            x2 = this.getBlockXFromIndex(index - 1);
+            y2 = this.getBlockYFromIndex(index - 1);
+            z2 = this.getBlockZFromIndex(index - 1);
         } else {
             Chunk chunk = this.parentWorld.findChunkFromChunkCoordinates(this.x - 1, this.y, this.z);
             if(chunk == null)return true;
             firstBlock = this.blocks[index];
             if(chunk.blocks != null) {
                 secondBlock = chunk.blocks[index + 31];
+                x2 = chunk.getBlockXFromIndex(index + 31);
+                y2 = chunk.getBlockYFromIndex(index + 31);
+                z2 = chunk.getBlockZFromIndex(index + 31);
             } else {
                 secondBlock = Block.air.ID;
             }
         }
 
-        return this.sorter.shouldFaceRender(firstBlock,secondBlock,face);
+        return this.sorter.shouldFaceRender(firstBlock,secondBlock,face,x1,y1,z1,x2,y2,z2);
     }
 
-    private boolean shouldSouthFaceRender(int index) {
+    private boolean shouldSouthFaceRender(int index, int x1, int y1, int z1) {
         short firstBlock;
         short secondBlock;
         int face = RenderBlocks.SOUTH_FACE;
 
+        int x2 = 0;
+        int y2 = 0;
+        int z2 = 0;
+
         if (index % 32 != 31) {
             firstBlock = this.blocks[index];
             secondBlock = this.blocks[index + 1];
+            x2 = this.getBlockXFromIndex(index + 1);
+            y2 = this.getBlockYFromIndex(index + 1);
+            z2 = this.getBlockZFromIndex(index + 1);
         } else {
             Chunk chunk = this.parentWorld.findChunkFromChunkCoordinates(this.x + 1, this.y, this.z);
             if(chunk == null)return true;
             firstBlock = this.blocks[index];
             if(chunk.blocks != null) {
                 secondBlock = chunk.blocks[index - 31];
+                x2 = chunk.getBlockXFromIndex(index - 31);
+                y2 = chunk.getBlockYFromIndex(index - 31);
+                z2 = chunk.getBlockZFromIndex(index - 31);
             } else {
                 secondBlock = Block.air.ID;
             }
         }
 
-        return this.sorter.shouldFaceRender(firstBlock,secondBlock,face);
+        return this.sorter.shouldFaceRender(firstBlock,secondBlock,face,x1,y1,z1,x2,y2,z2);
     }
 
-    private boolean shouldEastFaceRender(int index) {
+    private boolean shouldEastFaceRender(int index, int x1, int y1, int z1) {
         short firstBlock;
         short secondBlock;
         int face = RenderBlocks.EAST_FACE;
 
+        int x2 = 0;
+        int y2 = 0;
+        int z2 = 0;
+
         if ((index % 1024) / 32 != 0) {
             firstBlock = this.blocks[index];
             secondBlock = this.blocks[index - 32];
+            x2 = this.getBlockXFromIndex(index - 32);
+            y2 = this.getBlockYFromIndex(index - 32);
+            z2 = this.getBlockZFromIndex(index - 32);
         } else {
             Chunk chunk = this.parentWorld.findChunkFromChunkCoordinates(this.x, this.y, this.z - 1);
             if(chunk == null)return true;
             firstBlock = this.blocks[index];
             if(chunk.blocks != null) {
                 secondBlock = chunk.blocks[index + 992];
+                x2 = chunk.getBlockXFromIndex(index + 992);
+                y2 = chunk.getBlockYFromIndex(index + 992);
+                z2 = chunk.getBlockZFromIndex(index + 992);
             } else {
                 secondBlock = Block.air.ID;
             }
         }
 
-        return this.sorter.shouldFaceRender(firstBlock,secondBlock,face);
+        return this.sorter.shouldFaceRender(firstBlock,secondBlock,face,x1,y1,z1,x2,y2,z2);
     }
 
-    private boolean shouldWestFaceRender(int index) {
+    private boolean shouldWestFaceRender(int index, int x1, int y1, int z1) {
         short firstBlock;
         short secondBlock;
         int face = RenderBlocks.WEST_FACE;
 
+        int x2 = 0;
+        int y2 = 0;
+        int z2 = 0;
+
         if ((index % 1024) / 32 != 31) {
             firstBlock = this.blocks[index];
             secondBlock = this.blocks[index + 32];
+            x2 = this.getBlockXFromIndex(index + 32);
+            y2 = this.getBlockYFromIndex(index + 32);
+            z2 = this.getBlockZFromIndex(index + 32);
         } else {
             Chunk chunk = this.parentWorld.findChunkFromChunkCoordinates(this.x, this.y, this.z + 1);
             if(chunk == null)return true;
             firstBlock = this.blocks[index];
             if(chunk.blocks != null) {
                 secondBlock = chunk.blocks[index - 992];
+                x2 = chunk.getBlockXFromIndex(index - 992);
+                y2 = chunk.getBlockYFromIndex(index - 992);
+                z2 = chunk.getBlockZFromIndex(index - 992);
             } else {
                 secondBlock = Block.air.ID;
             }
         }
 
-        return this.sorter.shouldFaceRender(firstBlock,secondBlock,face);
+        return this.sorter.shouldFaceRender(firstBlock,secondBlock,face,x1,y1,z1,x2,y2,z2);
     }
 
     public int calculateFaceNumber() {
@@ -1277,38 +1334,6 @@ public final class Chunk implements Comparable<Chunk> {
                     }
                 }
             }
-
-
-            InWorld3DCraftingItemSafe craftingBlock;
-            for(Map.Entry<Integer, InWorld3DCraftingItemSafe> entry : this.crafting3DItems.entrySet()){
-                craftingBlock = entry.getValue();
-                if(craftingBlock.value.removeObject){
-                    this.crafting3DItems.remove(craftingBlock.value.indexInChunk);
-                }
-            }
-
-            InWorldCraftingItemSafe craftingItem;
-            for(Map.Entry<Integer, InWorldCraftingItemSafe> entry : this.craftingItems.entrySet()){
-                craftingItem = entry.getValue();
-                if(craftingItem.value.remove){
-                    this.craftingItems.remove(craftingItem.value.indexInChunk);
-                }
-            }
-
-
-
-            ChestLocationSafe chestLocation;
-            for(Map.Entry<Integer, ChestLocationSafe> entry : this.chestLocations.entrySet()){
-                chestLocation = entry.getValue();
-                for(int j = 0; j < chestLocation.value.inventory.itemStacks.length; j++){
-                    if(chestLocation.value.inventory.itemStacks[j].item instanceof IDecayItem){
-                        if(this.parentWorld.ce.save.time >= chestLocation.value.inventory.itemStacks[j].decayTime){
-                            chestLocation.value.inventory.itemStacks[j].item = Item.rot;
-                        }
-                    }
-                }
-            }
-
         }
 
         TimeUpdateEventSafe event;
@@ -1325,26 +1350,12 @@ public final class Chunk implements Comparable<Chunk> {
             }
         }
 
-
-        if(this.doorTransitions.size() > 0){
-            DoorTransitionSafe doorTransition;
-            for(Map.Entry<Integer, DoorTransitionSafe> entry : this.doorTransitions.entrySet()){
-                doorTransition = entry.getValue();
-                if(doorTransition.value.completeTime <= CosmicEvolution.instance.save.time){
-                    this.removeDoorTransition(doorTransition.value);
-                }
-            }
-            this.markDirty();
+        MultiStateWrapper multiStateWrapper;
+        for(Map.Entry<Integer, MultiStateWrapper> entry : this.blockStates.entrySet()){
+            multiStateWrapper = entry.getValue();
+            multiStateWrapper.value.onTick(this);
         }
 
-
-        if(CosmicEvolution.instance.save.time % 15 == 0){
-            HeatableBlockLocationSafe heatableBlockLocation;
-            for(Map.Entry<Integer, HeatableBlockLocationSafe> entry : this.heatableBlocks.entrySet()){
-                heatableBlockLocation = entry.getValue();
-                heatableBlockLocation.value.heatItem(this);
-            }
-        }
     }
 
     @Override
@@ -1411,86 +1422,6 @@ public final class Chunk implements Comparable<Chunk> {
         this.decayableLeaves = newArray;
     }
 
-    public void addCraftingItem(InWorldCraftingItem craftingItem){
-        this.craftingItems.put(craftingItem.indexInChunk, new InWorldCraftingItemSafe(craftingItem));
-    }
-
-    public void removeCraftingItem(int x, int y, int z){
-        this.craftingItems.remove(getBlockIndexFromCoordinates(x,y,z));
-    }
-
-    public InWorldCraftingItem getInWorldCraftingItem(int x, int y, int z){
-        InWorldCraftingItemSafe inWorldCraftingItemSafe = this.craftingItems.get(getBlockIndexFromCoordinates(x,y,z));
-        return inWorldCraftingItemSafe == null ? null : inWorldCraftingItemSafe.value;
-    }
-
-    public void addHeatableBlock(HeatableBlockLocation heatableBlockLocation){
-        this.heatableBlocks.put(heatableBlockLocation.index, new HeatableBlockLocationSafe(heatableBlockLocation));
-    }
-
-    public void addHeatableBlock(int x, int y, int z){
-        this.addHeatableBlock(getBlockIndexFromCoordinates(x,y,z));
-    }
-
-    public void addHeatableBlock(int index){
-        this.heatableBlocks.put(index, new HeatableBlockLocationSafe(new HeatableBlockLocation(index)));
-    }
-
-    public HeatableBlockLocation getHeatableBlock(int x, int y, int z){
-        HeatableBlockLocationSafe heatableBlockLocationSafe = this.heatableBlocks.get(getBlockIndexFromCoordinates(x,y,z));
-        return heatableBlockLocationSafe == null ? null : heatableBlockLocationSafe.value;
-    }
-
-    public HeatableBlockLocation getHeatableBlock(int index){
-        HeatableBlockLocationSafe heatableBlockLocationSafe = this.heatableBlocks.get(index);
-        return heatableBlockLocationSafe == null ? null : heatableBlockLocationSafe.value;
-    }
-
-    public void removeHeatableBlock(int x, int y, int z){
-        this.removeHeatableBlock(getBlockIndexFromCoordinates(x,y,z));
-    }
-
-    public void removeHeatableBlock(int index){
-        this.heatableBlocks.remove(index);
-    }
-
-    public void addInWorldCrafting3DItem(InWorld3DCraftingItem craftingBlock){
-       this.crafting3DItems.put(craftingBlock.indexInChunk, new InWorld3DCraftingItemSafe(craftingBlock));
-    }
-
-    public void removeInWorldCrafting3DItem(int index){
-        this.crafting3DItems.remove(index);
-    }
-
-    public InWorld3DCraftingItem getInWorldCrafting3DItem(int index){
-        InWorld3DCraftingItemSafe inWorld3DCraftingItemSafe = this.crafting3DItems.get(index);
-        return inWorld3DCraftingItemSafe == null ? null : inWorld3DCraftingItemSafe.value;
-    }
-
-    public void addChestLocation(int x, int y, int z, Inventory inventory){
-        this.chestLocations.put(getBlockIndexFromCoordinates(x,y,z), new ChestLocationSafe(new ChestLocation(getBlockIndexFromCoordinates(x,y,z), inventory)));
-    }
-
-    public void addChestLocation(int index, Inventory inventory){
-        this.chestLocations.put(index, new ChestLocationSafe(new ChestLocation(index, inventory)));
-    }
-
-    public ChestLocation getChestLocation(int x, int y, int z){
-        ChestLocationSafe chestLocationSafe = this.chestLocations.get(getBlockIndexFromCoordinates(x,y,z));
-        return chestLocationSafe == null ? null : chestLocationSafe.value;
-    }
-
-    public ChestLocation getChestLocation(int index){
-        ChestLocationSafe chestLocationSafe = this.chestLocations.get(index);
-        return chestLocationSafe == null ? null : chestLocationSafe.value;
-    }
-
-    public void removeChestLocation(int index){
-        ChestLocationSafe chestLocationSafe = this.chestLocations.get(index);
-        if(chestLocationSafe == null)return;
-        this.clearInventoryFromChest(chestLocationSafe.value.inventory, index);
-        this.chestLocations.remove(index);
-    }
 
     public void addTimeUpdateEvent(int x, int y, int z, long updateTime){
         this.addTimeUpdateEvent(getBlockIndexFromCoordinates(x,y,z), updateTime);
@@ -1543,106 +1474,91 @@ public final class Chunk implements Comparable<Chunk> {
         }
     }
 
-    private void clearInventoryFromChest(Inventory inventory, int index){
-        Random rand = new Random();
-        for(int i = 0; i < inventory.itemStacks.length; i++) {
-            if(inventory.itemStacks[i].item == Item.block) {
-                EntityBlock block = new EntityBlock(this.getBlockXFromIndex(index) + 0.5, this.getBlockYFromIndex(index) + 0.5, this.getBlockZFromIndex(index) + 0.5, inventory.itemStacks[i].metadata, inventory.itemStacks[i].count);
-                block.setMovementVector(new Vector3f(rand.nextFloat(-1, 1), rand.nextFloat(-1, 1), rand.nextFloat(-1, 1)));
-                this.addEntityToList(block);
-            } else if(inventory.itemStacks[i].item != null){
-                EntityItem item = new EntityItem(this.getBlockXFromIndex(index) + 0.5, this.getBlockYFromIndex(index) + 0.5, this.getBlockZFromIndex(index) + 0.5, inventory.itemStacks[i].item.ID, inventory.itemStacks[i].metadata, inventory.itemStacks[i].count, inventory.itemStacks[i].durability, 0, null);
-                item.setMovementVector(new Vector3f(rand.nextFloat(-1, 1), rand.nextFloat(-1, 1), rand.nextFloat(-1, 1)));
-                this.addEntityToList(item);
-            }
-            inventory.itemStacks[i].item = null;
-            inventory.itemStacks[i].count = 0;
-            inventory.itemStacks[i].durability = 0;
-            inventory.itemStacks[i].metadata = 0;
+    public void addBlockState(int x, int y, int z, int stateType, BlockState blockState){
+        this.addBlockState(getBlockIndexFromCoordinates(x,y,z), stateType, blockState);
+    }
+
+    public void addBlockState(int index, int stateType, BlockState blockState){
+        MultiStateWrapper multiStateWrapper = this.blockStates.get(index);
+        if(multiStateWrapper == null) {
+            multiStateWrapper = new MultiStateWrapper(new MultiState(index));
+            this.blockStates.put(index, multiStateWrapper);
         }
+
+        multiStateWrapper.value.addBlockState(stateType, blockState);
     }
 
-    public void addDoorTransition(DoorTransition doorTransition){
-        this.doorTransitions.put(getBlockIndexFromCoordinates(doorTransition.x, doorTransition.y, doorTransition.z), new DoorTransitionSafe(doorTransition));
+
+    public BlockState getBlockState(int x, int y, int z, int stateType){
+        return this.getBlockState(getBlockIndexFromCoordinates(x,y,z), stateType);
     }
 
-    public void removeDoorTransition(DoorTransition doorTransition){
-        this.doorTransitions.remove(getBlockIndexFromCoordinates(doorTransition.x, doorTransition.y, doorTransition.z));
+    public BlockState getBlockState(int index, int stateType){
+        MultiStateWrapper multiStateWrapper = this.blockStates.get(index);
+        if(multiStateWrapper == null) return null;
+
+        return multiStateWrapper.value.getBlockState(stateType);
     }
 
-    public DoorTransition getDoorTransition(int x, int y, int z){
-        DoorTransitionSafe doorTransitionSafe = this.doorTransitions.get(getBlockIndexFromCoordinates(x,y,z));
-        return doorTransitionSafe == null ? null : doorTransitionSafe.value;
+    public void removeBlockState(int x, int y, int z, int stateType){
+        this.removeBlockState(getBlockIndexFromCoordinates(x,y,z), stateType);
     }
 
-    public void addCropState(CropState cropState, int x, int y, int z){
-        this.cropStates.put(getBlockIndexFromCoordinates(x,y,z), new CropStateSafe(cropState));
+    public void removeBlockState(int index, int stateType){
+        MultiStateWrapper multiStateWrapper = this.blockStates.get(index);
+        if(multiStateWrapper == null)return;
+
+        multiStateWrapper.value.removeBlockState(stateType);
     }
 
-    public void addCropState(CropState cropState, int index){
-        this.cropStates.put(index, new CropStateSafe(cropState));
+    public boolean doesChunkContainStateOfType(int stateType){
+        for(Map.Entry<Integer, MultiStateWrapper> entry : this.blockStates.entrySet()){
+            if(entry.getValue().value.mapContainsKeyOfType(stateType)){
+                return true;
+            }
+        }
+
+        return false;
     }
 
-    public void removeCropState(int x, int y, int z){
-        this.cropStates.remove(getBlockIndexFromCoordinates(x,y,z));
+    public int getBlockStateCount(int stateType){
+        int total = 0;
+        for(Map.Entry<Integer, MultiStateWrapper> entry : this.blockStates.entrySet()){
+            if(entry.getValue().value.mapContainsKeyOfType(stateType)){
+                total++;
+            }
+        }
+        return total;
     }
 
-    public CropState getCropState(int x, int y, int z){
-        CropStateSafe cropStateSafe = this.cropStates.get(getBlockIndexFromCoordinates(x,y,z));
-        return cropStateSafe == null ? null : cropStateSafe.value;
+
+    public BlockState[] getAllBlockStatesOfType(int stateType, int totalCount){
+        BlockState[] returnArray = new BlockState[totalCount];
+        int index = 0;
+
+
+        for(Map.Entry<Integer, MultiStateWrapper> entry : this.blockStates.entrySet()){
+            if(!entry.getValue().value.mapContainsKeyOfType(stateType))continue;
+
+            returnArray[index] = entry.getValue().value.getBlockState(stateType);
+            index++;
+        }
+
+        return returnArray;
     }
 
-    public CropState getCropState(int index){
-        CropStateSafe cropStateSafe = this.cropStates.get(index);
-        return cropStateSafe == null ? null : cropStateSafe.value;
-    }
+    public void clearAllBlockStates(int x, int y, int z){
+        int key = getBlockIndexFromCoordinates(x,y,z);
+        MultiStateWrapper multiStateWrapper = this.blockStates.get(key);
+        if(multiStateWrapper == null){
+            System.out.println("Unable to clear block states at " + x + " " + y + " " + z + ". States already cleared or no states existed");
+            return;
+        }
 
-    public void addTilledSoilState(TilledSoilState tilledSoilState, int x, int y, int z){
-        this.tilledSoilStates.put(getBlockIndexFromCoordinates(x,y,z), new TilledSoilStateSafe(tilledSoilState));
-    }
 
-    public void addTilledSoilState(TilledSoilState tilledSoilState, int index){
-        this.tilledSoilStates.put(index, new TilledSoilStateSafe(tilledSoilState));
-    }
+        multiStateWrapper.value.clearAllStates();
 
-    public void removeTilledSoilState(int x, int y, int z){
-        this.tilledSoilStates.remove(getBlockIndexFromCoordinates(x,y,z));
-    }
-
-    public TilledSoilState getTilledSoilState(int x, int y, int z){
-        TilledSoilStateSafe tilledSoilStateSafe = this.tilledSoilStates.get(getBlockIndexFromCoordinates(x,y,z));
-        return tilledSoilStateSafe == null ? null : tilledSoilStateSafe.value;
-    }
-
-    public TilledSoilState getTilledSoilState(int index){
-        TilledSoilStateSafe tilledSoilStateSafe = this.tilledSoilStates.get(index);
-        return tilledSoilStateSafe == null ? null : tilledSoilStateSafe.value;
-    }
-
-    public void addCampfireState(CampfireState campfireState, int x, int y, int z){
-        this.campfireStates.put(getBlockIndexFromCoordinates(x,y,z), new CampfireStateSafe(campfireState));
-    }
-
-    public void addCampfireState(CampfireState campfireState, int index){
-        this.campfireStates.put(index, new CampfireStateSafe(campfireState));
-    }
-
-    public CampfireState getCampfireState(int index){
-        CampfireStateSafe campfireStateSafe = this.campfireStates.get(index);
-        return campfireStateSafe == null ? null : campfireStateSafe.value;
-    }
-
-    public CampfireState getCampfireState(int x, int y, int z){
-        CampfireStateSafe campfireStateSafe = this.campfireStates.get(getBlockIndexFromCoordinates(x,y,z));
-        return campfireStateSafe == null ? null : campfireStateSafe.value;
-    }
-
-    public void removeCampfireState(int index){
-        this.campfireStates.remove(index);
-    }
-
-    public void removeCampfireState(int x, int y, int z){
-        this.campfireStates.remove(getBlockIndexFromCoordinates(x,y,z));
+        this.blockStates.remove(key);
     }
 
 }

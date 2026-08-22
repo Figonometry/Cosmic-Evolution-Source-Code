@@ -5,11 +5,15 @@ import spacegame.core.CosmicEvolution;
 public abstract class Assets {
     public static int fontTextureLoader;
     public static TextureAtlas fontTextureAtlas;
+    public static int textBox;
+    public static TextureAtlas textBoxAtlas;
+    public static int mouseIcon;
+    public static TextureAtlas mouseIconAtlas;
     public static int blockTextureArray;
     public static int itemTextureArray;
 
     public static void enableBlockTextureArray(){
-        blockTextureArray = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/blocks/", RenderEngine.TEXTURE_TYPE_2D_ARRAY, 99, true); //One higher than the expected amount
+        blockTextureArray = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/blocks/", RenderEngine.TEXTURE_TYPE_2D_ARRAY, 178, true); //One higher than the expected amount
     }
 
     public static void enableItemTextureArray(){
@@ -32,5 +36,25 @@ public abstract class Assets {
     public static void disableFontTextureAtlas(){
         CosmicEvolution.instance.renderEngine.deleteTexture(fontTextureLoader);
         fontTextureAtlas = null;
+    }
+
+    public static void enableTextBoxAtlas(){
+        textBox = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/atlas/keyBoxes.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
+        textBoxAtlas = CosmicEvolution.instance.renderEngine.createTextureAtlas(64,64,32,32,4,0);
+    }
+
+    public static void disableTextBoxAtlas(){
+        CosmicEvolution.instance.renderEngine.deleteTexture(textBox);
+        textBoxAtlas = null;
+    }
+
+    public static void enableMouseIconAtlas(){
+        mouseIcon = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/atlas/mouseIcons.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
+        mouseIconAtlas = CosmicEvolution.instance.renderEngine.createTextureAtlas(64,64,32,32,4,0);
+    }
+
+    public static void disableMouseIconAtlas(){
+        CosmicEvolution.instance.renderEngine.deleteTexture(mouseIcon);
+        mouseIconAtlas = null;
     }
 }

@@ -1,7 +1,6 @@
 package spacegame.entity.ai;
 
 import org.joml.Matrix3d;
-import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.joml.Vector3d;
 import spacegame.core.CosmicEvolution;

@@ -4,7 +4,7 @@ import spacegame.core.CosmicEvolution;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.world.Chunk;
 import spacegame.world.blockstate.TimeUpdateEvent;
-import spacegame.world.blockstatewrapper.TimeUpdateEventSafe;
+import spacegame.world.blockstate.TimeUpdateEventSafe;
 
 import java.util.Iterator;
 import java.util.Map;

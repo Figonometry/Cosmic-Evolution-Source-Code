@@ -1,6 +1,7 @@
 package spacegame.world.blockstate;
 
 import spacegame.block.Block;
+import spacegame.block.BlockStone;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.Sound;
 import spacegame.entity.EntityItem;
@@ -15,7 +16,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Random;
 
-public final class InWorld3DCraftingItem {
+public final class InWorld3DCraftingItem extends BlockState{
     public int[][] subVoxelIndices = new int[16][144];
     public int indexInChunk;
     public short materialBlockID = RenderEngine.NULL_TEXTURE; //Used for texture lookup on blocks
@@ -39,6 +40,13 @@ public final class InWorld3DCraftingItem {
         this.craftingRecipe = craftingRecipe;
         this.activeCraftingLayer = 0;
         this.chunk = chunk;
+    }
+
+    @Override
+    public void onTick(Chunk callingChunk){
+        if(this.removeObject){
+          callingChunk.removeBlockState(this.indexInChunk, MultiState.CRAFTING_3D_ITEM_STATE);
+        }
     }
 
     public void checkCurrentCraftingLayerForCompletion(){
@@ -73,7 +81,7 @@ public final class InWorld3DCraftingItem {
     }
 
     public void removeSubVoxel(int index){
-        if(this.materialBlockID == Block.stone.ID){
+        if(Block.list[this.materialBlockID] instanceof BlockStone){
             if(this.craftingRecipe.recipeIndices[this.activeCraftingLayer][index] != 1){
                 this.subVoxelIndices[this.activeCraftingLayer][index] = 0;
                 this.removeNonConnectedMaterial();
@@ -87,7 +95,7 @@ public final class InWorld3DCraftingItem {
     }
 
     public void addSubVoxel(int index){
-        if(this.subVoxelIndices[this.activeCraftingLayer][index] == 1 || this.materialBlockID == Block.stone.ID)return;
+        if(this.subVoxelIndices[this.activeCraftingLayer][index] == 1 || Block.list[this.materialBlockID] instanceof BlockStone)return;
 
 
         this.subVoxelIndices[this.activeCraftingLayer][index] = 1;

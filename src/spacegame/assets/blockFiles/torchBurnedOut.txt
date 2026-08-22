@@ -1,0 +1,7 @@
+droppedItemID:-1
+isSolid:false
+blockName:TORCH
+requireSolidBlockBelow:true
+blockModel:torchBlockModel
+alwaysRenderFace:true
+displayName:Torch (Burned Out)

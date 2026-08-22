@@ -29,6 +29,8 @@ public final class ThreadGenerateCelestialBodyTextures implements Runnable {
 
     @Override
     public void run() {
+        CosmicEvolution.instance.save.activeWorld.loadGeologicProvinces();
+
         if(this.forWorldInit) {
             this.createMercatorImage(this.seed, 1);
         } else {
@@ -53,7 +55,7 @@ public final class ThreadGenerateCelestialBodyTextures implements Runnable {
         double offsetZ = rand.nextDouble() * 1000;
 
 
-        double[][] elevation = new double[width][height];
+        float[][] elevation = new float[width][height];
         int octaves = 8;
 
         // Step 1: Generate elevation using spherical 3D noise
@@ -83,7 +85,7 @@ public final class ThreadGenerateCelestialBodyTextures implements Runnable {
 
 
                 double elevationVal = (noise + 1) / 2.0; // normalize to [0, 1]
-                elevation[x][y] = Math.pow(elevationVal, 1.5); // shape terrain
+                elevation[x][y] = (float) Math.pow(elevationVal, 1.5); // shape terrain
             }
         }
 
@@ -91,12 +93,12 @@ public final class ThreadGenerateCelestialBodyTextures implements Runnable {
             for (int x = 0; x < width; x++) {
                 double val = elevation[x][y];
                 double normalized = Math.max(0.0, Math.min(1.0, val));
-                elevation[x][y] = normalized;
+                elevation[x][y] = (float) normalized;
             }
         }
 
-        double[][] rainfall = this.generateMercatorImageNoiseMap(this.seed + 12, 1);
-        double[][] temperature = this.generateMercatorImageNoiseMap(this.seed - 12, 1);
+        float[][] rainfall = this.generateMercatorImageNoiseMap(this.seed + 12, 1);
+        float[][] temperature = this.generateMercatorImageNoiseMap(this.seed - 12, 1);
 
         for (int y = 0; y < height; y++) {
             double mercatorY = (double) y / height; // 0..1
@@ -107,7 +109,7 @@ public final class ThreadGenerateCelestialBodyTextures implements Runnable {
             for (int x = 0; x < width; x++) {
                 double noise = temperature[x][y]; // existing noise-based temperature
                 double val = latitudeFactor * 0.7 + noise * 0.3; // blend latitude + noise
-                temperature[x][y] = Math.max(0.0, Math.min(1.0, val)); // clamp to [0, 1]
+                temperature[x][y] = (float) Math.max(0.0, Math.min(1.0, val)); // clamp to [0, 1]
             }
         }
 
@@ -142,13 +144,13 @@ public final class ThreadGenerateCelestialBodyTextures implements Runnable {
 
                 //Yes this seems dumb but this also occurs during the loading of the map so this will ensure that both the initially generated map and the loaded mamp are identical
                 val = MathUtil.intToFloatRGBA(elevationPixels[y * width + x] & 255);
-                elevation[x][y] = val;
+                elevation[x][y] = (float) val;
 
                 val = MathUtil.intToFloatRGBA(temperaturePixels[y * width + x] & 255);
-                temperature[x][y] = val;
+                temperature[x][y] = (float) val;
 
                 val = MathUtil.intToFloatRGBA(rainfallPixels[y * width + x] & 255);
-                rainfall[x][y] = val;
+                rainfall[x][y] = (float) val;
             }
         }
 
@@ -219,14 +221,14 @@ public final class ThreadGenerateCelestialBodyTextures implements Runnable {
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 double val = elevation[x][y] * 2.0 - 1.0;
-                elevation[x][y] = val;
+                elevation[x][y] = (float) val;
 
                 val = temperature[x][y] * 2.0 - 1.0;
-                temperature[x][y] = val;
+                temperature[x][y] = (float) val;
 
 
                 val = rainfall[x][y] * 2.0 - 1.0;
-                rainfall[x][y] = val;
+                rainfall[x][y] = (float) val;
             }
         }
 
@@ -249,7 +251,7 @@ public final class ThreadGenerateCelestialBodyTextures implements Runnable {
 
     }
 
-    private double[][] generateMercatorImageNoiseMap(long seed, double scale){
+    private float[][] generateMercatorImageNoiseMap(long seed, double scale){
         int width = 8192;
         int height = 4096;
 
@@ -259,7 +261,7 @@ public final class ThreadGenerateCelestialBodyTextures implements Runnable {
         double offsetZ = rand.nextDouble() * 1000;
 
 
-        double[][] elevation = new double[width][height];
+        float[][] elevation = new float[width][height];
         int octaves = 4;
 
         // Step 1: Generate elevation using spherical 3D noise
@@ -289,7 +291,7 @@ public final class ThreadGenerateCelestialBodyTextures implements Runnable {
 
 
                 double elevationVal = (noise + 1) / 2.0; // normalize to [0, 1]
-                elevation[x][y] = elevationVal;
+                elevation[x][y] = (float) elevationVal;
             }
         }
 
@@ -297,7 +299,7 @@ public final class ThreadGenerateCelestialBodyTextures implements Runnable {
             for (int x = 0; x < width; x++) {
                 double val = elevation[x][y];
                 double normalized = Math.max(0.0, Math.min(1.0, val));
-                elevation[x][y] = normalized;
+                elevation[x][y] = (float) normalized;
             }
         }
 
@@ -419,25 +421,25 @@ public final class ThreadGenerateCelestialBodyTextures implements Runnable {
             throw new RuntimeException(e);
         }
 
-        double[][] elevation = new double[width][height];
-        double[][] temperature = new double[width][height];
-        double[][] rainfall = new double[width][height];
+        float[][] elevation = new float[width][height];
+        float[][] temperature = new float[width][height];
+        float[][] rainfall = new float[width][height];
 
 
         //converts each pixel to a corresponding float val and pushes it into the range -1 to 1
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 double val = MathUtil.intToFloatRGBA(elevationPixels[y * width + x] & 255);
-                elevation[x][y] = val;
+                elevation[x][y] = (float) val;
 
                 val = MathUtil.intToFloatRGBA(temperaturePixels[y * width + x] & 255);
-                temperature[x][y] = val;
+                temperature[x][y] = (float) val;
 
                 val = MathUtil.intToFloatRGBA(rainfallPixels[y * width + x] & 255);
-                rainfall[x][y] = val;
+                rainfall[x][y] = (float) val;
 
                 val = elevation[x][y] * 2.0 - 1.0;
-                elevation[x][y] = val;
+                elevation[x][y] = (float) val;
 
             }
         }

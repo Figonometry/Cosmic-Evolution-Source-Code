@@ -12,7 +12,7 @@ public final class ThreadPopulateChunk implements Runnable {
     }
     @Override
     public void run() {
-        this.world.chunkController.chunkTerrainHandler.populateChunk(this.chunk);
+        this.world.chunkController.chunkEarthTerrainHandler.populateChunk(this.chunk);
         CosmicEvolution.threadJobs.decrementAndGet();
     }
 }

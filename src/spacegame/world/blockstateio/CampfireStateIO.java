@@ -2,19 +2,18 @@ package spacegame.world.blockstateio;
 
 import spacegame.nbt.NBTTagCompound;
 import spacegame.world.Chunk;
+import spacegame.world.blockstate.BerryBushState;
+import spacegame.world.blockstate.BlockState;
 import spacegame.world.blockstate.CampfireState;
-import spacegame.world.blockstate.TilledSoilState;
-import spacegame.world.blockstatewrapper.CampfireStateSafe;
-
-import java.util.Iterator;
-import java.util.Map;
+import spacegame.world.blockstate.MultiState;
 
 public final class CampfireStateIO {
     public void saveCampfireStates(Chunk chunk, NBTTagCompound nbtTagCompound){
         CampfireState campfireState;
-        CampfireState[] campfireStates = this.getAllCampfireStatesInArray(chunk);
+        int totalCount = chunk.getBlockStateCount(MultiState.CAMPFIRE_STATE);
+        CampfireState[] campfireStates = this.getAllCampfireStatesInArray(chunk, totalCount);
         int campfireStateCount = 0;
-        NBTTagCompound[] campfireStatesTags = new NBTTagCompound[chunk.campfireStates.size()];
+        NBTTagCompound[] campfireStatesTags = new NBTTagCompound[totalCount];
         for(int i = 0; i < campfireStatesTags.length; i++){
             campfireState = campfireStates[i];
             campfireStatesTags[i] = new NBTTagCompound();
@@ -41,24 +40,20 @@ public final class CampfireStateIO {
             int cookingStickCount = campfireStateLoadedTag.getInteger("cookingStickCount");
 
 
-            chunk.addCampfireState(new CampfireState(index, isLit, logCount, cookingStickCount), index);
+            chunk.addBlockState(index, MultiState.CAMPFIRE_STATE, new CampfireState(index, isLit, logCount, cookingStickCount));
         }
     }
 
 
-    public CampfireState[] getAllCampfireStatesInArray(Chunk chunk){
-        int index = 0;
-        CampfireState campfireState;
-        CampfireState[] campfireStates1 = new CampfireState[chunk.campfireStates.size()];
-        Iterator<Map.Entry<Integer, CampfireStateSafe>> iterator = chunk.campfireStates.entrySet().iterator();
-        while(iterator.hasNext()){
-            Map.Entry<Integer, CampfireStateSafe> entry = iterator.next();
-            campfireState = entry.getValue().value;
-            if(campfireState != null){
-                campfireStates1[index] = campfireState;
-                index++;
-            }
+    public CampfireState[] getAllCampfireStatesInArray(Chunk chunk, int totalCount){
+        BlockState[] base = chunk.getAllBlockStatesOfType(MultiState.CAMPFIRE_STATE, totalCount);
+        CampfireState[] returnArray = new CampfireState[base.length];
+
+        for (int i = 0; i < base.length; i++) {
+            returnArray[i] = (CampfireState) base[i];
         }
-        return campfireStates1;
+
+
+        return returnArray;
     }
 }

@@ -2,16 +2,23 @@ package spacegame.block;
 
 import org.lwjgl.glfw.GLFW;
 import spacegame.core.CosmicEvolution;
-import spacegame.core.KeyListener;
+import spacegame.core.eventlisteners.KeyListener;
 import spacegame.entity.EntityBlock;
 import spacegame.entity.EntityItem;
 import spacegame.entity.EntityPlayer;
+import spacegame.gui.ToolTip;
+import spacegame.gui.ToolTipGroup;
 import spacegame.item.Item;
 import spacegame.item.ItemAxe;
+import spacegame.item.ItemIDList;
+import spacegame.render.model.ModelLoader;
+import spacegame.render.texturelists.MouseAndKeyIconTextureList;
 import spacegame.world.Chunk;
 import spacegame.world.World;
+import spacegame.world.blockstate.LogState;
+import spacegame.world.blockstate.MultiState;
 
-public final class BlockLog extends Block {
+public abstract class BlockLog extends Block {
     public BlockLog(short ID, int textureID, String filepath) {
         super(ID, textureID, filepath);
     }
@@ -62,150 +69,211 @@ public final class BlockLog extends Block {
         }
     }
 
+
+    public static int facingDirectionOfLog(int x, int y, int z, World world){
+        LogState logState = (LogState) world.getBlockState(x,y,z, MultiState.LOG_STATE);
+
+        return logState == null ? LogState.FACE_DIRECTION_TOP_AND_BOTTOM : logState.facingDirection;
+    }
+
+    public static int sizeOfLog(int x, int y, int z, World world){
+        LogState logState = (LogState) world.getBlockState(x,y,z, MultiState.LOG_STATE);
+        return logState == null ? 16 : logState.size;
+    }
+
     @Override
-    public int getBlockTexture(int x, int y, int z, int face) {
-       switch (this.ID){
-           case 12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27 -> {
-               return switch (face) {
-                   case 0, 1 -> this.textureID + 1;
-                   default -> this.textureID;
-               };
-           }
-           case 28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43 -> {
-               return switch (face) {
-                   case 2, 3 -> this.textureID + 1;
-                   default -> this.textureID;
-               };
-           }
-           case 44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59 -> {
-               return switch (face) {
-                   case 4, 5 -> this.textureID + 1;
-                   default -> this.textureID;
-               };
-           }
-           default -> {
-               return this.textureID;
-           }
-       }
-    }
+    public ModelLoader getBlockModel(int x, int y, int z, World world){
+        LogState logState = (LogState) world.getBlockState(x,y,z, MultiState.LOG_STATE);
+        if(logState == null)return this.blockModel;
 
-    public static int facingDirectionOfLog(short ID){
-        switch (ID){
-            case 12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27 -> {
-                return 1;
+        switch (logState.facingDirection){
+            case LogState.FACE_DIRECTION_TOP_AND_BOTTOM -> {
+                switch (logState.size){
+                    case 16 -> {
+                        return this.blockModel;
+                    }
+                    case 15 -> {
+                        return BlockModelList.size15NormalModel;
+                    }
+                    case 14 -> {
+                        return BlockModelList.size14NormalModel;
+                    }
+                    case 13 -> {
+                        return BlockModelList.size13NormalModel;
+                    }
+                    case 12 -> {
+                        return BlockModelList.size12NormalModel;
+                    }
+                    case 11 -> {
+                        return BlockModelList.size11NormalModel;
+                    }
+                    case 10 -> {
+                        return BlockModelList.size10NormalModel;
+                    }
+                    case 9 -> {
+                        return BlockModelList.size9NormalModel;
+                    }
+                    case 8 -> {
+                        return BlockModelList.size8NormalModel;
+                    }
+                    case 7 -> {
+                        return BlockModelList.size7NormalModel;
+                    }
+                    case 6 -> {
+                        return BlockModelList.size6NormalModel;
+                    }
+                    case 5 -> {
+                        return BlockModelList.size5NormalModel;
+                    }
+                    case 4 ->{
+                        return BlockModelList.size4NormalModel;
+                    }
+                    case 3 ->{
+                        return BlockModelList.size3NormalModel;
+                    }
+                    case 2 -> {
+                        return BlockModelList.size2NormalModel;
+                    }
+                    case 1 -> {
+                        return BlockModelList.size1NormalModel;
+                    }
+                }
             }
-            case 28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43 -> {
-                return 2;
+            case LogState.FACE_DIRECTION_NORTH_AND_SOUTH -> {
+                switch (logState.size){
+                    case 16 -> {
+                        return this.blockModel;
+                    }
+                    case 15 -> {
+                        return BlockModelList.size15NorthSouthModel;
+                    }
+                    case 14 -> {
+                        return BlockModelList.size14NorthSouthModel;
+                    }
+                    case 13 -> {
+                        return BlockModelList.size13NorthSouthModel;
+                    }
+                    case 12 -> {
+                        return BlockModelList.size12NorthSouthModel;
+                    }
+                    case 11 -> {
+                        return BlockModelList.size11NorthSouthModel;
+                    }
+                    case 10 -> {
+                        return BlockModelList.size10NorthSouthModel;
+                    }
+                    case 9 -> {
+                        return BlockModelList.size9NorthSouthModel;
+                    }
+                    case 8 -> {
+                        return BlockModelList.size8NorthSouthModel;
+                    }
+                    case 7 -> {
+                        return BlockModelList.size7NorthSouthModel;
+                    }
+                    case 6 -> {
+                        return BlockModelList.size6NorthSouthModel;
+                    }
+                    case 5 -> {
+                        return BlockModelList.size5NorthSouthModel;
+                    }
+                    case 4 ->{
+                        return BlockModelList.size4NorthSouthModel;
+                    }
+                    case 3 ->{
+                        return BlockModelList.size3NorthSouthModel;
+                    }
+                    case 2 -> {
+                        return BlockModelList.size2NorthSouthModel;
+                    }
+                    case 1 -> {
+                        return BlockModelList.size1NorthSouthModel;
+                    }
+                }
             }
-            case 44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,597 -> {
-                return 3;
-            }
-            default -> {
-                return 0;
+            case LogState.FACE_DIRECTION_EAST_AND_WEST -> {
+                switch (logState.size){
+                    case 16 -> {
+                        return this.blockModel;
+                    }
+                    case 15 -> {
+                        return BlockModelList.size15EastWestModel;
+                    }
+                    case 14 -> {
+                        return BlockModelList.size14EastWestModel;
+                    }
+                    case 13 -> {
+                        return BlockModelList.size13EastWestModel;
+                    }
+                    case 12 -> {
+                        return BlockModelList.size12EastWestModel;
+                    }
+                    case 11 -> {
+                        return BlockModelList.size11EastWestModel;
+                    }
+                    case 10 -> {
+                        return BlockModelList.size10EastWestModel;
+                    }
+                    case 9 -> {
+                        return BlockModelList.size9EastWestModel;
+                    }
+                    case 8 -> {
+                        return BlockModelList.size8EastWestModel;
+                    }
+                    case 7 -> {
+                        return BlockModelList.size7EastWestModel;
+                    }
+                    case 6 -> {
+                        return BlockModelList.size6EastWestModel;
+                    }
+                    case 5 -> {
+                        return BlockModelList.size5EastWestModel;
+                    }
+                    case 4 ->{
+                        return BlockModelList.size4EastWestModel;
+                    }
+                    case 3 ->{
+                        return BlockModelList.size3EastWestModel;
+                    }
+                    case 2 -> {
+                        return BlockModelList.size2EastWestModel;
+                    }
+                    case 1 -> {
+                        return BlockModelList.size1EastWestModel;
+                    }
+                }
             }
         }
+
+        return this.blockModel;
     }
 
-    public static int sizeOfLog(short ID){
-        switch (ID){
-            case 13, 29, 45:
-                return 15;
-            case 14, 30, 46:
-                return 14;
-            case 15, 31, 47:
-                return 13;
-            case 16, 32, 48:
-                return 12;
-            case 17, 33, 49:
-                return 11;
-            case 18, 34, 50:
-                return 10;
-            case 19, 35, 51:
-                return 9;
-            case 20, 36, 52:
-                return 8;
-            case 21, 37, 53:
-                return 7;
-            case 22, 38, 54:
-                return 6;
-            case 23, 39, 55:
-                return 5;
-            case 24, 40, 56:
-                return 4;
-            case 25, 41, 57:
-                return 3;
-            case 26, 42, 58:
-                return 2;
-            case 27, 43, 59:
-                return 1;
-            default:
-                return 16;
-        }
+
+    @Override
+    public void addBlockStates(int x, int y, int z, World world, EntityPlayer player, Chunk chunk){
+        chunk.addBlockState(Chunk.getBlockIndexFromCoordinates(x,y,z), MultiState.LOG_STATE, new LogState(LogState.FACE_DIRECTION_TOP_AND_BOTTOM, 16, Chunk.getBlockIndexFromCoordinates(x,y,z)));
     }
 
-    public static byte getIDFromParameters(int size, int faceDirection){
-        switch (faceDirection){
-            case 1:
-                return switch (size){
-                    case 1 -> 27;
-                    case 2 -> 26;
-                    case 3 -> 25;
-                    case 4 -> 24;
-                    case 5 -> 23;
-                    case 6 -> 22;
-                    case 7 -> 21;
-                    case 8 -> 20;
-                    case 9 -> 19;
-                    case 10 -> 18;
-                    case 11 -> 17;
-                    case 12 -> 16;
-                    case 13 -> 15;
-                    case 14 -> 14;
-                    case 15 -> 13;
-                    case 16 -> 12;
-                    default -> throw new IllegalStateException("Unexpected value: " + size);
-                };
-            case 2:
-                return switch (size){
-                    case 1 -> 43;
-                    case 2 -> 42;
-                    case 3 -> 41;
-                    case 4 -> 40;
-                    case 5 -> 39;
-                    case 6 -> 38;
-                    case 7 -> 37;
-                    case 8 -> 36;
-                    case 9 -> 35;
-                    case 10 -> 34;
-                    case 11 -> 33;
-                    case 12 -> 32;
-                    case 13 -> 31;
-                    case 14 -> 30;
-                    case 15 -> 29;
-                    case 16 -> 28;
-                    default -> throw new IllegalStateException("Unexpected value: " + size);
-                };
-            case 3:
-                return switch (size){
-                    case 1 -> 59;
-                    case 2 -> 58;
-                    case 3 -> 57;
-                    case 4 -> 56;
-                    case 5 -> 55;
-                    case 6 -> 54;
-                    case 7 -> 53;
-                    case 8 -> 52;
-                    case 9 -> 51;
-                    case 10 -> 50;
-                    case 11 -> 49;
-                    case 12 -> 48;
-                    case 13 -> 47;
-                    case 14 -> 46;
-                    case 15 -> 45;
-                    case 16 -> 44;
-                    default -> throw new IllegalStateException("Unexpected value: " + size);
-                };
-        }
-        return 0;
+    @Override
+    public void registerBlockTooltips(){
+        this.tooltips = new ToolTipGroup[1][1];
+        this.tooltips[0][0] = new ToolTipGroup();
+
+
+        ToolTip leftClickWithShift = new ToolTip();
+        leftClickWithShift.addKeyWithBoxOutline("SHIFT");
+        leftClickWithShift.addText("+");
+        leftClickWithShift.addMouseIcon(MouseAndKeyIconTextureList.LEFT_CLICK);
+        leftClickWithShift.addText("to harvest");
+        leftClickWithShift.addItemID(ItemIDList.FIREWOOD);
+
+
+        this.tooltips[0][0].addToolTip(leftClickWithShift);
     }
+
+    @Override
+    public ToolTipGroup[] getBlockToolTips(int x, int y, int z, World world, EntityPlayer player){
+        return this.tooltips[0];
+    }
+
 }

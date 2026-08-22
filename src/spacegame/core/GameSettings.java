@@ -2,6 +2,7 @@ package spacegame.core;
 
 import org.lwjgl.glfw.GLFW;
 import spacegame.block.Block;
+import spacegame.core.eventlisteners.KeyListener;
 
 import java.io.*;
 import java.util.regex.Pattern;
@@ -22,7 +23,8 @@ public abstract class GameSettings {
     public static boolean viewBob = true;
     public static boolean wavyLeaves = true;
     public static boolean wavyWater = true;
-    public static boolean transparentLeaves;
+    public static boolean transparentLeaves = false;
+    public static boolean blockTooltips = true;
     public static String assetPackPath = "Default:null";
     public static boolean usingDefaultAssets;
     public static KeyBinding keyBeingModified;
@@ -33,6 +35,9 @@ public abstract class GameSettings {
     public static KeyBinding jumpKey = new KeyBinding("Jump", "Space", GLFW.GLFW_KEY_SPACE);
     public static KeyBinding inventoryKey = new KeyBinding("Inventory", "E", GLFW.GLFW_KEY_E);
     public static KeyBinding dropKey = new KeyBinding("Drop", "Q", GLFW.GLFW_KEY_Q);
+    public static KeyBinding shiftKey = new KeyBinding("Crouch", "SHIFT", GLFW.GLFW_KEY_LEFT_SHIFT);
+    public static KeyBinding sprintKey = new KeyBinding("Sprint", "CAPS", GLFW.GLFW_KEY_CAPS_LOCK);
+    public static KeyBinding sitKey = new KeyBinding("Sit", "G", GLFW.GLFW_KEY_G);
 
     public static void loadOptionsFromFile(File directory){
         File optionsFile = new File(directory + "/options.txt");
@@ -102,6 +107,9 @@ public abstract class GameSettings {
                     }
                     if(options[0].equals("transparentLeaves")){
                         transparentLeaves = options[1].equals("true");
+                    }
+                    if(options[0].equals("blockTooltips")){
+                        blockTooltips = options[1].equals("true");
                     }
                     if(options[0].equals("assetPackPath")){
                         String filepath = CosmicEvolution.instance.osName.equals("win") ? options[2] : options[1];

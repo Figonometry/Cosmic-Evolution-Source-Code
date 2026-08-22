@@ -1,5 +1,6 @@
 package spacegame.core;
 
+import org.joml.Matrix4d;
 import org.joml.Vector3d;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFW;
@@ -12,8 +13,13 @@ import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL46;
 import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryUtil;
+import spacegame.block.Block;
 import spacegame.celestial.Sun;
 import spacegame.celestial.Universe;
+import spacegame.core.eventlisteners.CharListener;
+import spacegame.core.eventlisteners.KeyListener;
+import spacegame.core.eventlisteners.MouseListener;
+import spacegame.core.eventlisteners.WindowResizeListener;
 import spacegame.entity.*;
 import spacegame.gui.*;
 import spacegame.item.Item;
@@ -22,7 +28,6 @@ import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.render.*;
 import spacegame.util.Logger;
-import spacegame.util.MathUtil;
 import spacegame.util.ScreenshotHandler;
 import spacegame.world.*;
 import spacegame.world.weather.Cloud;
@@ -111,10 +116,12 @@ public final class CosmicEvolution implements Runnable {
         int numCores = Runtime.getRuntime().availableProcessors();
         int workerCount = Math.max(1, numCores - 1);
         threadPool = new ThreadPoolExecutor(workerCount, workerCount, 0L, TimeUnit.MILLISECONDS, new PriorityBlockingQueue<>());
-        this.dirtyChunksSchedulerThread = new Thread(new ChunkJobThreadScheduler());
+        this.dirtyChunksSchedulerThread = new Thread(new ThreadChunkJobScheduler());
         this.dirtyChunksSchedulerThread.start();
-        this.title = "Cosmic Evolution Alpha v0.52.1 TEST";
+        this.title = "Cosmic Evolution Alpha v0.53";
         GameSettings.loadOptionsFromFile(this.launcherDirectory);
+        Block.registerAllBlockTooltips();
+        EntityLiving.registerEntityLivingToolTip();
         this.clearLogFiles(new File(this.launcherDirectory + "/crashReports"));
         this.initLWJGL();
         this.initAllBufferObjects();
@@ -276,7 +283,7 @@ public final class CosmicEvolution implements Runnable {
     }
 
 
-    public void startSave(int saveSlotNumber, String saveName, long seed, SaveSettings saveSettings) {
+    public void startNewSave(int saveSlotNumber, String saveName, long seed, SaveSettings saveSettings) {
         double x = -150;
         double z = 0;
         this.save = new Save(this, saveSlotNumber, saveName, seed, x, z, saveSettings);
@@ -325,6 +332,7 @@ public final class CosmicEvolution implements Runnable {
             this.save.tick();
             this.renderEngine.loadTexturesFromList();
             this.incrementTextureTimers();
+            ToolTipGroup.altToolTipIndex = this.save.time / (Timer.REAL_SECOND * 2);
             GuiInGame.fadeMessageText();
             if(this.save.time % 18000 == 0 && this.currentGui instanceof GuiInGame){
                 this.save.saveDataToFileWithoutChunkUnload();
@@ -418,9 +426,6 @@ public final class CosmicEvolution implements Runnable {
 
                 if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_U) && KeyListener.keyReleased[GLFW.GLFW_KEY_U]){
 
-                  //  for(int i = 0; i < 10; i++){
-                  //      this.save.activeWorld.addEntity(new EntityDeer(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, true, true));
-                  //  }
 
                   //  if(this.modelTest == null){
                   //      this.modelTest = new EntityDeer(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, true, true);
@@ -430,7 +435,8 @@ public final class CosmicEvolution implements Runnable {
                   //      this.save.activeWorld.findChunkFromChunkCoordinates(MathUtil.floorDouble(this.modelTest.x) >> 5, MathUtil.floorDouble(this.modelTest.y) >> 5, MathUtil.floorDouble(this.modelTest.z) >> 5).removeEntity(this.modelTest);
                   //      this.modelTest = null;
                   //  }
-                 //   Shader.terrainShader = this.renderEngine.reloadShader(Shader.terrainShader);
+                    Shader.terrainShader = this.renderEngine.reloadShader(Shader.terrainShader);
+
                     KeyListener.setKeyReleased(GLFW.GLFW_KEY_U);
                 }
             }
@@ -860,6 +866,19 @@ public final class CosmicEvolution implements Runnable {
         Shader.terrainShader.uploadInt("shadowMap", 1);
         Shader.terrainShader.uploadBoolean("wavyWater", GameSettings.wavyWater);
         Shader.terrainShader.uploadBoolean("wavyLeaves", GameSettings.wavyLeaves);
+
+        //Setup the tooltip shader uniforms now, they will not change
+        Shader.toolTipShader.uploadMat4d("uProjection", camera.guiProjectionMatrix);
+        Shader.toolTipShader.uploadMat4d("uView", new Matrix4d());
+
+        Shader.toolTipShader.uploadInt("fontAtlas", 0);
+        Shader.toolTipShader.uploadInt("textBoxAtlas", 1);
+        Shader.toolTipShader.uploadInt("blockArray", 2);
+        Shader.toolTipShader.uploadInt("itemArray", 3);
+        Shader.toolTipShader.uploadInt("mouseIconAtlas", 4);
+
+        Shader.toolTipShader.uploadInt("width", width);
+        Shader.toolTipShader.uploadInt("height", height);
     }
 
     private void incrementPlayerDamageTilt() {
@@ -978,6 +997,8 @@ public final class CosmicEvolution implements Runnable {
         Assets.disableItemTextureArray();
         Assets.disableBlockTextureArray();
         Assets.disableFontTextureAtlas();
+        Assets.disableMouseIconAtlas();
+        Assets.disableTextBoxAtlas();
 
         this.currentGui.deleteTextures();
 
@@ -993,6 +1014,8 @@ public final class CosmicEvolution implements Runnable {
 
         this.initAllBufferObjects();
 
+        Assets.enableTextBoxAtlas();
+        Assets.enableMouseIconAtlas();
         Assets.enableFontTextureAtlas();
         Assets.enableItemTextureArray();
         Assets.enableBlockTextureArray();
@@ -1002,6 +1025,8 @@ public final class CosmicEvolution implements Runnable {
 
     private void initAllGlobalAssets(){
         Assets.enableFontTextureAtlas();
+        Assets.enableTextBoxAtlas();
+        Assets.enableMouseIconAtlas();
     }
 
     public static void addJobToThreadPool(ChunkJob chunkJob){

@@ -53,6 +53,13 @@ public final class ThreadChunkColumnLoader implements Runnable {
                         NBTTagCompound cropStates = chunkData.getCompoundTag("CropStates");
                         NBTTagCompound tilledSoilStates = chunkData.getCompoundTag("TilledSoilStates");
                         NBTTagCompound campfireStates = chunkData.getCompoundTag("CampfireStates");
+                        NBTTagCompound torchStates = chunkData.getCompoundTag("TorchStates");
+                        NBTTagCompound logStates = chunkData.getCompoundTag("LogStates");
+                        NBTTagCompound berryBushStates = chunkData.getCompoundTag("BerryBushStates");
+                        NBTTagCompound pitKilnStates = chunkData.getCompoundTag("PitKilnStates");
+                        NBTTagCompound reedGrowthStates = chunkData.getCompoundTag("ReedGrowthStates");
+                        NBTTagCompound doorStates = chunkData.getCompoundTag("DoorStates");
+                        NBTTagCompound flowingWaterStates = chunkData.getCompoundTag("FlowingWaterStates");
 
                         chunk = new Chunk(x, y, z, CosmicEvolution.instance.save.activeWorld);
 
@@ -105,6 +112,34 @@ public final class ThreadChunkColumnLoader implements Runnable {
 
                         if(campfireStates != null){
                             new CampfireStateIO().loadCampfireStates(chunk, campfireStates);
+                        }
+
+                        if(torchStates != null){
+                            new TorchStateIO().loadTorchStates(chunk, torchStates);
+                        }
+
+                        if(logStates != null){
+                            new LogStateIO().loadLogStates(chunk, logStates);
+                        }
+
+                        if(berryBushStates != null){
+                            new BerryBushStateIO().loadBerryBushStates(chunk, berryBushStates);
+                        }
+
+                        if(pitKilnStates != null){
+                            new PitKilnStateIO().loadPitKilnStates(chunk, pitKilnStates);
+                        }
+
+                        if(reedGrowthStates != null){
+                            new ReedGrowthStateIO().loadReedGrowthStates(chunk, reedGrowthStates);
+                        }
+
+                        if(doorStates != null){
+                            new DoorStateIO().loadDoorStates(chunk, doorStates);
+                        }
+
+                        if(flowingWaterStates != null){
+                            new FlowingWaterStateIO().loadFlowingWaterStates(chunk, flowingWaterStates);
                         }
 
                         inputStream.close();

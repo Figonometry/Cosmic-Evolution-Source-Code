@@ -5,6 +5,10 @@ import spacegame.core.CosmicEvolution;
 import spacegame.core.Sound;
 import spacegame.entity.ai.AIPassive;
 import spacegame.gui.GuiWorldLoading;
+import spacegame.gui.ToolTip;
+import spacegame.gui.ToolTipGroup;
+import spacegame.item.ItemIDList;
+import spacegame.render.texturelists.MouseAndKeyIconTextureList;
 import spacegame.util.MathUtil;
 import spacegame.world.AxisAlignedBB;
 
@@ -35,11 +39,27 @@ public abstract class EntityLiving extends Entity {
     public AxisAlignedBB westBlock = new AxisAlignedBB();
     public boolean isDead;
     public long timeDied;
-
+    public static ToolTipGroup[] toolTip = new ToolTipGroup[1];
     public EntityLiving(int maxTimeAlive){
         if(!(this instanceof EntityPlayer)) {
             this.despawnTime = CosmicEvolution.instance.save.time + CosmicEvolution.globalRand.nextLong(maxTimeAlive);
         }
+    }
+
+    public static void registerEntityLivingToolTip(){
+        toolTip[0] = new ToolTipGroup();
+
+        ToolTip toolTip = new ToolTip();
+        toolTip.addKeyWithBoxOutline("SHIFT");
+        toolTip.addText("+");
+        toolTip.addMouseIcon(MouseAndKeyIconTextureList.RIGHT_CLICK);
+        toolTip.addText("with");
+        toolTip.addItemID(ItemIDList.STONE_KNIFE);
+        toolTip.addText("to harvest");
+    }
+
+    public ToolTipGroup[] getToolTip(){
+        return toolTip;
     }
 
     public abstract void checkHealth();

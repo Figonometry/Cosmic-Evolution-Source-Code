@@ -9,7 +9,7 @@ import spacegame.item.Item;
 import spacegame.item.crafting.CraftingBlockRecipes;
 import spacegame.world.Chunk;
 
-public final class InWorldCraftingItem {
+public final class InWorldCraftingItem extends BlockState {
     public int indexInChunk;
     public CraftingBlockRecipes outputRecipe;
     public boolean hasBeenBound;
@@ -24,6 +24,14 @@ public final class InWorldCraftingItem {
         this.outputRecipe = outputRecipe;
 
         this.itemsFilled = new boolean[this.outputRecipe.requiredItems.length];
+    }
+
+
+    @Override
+    public void onTick(Chunk callingChunk){
+        if(this.remove){
+            callingChunk.removeBlockState(this.indexInChunk, MultiState.CRAFTING_ITEM_STATE);
+        }
     }
 
 

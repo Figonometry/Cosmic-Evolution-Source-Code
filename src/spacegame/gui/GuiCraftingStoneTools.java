@@ -16,6 +16,7 @@ import spacegame.render.model.ModelLoader;
 import spacegame.util.MathUtil;
 import spacegame.world.Chunk;
 import spacegame.world.blockstate.InWorld3DCraftingItem;
+import spacegame.world.blockstate.MultiState;
 
 public final class GuiCraftingStoneTools extends GuiCrafting {
     public Button close;
@@ -49,12 +50,12 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
 
         for(int i = 0; i < this.selectableRecipes.length; i++){
             switch (i) {
-                case 5 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneSpearHead.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneSpearHead.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.block.ID}, new int[]{1}, new short[]{Block.itemStone.ID});
-                case 4 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneHoeHead.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneHoe.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.block.ID}, new int[]{1}, new short[]{Block.itemStone.ID});
-                case 3 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneFragments.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneFragments.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.block.ID}, new int[]{1}, new short[]{Block.itemStone.ID});
-                case 0 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneHandAxe.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneHandAxe.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.block.ID}, new int[]{1}, new short[]{Block.itemStone.ID});
-                case 1 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneHandKnifeBlade.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneHandKnifeBlade.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.block.ID}, new int[]{1}, new short[]{Block.itemStone.ID});
-                case 2 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneHandShovel.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneHandShovel.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.block.ID}, new int[]{1}, new short[]{Block.itemStone.ID});
+                case 5 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneSpearHead.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneSpearHead.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.block.ID}, new int[]{1}, new short[]{Block.andesiteItemStone.ID});
+                case 4 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneHoeHead.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneHoe.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.block.ID}, new int[]{1}, new short[]{Block.andesiteItemStone.ID});
+                case 3 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneFragments.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneFragments.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.block.ID}, new int[]{1}, new short[]{Block.andesiteItemStone.ID});
+                case 0 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneHandAxe.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneHandAxe.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.block.ID}, new int[]{1}, new short[]{Block.andesiteItemStone.ID});
+                case 1 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneHandKnifeBlade.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneHandKnifeBlade.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.block.ID}, new int[]{1}, new short[]{Block.andesiteItemStone.ID});
+                case 2 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneHandShovel.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneHandShovel.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.block.ID}, new int[]{1}, new short[]{Block.andesiteItemStone.ID});
             }
             selectableX += 64;
         }
@@ -330,9 +331,9 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
         RecipeSelector recipeSelector = this.getSelectedRecipeSelector();
         if(recipeSelector != null){
             CosmicEvolution.instance.save.activeWorld.setBlockWithNotify(this.x, this.y, this.z, Block.crafting3DItem.ID, true);
-            InWorld3DCraftingItem craftingBlock = new InWorld3DCraftingItem(Chunk.getBlockIndexFromCoordinates(this.x, this.y, this.z), Block.stone.ID, this.getInWorldCraftingRecipeName(recipeSelector.itemID), CosmicEvolution.instance.save.activeWorld.findChunkFromChunkCoordinates(this.x >> 5, this.y  >> 5, this.z >> 5));
+            InWorld3DCraftingItem craftingBlock = new InWorld3DCraftingItem(Chunk.getBlockIndexFromCoordinates(this.x, this.y, this.z), CosmicEvolution.instance.save.activeWorld.chunkController.chunkEarthTerrainHandler.getStoneType(this.x, this.y, this.z), this.getInWorldCraftingRecipeName(recipeSelector.itemID), CosmicEvolution.instance.save.activeWorld.findChunkFromChunkCoordinates(this.x >> 5, this.y  >> 5, this.z >> 5));
             craftingBlock.activateCraftingLayer(0);
-            CosmicEvolution.instance.save.activeWorld.addInWorldCrafting3DItem(this.x, this.y, this.z, craftingBlock);
+            CosmicEvolution.instance.save.activeWorld.addBlockState(this.x, this.y, this.z, MultiState.CRAFTING_3D_ITEM_STATE, craftingBlock);
             GLFW.glfwSetInputMode(CosmicEvolution.instance.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
             CosmicEvolution.instance.setNewGui(new GuiInGame(CosmicEvolution.instance));
         }

@@ -1,27 +1,27 @@
 package spacegame.block;
 
 import org.lwjgl.glfw.GLFW;
-import spacegame.core.CosmicEvolution;
-import spacegame.core.KeyListener;
-import spacegame.core.MouseListener;
-import spacegame.core.Sound;
+import spacegame.core.*;
+import spacegame.core.eventlisteners.KeyListener;
+import spacegame.core.eventlisteners.MouseListener;
 import spacegame.entity.EntityItem;
 import spacegame.entity.EntityParticle;
 import spacegame.entity.EntityPlayer;
 import spacegame.gui.GuiInGame;
-import spacegame.item.IFuel;
-import spacegame.item.IHeatable;
-import spacegame.item.Item;
-import spacegame.item.ItemRawGameMeat;
-import spacegame.world.blockstate.ChestLocation;
+import spacegame.gui.ToolTip;
+import spacegame.gui.ToolTipGroup;
+import spacegame.item.*;
+import spacegame.render.texturelists.MouseAndKeyIconTextureList;
 import spacegame.world.Chunk;
 import spacegame.world.World;
 import spacegame.world.blockstate.CampfireState;
+import spacegame.world.blockstate.ChestLocation;
 import spacegame.world.blockstate.HeatableBlockLocation;
+import spacegame.world.blockstate.MultiState;
 
 import java.util.Random;
 
-public final class BlockCampFire extends BlockHeating implements ITickable, IParticleGenerator {
+public final class BlockCampFire extends BlockHeating implements ITickable, IParticleGenerator, IBurnDamage {
 
 
     public BlockCampFire(short ID, int textureID, String filepath, int inventoryWidth, int inventoryHeight) {
@@ -31,9 +31,9 @@ public final class BlockCampFire extends BlockHeating implements ITickable, IPar
 
 
     public void handleSpecialRightClickFunctions(int x, int y, int z, World world, EntityPlayer player) {
-        if (!MouseListener.rightClickReleased) return;
+        if (!MouseListener.rightClickReleased || CosmicEvolution.instance.save.time - MouseListener.lastTimeRightClicked < Timer.REAL_SECOND) return;
 
-        CampfireState campfireState = world.getCampfireState(x,y,z);
+        CampfireState campfireState = (CampfireState) world.getBlockState(x,y,z, MultiState.CAMPFIRE_STATE);
 
         if(campfireState == null)return;
 
@@ -46,13 +46,13 @@ public final class BlockCampFire extends BlockHeating implements ITickable, IPar
                 case 3 -> {
                     campfireState.logCount++;
 
-                    ChestLocation chestLocation = world.getChestLocation(x,y,z);
+                    ChestLocation chestLocation = (ChestLocation) world.getBlockState(x,y,z, MultiState.CHEST_STATE);
 
                     chestLocation.inventory.itemStacks[1].item = Item.fireWood;
                     chestLocation.inventory.itemStacks[1].metadata = Item.NULL_ITEM_METADATA;
                     chestLocation.inventory.itemStacks[1].count = 4;
 
-                    MouseListener.rightClickReleased = false;
+                    MouseListener.rightButtonClicked();
                 }
             }
             if (logCount != 4) {
@@ -64,10 +64,10 @@ public final class BlockCampFire extends BlockHeating implements ITickable, IPar
         }
 
         if (campfireState.logCount == 4) {
-            if (playerHeldItem == Item.stoneFragments.ID || player.getHeldBlock() == Block.torchStandard.ID) {
+            if (playerHeldItem == Item.stoneFragments.ID || player.getHeldBlock() == Block.torch.ID) {
                 campfireState.isLit = true;
                 world.propagateLightSource(x,y,z, this.lightBlockValue);
-                world.addHeatableBlock(x,y,z);
+                world.addBlockState(x,y,z, MultiState.HEATABLE_BLOCK_STATE, new HeatableBlockLocation(Chunk.getBlockIndexFromCoordinates(x,y,z)));
                 world.notifyChunk(x,y,z);
             }
         }
@@ -82,10 +82,10 @@ public final class BlockCampFire extends BlockHeating implements ITickable, IPar
 
 
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) && KeyListener.keyReleased[GLFW.GLFW_KEY_LEFT_SHIFT] && playerHeldBlock == Block.torchStandardUnlit.ID) {
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) && KeyListener.keyReleased[GLFW.GLFW_KEY_LEFT_SHIFT] && playerHeldBlock == Block.torchUnlit.ID) {
             CosmicEvolution.instance.save.thePlayer.removeItemFromInventory();
-            if (!CosmicEvolution.instance.save.thePlayer.addItemToInventory(Item.block.ID, Block.torchStandard.ID, (byte) 1, Item.NULL_ITEM_DURABILITY, 0, null)) {
-                world.addEntity(new EntityItem(CosmicEvolution.instance.save.thePlayer.x, CosmicEvolution.instance.save.thePlayer.y, CosmicEvolution.instance.save.thePlayer.z, Item.block.ID, Block.torchStandard.ID, (byte) 1, Item.NULL_ITEM_DURABILITY, 0, null));
+            if (!CosmicEvolution.instance.save.thePlayer.addItemToInventory(Item.block.ID, Block.torch.ID, (byte) 1, Item.NULL_ITEM_DURABILITY, 0, null)) {
+                world.addEntity(new EntityItem(CosmicEvolution.instance.save.thePlayer.x, CosmicEvolution.instance.save.thePlayer.y, CosmicEvolution.instance.save.thePlayer.z, Item.block.ID, Block.torch.ID, (byte) 1, Item.NULL_ITEM_DURABILITY, 0, null));
             }
             KeyListener.setKeyReleased(GLFW.GLFW_KEY_LEFT_SHIFT);
         }
@@ -98,7 +98,7 @@ public final class BlockCampFire extends BlockHeating implements ITickable, IPar
             GuiInGame.setMessageText("Spawn Point Set", 16777215);
         }
 
-        ChestLocation chestLocation = world.getChestLocation(x,y,z);
+        ChestLocation chestLocation = (ChestLocation) world.getBlockState(x,y,z, MultiState.CHEST_STATE);
 
         if(playerHeldItem != Item.NULL_ITEM_REFERENCE) {
             if (Item.list[playerHeldItem] instanceof ItemRawGameMeat && chestLocation.inventory.itemStacks[0].item == null && campfireState.cookingStickCount == 5) {
@@ -112,7 +112,7 @@ public final class BlockCampFire extends BlockHeating implements ITickable, IPar
 
                 player.removeItemFromInventory();
                 world.notifyChunk(x,y,z);
-                MouseListener.rightClickReleased = false;
+                MouseListener.rightButtonClicked();
                 return;
             }
 
@@ -127,7 +127,7 @@ public final class BlockCampFire extends BlockHeating implements ITickable, IPar
 
                 player.removeItemFromInventory();
                 world.notifyChunk(x,y,z);
-                MouseListener.rightClickReleased = false;
+                MouseListener.rightButtonClicked();
                 return;
             }
         }
@@ -153,7 +153,7 @@ public final class BlockCampFire extends BlockHeating implements ITickable, IPar
 
 
 
-        MouseListener.rightClickReleased = false;
+        MouseListener.rightButtonClicked();
     }
 
     public void onLeftClick(int x, int y, int z, World world, EntityPlayer player){
@@ -183,7 +183,7 @@ public final class BlockCampFire extends BlockHeating implements ITickable, IPar
 
     @Override
     public void tick(int x, int y, int z, World world) {
-        CampfireState campfireState = world.getCampfireState(x,y,z);
+        CampfireState campfireState = (CampfireState) world.getBlockState(x,y,z, MultiState.CAMPFIRE_STATE);
         if(campfireState == null)return;
         if(!campfireState.isLit)return;
 
@@ -192,8 +192,8 @@ public final class BlockCampFire extends BlockHeating implements ITickable, IPar
         CosmicEvolution.instance.soundPlayer.playSound(x, y, z, new Sound(Sound.fireCrackling, false, 1f), CosmicEvolution.globalRand.nextFloat(0.75f, 1));
 
 
-        HeatableBlockLocation heatableBlockLocation = world.getHeatableBlock(x,y,z);
-        ChestLocation chestLocation = world.getChestLocation(x,y,z);
+        HeatableBlockLocation heatableBlockLocation = (HeatableBlockLocation) world.getBlockState(x,y,z, MultiState.HEATABLE_BLOCK_STATE);
+        ChestLocation chestLocation = (ChestLocation) world.getBlockState(x,y,z, MultiState.CHEST_STATE);
         if(heatableBlockLocation == null || chestLocation == null)return;
         if(chestLocation.inventory.itemStacks[0].item == null)return;
         if(!heatableBlockLocation.heating)return;
@@ -214,10 +214,143 @@ public final class BlockCampFire extends BlockHeating implements ITickable, IPar
 
     @Override
     public boolean isLightBlock(int x, int y, int z, World world){
-        CampfireState campfireState = world.getCampfireState(x,y,z);
+        CampfireState campfireState = (CampfireState) world.getBlockState(x,y,z, MultiState.CAMPFIRE_STATE);
         if(campfireState == null)return false;
 
         return campfireState.isLit;
     }
 
+    @Override
+    public boolean canDamage(int x, int y, int z, World world) {
+        CampfireState campfireState = (CampfireState)world.getBlockState(x,y,z, MultiState.CAMPFIRE_STATE);
+        return campfireState != null && campfireState.isLit;
+    }
+
+    @Override
+    public void addBlockStates(int x, int y, int z, World world, EntityPlayer player, Chunk chunk){
+        world.addBlockState(x,y,z, MultiState.CHEST_STATE , new ChestLocation(Chunk.getBlockIndexFromCoordinates(x,y,z), new Inventory(1, 2), world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5)));
+        world.addBlockState(x,y,z, MultiState.CAMPFIRE_STATE, new CampfireState(Chunk.getBlockIndexFromCoordinates(x,y,z), false, 0,0));
+    }
+
+
+    @Override
+    public void registerBlockTooltips(){
+        //In order of unlit, and lit, unlit/lit will have to be duplicated and placed into the array twice
+        this.tooltips = new ToolTipGroup[5][2];
+
+        for(int i = 0; i < this.tooltips.length; i++){
+            for(int k = 0; k < this.tooltips[i].length; k++){
+                this.tooltips[i][k] = new ToolTipGroup();
+            };
+        }
+
+        ToolTip lightWithRockTooltip = new ToolTip();
+
+        lightWithRockTooltip.addMouseIcon(MouseAndKeyIconTextureList.RIGHT_CLICK);
+        lightWithRockTooltip.addText("with");
+        lightWithRockTooltip.addItemID(ItemIDList.STONE_FRAGMENTS);
+        lightWithRockTooltip.addText("to light fire");
+
+
+        ToolTip lightWithTorchTooltip = new ToolTip();
+
+        lightWithRockTooltip.addMouseIcon(MouseAndKeyIconTextureList.RIGHT_CLICK);
+        lightWithRockTooltip.addText("with");
+        lightWithRockTooltip.addBlockID(BlockIDList.TORCH);
+        lightWithRockTooltip.addText("to light fire");
+
+
+
+        ToolTip rightClickWithFireWood = new ToolTip();
+
+        rightClickWithFireWood.addMouseIcon(MouseAndKeyIconTextureList.RIGHT_CLICK);
+        rightClickWithFireWood.addText("with");
+        rightClickWithFireWood.addItemID(ItemIDList.FIREWOOD);
+        rightClickWithFireWood.addText("to add fuel");
+
+
+        ToolTip rightClickWithSticks = new ToolTip();
+
+        rightClickWithSticks.addMouseIcon(MouseAndKeyIconTextureList.RIGHT_CLICK);
+        rightClickWithSticks.addText("with");
+        rightClickWithSticks.addBlockID(BlockIDList.ITEM_STICK);
+        rightClickWithSticks.addText("to build cooking setup");
+
+
+        ToolTip cookingFood = new ToolTip();
+
+        cookingFood.addMouseIcon(MouseAndKeyIconTextureList.RIGHT_CLICK);
+        cookingFood.addText("with");
+        cookingFood.addItemID(ItemIDList.RAW_GAME_MEAT);
+        cookingFood.addText("to cook");
+
+
+        ToolTip craftingTorch = new ToolTip();
+
+        craftingTorch.addMouseIcon(MouseAndKeyIconTextureList.RIGHT_CLICK);
+        craftingTorch.addText("with");
+        craftingTorch.addItemID(BlockIDList.TORCH_UNLIT);
+        craftingTorch.addText("to craft");
+        craftingTorch.addItemID(BlockIDList.TORCH);
+
+
+        ToolTip setSpawn = new ToolTip();
+
+        setSpawn.addMouseIcon(MouseAndKeyIconTextureList.RIGHT_CLICK);
+        setSpawn.addText("to set your spawn point");
+
+
+        this.tooltips[0][0].addToolTip(lightWithRockTooltip);
+        this.tooltips[0][0].addToolTip(lightWithTorchTooltip);
+
+        this.tooltips[1][0].addToolTip(rightClickWithFireWood);
+
+        this.tooltips[2][0].addToolTip(rightClickWithSticks);
+        this.tooltips[2][0].addToolTip(setSpawn);
+        this.tooltips[2][0].addToolTip(craftingTorch);
+
+        this.tooltips[3][0].addToolTip(cookingFood);
+        this.tooltips[3][0].addToolTip(setSpawn);
+        this.tooltips[3][0].addToolTip(craftingTorch);
+
+        this.tooltips[4][0].addToolTip(setSpawn);
+        this.tooltips[4][0].addToolTip(craftingTorch);
+
+    }
+
+
+    @Override
+    public ToolTipGroup[] getBlockToolTips(int x, int y, int z, World world, EntityPlayer player){
+        CampfireState campfireState = (CampfireState) world.getBlockState(x,y,z, MultiState.CAMPFIRE_STATE);
+        if(campfireState == null)return null;
+
+        if(!campfireState.isLit){
+            if(campfireState.logCount == 4){
+                return this.tooltips[0];
+            }
+            if(campfireState.logCount < 4){
+               return this.tooltips[1];
+            }
+        } else { //This is lit
+            if(campfireState.cookingStickCount < 5){
+                return this.tooltips[2];
+            }
+
+            if(campfireState.cookingStickCount == 5){
+                ChestLocation inventoryAtCampfire = (ChestLocation) world.getBlockState(x,y,z, MultiState.CHEST_STATE);
+                if(inventoryAtCampfire == null) {
+                   return this.tooltips[4];
+                }
+
+                if(inventoryAtCampfire.inventory.itemStacks[0].item == null){
+                    return this.tooltips[3];
+                }
+            }
+
+            return this.tooltips[4];
+        }
+
+
+        return null;
+    }
 }

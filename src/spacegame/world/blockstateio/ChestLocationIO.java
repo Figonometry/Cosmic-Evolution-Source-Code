@@ -6,20 +6,20 @@ import spacegame.item.Inventory;
 import spacegame.item.ItemStack;
 import spacegame.item.itemstate.ItemState;
 import spacegame.nbt.NBTTagCompound;
-import spacegame.world.blockstate.ChestLocation;
 import spacegame.world.Chunk;
-import spacegame.world.blockstatewrapper.ChestLocationSafe;
-
-import java.util.Iterator;
-import java.util.Map;
+import spacegame.world.blockstate.BlockState;
+import spacegame.world.blockstate.CampfireState;
+import spacegame.world.blockstate.ChestLocation;
+import spacegame.world.blockstate.MultiState;
 
 public class ChestLocationIO { //This must be instance and not static since it will be executed from different threads and synchronizing would cause performance overhead
 
     public void saveChestLocations(Chunk chunk, NBTTagCompound nbtTagCompound){
         ChestLocation chestLocation;
-        ChestLocation[] chestLocations = this.getAllChestLocationsInArray(chunk);
+        int totalCount = chunk.getBlockStateCount(MultiState.CHEST_STATE);
+        ChestLocation[] chestLocations = this.getAllChestLocationsInArray(chunk, totalCount);
         int chestCount = 0;
-        NBTTagCompound[] chests = new NBTTagCompound[chunk.chestLocations.size()];
+        NBTTagCompound[] chests = new NBTTagCompound[totalCount];
         for(int i = 0; i < chests.length; i++){
             chestLocation = chestLocations[i];
             chests[i] = new NBTTagCompound();
@@ -72,25 +72,21 @@ public class ChestLocationIO { //This must be instance and not static since it w
                         chestInventory.loadItemToInventory(id, metadata, count, durability, j, decayTime, ItemState.loadFromCompoundTag(item.getCompoundTag("itemState")));
                     }
                 }
-                chunk.addChestLocation(index, chestInventory);
+                chunk.addBlockState(index, MultiState.CHEST_STATE , new ChestLocation(index, chestInventory, chunk));
             }
         }
     }
 
-    private ChestLocation[] getAllChestLocationsInArray(Chunk chunk){
-        int index = 0;
-        ChestLocation chestLocation;
-        ChestLocation[] chestLocations1 = new ChestLocation[chunk.chestLocations.size()];
-        Iterator<Map.Entry<Integer, ChestLocationSafe>> iterator = chunk.chestLocations.entrySet().iterator();
-        while(iterator.hasNext()){
-            Map.Entry<Integer, ChestLocationSafe> entry = iterator.next();
-            chestLocation = entry.getValue().value;
-            if(chestLocation != null){
-                chestLocations1[index] = chestLocation;
-                index++;
-            }
+    private ChestLocation[] getAllChestLocationsInArray(Chunk chunk, int totalCount){
+        BlockState[] base = chunk.getAllBlockStatesOfType(MultiState.CHEST_STATE, totalCount);
+        ChestLocation[] returnArray = new ChestLocation[base.length];
+
+        for (int i = 0; i < base.length; i++) {
+            returnArray[i] = (ChestLocation) base[i];
         }
-        return chestLocations1;
+
+
+        return returnArray;
     }
 
 }

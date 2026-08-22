@@ -1,6 +1,7 @@
 package spacegame.core;
 
 import org.lwjgl.glfw.GLFW;
+import spacegame.core.eventlisteners.KeyListener;
 import spacegame.gui.TextField;
 
 public abstract class KeyMappings {

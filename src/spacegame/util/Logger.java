@@ -2,11 +2,17 @@ package spacegame.util;
 
 import spacegame.core.CosmicEvolution;
 
+import javax.accessibility.AccessibleHypertext;
 import javax.swing.*;
+import javax.swing.event.HyperlinkEvent;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
+import java.net.URI;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
@@ -138,6 +144,8 @@ public final class Logger {
         stackTrace.append("On Mac this is under Library/Application Support/");
         stackTrace.append("\n");
         stackTrace.append("On Linux this is under the user's home directory");
+
+
         String stackTraceMessage = stackTrace.toString(); //Acquire each element of the stack trace as a string with a new line to display in the window
 
         //Still log in a crash file
@@ -175,11 +183,37 @@ public final class Logger {
         textArea.setWrapStyleWord(true);
         textArea.setEditable(false);
         textArea.setForeground(Color.YELLOW);
+        textArea.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                try {
+                    File folder = new File(CosmicEvolution.instance.launcherDirectory, "crashReports");
+
+                    if (!folder.exists()) {
+                        folder.mkdirs();
+                    }
+
+                    Desktop.getDesktop().open(folder);
+                } catch (Exception exception){
+                    exception.printStackTrace();
+                }
+            }
+        });
         textArea.setFocusable(false);
         textArea.setBackground(new Color(0,0,0,0));
         textArea.setBorder(null);
         textArea.setOpaque(false);
         textArea.setText(stackTraceMessage);
+
+        JLabel folderOpenText = new JLabel();
+        folderOpenText.setText("Click in the window to view crash reports");
+        folderOpenText.setForeground(Color.RED);
+        folderOpenText.setBackground(new Color(0,0,0,0));
+        folderOpenText.setCursor(Cursor.getDefaultCursor());
+        folderOpenText.setVisible(true);
+        folderOpenText.setBorder(null);
+
 
         JScrollPane scrollPane = new JScrollPane(textArea);
         scrollPane.setBounds(0, 0, 854, 480);
@@ -190,11 +224,20 @@ public final class Logger {
         scrollPane.getViewport().setBackground(new Color(0,0,0,0));
         scrollPane.setViewportBorder(null);
 
+        JScrollPane scrollPane2 = new JScrollPane(folderOpenText);
+        scrollPane2.setBounds(0, 0, 854, 480);
+        scrollPane2.setBorder(null);
+        scrollPane2.setOpaque(false);
+        scrollPane2.getViewport().setOpaque(false);
+        scrollPane2.setBackground(new Color(0,0,0,0));
+        scrollPane2.getViewport().setBackground(new Color(0,0,0,0));
+        scrollPane2.setViewportBorder(null);
+
+
         panel.add(scrollPane);
+        panel.add(scrollPane2);
         frame.add(panel);
         frame.setVisible(true);
     }
-
-
 
 }

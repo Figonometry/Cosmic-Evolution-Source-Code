@@ -1,11 +1,11 @@
 package spacegame.world;
 
 import spacegame.block.Block;
+import spacegame.block.BlockGrass;
 import spacegame.core.CosmicEvolution;
 import spacegame.util.LongHasher;
 import spacegame.util.MathUtil;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Random;
@@ -49,7 +49,7 @@ public final class WorldGenBerryBush extends WorldGen{
             upperBlockID = this.worldEarth.getBlockID(x,y + 1,z);
         }
 
-        return lowerBlockID == Block.grass.ID && upperBlockID == Block.air.ID;
+        return Block.list[lowerBlockID] instanceof BlockGrass && upperBlockID == Block.air.ID;
     }
 
     private boolean doesBlockIntersectSphere(int x, int y, int z, int startX, int startY, int startZ, int radiusSq){

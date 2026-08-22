@@ -116,6 +116,7 @@ public final class Save {
         if(this.activeWorld != null && this.thePlayer != null) {
             this.thePlayer.savePlayerToFile();
             this.activeWorld.saveWorld();
+            this.activeWorld.chunkController.renderWorldScene.skybox.cleanupOpenGLState();
         }
     }
 

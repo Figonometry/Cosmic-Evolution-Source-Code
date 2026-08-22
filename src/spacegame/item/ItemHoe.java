@@ -1,14 +1,17 @@
 package spacegame.item;
 
 import spacegame.block.Block;
+import spacegame.block.BlockGrass;
 import spacegame.block.BlockSoil;
+import spacegame.block.BlockTilledSoil;
 import spacegame.core.CosmicEvolution;
-import spacegame.core.MouseListener;
+import spacegame.core.eventlisteners.MouseListener;
 import spacegame.core.Sound;
 import spacegame.entity.EntityPlayer;
 import spacegame.entity.animations.PlayerAnimationTillingSoil;
 import spacegame.world.Chunk;
 import spacegame.world.World;
+import spacegame.world.blockstate.MultiState;
 import spacegame.world.blockstate.TilledSoilState;
 
 public final class ItemHoe extends ItemTool {
@@ -34,12 +37,14 @@ public final class ItemHoe extends ItemTool {
         z = coordinatesPlayerIsLookingAt[2];
         short blockID = world.getBlockID(x,y,z);
 
-        if(blockID != Block.grass.ID && blockID != Block.dirt.ID)return;
+        if(!(Block.list[blockID] instanceof BlockSoil) && !(Block.list[blockID] instanceof BlockGrass))return;
         if(world.getBlockID(x, y + 1, z) != Block.air.ID)return;
 
+        float nutrientPercent = BlockSoil.getNutrientLevel(blockID);
+
         world.setBlockWithNotify(x,y,z, Block.tilledSoil.ID, true);
-        world.addTimeEvent(x,y,z, world.ce.save.time + ((BlockSoil)Block.tilledSoil).getUpdateTime());
-        world.addTilledSoilState(new TilledSoilState(Chunk.getBlockIndexFromCoordinates(x,y,z), 0.5f, 0.5f, 0.5f, 0.5f, TilledSoilState.NO_FERTILIZER), x,y,z);
+        world.addTimeEvent(x,y,z, world.ce.save.time + ((BlockTilledSoil)Block.tilledSoil).getUpdateTime(x,y,z,world));
+        world.addBlockState(x,y,z, MultiState.TILLED_SOIL_STATE, new TilledSoilState(Chunk.getBlockIndexFromCoordinates(x,y,z), 0.5f, nutrientPercent, nutrientPercent, nutrientPercent, TilledSoilState.NO_FERTILIZER));
         CosmicEvolution.instance.soundPlayer.playSound(player.x, player.y, player.z, new Sound(Sound.dirt, false, 1f), 1f);
         player.reduceHeldItemDurability();
     }

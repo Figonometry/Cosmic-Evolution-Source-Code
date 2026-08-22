@@ -111,7 +111,7 @@ public final class EntityThrownSpear extends EntityProjectile {
 
     @Override
     public void render() {
-        new RenderEntityItem(this.x, this.y, this.z, null, false, false, this.itemID, Item.NULL_ITEM_METADATA, this.height, this.width, this.yaw, this.pitch).renderEntity();
+        new RenderEntityItem(this.x, this.y, this.z, null, false, false, this.itemID, Item.NULL_ITEM_METADATA, this.height, this.width, this.yaw, this.pitch, false).renderEntity();
         if(Block.list[CosmicEvolution.instance.save.activeWorld.getBlockID(MathUtil.floorDouble(this.x), MathUtil.floorDouble(this.y - 0.1), MathUtil.floorDouble(this.z))].isSolid) {
             this.renderShadow();
         }

@@ -5,8 +5,9 @@ import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
+import spacegame.block.BlockItemStone;
 import spacegame.core.CosmicEvolution;
-import spacegame.core.MouseListener;
+import spacegame.core.eventlisteners.MouseListener;
 import spacegame.entity.EntityBlock;
 import spacegame.entity.EntityItem;
 import spacegame.gui.FontRenderer;
@@ -102,9 +103,9 @@ public final class ItemStack {
         if(this.item != null){
             tessellator.toggleOrtho();
             if(this.item.renderItemWithBlockModel){
-                ModelLoader model = Block.list[this.metadata].blockModel.copyModel();
+                ModelLoader model = Block.list[this.metadata].getBlockModel(0,0,0, CosmicEvolution.instance.save.activeWorld).copyModel();
                 model.translateModel(-0.5f, 0, -0.5f);
-                if(this.metadata == Block.itemStone.ID || this.metadata == Block.itemStick.ID){
+                if(Block.list[this.metadata] instanceof BlockItemStone || this.metadata == Block.itemStick.ID){
                    model.translateModel(0.5f, 0, 0.5f);
                    model.scaleModel(2f);
                 }
@@ -225,9 +226,9 @@ public final class ItemStack {
         if (this.item != null) {
             tessellator.toggleOrtho();
             if (this.item.renderItemWithBlockModel) {
-                ModelLoader model = Block.list[this.metadata].blockModel.copyModel();
+                ModelLoader model = Block.list[this.metadata].getBlockModel(0,0,0, CosmicEvolution.instance.save.activeWorld).copyModel();
                 model.translateModel(-0.5f, 0, -0.5f);
-                if (this.metadata == Block.itemStone.ID || this.metadata == Block.itemStick.ID) {
+                if (Block.list[this.metadata] instanceof BlockItemStone || this.metadata == Block.itemStick.ID) {
                    model.translateModel(0.5f, 0, 0.5f);
                    model.scaleModel(2f);
                 }

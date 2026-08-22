@@ -1,10 +1,10 @@
 package spacegame.world;
 
 import spacegame.block.Block;
+import spacegame.block.BlockSand;
 import spacegame.core.CosmicEvolution;
 import spacegame.util.LongHasher;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Random;
@@ -13,7 +13,7 @@ public final class WorldGenCactus extends WorldGen{
     public HashSet<Chunk> touchedChunks = new HashSet<>();
     public HashMap<Long, Chunk> chunkCache = new HashMap<>();
     public WorldGenCactus(Chunk chunk, WorldEarth worldEarth, int index){
-        if(chunk.blocks[index] != Block.sand.ID)return;
+        if(!(Block.list[chunk.blocks[index]] instanceof BlockSand))return;
         this.worldEarth = worldEarth;
         this.index = index;
         this.chunk = chunk;

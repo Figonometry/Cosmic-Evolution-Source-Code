@@ -19,6 +19,7 @@ import spacegame.world.Chunk;
 import spacegame.world.World;
 import spacegame.world.blockstate.Crop;
 import spacegame.world.blockstate.CropState;
+import spacegame.world.blockstate.MultiState;
 import spacegame.world.blockstate.TilledSoilState;
 
 import java.util.ArrayList;
@@ -63,7 +64,7 @@ public class GuiMutateCrop extends GuiCrafting {
 
         if(this.selectableRecipes.length == 0) {
             String cropName = ((ItemSeed)Item.list[player.getHeldItem()]).getCropName();
-            world.addCropState(new CropState(Chunk.getBlockIndexFromCoordinates(x,y,z), cropName, false, "no target", 0, 0),x,y,z);
+            world.addBlockState(x,y,z, MultiState.CROP_STATE, new CropState(Chunk.getBlockIndexFromCoordinates(x,y,z), cropName, false, "no target", 0, 0));
             world.notifyChunk(x,y,z);
             this.close = true;
         }
@@ -366,12 +367,12 @@ public class GuiMutateCrop extends GuiCrafting {
     public void handleLeftClick(){
         RecipeSelector recipeSelector = this.getSelectedRecipeSelector();
         if(recipeSelector != null) {
-            TilledSoilState tilledSoilState = this.world.getTilledSoilState(this.x, this.y - 1, this.z);
+            TilledSoilState tilledSoilState = (TilledSoilState) this.world.getBlockState(this.x, this.y - 1, this.z, MultiState.TILLED_SOIL_STATE);
             tilledSoilState.fertilizerID = TilledSoilState.NO_FERTILIZER;
 
             CropState cropState = new CropState(Chunk.getBlockIndexFromCoordinates(this.x, this.y, this.z),
                    this.crop.name, true, ((ItemSeed)Item.list[recipeSelector.itemID]).getCropName(), 0, 0);
-            this.world.addCropState(cropState, this.x, this.y, this.z);
+            this.world.addBlockState(this.x, this.y, this.z, MultiState.CROP_STATE, cropState);
             this.ce.setNewGui(new GuiInGame(this.ce));
             this.world.notifyChunk(this.x, this.y, this.z);
         }

@@ -6,30 +6,11 @@ import spacegame.entity.EntityPlayer;
 import spacegame.gui.GuiCraftingTableRecipeSelection;
 import spacegame.item.Item;
 import spacegame.item.crafting.CraftingBlockRecipes;
-import spacegame.render.RenderBlocks;
 import spacegame.world.World;
 
 public final class BlockCraftingTable extends Block {
     public BlockCraftingTable(short ID, int textureID, String filepath) {
         super(ID, textureID, filepath);
-    }
-
-    @Override
-    public int getBlockTexture(int x, int y, int z, int face) {
-        switch (this.ID){
-            case 132 -> { //Primitive crafting table
-                switch (face){ //40 is the side, 41 is the top
-                    case RenderBlocks.TOP_FACE ->{
-                        return this.textureID + 1;
-                    }
-                    case RenderBlocks.BOTTOM_FACE -> {
-                        return Block.dirt.textureID;
-                    }
-                }
-            }
-        }
-
-        return this.textureID;
     }
 
     @Override

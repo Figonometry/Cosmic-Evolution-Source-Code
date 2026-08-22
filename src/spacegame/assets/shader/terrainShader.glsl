@@ -6,6 +6,35 @@ layout (location=2) in float aTexCoords;
 layout (location=3) in float aTexId;
 layout (location=4) in vec2 normalAndSkyLightValue;
 
+//Movemment related
+const int WATER_TOP_TEXTURE = 4;
+const int WATER_SIDE_TEXTURE = 63;
+const int WATER_NORTH_FLOW_TEXTURE = 65;
+const int WATER_SOUTH_FLOW_TEXTURE = 66;
+const int WATER_EAST_FLOW_TEXTURE = 67;
+const int WATER_WEST_FLOW_TEXTURE = 68;
+const int WATER_SIDE_TEXTURE_2 = 69;
+const int LEAF_OPAQUE_TEXTURE = 10;
+const int LEAF_TRANSPARENT_TEXTURE = 24;
+const int FIRE_TEXTURE = 18;
+
+//Color corrected, some overlap with movement
+const int GRASS_FULL_TOP_TEXTURE = 0;
+const int GRASS_FULL_SIDE_TEXTURE = 2;
+const int TALL_GRASS_TEXTURE = 30;
+const int BERRY_BUSH_TOP_BASE_TEXTURE = 11;
+const int BERRY_BUSH_SIDE_BASE_TEXTURE = 12;
+const int EMPTY_COLOR_TEXTURE = 19;
+const int GRASS_SMALL_PATCHES_TOP_TEXTURE = 33;
+const int GRASS_SMALL_PATCHES_SIDE_TEXTURE = 34;
+const int GRASS_LARGE_PATCHES_TOP_TEXTURE = 35;
+const int GRASS_LARGE_PATCHES_SIDE_TEXTURE = 36;
+
+//Shifted on standard block model, heavy overlap with color corrected
+const int SNOWY_GRASS_FULL_SIDE_TEXTURE = 96;
+const int SNOWY_GRASS_SMALL_PATCHES_SIDE_TEXTURE = 37;
+const int SNOWY_GRASS_LARGE_PATCHES_SIDE_TEXTURE = 41;
+
 uniform dmat4 uProjection;
 uniform dmat4 uView;
 uniform vec3 chunkOffset;
@@ -170,21 +199,29 @@ vec4 decompressSkyLightValue(vec2 normalAndSkyLightValue){
 
 bool isTexIDColorCorrected(int texID){
     switch(texID){
-        case 0: //Grass Top
+        case GRASS_FULL_TOP_TEXTURE: //Grass Top
         return true;
-        case 2: //Grass Side
+        case GRASS_FULL_SIDE_TEXTURE: //Grass Side
         return true;
-        case 10: //Leaf Opaque
+        case LEAF_OPAQUE_TEXTURE: //Leaf Opaque
         return true;
-        case 24: //Leaf Transparent
+        case LEAF_TRANSPARENT_TEXTURE: //Leaf Transparent
         return true;
-        case 30: //Tall Grass
+        case TALL_GRASS_TEXTURE: //Tall Grass
         return true;
-        case 11: //Berry Bush Base Side
+        case BERRY_BUSH_TOP_BASE_TEXTURE: //Berry Bush Base Side
         return true;
-        case 12: //Berry Bush Base Top
+        case BERRY_BUSH_SIDE_BASE_TEXTURE: //Berry Bush Base Top
         return true;
-        case 19: //Empty color for item blocks
+        case EMPTY_COLOR_TEXTURE: //Empty color for item blocks
+        return true;
+        case GRASS_LARGE_PATCHES_SIDE_TEXTURE:
+        return true;
+        case GRASS_LARGE_PATCHES_TOP_TEXTURE:
+        return true;
+        case GRASS_SMALL_PATCHES_TOP_TEXTURE:
+        return true;
+        case GRASS_SMALL_PATCHES_SIDE_TEXTURE:
         return true;
         default:
         return false;
@@ -229,7 +266,7 @@ vec4 setFinalColor(vec4 skyLightColor, vec4 vertexColor){
     //Reconstruct the color of the grass/ whatever grayscale image needs to be colored by multiplying the vertex color by a precalculated value on the CPU side, the value's formula is 1 / vertexColor = y.
     //This value can be converted from a float to half, split into two bytes and stuck onto aColor and aTexCoords, they are seperated on the CPU side. Reconstruct using those two to return it back to a float
     //Take this float and multiply it by the vertex color to get the grass color value (some form of green). Take this value and multiply it by the skylightcolor vec4. Then perform the comparison to determine which color is brighter for lighting calcs
-    //This code should only run when doing any kind of grayscale coloring, this is worthless to do on dirt stone snow, etc.
+    //This code should only run when doing any kind of grayscale coloring, this is worthless to do on soil stone snow, etc.
 }
 
 vec3 windyGrass(vec3 vertexPos){
@@ -253,7 +290,7 @@ void main()
     vec3 correctPos = vec3(chunkOffset + decompressPosition(aPos, aTexId));
     vec3 correctPosRelativeToSun = vec3(sunChunkOffset + decompressPosition(aPos, aTexId));
         switch(int(fTexId)){
-            case 4://water top
+            case WATER_TOP_TEXTURE://water top
             fColor.xyz -= 0.5F;
             fColor.w = max(fColor.w, 0.5f);
             if (wavyWater){
@@ -264,7 +301,7 @@ void main()
             }
             break;
 
-            case 63://water side
+            case WATER_SIDE_TEXTURE://water side
             fColor.xyz -= 0.5F;
             fColor.w = max(fColor.w, 0.5f);
             if (wavyWater && fTexCoords.y != 1.0){
@@ -276,7 +313,7 @@ void main()
             fTexCoords.y -= (float(time/60));
             break;
 
-            case 65://water flowing north
+            case WATER_NORTH_FLOW_TEXTURE://water flowing north
             fColor.xyz -= 0.5F;
             fColor.w = max(fColor.w, 0.5f);
             fTexCoords.x += (float(time/60));
@@ -288,7 +325,7 @@ void main()
             }
             break;
 
-            case 66://water flowing south
+            case WATER_SOUTH_FLOW_TEXTURE://water flowing south
             fColor.xyz -= 0.5F;
             fColor.w = max(fColor.w, 0.5f);
             fTexCoords.x -= (float(time/60));
@@ -300,7 +337,7 @@ void main()
             }
             break;
 
-            case 67://water flowing east
+            case WATER_EAST_FLOW_TEXTURE://water flowing east
             fTexCoords.y += (float(time/60));
             fColor.xyz -= 0.5F;
             fColor.w = max(fColor.w, 0.5f);
@@ -312,7 +349,7 @@ void main()
             }
             break;
 
-            case 68://water flowing west
+            case WATER_WEST_FLOW_TEXTURE://water flowing west
             fTexCoords.y -= (float(time/60));
             fColor.xyz -= 0.5F;
             fColor.w = max(fColor.w, 0.5f);
@@ -324,7 +361,7 @@ void main()
             }
             break;
 
-            case 69://water side fullwater
+            case WATER_SIDE_TEXTURE_2://water side fullwater
             fTexCoords.y -= (float(time/60));
             fColor.xyz -= 0.5F;
             fColor.w = max(fColor.w, 0.5f);
@@ -338,19 +375,19 @@ void main()
             }
             break;
 
-            case 10://leaves
+            case LEAF_OPAQUE_TEXTURE://leaves
             if(wavyLeaves){
                 correctPos.x = sinX(correctPos.x, correctPos.y, correctPos.z);
             }
             break;
 
-            case 24://leaves transparent
+            case LEAF_TRANSPARENT_TEXTURE://leaves transparent
             if(wavyLeaves){
                 correctPos.x = sinX(correctPos.x, correctPos.y, correctPos.z);
             }
             break;
 
-            case 18://fire
+            case FIRE_TEXTURE://fire
             fTexCoords.xy += vec2(sin(correctPos.x * 2.0 + float(time) * 0.1) * 0.05, cos(correctPos.y * 3.0 + float(time) * 0.15)  * 0.20);
             fTexCoords.y = clamp(fTexCoords.y, 0.0, 1.0);
             break;
@@ -370,11 +407,12 @@ void main()
     isInShadowRange = distance(correctPos, playerPositionInChunk) < 64.0 ? 1 : 0; //This value should be the size of the shadowmap's orthographic projection
 
     fPlayerPositionInChunk = playerPositionInChunk;
-    fragPosInWorldSpace = correctPos;
 
     if(windy && int(fTexId) == 30){
         correctPos = windyGrass(correctPos);
     }
+
+    fragPosInWorldSpace = correctPos;
 
     frostFactor = decompressFrostFactor(aTexCoords);
 
@@ -397,6 +435,22 @@ flat in vec3 fNormal;
 in vec3 fragPosInWorldSpace;
 in vec3 fPlayerPositionInChunk;
 in vec3 lightDir;
+
+
+//This is for the frost exclusion list
+const int TORCH_TEXTURE = 3;
+const int WATER_TOP_TEXTURE = 4;
+const int CAMPFIRE_BASE_TEXTURE = 16;
+const int REED_CHEST_TEXTURE = 32;
+const int TORCH_UNLIT_TEXTURE = 38;
+const int TORCH_BURNED_OUT_TEXTURE = 39;
+const int WATER_SIDE_TEXTURE = 63;
+const int WATER_BOTTOM_TEXTURE = 64;
+const int WATER_NORTH_FLOW_TEXTURE = 65;
+const int WATER_SOUTH_FLOW_TEXTURE = 66;
+const int WATER_EAST_FLOW_TEXTURE = 67;
+const int WATER_WEST_FLOW_TEXTURE = 68;
+const int WATER_SIDE_TEXTURE_2 = 69;
 
 uniform sampler2DArray textureArray;
 uniform sampler2D shadowMap;
@@ -579,7 +633,39 @@ float fbm(vec2 p) {
 }
 
 
+bool notInExclusionList(int id){
 
+    switch(id){
+        case TORCH_TEXTURE:
+        return false;
+        case WATER_TOP_TEXTURE:
+        return false;
+        case CAMPFIRE_BASE_TEXTURE:
+        return false;
+        case REED_CHEST_TEXTURE:
+        return false;
+        case TORCH_UNLIT_TEXTURE:
+        return false;
+        case TORCH_BURNED_OUT_TEXTURE:
+        return false;
+        case WATER_SIDE_TEXTURE:
+        return false;
+        case WATER_BOTTOM_TEXTURE:
+        return false;
+        case WATER_NORTH_FLOW_TEXTURE:
+        return false;
+        case WATER_SOUTH_FLOW_TEXTURE:
+        return false;
+        case WATER_EAST_FLOW_TEXTURE:
+        return false;
+        case WATER_WEST_FLOW_TEXTURE:
+        return false;
+        case WATER_SIDE_TEXTURE_2:
+        return false;
+        default:
+        return true;
+    }
+}
 
 
 
@@ -644,7 +730,9 @@ void main()
         }
     }
 
-    if (frostFactor != 0) {
+    int texID = int(round(fTexId));
+
+    if (frostFactor != 0 && notInExclusionList(texID)) {
         float frostPatchSize = 1.5; //Decrease this to increase patach size
 
         float frostMask = fbm(

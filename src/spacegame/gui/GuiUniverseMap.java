@@ -7,7 +7,7 @@ import spacegame.celestial.CelestialObject;
 import spacegame.celestial.Sun;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
-import spacegame.core.MouseListener;
+import spacegame.core.eventlisteners.MouseListener;
 import spacegame.render.Camera;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;

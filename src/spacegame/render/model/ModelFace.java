@@ -39,6 +39,8 @@ public final class ModelFace {
         this.UVs[index][subIndex] = value;
     }
 
+
+    //Have this function modify the fields and return "this"
     public ModelFace translateFace(float x, float y, float z){
         ModelFace translatedFace = new ModelFace(this.faceType);
         Vector3f translation = new Vector3f(x,y,z);

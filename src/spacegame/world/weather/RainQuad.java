@@ -1,11 +1,16 @@
 package spacegame.world.weather;
 
 import spacegame.block.Block;
+import spacegame.block.BlockIDList;
 import spacegame.block.BlockWater;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.Sound;
 import spacegame.util.MathUtil;
 import spacegame.world.World;
+import spacegame.world.blockstate.CampfireState;
+import spacegame.world.blockstate.MultiState;
+import spacegame.world.blockstate.PitKilnState;
+import spacegame.world.blockstate.TorchState;
 
 public final class RainQuad {
     public double x;
@@ -48,34 +53,29 @@ public final class RainQuad {
     }
 
     private void extinguishFireBlocks(short blockID, int x, int y, int z){
-        if(blockID != Block.torchStandard.ID && blockID != Block.torchNorth.ID && blockID != Block.torchSouth.ID && blockID
-                != Block.torchEast.ID && blockID != Block.torchWest.ID && blockID != Block.campfire.ID)return;
+        if(blockID != Block.torch.ID && blockID != Block.campfire.ID)return;
 
         World world = CosmicEvolution.instance.save.activeWorld;
         world.setBlockWithNotify(x,y,z, Block.air.ID, false);
         switch (blockID){
-            case 2 -> { //Torch
-                world.setBlockWithNotify(x,y,z, Block.torchStandardUnlit.ID, false);
+            case BlockIDList.TORCH -> { //Torch
+                TorchState torchState = (TorchState) world.getBlockState(x,y,z, MultiState.TORCH_STATE);
+                if(torchState == null)break;
+                torchState.isLit = false;
+                world.notifyChunk(x,y,z);
             }
-            case 3 -> { //Torch North
-                world.setBlockWithNotify(x,y,z, Block.torchNorthUnlit.ID, false);
+            case BlockIDList.CAMPFIRE -> { //Lit campfire
+                CampfireState campfireState = (CampfireState) world.getBlockState(x,y,z, MultiState.CAMPFIRE_STATE);
+                if(campfireState == null)break;
+                campfireState.isLit = false;
+                world.notifyChunk(x,y,z);
             }
-            case 4 -> { //Torch South
-                world.setBlockWithNotify(x,y,z, Block.torchSouthUnlit.ID, false);
-            }
-            case 5 -> { //Torch East
-                world.setBlockWithNotify(x,y,z, Block.torchEastUnlit.ID, false);
-            }
-            case 6 -> { //Torch West
-                world.setBlockWithNotify(x,y,z, Block.torchWestUnlit.ID, false);
-            }
-            case 68 -> { //Lit campfire
-                world.removeHeatableBlock(x,y,z);
-                world.setBlockWithNotify(x,y,z, Block.campfire.ID, false);
-            }
-            case 99 -> { //Pit Kiln Lit
-                world.setBlockWithNotify(x,y,z, Block.pitKilnUnlit.ID, false);
+            case BlockIDList.PIT_KILN -> { //Pit Kiln Lit
+                PitKilnState pitKilnState = (PitKilnState)world.getBlockState(x,y,z, MultiState.PIT_KILN_STATE);
+                if(pitKilnState == null)break;
+                pitKilnState.isLit = false;
                 world.removeTimeEvent(x,y,z);
+                world.notifyChunk(x,y,z);
             }
         }
 

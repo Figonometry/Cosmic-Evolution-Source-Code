@@ -1,6 +1,8 @@
 package spacegame.world;
 
 import spacegame.block.Block;
+import spacegame.block.BlockGrass;
+import spacegame.block.BlockSoil;
 import spacegame.core.CosmicEvolution;
 import spacegame.util.LongHasher;
 import spacegame.util.MathUtil;
@@ -19,7 +21,7 @@ public final class WorldGenClayBlob extends WorldGen {
     private int radius;
 
     public WorldGenClayBlob(Chunk chunk, WorldEarth earth, int index){
-        if(chunk.blocks[index] != Block.grass.ID)return;
+        if(!(Block.list[chunk.blocks[index]] instanceof BlockGrass))return;
         this.worldEarth = earth;
         this.index = index;
         this.chunk = chunk;
@@ -63,11 +65,11 @@ public final class WorldGenClayBlob extends WorldGen {
             for(int y = boxStartY; y <= boxEndY; y++){
                 for(int z = boxStartZ; z <= boxEndZ; z++){
                     if(this.doesBlockIntersectSphere(x,y,z, xStart, yStart, zStart, this.radius * this.radius)){
-                        if(this.worldEarth.getBlockID(x,y,z) == Block.grass.ID){
+                        if(Block.list[this.worldEarth.getBlockID(x,y,z)] instanceof BlockGrass){
                             if(this.isBlockInCallingChunkExcludeEdge(x,y,z)){
-                                this.chunk.blocks[Chunk.getBlockIndexFromCoordinates(x,y,z)] = Block.grassWithClay.ID;
+                                this.chunk.blocks[Chunk.getBlockIndexFromCoordinates(x,y,z)] = Block.clayWithGrassLargePatches.ID; //Replace with clay replacement logic
                             } else {
-                                this.worldEarth.setBlock(x,y,z, Block.grassWithClay.ID);
+                                this.worldEarth.setBlock(x,y,z, Block.clayWithGrassLargePatches.ID);
                             }
 
                             int chunkX = x >> 5;
@@ -85,7 +87,7 @@ public final class WorldGenClayBlob extends WorldGen {
                             this.touchedChunks.add(chunk);
                             chunk.firstRender = true;
 
-                        } else if(this.worldEarth.getBlockID(x,y,z) == Block.dirt.ID){
+                        } else if(Block.list[this.worldEarth.getBlockID(x,y,z)] instanceof BlockSoil){
                             if(this.isBlockInCallingChunkExcludeEdge(x,y,z)){
                                 this.chunk.blocks[Chunk.getBlockIndexFromCoordinates(x,y,z)] = Block.clay.ID;
                             } else {
@@ -122,3 +124,4 @@ public final class WorldGenClayBlob extends WorldGen {
 
 
 }
+

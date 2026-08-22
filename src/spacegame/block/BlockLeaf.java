@@ -4,6 +4,7 @@ import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
 import spacegame.entity.EntityBlock;
 import spacegame.entity.EntityPlayer;
+import spacegame.render.texturelists.BlockTextureList;
 import spacegame.world.Chunk;
 import spacegame.world.World;
 
@@ -22,8 +23,8 @@ public final class BlockLeaf extends Block {
     }
 
     @Override
-    public int getBlockTexture(int x, int y, int z, int face){
-        return GameSettings.transparentLeaves ? this.textureID + 14 : this.textureID;
+    public int getBlockTexture(int x, int y, int z, int face){ //Will have to modify when more leaf types are added
+        return GameSettings.transparentLeaves ? BlockTextureList.LEAF_TRANSPARENT_TEXTURE : BlockTextureList.LEAF_OPAQUE_TEXTURE;
     }
 
 

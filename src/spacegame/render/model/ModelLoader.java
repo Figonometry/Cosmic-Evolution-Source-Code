@@ -1,6 +1,5 @@
 package spacegame.render.model;
 
-import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
