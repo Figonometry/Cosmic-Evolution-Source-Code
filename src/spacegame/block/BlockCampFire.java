@@ -13,6 +13,7 @@ import spacegame.gui.ToolTipGroup;
 import spacegame.item.*;
 import spacegame.render.texturelists.MouseAndKeyIconTextureList;
 import spacegame.world.Chunk;
+import spacegame.world.ThreadUpdateLighting;
 import spacegame.world.World;
 import spacegame.world.blockstate.CampfireState;
 import spacegame.world.blockstate.ChestLocation;
@@ -66,7 +67,9 @@ public final class BlockCampFire extends BlockHeating implements ITickable, IPar
         if (campfireState.logCount == 4) {
             if (playerHeldItem == Item.stoneFragments.ID || player.getHeldBlock() == Block.torch.ID) {
                 campfireState.isLit = true;
-                world.propagateLightSource(x,y,z, this.lightBlockValue);
+                Chunk chunk = world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
+                chunk.dirtyLighting = true;
+                world.chunkController.updateChunkLighting(new ThreadUpdateLighting(world, chunk,x, y, z, this.ID, false));
                 world.addBlockState(x,y,z, MultiState.HEATABLE_BLOCK_STATE, new HeatableBlockLocation(Chunk.getBlockIndexFromCoordinates(x,y,z)));
                 world.notifyChunk(x,y,z);
             }

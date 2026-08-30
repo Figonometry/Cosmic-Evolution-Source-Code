@@ -17,6 +17,6 @@ public final class ItemBone extends Item {
 
         world.addEntity(new EntityItem(x + 0.5, y + 0.5, z + 0.5, Item.boneMeal.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY, 0, null));
         world.clearChestLocation(x,y,z);
-        world.setBlockWithNotify(x,y,z, Block.air.ID, false);
+        world.setBlockAndNotify(x,y,z, Block.air.ID, false);
     }
 }

@@ -48,8 +48,7 @@ public final class ChunkEarthTerrainHandler {
                 if(Block.list[chunk.blocks[i]].isSolid)
                     if(lightMap.isHeightGreater(x,y,z)){
                         lightMap.updateLightMap(x,y,z);
-                        chunk.lighting[Chunk.getBlockIndexFromCoordinates(x, y, z)] = 0;
-                        chunk.skyLight[Chunk.getBlockIndexFromCoordinates(x, y, z)] = 0;
+                        chunk.light[Chunk.getBlockIndexFromCoordinates(x, y, z)] = 0;
                         chunk.updateSkylight = true;
                     }
             } else if(y <= 0){
@@ -59,7 +58,7 @@ public final class ChunkEarthTerrainHandler {
                 chunk.empty = false;
             } else {
                 chunk.containsAir = true;
-                chunk.skyLight[Chunk.getBlockIndexFromCoordinates(x, y, z)] = 15;
+                chunk.light[Chunk.getBlockIndexFromCoordinates(x, y, z)] = (byte) (15 << 4);
             }
 
             if(y > 3 && y < 128) {
@@ -266,7 +265,7 @@ public final class ChunkEarthTerrainHandler {
             z = chunk.getBlockZFromIndex(stonePlacementIndex);
 
             if(this.world.getBlockID(x,y,z) == Block.air.ID && Block.list[this.world.getBlockID(x, y - 1, z)] instanceof BlockGrass){
-                this.world.setBlockWithNotify(x,y,z, this.getItemStoneType(x,y,z), false);
+                this.world.setBlockAndNotify(x,y,z, this.getItemStoneType(x,y,z), false);
             }
             rockCount--;
         }
@@ -279,7 +278,7 @@ public final class ChunkEarthTerrainHandler {
             z = chunk.getBlockZFromIndex(tallGrassPlacementIndex);
 
             if(this.world.getBlockID(x,y,z) == Block.air.ID && Block.list[this.world.getBlockID(x, y - 1, z)] instanceof BlockGrass){
-                this.world.setBlockWithNotify(x,y,z, Block.tallGrass.ID, false);
+                this.world.setBlockAndNotify(x,y,z, Block.tallGrass.ID, false);
                 chunk.tallGrassCount++;
             }
 

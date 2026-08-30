@@ -179,9 +179,10 @@ public final class RenderWorldScene {
                 GL46.glEndQuery(GL46.GL_ANY_SAMPLES_PASSED);
             }
 
-            if (chunk.vertexBufferTransparent != null && chunk.vertexBufferTransparent.limit() != 0) {
+            if (chunk.transparentReady && chunk.transparentIndexCount > 0) {
                 chunksToRender.add(chunk);
             }
+
         }
 
         GL46.glActiveTexture(GL46.GL_TEXTURE0);

@@ -19,7 +19,7 @@ public final class ItemPelt extends Item {
         if(this.ID == Item.deerPelt.ID){
 
             world.clearChestLocation(x,y,z);
-            world.setBlockWithNotify(x,y,z, Block.crafting3DItem.ID, false);
+            world.setBlockAndNotify(x,y,z, Block.crafting3DItem.ID, false);
 
             InWorld3DCraftingItem inWorld3DCraftingItem = new InWorld3DCraftingItem(Chunk.getBlockIndexFromCoordinates(x,y,z),
                     InWorldCraftingRecipe.deerPeltClothing, world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5), (short) 58);
@@ -30,7 +30,7 @@ public final class ItemPelt extends Item {
         } else if(this.ID == Item.wolfPelt.ID){
 
             world.clearChestLocation(x,y,z);
-            world.setBlockWithNotify(x,y,z, Block.crafting3DItem.ID, false);
+            world.setBlockAndNotify(x,y,z, Block.crafting3DItem.ID, false);
 
             InWorld3DCraftingItem inWorld3DCraftingItem = new InWorld3DCraftingItem(Chunk.getBlockIndexFromCoordinates(x,y,z),
                     InWorldCraftingRecipe.wolfPeltClothing, world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5), (short) 60);

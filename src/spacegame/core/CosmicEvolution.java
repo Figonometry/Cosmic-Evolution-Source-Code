@@ -118,7 +118,7 @@ public final class CosmicEvolution implements Runnable {
         threadPool = new ThreadPoolExecutor(workerCount, workerCount, 0L, TimeUnit.MILLISECONDS, new PriorityBlockingQueue<>());
         this.dirtyChunksSchedulerThread = new Thread(new ThreadChunkJobScheduler());
         this.dirtyChunksSchedulerThread.start();
-        this.title = "Cosmic Evolution Alpha v0.53";
+        this.title = "Cosmic Evolution Alpha v0.53.1";
         GameSettings.loadOptionsFromFile(this.launcherDirectory);
         Block.registerAllBlockTooltips();
         EntityLiving.registerEntityLivingToolTip();
@@ -621,6 +621,7 @@ public final class CosmicEvolution implements Runnable {
         KeyListener.checkIfKeysArePressed();
     }
 
+    //This function needs to be cleaned up, it does 4 things which should be sub functioned, and if possible the item stack code should be simplified so it's not impossible to read
     private void leftClick() {
         if(this.save != null) {
             this.save.handleLeftClick();
@@ -846,15 +847,16 @@ public final class CosmicEvolution implements Runnable {
             }
             if(this.currentGui instanceof GuiWorldLoading){
                 if(World.worldLoadPhase == 3){
-                    GLFW.glfwSetInputMode(this.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
                     if(Assets.blockTextureArray == 0 || Assets.itemTextureArray == 0) {
                         Assets.enableBlockTextureArray();
                         Assets.enableItemTextureArray();
                     }
-                    World.worldLoadPhase = 4;
-                    this.save.activeWorld.chunkController.addChunkToRebuildQueue(this.save.activeWorld.chunkController.findChunkFromChunkCoordinates(this.save.activeWorld.chunkController.playerChunkX, this.save.activeWorld.chunkController.playerChunkY, this.save.activeWorld.chunkController.playerChunkZ));
-                    this.save.activeWorld.paused = false;
-                    this.setNewGui(new GuiInGame(this));
+                    if(threadJobs.get() == 0) {
+                        World.worldLoadPhase = 4;
+                        GLFW.glfwSetInputMode(this.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
+                        this.setNewGui(new GuiInGame(this));
+                        this.save.activeWorld.paused = false;
+                    }
                 }
             }
         }

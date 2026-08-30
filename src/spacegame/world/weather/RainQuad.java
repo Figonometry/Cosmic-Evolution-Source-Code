@@ -56,7 +56,7 @@ public final class RainQuad {
         if(blockID != Block.torch.ID && blockID != Block.campfire.ID)return;
 
         World world = CosmicEvolution.instance.save.activeWorld;
-        world.setBlockWithNotify(x,y,z, Block.air.ID, false);
+        world.setBlockAndNotify(x,y,z, Block.air.ID, false);
         switch (blockID){
             case BlockIDList.TORCH -> { //Torch
                 TorchState torchState = (TorchState) world.getBlockState(x,y,z, MultiState.TORCH_STATE);

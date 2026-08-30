@@ -3,6 +3,7 @@ package spacegame.render;
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 import spacegame.block.*;
+import spacegame.core.CosmicEvolution;
 import spacegame.item.Item;
 import spacegame.item.ItemTool;
 import spacegame.render.model.ModelFace;
@@ -1842,7 +1843,7 @@ public class RenderBlocks {
 
             this.highestChannel = highestChannel != 0.0 ? highestChannel : 0.01f;
         }
-        if(blockID == Block.sapling.ID && textureID != 24)return; //24 is the ID for transparent leaves
+        if(blockID == Block.sapling.ID && textureID != BlockTextureList.LEAF_TRANSPARENT_TEXTURE)return; //24 is the ID for transparent leaves
         if(!Block.list[blockID].isColorized(x,y,z,world))return;
 
 
@@ -1875,1106 +1876,591 @@ public class RenderBlocks {
        this.grayScaleImageMultiplier = MathUtil.floatToHalf(this.highestChannel / highestChannel); //This division gives the number to multiply the vertex color by in the terrain shader to restore to the normal fully lit grass color
     }
 
-    private void setLight(float x, float y, float z, float xMin, float yMin, float zMin, float xMax, float yMax, float zMax, int index, int face, Chunk chunk, World world, int[] greedyMeshSize, short blockID, int textureID) {
+    private record SamplePos(int x, int y, int z) {}
+
+
+    private SamplePos[] getTopFaceSamples(int x, int y, int z, int cornerType) {
+
+        // TOP face direction: +Y
+        // Orthogonals: +X (south), -X (north), +Z (west), -Z (east)
+
+        switch (cornerType) {
+
+            // ───────────────────────────────────────────────
+            // 0: xMin, yMax, zMin  → NORTH-EAST corner
+            // ───────────────────────────────────────────────
+            case 0 -> {
+                return new SamplePos[] {
+                        new SamplePos(x,     y + 1, z    ), // above
+                        new SamplePos(x - 1, y + 1,     z    ), // north
+                        new SamplePos(x,     y + 1,     z - 1), // east
+                        new SamplePos(x - 1, y + 1,     z - 1)  // north-east diagonal
+                };
+            }
+
+            // ───────────────────────────────────────────────
+            // 1: xMax, yMax, zMin  → SOUTH-EAST corner
+            // ───────────────────────────────────────────────
+            case 1 -> {
+                return new SamplePos[] {
+                        new SamplePos(x,     y + 1, z    ), // above
+                        new SamplePos(x + 1, y + 1,     z    ), // south
+                        new SamplePos(x,     y + 1,     z - 1), // east
+                        new SamplePos(x + 1, y + 1,     z - 1)  // south-east diagonal
+                };
+            }
+
+            // ───────────────────────────────────────────────
+            // 2: xMin, yMax, zMax  → NORTH-WEST corner
+            // ───────────────────────────────────────────────
+            case 2 -> {
+                return new SamplePos[] {
+                        new SamplePos(x,     y + 1, z    ), // above
+                        new SamplePos(x - 1, y + 1,     z    ), // north
+                        new SamplePos(x,     y + 1,     z + 1), // west
+                        new SamplePos(x - 1, y + 1,     z + 1)  // north-west diagonal
+                };
+            }
+
+            // ───────────────────────────────────────────────
+            // 3: xMax, yMax, zMax  → SOUTH-WEST corner
+            // ───────────────────────────────────────────────
+            case 3 -> {
+                return new SamplePos[] {
+                        new SamplePos(x,     y + 1, z    ), // above
+                        new SamplePos(x + 1, y + 1,     z    ), // south
+                        new SamplePos(x,     y + 1,     z + 1), // west
+                        new SamplePos(x + 1, y + 1,     z + 1)  // south-west diagonal
+                };
+            }
+
+            default -> {
+                return new SamplePos[0];
+            }
+        }
+    }
+
+
+
+    private void sampleFaceCornerAOAndSky(
+            World world,
+            int xBlock, int yBlock, int zBlock,
+            int face,
+            int cornerType, Chunk chunk // 0: xMin,yMin,zMin; 1: xMax,yMin,zMin; 2: xMin,yMax,zMin; 3: xMin,yMin,zMax
+    ) {
+        SamplePos[] samples = switch (face) {
+            case TOP_FACE    -> getTopFaceSamples(xBlock, yBlock, zBlock, cornerType);
+            case BOTTOM_FACE -> getBottomFaceSamples(xBlock, yBlock, zBlock, cornerType);
+            case NORTH_FACE  -> getNorthFaceSamples(xBlock, yBlock, zBlock, cornerType);
+            case SOUTH_FACE  -> getSouthFaceSamples(xBlock, yBlock, zBlock, cornerType);
+            case EAST_FACE   -> getEastFaceSamples(xBlock, yBlock, zBlock, cornerType);
+            case WEST_FACE   -> getWestFaceSamples(xBlock, yBlock, zBlock, cornerType);
+            default          -> new SamplePos[0];
+        };
+
+
+        // 3‑sample vs 4‑sample AO neighborhood:
+        if (samples.length == 3) {
+            byte bl1 = world.getBlockLightValue(samples[0].x, samples[0].y, samples[0].z);
+            byte bl2 = world.getBlockLightValue(samples[1].x, samples[1].y, samples[1].z);
+            byte bl3 = world.getBlockLightValue(samples[2].x, samples[2].y, samples[2].z);
+
+            float[] c1 = world.getBlockLightColor(samples[0].x, samples[0].y, samples[0].z);
+            float[] c2 = world.getBlockLightColor(samples[1].x, samples[1].y, samples[1].z);
+            float[] c3 = world.getBlockLightColor(samples[2].x, samples[2].y, samples[2].z);
+
+            setVertexLight3Args(bl1, bl2, bl3, c1, c2, c3);
+
+            byte sl1 = world.getBlockSkyLightValue(samples[0].x, samples[0].y, samples[0].z);
+            byte sl2 = world.getBlockSkyLightValue(samples[1].x, samples[1].y, samples[1].z);
+            byte sl3 = world.getBlockSkyLightValue(samples[2].x, samples[2].y, samples[2].z);
+
+            setVertexSkylightValue3Args(sl1, sl2, sl3);
+        } else if (samples.length == 4) {
+            byte bl1 = world.getBlockLightValue(samples[0].x, samples[0].y, samples[0].z);
+            byte bl2 = world.getBlockLightValue(samples[1].x, samples[1].y, samples[1].z);
+            byte bl3 = world.getBlockLightValue(samples[2].x, samples[2].y, samples[2].z);
+            byte bl4 = world.getBlockLightValue(samples[3].x, samples[3].y, samples[3].z);
+
+            float[] c1 = world.getBlockLightColor(samples[0].x, samples[0].y, samples[0].z);
+            float[] c2 = world.getBlockLightColor(samples[1].x, samples[1].y, samples[1].z);
+            float[] c3 = world.getBlockLightColor(samples[2].x, samples[2].y, samples[2].z);
+            float[] c4 = world.getBlockLightColor(samples[3].x, samples[3].y, samples[3].z);
+
+            setVertexLight4Args(bl1, bl2, bl3, bl4, c1, c2, c3, c4);
+
+            byte sl1 = world.getBlockSkyLightValue(samples[0].x, samples[0].y, samples[0].z);
+            byte sl2 = world.getBlockSkyLightValue(samples[1].x, samples[1].y, samples[1].z);
+            byte sl3 = world.getBlockSkyLightValue(samples[2].x, samples[2].y, samples[2].z);
+            byte sl4 = world.getBlockSkyLightValue(samples[3].x, samples[3].y, samples[3].z);
+
+
+            setVertexSkylightValue4Args(sl1, sl2, sl3, sl4);
+        }
+    }
+
+    private SamplePos[] getBottomFaceSamples(int x, int y, int z, int cornerType) {
+
+        // BOTTOM face direction: -Y
+        // Orthogonals: +X (south), -X (north), +Z (west), -Z (east)
+
+        switch (cornerType) {
+
+            // ───────────────────────────────────────────────
+            // 0: xMin, yMin, zMin  → NORTH-EAST corner
+            // ───────────────────────────────────────────────
+            case 0 -> {
+                return new SamplePos[] {
+                        new SamplePos(x,     y - 1, z    ), // below
+                        new SamplePos(x - 1, y - 1,     z    ), // north
+                        new SamplePos(x,     y - 1,     z - 1), // east
+                        new SamplePos(x - 1, y - 1,     z - 1)  // north-east diagonal
+                };
+            }
+
+            // ───────────────────────────────────────────────
+            // 1: xMax, yMin, zMin  → SOUTH-EAST corner
+            // ───────────────────────────────────────────────
+            case 1 -> {
+                return new SamplePos[] {
+                        new SamplePos(x,     y - 1, z    ), // below
+                        new SamplePos(x + 1, y - 1,     z    ), // south
+                        new SamplePos(x,     y - 1,     z - 1), // east
+                        new SamplePos(x + 1, y - 1,     z - 1)  // south-east diagonal
+                };
+            }
+
+            // ───────────────────────────────────────────────
+            // 2: xMin, yMin, zMax  → NORTH-WEST corner
+            // ───────────────────────────────────────────────
+            case 2 -> {
+                return new SamplePos[] {
+                        new SamplePos(x,     y - 1, z    ), // below
+                        new SamplePos(x - 1, y - 1,     z    ), // north
+                        new SamplePos(x,     y - 1,     z + 1), // west
+                        new SamplePos(x - 1, y - 1,     z + 1)  // north-west diagonal
+                };
+            }
+
+            // ───────────────────────────────────────────────
+            // 3: xMax, yMin, zMax  → SOUTH-WEST corner
+            // ───────────────────────────────────────────────
+            case 3 -> {
+                return new SamplePos[] {
+                        new SamplePos(x,     y - 1, z    ), // below
+                        new SamplePos(x + 1, y - 1,     z    ), // south
+                        new SamplePos(x,     y - 1,     z + 1), // west
+                        new SamplePos(x + 1, y - 1,     z + 1)  // south-west diagonal
+                };
+            }
+
+            default -> {
+                return new SamplePos[0];
+            }
+        }
+    }
+
+
+    private SamplePos[] getNorthFaceSamples(int x, int y, int z, int cornerType) {
+
+        // NORTH face direction: -X
+        // Orthogonals: +Y (top), -Y (bottom), +Z (west), -Z (east)
+
+        switch (cornerType) {
+
+            // ───────────────────────────────────────────────
+            // 0: xMin, yMin, zMin  → BOTTOM-EAST corner
+            // ───────────────────────────────────────────────
+            case 0 -> {
+                return new SamplePos[] {
+                        new SamplePos(x - 1, y,     z    ), // north
+                        new SamplePos(x - 1,     y - 1, z    ), // bottom
+                        new SamplePos(x - 1,     y,     z - 1), // east
+                        new SamplePos(x - 1, y - 1, z - 1)  // bottom-east diagonal
+                };
+            }
+
+            // ───────────────────────────────────────────────
+            // 1: xMin, yMin, zMax  → BOTTOM-WEST corner
+            // ───────────────────────────────────────────────
+            case 1 -> {
+                return new SamplePos[] {
+                        new SamplePos(x - 1, y,     z    ), // north
+                        new SamplePos(x - 1,     y - 1, z    ), // bottom
+                        new SamplePos(x - 1,     y,     z + 1), // west
+                        new SamplePos(x - 1, y - 1, z + 1)  // bottom-west diagonal
+                };
+            }
+
+            // ───────────────────────────────────────────────
+            // 2: xMin, yMax, zMin  → TOP-EAST corner
+            // ───────────────────────────────────────────────
+            case 2 -> {
+                return new SamplePos[] {
+                        new SamplePos(x - 1, y,     z    ), // north
+                        new SamplePos(x - 1,     y + 1, z    ), // top
+                        new SamplePos(x - 1,     y,     z - 1), // east
+                        new SamplePos(x - 1, y + 1, z - 1)  // top-east diagonal
+                };
+            }
+
+            // ───────────────────────────────────────────────
+            // 3: xMin, yMax, zMax  → TOP-WEST corner
+            // ───────────────────────────────────────────────
+            case 3 -> {
+                return new SamplePos[] {
+                        new SamplePos(x - 1, y,     z    ), // north
+                        new SamplePos(x - 1,     y + 1, z    ), // top
+                        new SamplePos(x - 1,     y,     z + 1), // west
+                        new SamplePos(x - 1, y + 1, z + 1)  // top-west diagonal
+                };
+            }
+
+            default -> {
+                return new SamplePos[0];
+            }
+        }
+    }
+
+    private SamplePos[] getSouthFaceSamples(int x, int y, int z, int cornerType) {
+
+        // SOUTH face direction: +X
+        // Orthogonals: +Y (top), -Y (bottom), +Z (west), -Z (east)
+
+        switch (cornerType) {
+
+            // ───────────────────────────────────────────────
+            // 0: xMax, yMin, zMin  → BOTTOM-EAST corner
+            // ───────────────────────────────────────────────
+            case 0 -> {
+                return new SamplePos[] {
+                        new SamplePos(x + 1, y,     z    ), // south
+                        new SamplePos(x + 1,     y - 1, z    ), // bottom
+                        new SamplePos(x + 1,     y,     z - 1), // east
+                        new SamplePos(x + 1, y - 1, z - 1)  // bottom-east diagonal
+                };
+            }
+
+            // ───────────────────────────────────────────────
+            // 1: xMax, yMin, zMax  → BOTTOM-WEST corner
+            // ───────────────────────────────────────────────
+            case 1 -> {
+                return new SamplePos[] {
+                        new SamplePos(x + 1, y,     z    ), // south
+                        new SamplePos(x + 1,     y - 1, z    ), // bottom
+                        new SamplePos(x + 1,     y,     z + 1), // west
+                        new SamplePos(x + 1, y - 1, z + 1)  // bottom-west diagonal
+                };
+            }
+
+            // ───────────────────────────────────────────────
+            // 2: xMax, yMax, zMin  → TOP-EAST corner
+            // ───────────────────────────────────────────────
+            case 2 -> {
+                return new SamplePos[] {
+                        new SamplePos(x + 1, y,     z    ), // south
+                        new SamplePos(x + 1,     y + 1, z    ), // top
+                        new SamplePos(x + 1,     y,     z - 1), // east
+                        new SamplePos(x + 1, y + 1, z - 1)  // top-east diagonal
+                };
+            }
+
+            // ───────────────────────────────────────────────
+            // 3: xMax, yMax, zMax  → TOP-WEST corner
+            // ───────────────────────────────────────────────
+            case 3 -> {
+                return new SamplePos[] {
+                        new SamplePos(x + 1, y,     z    ), // south
+                        new SamplePos(x + 1,     y + 1, z    ), // top
+                        new SamplePos(x + 1,     y,     z + 1), // west
+                        new SamplePos(x + 1, y + 1, z + 1)  // top-west diagonal
+                };
+            }
+
+            default -> {
+                return new SamplePos[0];
+            }
+        }
+    }
+
+    private SamplePos[] getEastFaceSamples(int x, int y, int z, int cornerType) {
+
+        // EAST face direction: -Z
+        // Orthogonals: +Y (top), -Y (bottom), +X (south), -X (north)
+
+        switch (cornerType) {
+
+            // ───────────────────────────────────────────────
+            // 0: xMin, yMin, zMin  → BOTTOM-NORTH corner
+            // ───────────────────────────────────────────────
+            case 0 -> {
+                return new SamplePos[] {
+                        new SamplePos(x,     y,     z - 1), // east
+                        new SamplePos(x,     y - 1, z - 1), // bottom
+                        new SamplePos(x - 1, y,     z - 1), // north
+                        new SamplePos(x - 1, y - 1, z - 1)  // bottom-north diagonal
+                };
+            }
+
+            // ───────────────────────────────────────────────
+            // 1: xMax, yMin, zMin  → BOTTOM-SOUTH corner
+            // ───────────────────────────────────────────────
+            case 1 -> {
+                return new SamplePos[] {
+                        new SamplePos(x,     y,     z - 1), // east
+                        new SamplePos(x,     y - 1, z - 1), // bottom
+                        new SamplePos(x + 1, y,     z - 1), // south
+                        new SamplePos(x + 1, y - 1, z - 1)  // bottom-south diagonal
+                };
+            }
+
+            // ───────────────────────────────────────────────
+            // 2: xMin, yMax, zMin  → TOP-NORTH corner
+            // ───────────────────────────────────────────────
+            case 2 -> {
+                return new SamplePos[] {
+                        new SamplePos(x,     y,     z - 1), // east
+                        new SamplePos(x,     y + 1, z - 1), // top
+                        new SamplePos(x - 1, y,     z - 1), // north
+                        new SamplePos(x - 1, y + 1, z - 1)  // top-north diagonal
+                };
+            }
+
+            // ───────────────────────────────────────────────
+            // 3: xMax, yMax, zMin  → TOP-SOUTH corner
+            // ───────────────────────────────────────────────
+            case 3 -> {
+                return new SamplePos[] {
+                        new SamplePos(x,     y,     z - 1), // east
+                        new SamplePos(x,     y + 1, z - 1), // top
+                        new SamplePos(x + 1, y,     z - 1), // south
+                        new SamplePos(x + 1, y + 1, z - 1)  // top-south diagonal
+                };
+            }
+
+            default -> {
+                return new SamplePos[0];
+            }
+        }
+    }
+
+
+    private SamplePos[] getWestFaceSamples(int x, int y, int z, int cornerType) {
+
+        // WEST face direction: +Z
+        // Orthogonals: +Y (top), -Y (bottom), +X (south), -X (north)
+
+        switch (cornerType) {
+
+            // ───────────────────────────────────────────────
+            // 0: xMin, yMin, zMax  → BOTTOM-NORTH corner
+            // ───────────────────────────────────────────────
+            case 0 -> {
+                return new SamplePos[] {
+                        new SamplePos(x,     y,     z + 1), // west
+                        new SamplePos(x,     y - 1, z + 1), // bottom
+                        new SamplePos(x - 1, y,     z + 1), // north
+                        new SamplePos(x - 1, y - 1, z + 1)  // bottom-north diagonal
+                };
+            }
+
+            // ───────────────────────────────────────────────
+            // 1: xMax, yMin, zMax  → BOTTOM-SOUTH corner
+            // ───────────────────────────────────────────────
+            case 1 -> {
+                return new SamplePos[] {
+                        new SamplePos(x,     y,     z + 1), // west
+                        new SamplePos(x,     y - 1, z + 1), // bottom
+                        new SamplePos(x + 1, y,     z + 1), // south
+                        new SamplePos(x + 1, y - 1, z + 1)  // bottom-south diagonal
+                };
+            }
+
+            // ───────────────────────────────────────────────
+            // 2: xMin, yMax, zMax  → TOP-NORTH corner
+            // ───────────────────────────────────────────────
+            case 2 -> {
+                return new SamplePos[] {
+                        new SamplePos(x,     y,     z + 1), // west
+                        new SamplePos(x,     y + 1, z + 1), // top
+                        new SamplePos(x - 1, y,     z + 1), // north
+                        new SamplePos(x - 1, y + 1, z + 1)  // top-north diagonal
+                };
+            }
+
+            // ───────────────────────────────────────────────
+            // 3: xMax, yMax, zMax  → TOP-SOUTH corner
+            // ───────────────────────────────────────────────
+            case 3 -> {
+                return new SamplePos[] {
+                        new SamplePos(x,     y,     z + 1), // west
+                        new SamplePos(x,     y + 1, z + 1), // top
+                        new SamplePos(x + 1, y,     z + 1), // south
+                        new SamplePos(x + 1, y + 1, z + 1)  // top-south diagonal
+                };
+            }
+
+            default -> {
+                return new SamplePos[0];
+            }
+        }
+    }
+
+
+
+    private int getCornerTypeForFaceStandardBlockModel(float wx, float wy, float wz,
+                                     float xMin, float yMin, float zMin,
+                                     float xMax, float yMax, float zMax,
+                                     int face) {
+
+        int ix = MathUtil.floorFloat(wx);
+        int iy = MathUtil.floorFloat(wy);
+        int iz = MathUtil.floorFloat(wz);
+
+        int lxMin = MathUtil.floorFloat(xMin);
+        int lyMin = MathUtil.floorFloat(yMin);
+        int lzMin = MathUtil.floorFloat(zMin);
+
+        int lxMax = MathUtil.floorFloat(xMax);
+        int lyMax = MathUtil.floorFloat(yMax);
+        int lzMax = MathUtil.floorFloat(zMax);
+
+        switch(face) {
+            case TOP_FACE:
+                if (ix == lxMin && iz == lzMin) return 0;
+                if (ix == lxMax && iz == lzMin) return 1;
+                if (ix == lxMin && iz == lzMax) return 2;
+                if (ix == lxMax && iz == lzMax) return 3;
+                break;
+
+            case BOTTOM_FACE:
+                if (ix == lxMin && iz == lzMin) return 0;
+                if (ix == lxMax && iz == lzMin) return 1;
+                if (ix == lxMin && iz == lzMax) return 2;
+                if (ix == lxMax && iz == lzMax) return 3;
+                break;
+
+            case NORTH_FACE:
+                if (iy == lyMin && iz == lzMin) return 0;
+                if (iy == lyMin && iz == lzMax) return 1;
+                if (iy == lyMax && iz == lzMin) return 2;
+                if (iy == lyMax && iz == lzMax) return 3;
+                break;
+
+            case SOUTH_FACE:
+                if (iy == lyMin && iz == lzMin) return 0;
+                if (iy == lyMin && iz == lzMax) return 1;
+                if (iy == lyMax && iz == lzMin) return 2;
+                if (iy == lyMax && iz == lzMax) return 3;
+                break;
+
+            case EAST_FACE:
+                if (ix == lxMin && iy == lyMin) return 0;
+                if (ix == lxMax && iy == lyMin) return 1;
+                if (ix == lxMin && iy == lyMax) return 2;
+                if (ix == lxMax && iy == lyMax) return 3;
+                break;
+
+            case WEST_FACE:
+                if (ix == lxMin && iy == lyMin) return 0;
+                if (ix == lxMax && iy == lyMin) return 1;
+                if (ix == lxMin && iy == lyMax) return 2;
+                if (ix == lxMax && iy == lyMax) return 3;
+                break;
+        }
+
+        return -1;
+    }
+
+
+    private int getCornerTypeForFaceNonstandardBlockModel(float wx, float wy, float wz,
+                                     float xMin, float yMin, float zMin,
+                                     float xMax, float yMax, float zMax,
+                                     int face) {
+
+        float mx = (xMin + xMax) * 0.5f;
+        float my = (yMin + yMax) * 0.5f;
+        float mz = (zMin + zMax) * 0.5f;
+
+        int cx = (wx > mx) ? 1 : 0;
+        int cy = (wy > my) ? 1 : 0;
+        int cz = (wz > mz) ? 1 : 0;
+
+        switch(face) {
+
+            case TOP_FACE:
+            case BOTTOM_FACE:
+                return (cz << 1) | cx;
+
+            case EAST_FACE:
+            case WEST_FACE:
+                return (cy << 1) | cx;
+
+            case NORTH_FACE:
+            case SOUTH_FACE:
+                // MIRROR horizontally to match your mesh builder's winding
+                return (cy << 1) | (1 - cx);
+        }
+
+        return -1;
+    }
+
+
+
+
+
+
+    private void setLight(float x, float y, float z,
+                          float xMin, float yMin, float zMin,
+                          float xMax, float yMax, float zMax,
+                          int index, int face,
+                          Chunk chunk, World world,
+                          int[] greedyMeshSize,
+                          short blockID, int textureID) {
+
         int xBlock = chunk.getBlockXFromIndex(index);
         int yBlock = chunk.getBlockYFromIndex(index);
         int zBlock = chunk.getBlockZFromIndex(index);
 
-        this.setPlantColorValues(xBlock, yBlock, zBlock, world, blockID, textureID);
+        setPlantColorValues(xBlock, yBlock, zBlock, world, blockID, textureID);
 
-        if(blockID == Block.tilledSoil.ID && face == TOP_FACE){
-            y = yMax; //This shifts the vertex up to the top of the block so it doesnt detect zero sky lighting
+        // Special case for tilled soil
+        if (blockID == Block.tilledSoil.ID && face == TOP_FACE) {
+            y = yMax;
         }
 
-        if(blockID == Block.itemBlock.ID){
-            this.setVertexLight1Arg(world.getBlockLightValue(xBlock, yBlock , zBlock), world.getBlockLightColor(xBlock, yBlock, zBlock));
-            this.setVertexSkylightValue1Args(world.getBlockSkyLightValue(xBlock, yBlock, zBlock));
-            this.setGrayScaleImageMultiplier();
+        // Item blocks use simple lighting
+        if (blockID == Block.itemBlock.ID || Block.list[blockID] instanceof BlockItemStone) {
+            setVertexLight1Arg(world.getBlockLightValue(xBlock, yBlock, zBlock),
+                    world.getBlockLightColor(xBlock, yBlock, zBlock));
+            setVertexSkylightValue1Args(world.getBlockSkyLightValue(xBlock, yBlock, zBlock));
+            setGrayScaleImageMultiplier();
             return;
         }
 
-        if (x == xMin && y == yMin && z == zMin) {
-            final Block[] blocks = Block.list;
 
-            switch (face) {
-                case BOTTOM_FACE -> {
-                    int idA = world.getBlockID(xBlock - 1, yBlock - 1, zBlock);
-                    int idB = world.getBlockID(xBlock, yBlock - 1, zBlock - 1);
+        ModelLoader blockModel = Block.list[blockID].getBlockModel(xBlock, yBlock, zBlock, world);
 
-                    boolean solidA = blocks[idA].isSolid;
-                    boolean solidB = blocks[idB].isSolid;
 
-                    if (solidA && solidB) {
-                        setVertexLight3Args(
-                                world.getBlockLightValue(xBlock, yBlock - 1, zBlock - 1),
-                                world.getBlockLightValue(xBlock - 1, yBlock - 1, zBlock),
-                                world.getBlockLightValue(xBlock, yBlock - 1, zBlock),
-                                world.getBlockLightColor(xBlock, yBlock - 1, zBlock - 1),
-                                world.getBlockLightColor(xBlock - 1, yBlock - 1, zBlock),
-                                world.getBlockLightColor(xBlock, yBlock - 1, zBlock)
-                        );
-                        this.setVertexSkylightValue3Args(
-                                world.getBlockSkyLightValue(xBlock, yBlock - 1, zBlock - 1),
-                                world.getBlockSkyLightValue(xBlock - 1, yBlock - 1, zBlock),
-                                world.getBlockSkyLightValue(xBlock, yBlock - 1, zBlock)
-                        );
-                    } else {
-                        setVertexLight4Args(
-                                world.getBlockLightValue(xBlock - 1, yBlock - 1, zBlock - 1),
-                                world.getBlockLightValue(xBlock, yBlock - 1, zBlock - 1),
-                                world.getBlockLightValue(xBlock - 1, yBlock - 1, zBlock),
-                                world.getBlockLightValue(xBlock, yBlock - 1, zBlock),
-                                world.getBlockLightColor(xBlock - 1, yBlock - 1, zBlock - 1),
-                                world.getBlockLightColor(xBlock, yBlock - 1, zBlock - 1),
-                                world.getBlockLightColor(xBlock - 1, yBlock - 1, zBlock),
-                                world.getBlockLightColor(xBlock, yBlock - 1, zBlock)
-                        );
-                        this.setVertexSkylightValue4Args(
-                                world.getBlockSkyLightValue(xBlock - 1, yBlock - 1, zBlock - 1),
-                                world.getBlockSkyLightValue(xBlock, yBlock - 1, zBlock - 1),
-                                world.getBlockSkyLightValue(xBlock - 1, yBlock - 1, zBlock),
-                                world.getBlockSkyLightValue(xBlock, yBlock - 1, zBlock)
-                        );
-                    }
-                }
 
-                case NORTH_FACE -> {
-                    int idA = world.getBlockID(xBlock - 1, yBlock - 1, zBlock);
-                    int idB = world.getBlockID(xBlock - 1, yBlock, zBlock - 1);
+        int cornerType = blockModel.equals(BlockModelList.standardBlockModel) && blockID != Block.oakLog.ID  ? getCornerTypeForFaceStandardBlockModel(x, y, z,
+                xMin, yMin, zMin,
+                xMax, yMax, zMax,
+                face) :
 
-                    boolean solidA = blocks[idA].isSolid;
-                    boolean solidB = blocks[idB].isSolid;
+                getCornerTypeForFaceNonstandardBlockModel(x, y, z,
+                        xMin, yMin, zMin,
+                        xMax, yMax, zMax,
+                        face);
 
-                    if (solidA && solidB) {
-                        setVertexLight3Args(
-                                world.getBlockLightValue(xBlock - 1, yBlock, zBlock - 1),
-                                world.getBlockLightValue(xBlock - 1, yBlock, zBlock),
-                                world.getBlockLightValue(xBlock - 1, yBlock - 1, zBlock),
-                                world.getBlockLightColor(xBlock - 1, yBlock, zBlock - 1),
-                                world.getBlockLightColor(xBlock - 1, yBlock, zBlock),
-                                world.getBlockLightColor(xBlock - 1, yBlock - 1, zBlock)
-                        );
-                        this.setVertexSkylightValue3Args(
-                                world.getBlockSkyLightValue(xBlock - 1, yBlock, zBlock - 1),
-                                world.getBlockSkyLightValue(xBlock - 1, yBlock, zBlock),
-                                world.getBlockSkyLightValue(xBlock - 1, yBlock - 1, zBlock)
-                        );
-                    } else {
-                        setVertexLight4Args(
-                                world.getBlockLightValue(xBlock - 1, yBlock, zBlock - 1),
-                                world.getBlockLightValue(xBlock - 1, yBlock, zBlock),
-                                world.getBlockLightValue(xBlock - 1, yBlock - 1, zBlock - 1),
-                                world.getBlockLightValue(xBlock - 1, yBlock - 1, zBlock),
-                                world.getBlockLightColor(xBlock - 1, yBlock, zBlock - 1),
-                                world.getBlockLightColor(xBlock - 1, yBlock, zBlock),
-                                world.getBlockLightColor(xBlock - 1, yBlock - 1, zBlock - 1),
-                                world.getBlockLightColor(xBlock - 1, yBlock - 1, zBlock)
-                        );
-                        this.setVertexSkylightValue4Args(
-                                world.getBlockSkyLightValue(xBlock - 1, yBlock, zBlock - 1),
-                                world.getBlockSkyLightValue(xBlock - 1, yBlock, zBlock),
-                                world.getBlockSkyLightValue(xBlock - 1, yBlock - 1, zBlock - 1),
-                                world.getBlockSkyLightValue(xBlock - 1, yBlock - 1, zBlock)
-                        );
-                    }
-                }
-
-                case EAST_FACE -> {
-                    int idA = world.getBlockID(xBlock - 1, yBlock, zBlock - 1);
-                    int idB = world.getBlockID(xBlock, yBlock - 1, zBlock - 1);
-
-                    boolean solidA = blocks[idA].isSolid;
-                    boolean solidB = blocks[idB].isSolid;
-
-                    if (solidA && solidB) {
-                        setVertexLight3Args(
-                                world.getBlockLightValue(xBlock - 1, yBlock, zBlock - 1),
-                                world.getBlockLightValue(xBlock, yBlock, zBlock - 1),
-                                world.getBlockLightValue(xBlock, yBlock - 1, zBlock - 1),
-                                world.getBlockLightColor(xBlock - 1, yBlock, zBlock - 1),
-                                world.getBlockLightColor(xBlock, yBlock, zBlock - 1),
-                                world.getBlockLightColor(xBlock, yBlock - 1, zBlock - 1)
-                        );
-                        this.setVertexSkylightValue3Args(
-                                world.getBlockSkyLightValue(xBlock - 1, yBlock, zBlock - 1),
-                                world.getBlockSkyLightValue(xBlock, yBlock, zBlock - 1),
-                                world.getBlockSkyLightValue(xBlock, yBlock - 1, zBlock - 1)
-                        );
-                    } else {
-                        setVertexLight4Args(
-                                world.getBlockLightValue(xBlock - 1, yBlock, zBlock - 1),
-                                world.getBlockLightValue(xBlock, yBlock, zBlock - 1),
-                                world.getBlockLightValue(xBlock - 1, yBlock - 1, zBlock - 1),
-                                world.getBlockLightValue(xBlock, yBlock - 1, zBlock - 1),
-                                world.getBlockLightColor(xBlock - 1, yBlock, zBlock - 1),
-                                world.getBlockLightColor(xBlock, yBlock, zBlock - 1),
-                                world.getBlockLightColor(xBlock - 1, yBlock - 1, zBlock - 1),
-                                world.getBlockLightColor(xBlock, yBlock - 1, zBlock - 1)
-                        );
-                        this.setVertexSkylightValue4Args(
-                                world.getBlockSkyLightValue(xBlock - 1, yBlock, zBlock - 1),
-                                world.getBlockSkyLightValue(xBlock, yBlock, zBlock - 1),
-                                world.getBlockSkyLightValue(xBlock - 1, yBlock - 1, zBlock - 1),
-                                world.getBlockSkyLightValue(xBlock, yBlock - 1, zBlock - 1)
-                        );
-                    }
-                }
-            }
-        } else if (x == xMax && y == yMin && z == zMin) {
-            final Block[] blocks = Block.list;
-            final int meshX = greedyMeshSize[0];
-
-            switch (face) {
-                case BOTTOM_FACE -> {
-                    int idA = world.getBlockID(xBlock + 1 + meshX, yBlock - 1, zBlock);
-                    int idB = world.getBlockID(xBlock + meshX, yBlock, zBlock - 1);
-
-                    boolean solidA = blocks[idA].isSolid;
-                    boolean solidB = blocks[idB].isSolid;
-
-                    if (solidA && solidB) {
-                        int lx = xBlock + meshX, ly = yBlock - 1, lz = zBlock;
-                        setVertexLight3Args(
-                                world.getBlockLightValue(lx, ly, lz - 1),
-                                world.getBlockLightValue(lx + 1, ly, lz),
-                                world.getBlockLightValue(lx, ly, lz),
-                                world.getBlockLightColor(lx, ly, lz - 1),
-                                world.getBlockLightColor(lx + 1, ly, lz),
-                                world.getBlockLightColor(lx, ly, lz)
-                        );
-                        this.setVertexSkylightValue3Args(
-                                world.getBlockSkyLightValue(lx, ly, lz - 1),
-                                world.getBlockSkyLightValue(lx + 1, ly, lz),
-                                world.getBlockSkyLightValue(lx, ly, lz)
-                        );
-                    } else {
-                        int lx = xBlock + meshX, ly = yBlock - 1, lz = zBlock;
-                        setVertexLight4Args(
-                                world.getBlockLightValue(lx + 1, ly, lz - 1),
-                                world.getBlockLightValue(lx, ly, lz - 1),
-                                world.getBlockLightValue(lx + 1, ly, lz),
-                                world.getBlockLightValue(lx, ly, lz),
-                                world.getBlockLightColor(lx + 1, ly, lz - 1),
-                                world.getBlockLightColor(lx, ly, lz - 1),
-                                world.getBlockLightColor(lx + 1, ly, lz),
-                                world.getBlockLightColor(lx, ly, lz)
-                        );
-                        this.setVertexSkylightValue4Args(
-                                world.getBlockSkyLightValue(lx + 1, ly, lz - 1),
-                                world.getBlockSkyLightValue(lx, ly, lz - 1),
-                                world.getBlockSkyLightValue(lx + 1, ly, lz),
-                                world.getBlockSkyLightValue(lx, ly, lz)
-                        );
-                    }
-                }
-
-                case SOUTH_FACE -> {
-                    int idA = world.getBlockID(xBlock + 1, yBlock - 1, zBlock);
-                    int idB = world.getBlockID(xBlock + 1, yBlock, zBlock - 1);
-
-                    boolean solidA = blocks[idA].isSolid;
-                    boolean solidB = blocks[idB].isSolid;
-
-                    int lx = xBlock + 1, lz = zBlock;
-                    if (solidA && solidB) {
-                        setVertexLight3Args(
-                                world.getBlockLightValue(lx, yBlock, lz - 1),
-                                world.getBlockLightValue(lx, yBlock, lz),
-                                world.getBlockLightValue(lx, yBlock - 1, lz),
-                                world.getBlockLightColor(lx, yBlock, lz - 1),
-                                world.getBlockLightColor(lx, yBlock, lz),
-                                world.getBlockLightColor(lx, yBlock - 1, lz)
-                        );
-                        this.setVertexSkylightValue3Args(
-                                world.getBlockSkyLightValue(lx, yBlock, lz - 1),
-                                world.getBlockSkyLightValue(lx, yBlock, lz),
-                                world.getBlockSkyLightValue(lx, yBlock - 1, lz)
-                        );
-                    } else {
-                        setVertexLight4Args(
-                                world.getBlockLightValue(lx, yBlock, lz - 1),
-                                world.getBlockLightValue(lx, yBlock, lz),
-                                world.getBlockLightValue(lx, yBlock - 1, lz - 1),
-                                world.getBlockLightValue(lx, yBlock - 1, lz),
-                                world.getBlockLightColor(lx, yBlock, lz - 1),
-                                world.getBlockLightColor(lx, yBlock, lz),
-                                world.getBlockLightColor(lx, yBlock - 1, lz - 1),
-                                world.getBlockLightColor(lx, yBlock - 1, lz)
-                        );
-                        this.setVertexSkylightValue4Args(
-                                world.getBlockSkyLightValue(lx, yBlock, lz - 1),
-                                world.getBlockSkyLightValue(lx, yBlock, lz),
-                                world.getBlockSkyLightValue(lx, yBlock - 1, lz - 1),
-                                world.getBlockSkyLightValue(lx, yBlock - 1, lz)
-                        );
-                    }
-                }
-
-                case EAST_FACE -> {
-                    int lx = xBlock + meshX;
-                    int idA = world.getBlockID(lx + 1, yBlock, zBlock - 1);
-                    int idB = world.getBlockID(lx, yBlock - 1, zBlock - 1);
-
-                    boolean solidA = blocks[idA].isSolid;
-                    boolean solidB = blocks[idB].isSolid;
-
-                    int lz = zBlock - 1;
-                    if (solidA && solidB) {
-                        setVertexLight3Args(
-                                world.getBlockLightValue(lx + 1, yBlock, lz),
-                                world.getBlockLightValue(lx, yBlock, lz),
-                                world.getBlockLightValue(lx, yBlock - 1, lz),
-                                world.getBlockLightColor(lx + 1, yBlock, lz),
-                                world.getBlockLightColor(lx, yBlock, lz),
-                                world.getBlockLightColor(lx, yBlock - 1, lz)
-                        );
-                        this.setVertexSkylightValue3Args(
-                                world.getBlockSkyLightValue(lx + 1, yBlock, lz),
-                                world.getBlockSkyLightValue(lx, yBlock, lz),
-                                world.getBlockSkyLightValue(lx, yBlock - 1, lz)
-                        );
-                    } else {
-                        setVertexLight4Args(
-                                world.getBlockLightValue(lx + 1, yBlock, lz),
-                                world.getBlockLightValue(lx, yBlock, lz),
-                                world.getBlockLightValue(lx + 1, yBlock - 1, lz),
-                                world.getBlockLightValue(lx, yBlock - 1, lz),
-                                world.getBlockLightColor(lx + 1, yBlock, lz),
-                                world.getBlockLightColor(lx, yBlock, lz),
-                                world.getBlockLightColor(lx + 1, yBlock - 1, lz),
-                                world.getBlockLightColor(lx, yBlock - 1, lz)
-                        );
-                        this.setVertexSkylightValue4Args(
-                                world.getBlockSkyLightValue(lx + 1, yBlock, lz),
-                                world.getBlockSkyLightValue(lx, yBlock, lz),
-                                world.getBlockSkyLightValue(lx + 1, yBlock - 1, lz),
-                                world.getBlockSkyLightValue(lx, yBlock - 1, lz)
-                        );
-                    }
-                }
-            }
-        } else if (x == xMin && y == yMax && z == zMin) {
-            final Block[] blocks = Block.list;
-            final int meshY = greedyMeshSize[1];
-
-            switch (face) {
-                case TOP_FACE -> {
-                    int lx1 = xBlock - 1, ly1 = yBlock + 1, lz = zBlock;
-                    int lx2 = xBlock, ly2 = yBlock + 1, lz1 = zBlock - 1;
-
-                    boolean solidA = blocks[world.getBlockID(lx1, ly1, lz)].isSolid;
-                    boolean solidB = blocks[world.getBlockID(lx2, ly2, lz1)].isSolid;
-
-                    if (solidA && solidB) {
-                        setVertexLight3Args(
-                                world.getBlockLightValue(lx2, ly2, lz1),
-                                world.getBlockLightValue(lx1, ly1, lz),
-                                world.getBlockLightValue(lx2, ly2, lz),
-                                world.getBlockLightColor(lx2, ly2, lz1),
-                                world.getBlockLightColor(lx1, ly1, lz),
-                                world.getBlockLightColor(lx2, ly2, lz)
-                        );
-                        this.setVertexSkylightValue3Args(
-                                world.getBlockSkyLightValue(lx2, ly2, lz1),
-                                world.getBlockSkyLightValue(lx1, ly1, lz),
-                                world.getBlockSkyLightValue(lx2, ly2, lz)
-                        );
-                    } else {
-                        setVertexLight4Args(
-                                world.getBlockLightValue(lx1, ly1, lz1),
-                                world.getBlockLightValue(lx2, ly2, lz1),
-                                world.getBlockLightValue(lx1, ly1, lz),
-                                world.getBlockLightValue(lx2, ly2, lz),
-                                world.getBlockLightColor(lx1, ly1, lz1),
-                                world.getBlockLightColor(lx2, ly2, lz1),
-                                world.getBlockLightColor(lx1, ly1, lz),
-                                world.getBlockLightColor(lx2, ly2, lz)
-                        );
-                        this.setVertexSkylightValue4Args(
-                                world.getBlockSkyLightValue(lx1, ly1, lz1),
-                                world.getBlockSkyLightValue(lx2, ly2, lz1),
-                                world.getBlockSkyLightValue(lx1, ly1, lz),
-                                world.getBlockSkyLightValue(lx2, ly2, lz)
-                        );
-                    }
-                }
-
-                case NORTH_FACE -> {
-                    int lx = xBlock - 1, baseY = yBlock + meshY, ly = baseY, ly1 = baseY + 1, lz = zBlock;
-                    boolean solidA = blocks[world.getBlockID(lx, ly1, lz)].isSolid;
-                    boolean solidB = blocks[world.getBlockID(lx, ly, lz - 1)].isSolid;
-
-                    if (solidA && solidB) {
-                        setVertexLight3Args(
-                                world.getBlockLightValue(lx, ly, lz - 1),
-                                world.getBlockLightValue(lx, ly, lz),
-                                world.getBlockLightValue(lx, ly1, lz),
-                                world.getBlockLightColor(lx, ly, lz - 1),
-                                world.getBlockLightColor(lx, ly, lz),
-                                world.getBlockLightColor(lx, ly1, lz)
-                        );
-                        this.setVertexSkylightValue3Args(
-                                world.getBlockSkyLightValue(lx, ly, lz - 1),
-                                world.getBlockSkyLightValue(lx, ly, lz),
-                                world.getBlockSkyLightValue(lx, ly1, lz)
-                        );
-                    } else {
-                        setVertexLight4Args(
-                                world.getBlockLightValue(lx, ly, lz - 1),
-                                world.getBlockLightValue(lx, ly, lz),
-                                world.getBlockLightValue(lx, ly1, lz - 1),
-                                world.getBlockLightValue(lx, ly1, lz),
-                                world.getBlockLightColor(lx, ly, lz - 1),
-                                world.getBlockLightColor(lx, ly, lz),
-                                world.getBlockLightColor(lx, ly1, lz - 1),
-                                world.getBlockLightColor(lx, ly1, lz)
-                        );
-                        this.setVertexSkylightValue4Args(
-                                world.getBlockSkyLightValue(lx, ly, lz - 1),
-                                world.getBlockSkyLightValue(lx, ly, lz),
-                                world.getBlockSkyLightValue(lx, ly1, lz - 1),
-                                world.getBlockSkyLightValue(lx, ly1, lz)
-                        );
-                    }
-                }
-
-                case EAST_FACE -> {
-                    int lx = xBlock, lz = zBlock - 1, baseY = yBlock + meshY, ly = baseY, ly1 = baseY + 1;
-                    int lx1 = xBlock - 1;
-
-                    boolean solidA = blocks[world.getBlockID(lx1, ly, lz)].isSolid;
-                    boolean solidB = blocks[world.getBlockID(lx, ly1, lz)].isSolid;
-
-                    if (solidA && solidB) {
-                        setVertexLight3Args(
-                                world.getBlockLightValue(lx1, ly, lz),
-                                world.getBlockLightValue(lx, ly, lz),
-                                world.getBlockLightValue(lx, ly1, lz),
-                                world.getBlockLightColor(lx1, ly, lz),
-                                world.getBlockLightColor(lx, ly, lz),
-                                world.getBlockLightColor(lx, ly1, lz)
-                        );
-                        this.setVertexSkylightValue3Args(
-                                world.getBlockSkyLightValue(lx1, ly, lz),
-                                world.getBlockSkyLightValue(lx, ly, lz),
-                                world.getBlockSkyLightValue(lx, ly1, lz)
-                        );
-                    } else {
-                        setVertexLight4Args(
-                                world.getBlockLightValue(lx1, ly, lz),
-                                world.getBlockLightValue(lx, ly, lz),
-                                world.getBlockLightValue(lx1, ly1, lz),
-                                world.getBlockLightValue(lx, ly1, lz),
-                                world.getBlockLightColor(lx1, ly, lz),
-                                world.getBlockLightColor(lx, ly, lz),
-                                world.getBlockLightColor(lx1, ly1, lz),
-                                world.getBlockLightColor(lx, ly1, lz)
-                        );
-                        this.setVertexSkylightValue4Args(
-                                world.getBlockSkyLightValue(lx1, ly, lz),
-                                world.getBlockSkyLightValue(lx, ly, lz),
-                                world.getBlockSkyLightValue(lx1, ly1, lz),
-                                world.getBlockSkyLightValue(lx, ly1, lz)
-                        );
-                    }
-                }
-            }
-        } else if (x == xMin && y == yMin && z == zMax) {
-            final Block[] blocks = Block.list;
-            final int meshX = greedyMeshSize[0];
-            final int meshZ = greedyMeshSize[1];
-
-            switch (face) {
-                case BOTTOM_FACE -> {
-                    int lx = xBlock, ly = yBlock - 1, lz = zBlock + meshZ;
-                    boolean solidA = blocks[world.getBlockID(xBlock - 1, ly, lz)].isSolid;
-                    boolean solidB = blocks[world.getBlockID(lx, ly, lz + 1)].isSolid;
-
-                    if (solidA && solidB) {
-                        setVertexLight3Args(
-                                world.getBlockLightValue(lx, ly, lz + 1),
-                                world.getBlockLightValue(xBlock - 1, ly, lz),
-                                world.getBlockLightValue(lx, ly, lz),
-                                world.getBlockLightColor(lx, ly, lz + 1),
-                                world.getBlockLightColor(xBlock - 1, ly, lz),
-                                world.getBlockLightColor(lx, ly, lz)
-                        );
-                        this.setVertexSkylightValue3Args(
-                                world.getBlockSkyLightValue(lx, ly, lz + 1),
-                                world.getBlockSkyLightValue(xBlock - 1, ly, lz),
-                                world.getBlockSkyLightValue(lx, ly, lz)
-                        );
-                    } else {
-                        setVertexLight4Args(
-                                world.getBlockLightValue(xBlock - 1, ly, lz + 1),
-                                world.getBlockLightValue(lx, ly, lz + 1),
-                                world.getBlockLightValue(xBlock - 1, ly, lz),
-                                world.getBlockLightValue(lx, ly, lz),
-                                world.getBlockLightColor(xBlock - 1, ly, lz + 1),
-                                world.getBlockLightColor(lx, ly, lz + 1),
-                                world.getBlockLightColor(xBlock - 1, ly, lz),
-                                world.getBlockLightColor(lx, ly, lz)
-                        );
-                        this.setVertexSkylightValue4Args(
-                                world.getBlockSkyLightValue(xBlock - 1, ly, lz + 1),
-                                world.getBlockSkyLightValue(lx, ly, lz + 1),
-                                world.getBlockSkyLightValue(xBlock - 1, ly, lz),
-                                world.getBlockSkyLightValue(lx, ly, lz)
-                        );
-                    }
-                }
-
-                case NORTH_FACE -> {
-                    int lx = xBlock - 1, lz = zBlock + meshX;
-                    int ly = yBlock;
-                    boolean solidA = blocks[world.getBlockID(lx, yBlock - 1, lz)].isSolid;
-                    boolean solidB = blocks[world.getBlockID(lx, ly, lz + 1)].isSolid;
-
-                    if (solidA && solidB) {
-                        setVertexLight3Args(
-                                world.getBlockLightValue(lx, ly, lz + 1),
-                                world.getBlockLightValue(lx, ly, lz),
-                                world.getBlockLightValue(lx, yBlock - 1, lz),
-                                world.getBlockLightColor(lx, ly, lz + 1),
-                                world.getBlockLightColor(lx, ly, lz),
-                                world.getBlockLightColor(lx, yBlock - 1, lz)
-                        );
-                        this.setVertexSkylightValue3Args(
-                                world.getBlockSkyLightValue(lx, ly, lz + 1),
-                                world.getBlockSkyLightValue(lx, ly, lz),
-                                world.getBlockSkyLightValue(lx, yBlock - 1, lz)
-                        );
-                    } else {
-                        setVertexLight4Args(
-                                world.getBlockLightValue(lx, ly, lz + 1),
-                                world.getBlockLightValue(lx, ly, lz),
-                                world.getBlockLightValue(lx, yBlock - 1, lz + 1),
-                                world.getBlockLightValue(lx, yBlock - 1, lz),
-                                world.getBlockLightColor(lx, ly, lz + 1),
-                                world.getBlockLightColor(lx, ly, lz),
-                                world.getBlockLightColor(lx, yBlock - 1, lz + 1),
-                                world.getBlockLightColor(lx, yBlock - 1, lz)
-                        );
-                        this.setVertexSkylightValue4Args(
-                                world.getBlockSkyLightValue(lx, ly, lz + 1),
-                                world.getBlockSkyLightValue(lx, ly, lz),
-                                world.getBlockSkyLightValue(lx, yBlock - 1, lz + 1),
-                                world.getBlockSkyLightValue(lx, yBlock - 1, lz)
-                        );
-                    }
-                }
-
-                case WEST_FACE -> {
-                    int lx = xBlock - 1, lz = zBlock + 1;
-                    boolean solidA = blocks[world.getBlockID(lx, yBlock, lz)].isSolid;
-                    boolean solidB = blocks[world.getBlockID(xBlock, yBlock - 1, lz)].isSolid;
-
-                    if (solidA && solidB) {
-                        setVertexLight3Args(
-                                world.getBlockLightValue(lx, yBlock, lz),
-                                world.getBlockLightValue(xBlock, yBlock, lz),
-                                world.getBlockLightValue(xBlock, yBlock - 1, lz),
-                                world.getBlockLightColor(lx, yBlock, lz),
-                                world.getBlockLightColor(xBlock, yBlock, lz),
-                                world.getBlockLightColor(xBlock, yBlock - 1, lz)
-                        );
-                        this.setVertexSkylightValue3Args(
-                                world.getBlockSkyLightValue(lx, yBlock, lz),
-                                world.getBlockSkyLightValue(xBlock, yBlock, lz),
-                                world.getBlockSkyLightValue(xBlock, yBlock - 1, lz)
-                        );
-                    } else {
-                        setVertexLight4Args(
-                                world.getBlockLightValue(lx, yBlock, lz),
-                                world.getBlockLightValue(xBlock, yBlock, lz),
-                                world.getBlockLightValue(lx, yBlock - 1, lz),
-                                world.getBlockLightValue(xBlock, yBlock - 1, lz),
-                                world.getBlockLightColor(lx, yBlock, lz),
-                                world.getBlockLightColor(xBlock, yBlock, lz),
-                                world.getBlockLightColor(lx, yBlock - 1, lz),
-                                world.getBlockLightColor(xBlock, yBlock - 1, lz)
-                        );
-                        this.setVertexSkylightValue4Args(
-                                world.getBlockSkyLightValue(lx, yBlock, lz),
-                                world.getBlockSkyLightValue(xBlock, yBlock, lz),
-                                world.getBlockSkyLightValue(lx, yBlock - 1, lz),
-                                world.getBlockSkyLightValue(xBlock, yBlock - 1, lz)
-                        );
-                    }
-                }
-            }
-        } else if (x == xMax && y == yMax && z == zMin) {
-            final Block[] blocks = Block.list;
-            final int meshX = greedyMeshSize[0];
-            final int meshY = greedyMeshSize[1];
-
-            switch (face) {
-                case TOP_FACE -> {
-                    int lx = xBlock + meshX, ly = yBlock + 1, lz = zBlock;
-
-                    boolean solidA = blocks[world.getBlockID(lx + 1, ly, lz)].isSolid;
-                    boolean solidB = blocks[world.getBlockID(lx, ly, lz - 1)].isSolid;
-
-                    if (solidA && solidB) {
-                        setVertexLight3Args(
-                                world.getBlockLightValue(lx, ly, lz - 1),
-                                world.getBlockLightValue(lx + 1, ly, lz),
-                                world.getBlockLightValue(lx, ly, lz),
-                                world.getBlockLightColor(lx, ly, lz - 1),
-                                world.getBlockLightColor(lx + 1, ly, lz),
-                                world.getBlockLightColor(lx, ly, lz)
-                        );
-                        this.setVertexSkylightValue3Args(
-                                world.getBlockSkyLightValue(lx, ly, lz - 1),
-                                world.getBlockSkyLightValue(lx + 1, ly, lz),
-                                world.getBlockSkyLightValue(lx, ly, lz)
-                        );
-                    } else {
-                        setVertexLight4Args(
-                                world.getBlockLightValue(lx + 1, ly, lz - 1),
-                                world.getBlockLightValue(lx, ly, lz - 1),
-                                world.getBlockLightValue(lx + 1, ly, lz),
-                                world.getBlockLightValue(lx, ly, lz),
-                                world.getBlockLightColor(lx + 1, ly, lz - 1),
-                                world.getBlockLightColor(lx, ly, lz - 1),
-                                world.getBlockLightColor(lx + 1, ly, lz),
-                                world.getBlockLightColor(lx, ly, lz)
-                        );
-                        this.setVertexSkylightValue4Args(
-                                world.getBlockSkyLightValue(lx + 1, ly, lz - 1),
-                                world.getBlockSkyLightValue(lx, ly, lz - 1),
-                                world.getBlockSkyLightValue(lx + 1, ly, lz),
-                                world.getBlockSkyLightValue(lx, ly, lz)
-                        );
-                    }
-                }
-
-                case SOUTH_FACE -> {
-                    int lx = xBlock + 1, lz = zBlock;
-                    int baseY = yBlock + meshY, ly1 = baseY + 1;
-
-                    boolean solidA = blocks[world.getBlockID(lx, ly1, lz)].isSolid;
-                    boolean solidB = blocks[world.getBlockID(lx, baseY, lz - 1)].isSolid;
-
-                    if (solidA && solidB) {
-                        setVertexLight3Args(
-                                world.getBlockLightValue(lx, baseY, lz - 1),
-                                world.getBlockLightValue(lx, baseY, lz),
-                                world.getBlockLightValue(lx, ly1, lz),
-                                world.getBlockLightColor(lx, baseY, lz - 1),
-                                world.getBlockLightColor(lx, baseY, lz),
-                                world.getBlockLightColor(lx, ly1, lz)
-                        );
-                        this.setVertexSkylightValue3Args(
-                                world.getBlockSkyLightValue(lx, baseY, lz - 1),
-                                world.getBlockSkyLightValue(lx, baseY, lz),
-                                world.getBlockSkyLightValue(lx, ly1, lz)
-                        );
-                    } else {
-                        setVertexLight4Args(
-                                world.getBlockLightValue(lx, baseY, lz - 1),
-                                world.getBlockLightValue(lx, baseY, lz),
-                                world.getBlockLightValue(lx, ly1, lz - 1),
-                                world.getBlockLightValue(lx, ly1, lz),
-                                world.getBlockLightColor(lx, baseY, lz - 1),
-                                world.getBlockLightColor(lx, baseY, lz),
-                                world.getBlockLightColor(lx, ly1, lz - 1),
-                                world.getBlockLightColor(lx, ly1, lz)
-                        );
-                        this.setVertexSkylightValue4Args(
-                                world.getBlockSkyLightValue(lx, baseY, lz - 1),
-                                world.getBlockSkyLightValue(lx, baseY, lz),
-                                world.getBlockSkyLightValue(lx, ly1, lz - 1),
-                                world.getBlockSkyLightValue(lx, ly1, lz)
-                        );
-                    }
-                }
-
-                case EAST_FACE -> {
-                    int baseX = xBlock + meshX, baseY = yBlock + meshY, ly1 = baseY + 1, lz = zBlock - 1;
-
-                    boolean solidA = blocks[world.getBlockID(baseX + 1, baseY, lz)].isSolid;
-                    boolean solidB = blocks[world.getBlockID(baseX, ly1, lz)].isSolid;
-
-                    if (solidA && solidB) {
-                        setVertexLight3Args(
-                                world.getBlockLightValue(baseX + 1, baseY, lz),
-                                world.getBlockLightValue(baseX, baseY, lz),
-                                world.getBlockLightValue(baseX, ly1, lz),
-                                world.getBlockLightColor(baseX + 1, baseY, lz),
-                                world.getBlockLightColor(baseX, baseY, lz),
-                                world.getBlockLightColor(baseX, ly1, lz)
-                        );
-                        this.setVertexSkylightValue3Args(
-                                world.getBlockSkyLightValue(baseX + 1, baseY, lz),
-                                world.getBlockSkyLightValue(baseX, baseY, lz),
-                                world.getBlockSkyLightValue(baseX, ly1, lz)
-                        );
-                    } else {
-                        setVertexLight4Args(
-                                world.getBlockLightValue(baseX + 1, baseY, lz),
-                                world.getBlockLightValue(baseX, baseY, lz),
-                                world.getBlockLightValue(baseX + 1, ly1, lz),
-                                world.getBlockLightValue(baseX, ly1, lz),
-                                world.getBlockLightColor(baseX + 1, baseY, lz),
-                                world.getBlockLightColor(baseX, baseY, lz),
-                                world.getBlockLightColor(baseX + 1, ly1, lz),
-                                world.getBlockLightColor(baseX, ly1, lz)
-                        );
-                        this.setVertexSkylightValue4Args(
-                                world.getBlockSkyLightValue(baseX + 1, baseY, lz),
-                                world.getBlockSkyLightValue(baseX, baseY, lz),
-                                world.getBlockSkyLightValue(baseX + 1, ly1, lz),
-                                world.getBlockSkyLightValue(baseX, ly1, lz)
-                        );
-                    }
-                }
-            }
-        } else if (x == xMin && y == yMax && z == zMax) {
-            final Block[] blocks = Block.list;
-            final int meshX = greedyMeshSize[0];
-            final int meshZ = greedyMeshSize[1];
-            final int yUp = yBlock + 1;
-
-            switch (face) {
-                case TOP_FACE -> {
-                    int lx1 = xBlock - 1, lx2 = xBlock;
-                    int ly = yUp, lzBase = zBlock + meshZ, lzNext = lzBase + 1;
-
-                    boolean solidA = blocks[world.getBlockID(lx1, ly, lzBase)].isSolid;
-                    boolean solidB = blocks[world.getBlockID(lx2, ly, lzNext)].isSolid;
-
-                    if (solidA && solidB) {
-                        setVertexLight3Args(
-                                world.getBlockLightValue(lx2, ly, lzNext),
-                                world.getBlockLightValue(lx1, ly, lzBase),
-                                world.getBlockLightValue(lx2, ly, lzBase),
-                                world.getBlockLightColor(lx2, ly, lzNext),
-                                world.getBlockLightColor(lx1, ly, lzBase),
-                                world.getBlockLightColor(lx2, ly, lzBase)
-                        );
-                        this.setVertexSkylightValue3Args(
-                                world.getBlockSkyLightValue(lx2, ly, lzNext),
-                                world.getBlockSkyLightValue(lx1, ly, lzBase),
-                                world.getBlockSkyLightValue(lx2, ly, lzBase)
-                        );
-                    } else {
-                        setVertexLight4Args(
-                                world.getBlockLightValue(lx1, ly, lzNext),
-                                world.getBlockLightValue(lx2, ly, lzNext),
-                                world.getBlockLightValue(lx1, ly, lzBase),
-                                world.getBlockLightValue(lx2, ly, lzBase),
-                                world.getBlockLightColor(lx1, ly, lzNext),
-                                world.getBlockLightColor(lx2, ly, lzNext),
-                                world.getBlockLightColor(lx1, ly, lzBase),
-                                world.getBlockLightColor(lx2, ly, lzBase)
-                        );
-                        this.setVertexSkylightValue4Args(
-                                world.getBlockSkyLightValue(lx1, ly, lzNext),
-                                world.getBlockSkyLightValue(lx2, ly, lzNext),
-                                world.getBlockSkyLightValue(lx1, ly, lzBase),
-                                world.getBlockSkyLightValue(lx2, ly, lzBase)
-                        );
-                    }
-                }
-
-                case NORTH_FACE -> {
-                    int lx = xBlock - 1;
-                    int lzBase = zBlock + meshX, lzNext = lzBase + 1;
-                    int lyBase = yBlock + meshZ, lyNext = lyBase + 1;
-
-                    boolean solidA = blocks[world.getBlockID(lx, lyNext, lzBase)].isSolid;
-                    boolean solidB = blocks[world.getBlockID(lx, lyBase, lzNext)].isSolid;
-
-                    if (solidA && solidB) {
-                        setVertexLight3Args(
-                                world.getBlockLightValue(lx, lyBase, lzNext),
-                                world.getBlockLightValue(lx, lyBase, lzBase),
-                                world.getBlockLightValue(lx, lyNext, lzBase),
-                                world.getBlockLightColor(lx, lyBase, lzNext),
-                                world.getBlockLightColor(lx, lyBase, lzBase),
-                                world.getBlockLightColor(lx, lyNext, lzBase)
-                        );
-                        this.setVertexSkylightValue3Args(
-                                world.getBlockSkyLightValue(lx, lyBase, lzNext),
-                                world.getBlockSkyLightValue(lx, lyBase, lzBase),
-                                world.getBlockSkyLightValue(lx, lyNext, lzBase)
-                        );
-                    } else {
-                        setVertexLight4Args(
-                                world.getBlockLightValue(lx, lyBase, lzNext),
-                                world.getBlockLightValue(lx, lyBase, lzBase),
-                                world.getBlockLightValue(lx, lyNext, lzNext),
-                                world.getBlockLightValue(lx, lyNext, lzBase),
-                                world.getBlockLightColor(lx, lyBase, lzNext),
-                                world.getBlockLightColor(lx, lyBase, lzBase),
-                                world.getBlockLightColor(lx, lyNext, lzNext),
-                                world.getBlockLightColor(lx, lyNext, lzBase)
-                        );
-                        this.setVertexSkylightValue4Args(
-                                world.getBlockSkyLightValue(lx, lyBase, lzNext),
-                                world.getBlockSkyLightValue(lx, lyBase, lzBase),
-                                world.getBlockSkyLightValue(lx, lyNext, lzNext),
-                                world.getBlockSkyLightValue(lx, lyNext, lzBase)
-                        );
-                    }
-                }
-
-                case WEST_FACE -> {
-                    int lx1 = xBlock - 1, lx2 = xBlock;
-                    int lz = zBlock + 1, lyBase = yBlock + meshZ, lyNext = lyBase + 1;
-
-                    boolean solidA = blocks[world.getBlockID(lx1, lyBase, lz)].isSolid;
-                    boolean solidB = blocks[world.getBlockID(lx2, lyNext, lz)].isSolid;
-
-                    if (solidA && solidB) {
-                        setVertexLight3Args(
-                                world.getBlockLightValue(lx1, lyBase, lz),
-                                world.getBlockLightValue(lx2, lyBase, lz),
-                                world.getBlockLightValue(lx2, lyNext, lz),
-                                world.getBlockLightColor(lx1, lyBase, lz),
-                                world.getBlockLightColor(lx2, lyBase, lz),
-                                world.getBlockLightColor(lx2, lyNext, lz)
-                        );
-                        this.setVertexSkylightValue3Args(
-                                world.getBlockSkyLightValue(lx1, lyBase, lz),
-                                world.getBlockSkyLightValue(lx2, lyBase, lz),
-                                world.getBlockSkyLightValue(lx2, lyNext, lz)
-                        );
-                    } else {
-                        setVertexLight4Args(
-                                world.getBlockLightValue(lx1, lyBase, lz),
-                                world.getBlockLightValue(lx2, lyBase, lz),
-                                world.getBlockLightValue(lx1, lyNext, lz),
-                                world.getBlockLightValue(lx2, lyNext, lz),
-                                world.getBlockLightColor(lx1, lyBase, lz),
-                                world.getBlockLightColor(lx2, lyBase, lz),
-                                world.getBlockLightColor(lx1, lyNext, lz),
-                                world.getBlockLightColor(lx2, lyNext, lz)
-                        );
-                        this.setVertexSkylightValue4Args(
-                                world.getBlockSkyLightValue(lx1, lyBase, lz),
-                                world.getBlockSkyLightValue(lx2, lyBase, lz),
-                                world.getBlockSkyLightValue(lx1, lyNext, lz),
-                                world.getBlockSkyLightValue(lx2, lyNext, lz)
-                        );
-                    }
-                }
-            }
-        } else if (x == xMax && y == yMin && z == zMax) {
-            final Block[] blocks = Block.list;
-            final int meshX = greedyMeshSize[0];
-            final int meshZ = greedyMeshSize[1];
-            final int lxBase = xBlock + meshX;
-            final int lzBase = zBlock + meshZ;
-            final int ly = yBlock - 1;
-            final int lzNext = lzBase + 1;
-            final int lxNext = lxBase + 1;
-
-            switch (face) {
-                case BOTTOM_FACE -> {
-                    boolean solidA = blocks[world.getBlockID(lxNext, ly, lzBase)].isSolid;
-                    boolean solidB = blocks[world.getBlockID(lxBase, ly, lzNext)].isSolid;
-
-                    if (solidA && solidB) {
-                        setVertexLight3Args(
-                                world.getBlockLightValue(lxBase, ly, lzNext),
-                                world.getBlockLightValue(lxNext, ly, lzBase),
-                                world.getBlockLightValue(lxBase, ly, lzBase),
-                                world.getBlockLightColor(lxBase, ly, lzNext),
-                                world.getBlockLightColor(lxNext, ly, lzBase),
-                                world.getBlockLightColor(lxBase, ly, lzBase)
-                        );
-                        this.setVertexSkylightValue3Args(
-                                world.getBlockSkyLightValue(lxBase, ly, lzNext),
-                                world.getBlockSkyLightValue(lxNext, ly, lzBase),
-                                world.getBlockSkyLightValue(lxBase, ly, lzBase)
-                        );
-                    } else {
-                        setVertexLight4Args(
-                                world.getBlockLightValue(lxNext, ly, lzNext),
-                                world.getBlockLightValue(lxBase, ly, lzNext),
-                                world.getBlockLightValue(lxNext, ly, lzBase),
-                                world.getBlockLightValue(lxBase, ly, lzBase),
-                                world.getBlockLightColor(lxNext, ly, lzNext),
-                                world.getBlockLightColor(lxBase, ly, lzNext),
-                                world.getBlockLightColor(lxNext, ly, lzBase),
-                                world.getBlockLightColor(lxBase, ly, lzBase)
-                        );
-                        this.setVertexSkylightValue4Args(
-                                world.getBlockSkyLightValue(lxNext, ly, lzNext),
-                                world.getBlockSkyLightValue(lxBase, ly, lzNext),
-                                world.getBlockSkyLightValue(lxNext, ly, lzBase),
-                                world.getBlockSkyLightValue(lxBase, ly, lzBase)
-                        );
-                    }
-                }
-
-                case SOUTH_FACE -> {
-                    int lx = xBlock + 1, lz = zBlock + meshX;
-                    boolean solidA = blocks[world.getBlockID(lx, yBlock - 1, lz)].isSolid;
-                    boolean solidB = blocks[world.getBlockID(lx, yBlock, lz + 1)].isSolid;
-
-                    if (solidA && solidB) {
-                        setVertexLight3Args(
-                                world.getBlockLightValue(lx, yBlock, lz + 1),
-                                world.getBlockLightValue(lx, yBlock, lz),
-                                world.getBlockLightValue(lx, yBlock - 1, lz),
-                                world.getBlockLightColor(lx, yBlock, lz + 1),
-                                world.getBlockLightColor(lx, yBlock, lz),
-                                world.getBlockLightColor(lx, yBlock - 1, lz)
-                        );
-                        this.setVertexSkylightValue3Args(
-                                world.getBlockSkyLightValue(lx, yBlock, lz + 1),
-                                world.getBlockSkyLightValue(lx, yBlock, lz),
-                                world.getBlockSkyLightValue(lx, yBlock - 1, lz)
-                        );
-                    } else {
-                        setVertexLight4Args(
-                                world.getBlockLightValue(lx, yBlock, lz + 1),
-                                world.getBlockLightValue(lx, yBlock, lz),
-                                world.getBlockLightValue(lx, yBlock - 1, lz + 1),
-                                world.getBlockLightValue(lx, yBlock - 1, lz),
-                                world.getBlockLightColor(lx, yBlock, lz + 1),
-                                world.getBlockLightColor(lx, yBlock, lz),
-                                world.getBlockLightColor(lx, yBlock - 1, lz + 1),
-                                world.getBlockLightColor(lx, yBlock - 1, lz)
-                        );
-                        this.setVertexSkylightValue4Args(
-                                world.getBlockSkyLightValue(lx, yBlock, lz + 1),
-                                world.getBlockSkyLightValue(lx, yBlock, lz),
-                                world.getBlockSkyLightValue(lx, yBlock - 1, lz + 1),
-                                world.getBlockSkyLightValue(lx, yBlock - 1, lz)
-                        );
-                    }
-                }
-
-                case WEST_FACE -> {
-                    int lyBase = yBlock, lyNext = yBlock - 1, lz = zBlock + 1;
-
-                    boolean solidA = blocks[world.getBlockID(lxNext, lyBase, lz)].isSolid;
-                    boolean solidB = blocks[world.getBlockID(lxBase, lyNext, lz)].isSolid;
-
-                    if (solidA && solidB) {
-                        setVertexLight3Args(
-                                world.getBlockLightValue(lxNext, lyBase, lz),
-                                world.getBlockLightValue(lxBase, lyBase, lz),
-                                world.getBlockLightValue(lxBase, lyNext, lz),
-                                world.getBlockLightColor(lxNext, lyBase, lz),
-                                world.getBlockLightColor(lxBase, lyBase, lz),
-                                world.getBlockLightColor(lxBase, lyNext, lz)
-                        );
-                        this.setVertexSkylightValue3Args(
-                                world.getBlockSkyLightValue(lxNext, lyBase, lz),
-                                world.getBlockSkyLightValue(lxBase, lyBase, lz),
-                                world.getBlockSkyLightValue(lxBase, lyNext, lz)
-                        );
-                    } else {
-                        setVertexLight4Args(
-                                world.getBlockLightValue(lxNext, lyBase, lz),
-                                world.getBlockLightValue(lxBase, lyBase, lz),
-                                world.getBlockLightValue(lxNext, lyNext, lz),
-                                world.getBlockLightValue(lxBase, lyNext, lz),
-                                world.getBlockLightColor(lxNext, lyBase, lz),
-                                world.getBlockLightColor(lxBase, lyBase, lz),
-                                world.getBlockLightColor(lxNext, lyNext, lz),
-                                world.getBlockLightColor(lxBase, lyNext, lz)
-                        );
-                        this.setVertexSkylightValue4Args(
-                                world.getBlockSkyLightValue(lxNext, lyBase, lz),
-                                world.getBlockSkyLightValue(lxBase, lyBase, lz),
-                                world.getBlockSkyLightValue(lxNext, lyNext, lz),
-                                world.getBlockSkyLightValue(lxBase, lyNext, lz)
-                        );
-                    }
-                }
-            }
-        } else if (x == xMax && y == yMax && z == zMax) {
-            final Block[] blocks = Block.list;
-            final int meshX = greedyMeshSize[0];
-            final int meshY = greedyMeshSize[1];
-
-            final int xMesh = xBlock + meshX;
-            final int xMeshNext = xMesh + 1;
-            final int yUp = yBlock + 1;
-            final int yMesh = yBlock + meshY;
-            final int yMeshNext = yMesh + 1;
-            final int zMesh = zBlock + meshY;
-            final int zMeshNext = zMesh + 1;
-            final int zMeshX = zBlock + meshX;
-            final int zMeshXNext = zMeshX + 1;
-
-            switch (face) {
-                case TOP_FACE -> {
-                    boolean solidA = blocks[world.getBlockID(xMeshNext, yUp, zMesh)].isSolid;
-                    boolean solidB = blocks[world.getBlockID(xMesh, yUp, zMeshNext)].isSolid;
-
-                    if (solidA && solidB) {
-                        setVertexLight3Args(
-                                world.getBlockLightValue(xMesh, yUp, zMeshNext),
-                                world.getBlockLightValue(xMeshNext, yUp, zMesh),
-                                world.getBlockLightValue(xMesh, yUp, zMesh),
-                                world.getBlockLightColor(xMesh, yUp, zMeshNext),
-                                world.getBlockLightColor(xMeshNext, yUp, zMesh),
-                                world.getBlockLightColor(xMesh, yUp, zMesh)
-                        );
-                        this.setVertexSkylightValue3Args(
-                                world.getBlockSkyLightValue(xMesh, yUp, zMeshNext),
-                                world.getBlockSkyLightValue(xMeshNext, yUp, zMesh),
-                                world.getBlockSkyLightValue(xMesh, yUp, zMesh)
-                        );
-                    } else {
-                        setVertexLight4Args(
-                                world.getBlockLightValue(xMeshNext, yUp, zMeshNext),
-                                world.getBlockLightValue(xMesh, yUp, zMeshNext),
-                                world.getBlockLightValue(xMeshNext, yUp, zMesh),
-                                world.getBlockLightValue(xMesh, yUp, zMesh),
-                                world.getBlockLightColor(xMeshNext, yUp, zMeshNext),
-                                world.getBlockLightColor(xMesh, yUp, zMeshNext),
-                                world.getBlockLightColor(xMeshNext, yUp, zMesh),
-                                world.getBlockLightColor(xMesh, yUp, zMesh)
-                        );
-                        this.setVertexSkylightValue4Args(
-                                world.getBlockSkyLightValue(xMeshNext, yUp, zMeshNext),
-                                world.getBlockSkyLightValue(xMesh, yUp, zMeshNext),
-                                world.getBlockSkyLightValue(xMeshNext, yUp, zMesh),
-                                world.getBlockSkyLightValue(xMesh, yUp, zMesh));
-                    }
-                }
-
-                case SOUTH_FACE -> {
-                    boolean solidA = blocks[world.getBlockID(xBlock + 1, yMeshNext, zMeshX)].isSolid;
-                    boolean solidB = blocks[world.getBlockID(xBlock + 1, yMesh, zMeshXNext)].isSolid;
-
-                    if (solidA && solidB) {
-                        setVertexLight3Args(
-                                world.getBlockLightValue(xBlock + 1, yMesh, zMeshXNext),
-                                world.getBlockLightValue(xBlock + 1, yMesh, zMeshX),
-                                world.getBlockLightValue(xBlock + 1, yMeshNext, zMeshX),
-                                world.getBlockLightColor(xBlock + 1, yMesh, zMeshXNext),
-                                world.getBlockLightColor(xBlock + 1, yMesh, zMeshX),
-                                world.getBlockLightColor(xBlock + 1, yMeshNext, zMeshX)
-                        );
-                        this.setVertexSkylightValue3Args(
-                                world.getBlockSkyLightValue(xBlock + 1, yMesh, zMeshXNext),
-                                world.getBlockSkyLightValue(xBlock + 1, yMesh, zMeshX),
-                                world.getBlockSkyLightValue(xBlock + 1, yMeshNext, zMeshX)
-                        );
-                    } else {
-                        setVertexLight4Args(
-                                world.getBlockLightValue(xBlock + 1, yMesh, zMeshXNext),
-                                world.getBlockLightValue(xBlock + 1, yMesh, zMeshX),
-                                world.getBlockLightValue(xBlock + 1, yMeshNext, zMeshXNext),
-                                world.getBlockLightValue(xBlock + 1, yMeshNext, zMeshX),
-                                world.getBlockLightColor(xBlock + 1, yMesh, zMeshXNext),
-                                world.getBlockLightColor(xBlock + 1, yMesh, zMeshX),
-                                world.getBlockLightColor(xBlock + 1, yMeshNext, zMeshXNext),
-                                world.getBlockLightColor(xBlock + 1, yMeshNext, zMeshX)
-                        );
-                        this.setVertexSkylightValue4Args(
-                                world.getBlockSkyLightValue(xBlock + 1, yMesh, zMeshXNext),
-                                world.getBlockSkyLightValue(xBlock + 1, yMesh, zMeshX),
-                                world.getBlockSkyLightValue(xBlock + 1, yMeshNext, zMeshXNext),
-                                world.getBlockSkyLightValue(xBlock + 1, yMeshNext, zMeshX)
-                        );
-                    }
-                }
-
-                case WEST_FACE -> {
-                    boolean solidA = blocks[world.getBlockID(xMeshNext, yMesh, zBlock + 1)].isSolid;
-                    boolean solidB = blocks[world.getBlockID(xMesh, yMeshNext, zBlock + 1)].isSolid;
-
-                    if (solidA && solidB) {
-                        setVertexLight3Args(
-                                world.getBlockLightValue(xMeshNext, yMesh, zBlock + 1),
-                                world.getBlockLightValue(xMesh, yMesh, zBlock + 1),
-                                world.getBlockLightValue(xMesh, yMeshNext, zBlock + 1),
-                                world.getBlockLightColor(xMeshNext, yMesh, zBlock + 1),
-                                world.getBlockLightColor(xMesh, yMesh, zBlock + 1),
-                                world.getBlockLightColor(xMesh, yMeshNext, zBlock + 1)
-                        );
-                        this.setVertexSkylightValue3Args(
-                                world.getBlockSkyLightValue(xMeshNext, yMesh, zBlock + 1),
-                                world.getBlockSkyLightValue(xMesh, yMesh, zBlock + 1),
-                                world.getBlockSkyLightValue(xMesh, yMeshNext, zBlock + 1));
-                    } else {
-                        setVertexLight4Args(
-                                world.getBlockLightValue(xMeshNext, yMesh, zBlock + 1),
-                                world.getBlockLightValue(xMesh, yMesh, zBlock + 1),
-                                world.getBlockLightValue(xMeshNext, yMeshNext, zBlock + 1),
-                                world.getBlockLightValue(xMesh, yMeshNext, zBlock + 1),
-                                world.getBlockLightColor(xMeshNext, yMesh, zBlock + 1),
-                                world.getBlockLightColor(xMesh, yMesh, zBlock + 1),
-                                world.getBlockLightColor(xMeshNext, yMeshNext, zBlock + 1),
-                                world.getBlockLightColor(xMesh, yMeshNext, zBlock + 1)
-                        );
-                        this.setVertexSkylightValue4Args(
-                                world.getBlockSkyLightValue(xMeshNext, yMesh, zBlock + 1),
-                                world.getBlockSkyLightValue(xMesh, yMesh, zBlock + 1),
-                                world.getBlockSkyLightValue(xMeshNext, yMeshNext, zBlock + 1),
-                                world.getBlockSkyLightValue(xMesh, yMeshNext, zBlock + 1));
-                    }
-                }
-            }
-        } else if (x == xMin && y >= yMin && y <= yMax && z == zMin) {
-            setVertexLight4Args(world.getBlockLightValue(xBlock - 1, yBlock, zBlock - 1), world.getBlockLightValue(xBlock - 1, yBlock, zBlock), world.getBlockLightValue(xBlock, yBlock, zBlock - 1), world.getBlockLightValue(xBlock, yBlock, zBlock), world.getBlockLightColor(xBlock - 1, yBlock, zBlock - 1), world.getBlockLightColor(xBlock - 1, yBlock, zBlock), world.getBlockLightColor(xBlock, yBlock, zBlock - 1), world.getBlockLightColor(xBlock, yBlock, zBlock));
-            this.setVertexSkylightValue4Args(world.getBlockSkyLightValue(xBlock - 1, yBlock, zBlock - 1), world.getBlockSkyLightValue(xBlock - 1, yBlock, zBlock), world.getBlockSkyLightValue(xBlock, yBlock, zBlock - 1), world.getBlockSkyLightValue(xBlock, yBlock, zBlock));
-        } else if (x == xMax && y >= yMin && y <= yMax && z == zMin) {
-            setVertexLight4Args(world.getBlockLightValue(xBlock + 1, yBlock, zBlock - 1), world.getBlockLightValue(xBlock + 1, yBlock, zBlock), world.getBlockLightValue(xBlock, yBlock, zBlock - 1), world.getBlockLightValue(xBlock, yBlock, zBlock), world.getBlockLightColor(xBlock + 1, yBlock, zBlock - 1), world.getBlockLightColor(xBlock + 1, yBlock, zBlock), world.getBlockLightColor(xBlock, yBlock, zBlock - 1), world.getBlockLightColor(xBlock, yBlock, zBlock));
-            this.setVertexSkylightValue4Args(world.getBlockSkyLightValue(xBlock + 1, yBlock, zBlock - 1), world.getBlockSkyLightValue(xBlock + 1, yBlock, zBlock), world.getBlockSkyLightValue(xBlock, yBlock, zBlock - 1), world.getBlockSkyLightValue(xBlock, yBlock, zBlock));
-        } else if (x == xMin && y >= yMin && y <= yMax && z == zMax) {
-            setVertexLight4Args(world.getBlockLightValue(xBlock - 1, yBlock, zBlock + 1), world.getBlockLightValue(xBlock - 1, yBlock, zBlock), world.getBlockLightValue(xBlock, yBlock, zBlock + 1), world.getBlockLightValue(xBlock, yBlock, zBlock), world.getBlockLightColor(xBlock - 1, yBlock, zBlock + 1), world.getBlockLightColor(xBlock - 1, yBlock, zBlock), world.getBlockLightColor(xBlock, yBlock, zBlock + 1), world.getBlockLightColor(xBlock, yBlock, zBlock));
-            this.setVertexSkylightValue4Args(world.getBlockSkyLightValue(xBlock - 1, yBlock, zBlock + 1), world.getBlockSkyLightValue(xBlock - 1, yBlock, zBlock), world.getBlockSkyLightValue(xBlock, yBlock, zBlock + 1), world.getBlockSkyLightValue(xBlock, yBlock, zBlock));
-        } else if (x == xMax && y >= yMin && y <= yMax && z == zMax) {
-            setVertexLight4Args(world.getBlockLightValue(xBlock + 1, yBlock, zBlock + 1), world.getBlockLightValue(xBlock + 1, yBlock, zBlock), world.getBlockLightValue(xBlock, yBlock, zBlock + 1), world.getBlockLightValue(xBlock, yBlock, zBlock), world.getBlockLightColor(xBlock + 1, yBlock, zBlock + 1), world.getBlockLightColor(xBlock + 1, yBlock, zBlock), world.getBlockLightColor(xBlock, yBlock, zBlock + 1), world.getBlockLightColor(xBlock, yBlock, zBlock));
-            this.setVertexSkylightValue4Args(world.getBlockSkyLightValue(xBlock + 1, yBlock, zBlock + 1), world.getBlockSkyLightValue(xBlock + 1, yBlock, zBlock), world.getBlockSkyLightValue(xBlock, yBlock, zBlock + 1), world.getBlockSkyLightValue(xBlock, yBlock, zBlock));
-        } else if (x >= xMin && x <= xMax && y == yMin && z == zMin) {
-
-            setVertexLight4Args(world.getBlockLightValue(xBlock, yBlock - 1, zBlock - 1), world.getBlockLightValue(xBlock, yBlock - 1, zBlock), world.getBlockLightValue(xBlock, yBlock, zBlock - 1), world.getBlockLightValue(xBlock, yBlock, zBlock), world.getBlockLightColor(xBlock, yBlock - 1, zBlock - 1), world.getBlockLightColor(xBlock, yBlock - 1, zBlock), world.getBlockLightColor(xBlock, yBlock, zBlock - 1), world.getBlockLightColor(xBlock, yBlock, zBlock));
-            this.setVertexSkylightValue4Args(world.getBlockSkyLightValue(xBlock, yBlock - 1, zBlock - 1), world.getBlockSkyLightValue(xBlock, yBlock - 1, zBlock), world.getBlockSkyLightValue(xBlock, yBlock, zBlock - 1), world.getBlockSkyLightValue(xBlock, yBlock, zBlock));
-
-
-        } else if (x == xMin && y == yMin && z >= zMin && z <= zMax) {
-            setVertexLight4Args(world.getBlockLightValue(xBlock - 1, yBlock, zBlock), world.getBlockLightValue(xBlock, yBlock, zBlock), world.getBlockLightValue(xBlock - 1, yBlock - 1, zBlock), world.getBlockLightValue(xBlock, yBlock - 1, zBlock), world.getBlockLightColor(xBlock - 1, yBlock, zBlock), world.getBlockLightColor(xBlock, yBlock, zBlock), world.getBlockLightColor(xBlock - 1, yBlock - 1, zBlock), world.getBlockLightColor(xBlock, yBlock - 1, zBlock));
-            this.setVertexSkylightValue4Args(world.getBlockSkyLightValue(xBlock - 1, yBlock, zBlock), world.getBlockSkyLightValue(xBlock, yBlock, zBlock), world.getBlockSkyLightValue(xBlock - 1, yBlock - 1, zBlock), world.getBlockSkyLightValue(xBlock, yBlock - 1, zBlock));
-        } else if (x >= xMin && x <= xMax && y == yMin && z == zMax) {
-            setVertexLight4Args(world.getBlockLightValue(xBlock, yBlock - 1, zBlock + 1), world.getBlockLightValue(xBlock, yBlock - 1, zBlock), world.getBlockLightValue(xBlock, yBlock, zBlock + 1), world.getBlockLightValue(xBlock, yBlock, zBlock), world.getBlockLightColor(xBlock, yBlock - 1, zBlock + 1), world.getBlockLightColor(xBlock, yBlock - 1, zBlock), world.getBlockLightColor(xBlock, yBlock, zBlock + 1), world.getBlockLightColor(xBlock, yBlock, zBlock));
-            this.setVertexSkylightValue4Args(world.getBlockSkyLightValue(xBlock, yBlock - 1, zBlock + 1), world.getBlockSkyLightValue(xBlock, yBlock - 1, zBlock), world.getBlockSkyLightValue(xBlock, yBlock, zBlock + 1), world.getBlockSkyLightValue(xBlock, yBlock, zBlock));
-        } else if (x == xMax && y == yMin && z >= zMin && z <= zMax) {
-            setVertexLight4Args(world.getBlockLightValue(xBlock + 1, yBlock, zBlock), world.getBlockLightValue(xBlock, yBlock, zBlock), world.getBlockLightValue(xBlock + 1, yBlock - 1, zBlock), world.getBlockLightValue(xBlock, yBlock - 1, zBlock), world.getBlockLightColor(xBlock + 1, yBlock, zBlock), world.getBlockLightColor(xBlock, yBlock, zBlock), world.getBlockLightColor(xBlock + 1, yBlock - 1, zBlock), world.getBlockLightColor(xBlock, yBlock - 1, zBlock));
-            this.setVertexSkylightValue4Args(world.getBlockSkyLightValue(xBlock + 1, yBlock, zBlock), world.getBlockSkyLightValue(xBlock, yBlock, zBlock), world.getBlockSkyLightValue(xBlock + 1, yBlock - 1, zBlock), world.getBlockSkyLightValue(xBlock, yBlock - 1, zBlock));
-        } else if (x >= xMin && x <= xMax && y == yMax && z == zMin) {
-            setVertexLight4Args(world.getBlockLightValue(xBlock, yBlock + 1, zBlock - 1), world.getBlockLightValue(xBlock, yBlock + 1, zBlock), world.getBlockLightValue(xBlock, yBlock, zBlock - 1), world.getBlockLightValue(xBlock, yBlock, zBlock), world.getBlockLightColor(xBlock, yBlock + 1, zBlock - 1), world.getBlockLightColor(xBlock, yBlock + 1, zBlock), world.getBlockLightColor(xBlock, yBlock, zBlock - 1), world.getBlockLightColor(xBlock, yBlock, zBlock));
-            this.setVertexSkylightValue4Args(world.getBlockSkyLightValue(xBlock, yBlock + 1, zBlock - 1), world.getBlockSkyLightValue(xBlock, yBlock + 1, zBlock), world.getBlockSkyLightValue(xBlock, yBlock, zBlock - 1), world.getBlockSkyLightValue(xBlock, yBlock, zBlock));
-        } else if (x == xMin && y == yMax && z >= zMin && z <= zMax) {
-            setVertexLight4Args(world.getBlockLightValue(xBlock - 1, yBlock, zBlock), world.getBlockLightValue(xBlock, yBlock, zBlock), world.getBlockLightValue(xBlock - 1, yBlock + 1, zBlock), world.getBlockLightValue(xBlock, yBlock + 1, zBlock), world.getBlockLightColor(xBlock - 1, yBlock, zBlock), world.getBlockLightColor(xBlock, yBlock, zBlock), world.getBlockLightColor(xBlock - 1, yBlock + 1, zBlock), world.getBlockLightColor(xBlock, yBlock + 1, zBlock));
-            this.setVertexSkylightValue4Args(world.getBlockSkyLightValue(xBlock - 1, yBlock, zBlock), world.getBlockSkyLightValue(xBlock, yBlock, zBlock), world.getBlockSkyLightValue(xBlock - 1, yBlock + 1, zBlock), world.getBlockSkyLightValue(xBlock, yBlock + 1, zBlock));
-        } else if (x >= xMin && x <= xMax && y == yMax && z == zMax) {
-            setVertexLight4Args(world.getBlockLightValue(xBlock, yBlock + 1, zBlock + 1), world.getBlockLightValue(xBlock, yBlock + 1, zBlock), world.getBlockLightValue(xBlock, yBlock, zBlock + 1), world.getBlockLightValue(xBlock, yBlock, zBlock), world.getBlockLightColor(xBlock, yBlock + 1, zBlock + 1), world.getBlockLightColor(xBlock, yBlock + 1, zBlock), world.getBlockLightColor(xBlock, yBlock, zBlock + 1), world.getBlockLightColor(xBlock, yBlock, zBlock));
-            this.setVertexSkylightValue4Args(world.getBlockSkyLightValue(xBlock, yBlock + 1, zBlock + 1), world.getBlockSkyLightValue(xBlock, yBlock + 1, zBlock), world.getBlockSkyLightValue(xBlock, yBlock, zBlock + 1), world.getBlockSkyLightValue(xBlock, yBlock, zBlock));
-        } else if (x == xMax && y == yMax && z >= zMin && z <= zMax) {
-            setVertexLight4Args(world.getBlockLightValue(xBlock + 1, yBlock, zBlock), world.getBlockLightValue(xBlock, yBlock, zBlock), world.getBlockLightValue(xBlock + 1, yBlock + 1, zBlock), world.getBlockLightValue(xBlock, yBlock + 1, zBlock), world.getBlockLightColor(xBlock + 1, yBlock, zBlock), world.getBlockLightColor(xBlock, yBlock, zBlock), world.getBlockLightColor(xBlock + 1, yBlock + 1, zBlock), world.getBlockLightColor(xBlock, yBlock + 1, zBlock));
-            this.setVertexSkylightValue4Args(world.getBlockSkyLightValue(xBlock + 1, yBlock, zBlock), world.getBlockSkyLightValue(xBlock, yBlock, zBlock), world.getBlockSkyLightValue(xBlock + 1, yBlock + 1, zBlock), world.getBlockSkyLightValue(xBlock, yBlock + 1, zBlock));
-        } else if (x >= xMin && x <= xMax && y == yMin && z >= zMin && z <= zMax) {
-            setVertexLight2Args(world.getBlockLightValue(xBlock, yBlock, zBlock), world.getBlockLightValue(xBlock, yBlock - 1, zBlock), world.getBlockLightColor(xBlock, yBlock, zBlock), world.getBlockLightColor(xBlock, yBlock - 1, zBlock));
-        } else if (x >= xMin && x <= xMax && y == yMax && z >= zMin && z <= zMax) {
-            setVertexLight2Args(world.getBlockLightValue(xBlock, yBlock, zBlock), world.getBlockLightValue(xBlock, yBlock + 1, zBlock), world.getBlockLightColor(xBlock, yBlock, zBlock), world.getBlockLightColor(xBlock, yBlock + 1, zBlock));
-        } else if (x == xMin && y >= yMin && y <= yMax && z >= zMin && z <= zMax) {
-            setVertexLight2Args(world.getBlockLightValue(xBlock, yBlock, zBlock), world.getBlockLightValue(xBlock - 1, yBlock, zBlock), world.getBlockLightColor(xBlock, yBlock, zBlock), world.getBlockLightColor(xBlock - 1, yBlock, zBlock));
-        } else if (x == xMax && y >= yMin && y <= yMax && z >= zMin && z <= zMax) {
-            setVertexLight2Args(world.getBlockLightValue(xBlock, yBlock, zBlock), world.getBlockLightValue(xBlock + 1, yBlock, zBlock), world.getBlockLightColor(xBlock, yBlock, zBlock), world.getBlockLightColor(xBlock + 1, yBlock, zBlock));
-        } else if (x >= xMin && x <= xMax && y >= yMin && y <= yMax && z == zMin) {
-            setVertexLight2Args(world.getBlockLightValue(xBlock, yBlock, zBlock), world.getBlockLightValue(xBlock, yBlock, zBlock - 1), world.getBlockLightColor(xBlock, yBlock, zBlock), world.getBlockLightColor(xBlock, yBlock, zBlock - 1));
-        } else if (x >= xMin && x <= xMax && y >= yMin && y <= yMax && z == zMax) {
-            setVertexLight2Args(world.getBlockLightValue(xBlock, yBlock, zBlock), world.getBlockLightValue(xBlock, yBlock, zBlock + 1), world.getBlockLightColor(xBlock, yBlock, zBlock), world.getBlockLightColor(xBlock, yBlock, zBlock + 1));
-        } else if (x >= xMin && x <= xMax && y >= yMin && y <= yMax && z >= zMin && z <= zMax) {
-            setVertexLight1Arg(world.getBlockLightValue(xBlock, yBlock, zBlock), world.getBlockLightColor(xBlock, yBlock, zBlock));
-        } else {
-            setVertexLight1Arg(world.getBlockLightValue(xBlock, yBlock, zBlock), world.getBlockLightColor(xBlock, yBlock, zBlock));
+        if (cornerType != -1) {
+            sampleFaceCornerAOAndSky(world, xBlock, yBlock, zBlock, face, cornerType, chunk);
         }
 
-        this.setGrayScaleImageMultiplier();
+
+        setGrayScaleImageMultiplier();
     }
+
 
     private  void resetLight() {
         this.red = this.redReset;

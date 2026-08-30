@@ -63,7 +63,7 @@ public final class InWorld3DCraftingItem extends BlockState{
         if(this.activeCraftingLayer == this.craftingRecipe.maxLayers){
 
             if(this.craftingRecipe.outputBlockID != Block.NULL_BLOCK_REFERENCE){
-                this.chunk.setBlockWithNotify(this.chunk.getBlockXFromIndex(this.indexInChunk), this.chunk.getBlockYFromIndex(this.indexInChunk), this.chunk.getBlockZFromIndex(this.indexInChunk), this.craftingRecipe.outputBlockID);
+                this.chunk.setBlockAndNotify(this.chunk.getBlockXFromIndex(this.indexInChunk), this.chunk.getBlockYFromIndex(this.indexInChunk), this.chunk.getBlockZFromIndex(this.indexInChunk), this.craftingRecipe.outputBlockID);
             } else {
                 if (!CosmicEvolution.instance.save.thePlayer.addItemToInventory(this.craftingRecipe.outputItemID, Item.list[this.craftingRecipe.outputItemID].metadata, (byte) this.craftingRecipe.outputCount, Item.list[this.craftingRecipe.outputItemID].durability, 0, null)) {
                     CosmicEvolution.instance.save.activeWorld.addEntity(new EntityItem(this.chunk.getBlockXFromIndex(this.indexInChunk) + 0.5, this.chunk.getBlockYFromIndex(this.indexInChunk) + 0.25, this.chunk.getBlockZFromIndex(this.indexInChunk) + 0.5, this.craftingRecipe.outputItemID, Item.list[this.craftingRecipe.outputItemID].metadata, (byte) this.craftingRecipe.outputCount, Item.list[this.craftingRecipe.outputItemID].durability, 0, null));

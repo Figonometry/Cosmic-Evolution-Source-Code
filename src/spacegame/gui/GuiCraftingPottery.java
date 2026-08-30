@@ -445,7 +445,7 @@ public final class GuiCraftingPottery extends GuiCrafting {
 
         if(recipeSelector != null) {
             if (recipeSelector.meetsCriteriaToMakeRecipe(CosmicEvolution.instance.save.thePlayer)) {
-                CosmicEvolution.instance.save.activeWorld.setBlockWithNotify(this.x, this.y, this.z, Block.crafting3DItem.ID, true);
+                CosmicEvolution.instance.save.activeWorld.setBlockAndNotify(this.x, this.y, this.z, Block.crafting3DItem.ID, true);
                 InWorld3DCraftingItem craftingBlock = new InWorld3DCraftingItem(Chunk.getBlockIndexFromCoordinates(x, y, z), Block.clay.ID, this.getInWorldCraftingRecipeName(recipeSelector.itemID), CosmicEvolution.instance.save.activeWorld.findChunkFromChunkCoordinates(this.x >> 5, this.y >> 5, this.z >> 5));
                 if (recipeSelector.itemID != Item.block.ID) {
                     craftingBlock.activateCraftingLayer(0);

@@ -90,7 +90,7 @@ public class WorldGenTree extends WorldGen {
             y = this.worldEarth.chunkController.findChunkSkyLightMap(x >> 5, z >> 5).getHeightValue(x,z);
 
             if(Block.list[this.worldEarth.getBlockID(x,y,z)] instanceof BlockGrass && this.worldEarth.getBlockID(x, y + 1, z) == Block.air.ID){
-                this.worldEarth.setBlockWithNotify(x, y + 1, z, Block.itemStick.ID, false);
+                this.worldEarth.setBlockAndNotify(x, y + 1, z, Block.itemStick.ID, false);
             }
         }
 

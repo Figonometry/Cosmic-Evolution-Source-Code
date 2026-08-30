@@ -27,7 +27,7 @@ public abstract class BlockLog extends Block {
     @Override
     public void onLeftClick(int x, int y, int z, World world, EntityPlayer player){
         this.handleSpecialLeftClickFunctions(x,y,z, world, player);
-        world.setBlockWithNotify(x,y,z, Block.air.ID, false);
+        world.setBlockAndNotify(x,y,z, Block.air.ID, false);
         this.notifyNearbyLeafBlocks(x,y,z, world);
         player.reduceHeldItemDurability();
     }

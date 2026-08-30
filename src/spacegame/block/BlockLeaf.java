@@ -42,7 +42,7 @@ public final class BlockLeaf extends Block {
                     this.itemMetadata, (byte)1));
         }
         world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).removeDecayableLeafFromArray((short) Chunk.getBlockIndexFromCoordinates(x,y,z));
-        world.setBlockWithNotify(x,y,z, Block.air.ID, false);
+        world.setBlockAndNotify(x,y,z, Block.air.ID, false);
         this.notifySurroundingLeafBlocks(x,y,z, world);
     }
 

@@ -10,6 +10,7 @@ public final class GeologicProvince {
     private ArrayList<CoordinatePairs> queuedCoordinates = new ArrayList<>();
     private GeologicRegistry associatedRegistry;
     public int floor;
+    public long seed;
 
     // NEW: visited array
     private boolean[][] visited;
@@ -17,6 +18,7 @@ public final class GeologicProvince {
     public GeologicProvince(long seed, int floor, GeologicRegistry geologicRegistry){
         this.floor = floor;
         this.associatedRegistry = geologicRegistry;
+        this.seed = seed;
         Random rand = new Random(seed);
 
         int mapSize = rand.nextInt(1024, 2048);
@@ -49,7 +51,7 @@ public final class GeologicProvince {
 
 
     private void floodFillFromCoordinate(int x, int z, int rockType, int[][] rockTypes, int size){
-        byte rockToFillWith = this.associatedRegistry.getStoneTypeAtRandom(rockType);
+        byte rockToFillWith = this.associatedRegistry.getStoneTypeAtRandom(rockType, this.seed);
 
         queuedCoordinates.clear();
         queuedCoordinates.add(new CoordinatePairs(x, z));
@@ -63,7 +65,7 @@ public final class GeologicProvince {
 
             // Fill all queued cells
             for(CoordinatePairs cp : queuedCoordinates){
-                this.rockTypes[cp.x][cp.z] = rockToFillWith;
+                this.rockTypes[cp.x()][cp.z()] = rockToFillWith;
             }
 
             // Move queue → localCopy
@@ -80,8 +82,8 @@ public final class GeologicProvince {
 
 
     private void queueSurroundingIndices(CoordinatePairs cp, int[][] rockTypes, int currentRockType, int size){
-        int x = cp.x;
-        int z = cp.z;
+        int x = cp.x();
+        int z = cp.z();
 
         // LEFT
         if(isInBounds(x - 1, z, size) && !visited[x - 1][z] && rockTypes[x - 1][z] == currentRockType){

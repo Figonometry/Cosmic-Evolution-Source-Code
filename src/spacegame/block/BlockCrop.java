@@ -130,7 +130,7 @@ public class BlockCrop extends Block implements ITimeUpdate {
         if(temperature > crop.maxTemp || temperature < crop.minTemp)cropState.damageValue++;
 
         if(cropState.damageValue >= 7){
-            world.setBlockWithNotify(x,y,z, Block.deadCrop.ID, false);
+            world.setBlockAndNotify(x,y,z, Block.deadCrop.ID, false);
         }
 
         cropState.growthStage++;

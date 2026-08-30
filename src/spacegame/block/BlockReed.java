@@ -29,11 +29,11 @@ public final class BlockReed extends Block implements ITimeUpdate {
         if(playerHeldItem != Item.NULL_ITEM_REFERENCE && Item.list[playerHeldItem] instanceof ItemKnife && world.getBlockID(x,y,z) == Block.reedLower.ID && world.getBlockID(x, y + 1, z) == Block.reedUpper.ID){
             world.addEntity(new EntityItem(x + 0.5, y + 0.5, z + 0.5, Item.reeds.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY, 0, null));
             world.addTimeEvent(x,y,z, CosmicEvolution.instance.save.time + this.getUpdateTime(x,y,z, world));
-            world.setBlockWithNotify(x, y + 1, z, Block.air.ID, false);
+            world.setBlockAndNotify(x, y + 1, z, Block.air.ID, false);
         } else {
             world.removeTimeEvent(x,y,z);
-            world.setBlockWithNotify(x, y + 1, z, Block.air.ID, false);
-            world.setBlockWithNotify(x, y, z, list[world.getBlockID(x,y,z)].waterlogged ? water.ID : air.ID, false);
+            world.setBlockAndNotify(x, y + 1, z, Block.air.ID, false);
+            world.setBlockAndNotify(x, y, z, list[world.getBlockID(x,y,z)].waterlogged ? water.ID : air.ID, false);
         }
 
         player.reduceHeldItemDurability();
@@ -59,7 +59,7 @@ public final class BlockReed extends Block implements ITimeUpdate {
             return;
         }
 
-        world.setBlockWithNotify(x, y + 1, z, Block.reedUpper.ID, false);
+        world.setBlockAndNotify(x, y + 1, z, Block.reedUpper.ID, false);
         world.removeTimeEvent(x,y,z);
     }
 

@@ -24,14 +24,14 @@ public final class BlockItemStick extends Block {
         short playerHeldItem = player.getHeldItem();
 
         if (playerHeldItem == Item.stoneFragments.ID) {
-            world.setBlockWithNotify(x, y, z, Block.air.ID, false);
+            world.setBlockAndNotify(x, y, z, Block.air.ID, false);
             world.addEntity(new EntityBlock(x + 0.5, y + 0.1, z + 0.5, Block.torchUnlit.ID, (byte) 1));
             MouseListener.rightClickReleased = false;
         }
 
         if(playerHeldItem == Item.NULL_ITEM_REFERENCE){
             player.addItemToInventory(Item.block.ID, this.ID, (byte)1, Item.NULL_ITEM_DURABILITY, 0L, null);
-            world.setBlockWithNotify(x,y,z, Block.air.ID, false);
+            world.setBlockAndNotify(x,y,z, Block.air.ID, false);
             CosmicEvolution.instance.soundPlayer.playSound(x, y, z, new Sound(this.getStepSound(x,y,z), false, 1f), new Random().nextFloat(0.6F, 1));
             MouseListener.rightClickReleased = false;
         }

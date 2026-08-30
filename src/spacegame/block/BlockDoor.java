@@ -28,11 +28,11 @@ public final class BlockDoor extends Block {
 
             world.addEntity(new EntityItem(x + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), y + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), z + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), list[block].droppedItemID, Item.NULL_ITEM_METADATA, (byte) 1, Item.list[list[block].droppedItemID].durability, 0, null));
 
-            world.setBlockWithNotify(x,y,z, Block.air.ID, true);
-            world.setBlockWithNotify(x, y + 1, z, Block.air.ID, true);
+            world.setBlockAndNotify(x,y,z, Block.air.ID, true);
+            world.setBlockAndNotify(x, y + 1, z, Block.air.ID, true);
         } else {
             super.onLeftClick(x,y,z, world, thePlayer);
-            world.setBlockWithNotify(x,y - 1, z, Block.air.ID, true);
+            world.setBlockAndNotify(x,y - 1, z, Block.air.ID, true);
         }
     }
 

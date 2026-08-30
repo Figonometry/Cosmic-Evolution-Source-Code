@@ -115,10 +115,10 @@ public final class EntityItem extends EntityNonLiving {
         nbtTagCompound.setShort("itemType", this.item);
         nbtTagCompound.setByte("count", this.count);
         nbtTagCompound.setShort("durability", this.itemDurability);
-        NBTTagCompound itemStateTag = this.itemState.getCompoundTag();
-
-
-        nbtTagCompound.setTag("ItemState", itemStateTag);
+        if(this.itemState != null){
+            NBTTagCompound itemStateTag = this.itemState.getCompoundTag();
+            nbtTagCompound.setTag("ItemState", itemStateTag);
+        }
     }
 
 }

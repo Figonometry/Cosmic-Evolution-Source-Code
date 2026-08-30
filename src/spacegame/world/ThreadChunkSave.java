@@ -81,12 +81,6 @@ public final class ThreadChunkSave implements Runnable {
             if(!chunk.empty) {
                 chunkData.setShortArray("blocks", chunk.blocks);
                 chunkData.setShortArray("decayableLeaves", chunk.decayableLeaves);
-                chunkData.setIntArray("topFaceBitMask", chunk.topFaceBitMask);
-                chunkData.setIntArray("bottomFaceBitMask", chunk.bottomFaceBitMask);
-                chunkData.setIntArray("northFaceBitMask", chunk.northFaceBitMask);
-                chunkData.setIntArray("southFaceBitMask", chunk.southFaceBitMask);
-                chunkData.setIntArray("eastFaceBitMask", chunk.eastFaceBitMask);
-                chunkData.setIntArray("westFaceBitMask", chunk.westFaceBitMask);
             }
 
 

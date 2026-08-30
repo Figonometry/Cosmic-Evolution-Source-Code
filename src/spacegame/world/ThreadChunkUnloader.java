@@ -82,12 +82,6 @@ public final class ThreadChunkUnloader implements Runnable {
                 if (!this.chunks[chunkIndex].empty) {
                     chunkData.setShortArray("blocks", this.chunks[chunkIndex].blocks);
                     chunkData.setShortArray("decayableLeaves", this.chunks[chunkIndex].decayableLeaves);
-                    chunkData.setIntArray("topFaceBitMask", this.chunks[chunkIndex].topFaceBitMask);
-                    chunkData.setIntArray("bottomFaceBitMask", this.chunks[chunkIndex].bottomFaceBitMask);
-                    chunkData.setIntArray("northFaceBitMask", this.chunks[chunkIndex].northFaceBitMask);
-                    chunkData.setIntArray("southFaceBitMask", this.chunks[chunkIndex].southFaceBitMask);
-                    chunkData.setIntArray("eastFaceBitMask", this.chunks[chunkIndex].eastFaceBitMask);
-                    chunkData.setIntArray("westFaceBitMask", this.chunks[chunkIndex].westFaceBitMask);
                 }
 
 

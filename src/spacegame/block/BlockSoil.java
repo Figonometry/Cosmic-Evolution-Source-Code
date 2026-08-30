@@ -25,7 +25,7 @@ public final class BlockSoil extends Block implements ITickable {
             byte blockLight = world.getBlockLightValue(x,y + 1, z);
             byte skyLight = world.getBlockSkyLightValue(x, y + 1,z);
             if((blockLight >= 9 || skyLight >= 9) && !this.canBlockDecayGrass(x,y,z,world)){
-                world.setBlockWithNotify(x,y,z, getBlockIDForGrassSpread(this.ID), false);
+                world.setBlockAndNotify(x,y,z, getBlockIDForGrassSpread(this.ID), false);
             }
         }
     }
@@ -94,7 +94,7 @@ public final class BlockSoil extends Block implements ITickable {
         super.onRightClick(x,y,z, world, player);
         short playerHeldItem = player.getHeldItem();
         if(playerHeldItem == Item.reedCraftingGridTop.ID && (KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT))){
-            world.setBlockWithNotify(x,y,z, Block.primitiveCraftingTable.ID, false);
+            world.setBlockAndNotify(x,y,z, Block.primitiveCraftingTable.ID, false);
             player.removeItemFromInventory();
         }
     }

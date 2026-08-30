@@ -8,7 +8,6 @@ import spacegame.gui.GuiCraftingStoneTools;
 import spacegame.gui.ToolTip;
 import spacegame.gui.ToolTipGroup;
 import spacegame.item.Item;
-import spacegame.item.ItemIDList;
 import spacegame.render.texturelists.MouseAndKeyIconTextureList;
 import spacegame.world.World;
 
@@ -24,13 +23,13 @@ public final class BlockItemStone extends Block {
         if (!MouseListener.rightClickReleased) return;
         short playerHeldBlock = player.getHeldBlock();
         if (Block.list[playerHeldBlock] instanceof BlockItemStone) {
-            CosmicEvolution.instance.setNewGui(new GuiCraftingStoneTools(CosmicEvolution.instance, x, y, z));
+            CosmicEvolution.instance.setNewGui(new GuiCraftingStoneTools(CosmicEvolution.instance, x, y, z, this.ID));
             MouseListener.rightClickReleased = false;
         }
 
         if(player.getHeldItem() == Item.NULL_ITEM_REFERENCE){
             player.addItemToInventory(Item.block.ID, this.ID, (byte)1, Item.NULL_ITEM_DURABILITY, 0L, null);
-            world.setBlockWithNotify(x,y,z, Block.air.ID, false);
+            world.setBlockAndNotify(x,y,z, Block.air.ID, false);
             CosmicEvolution.instance.soundPlayer.playSound(x, y, z, new Sound(this.getStepSound(x,y,z), false, 1f), new Random().nextFloat(0.6F, 1));
             MouseListener.rightClickReleased = false;
         }

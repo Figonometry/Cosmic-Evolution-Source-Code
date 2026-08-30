@@ -33,13 +33,6 @@ import java.util.Arrays;
 import java.util.Random;
 
 public abstract class World {
-    public int[] activeBlockLight = new int[3];
-    public ArrayList<int[]> lightUpdateQueue = new ArrayList<>();
-    public ArrayList<int[]> previouslyQueuedLightUpdate = new ArrayList<>();
-    public ArrayList<int[]> darknessUpdateQueue = new ArrayList<>();
-    public ArrayList<int[]> previouslyQueuedDarknessUpdate = new ArrayList<>();
-    public ArrayList<int[]> lightSearchQueue = new ArrayList<>();
-    public ArrayList<int[]> previousLightSearchQueue = new ArrayList<>();
     public ArrayList<int[]> roomCheckQueue = new ArrayList<>();
     public ArrayList<int[]> previousRoomCheckQueue = new ArrayList<>();
     public ArrayList<WeatherSystem> activeWeatherSystems = new ArrayList<>();
@@ -47,9 +40,6 @@ public abstract class World {
     public static final int CLOUD_LIMIT = 500;
     public int cloudCount;
     public int safetyThreshold = 0;
-    public int resetLightX;
-    public int resetLightY;
-    public int resetLightZ;
     public byte delayWhenExitingUI;
     public float sunAngle;
     public CosmicEvolution ce;
@@ -312,8 +302,7 @@ public abstract class World {
         ChunkColumnSkylightMap lightMap = this.findChunkSkyLightMap(x >> 5, z >> 5);
 
         if (Block.list[blockID].isSolid) {
-            chunk.lighting[Chunk.getBlockIndexFromCoordinates(x, y, z)] = 0;
-            chunk.skyLight[Chunk.getBlockIndexFromCoordinates(x, y, z)] = 0;
+            chunk.light[Chunk.getBlockIndexFromCoordinates(x, y, z)] = 0;
         }
 
         if (blockID == Block.air.ID) {
@@ -344,29 +333,16 @@ public abstract class World {
         chunk.updateSkylight = true;
     }
 
-    public synchronized void setBlockWithNotify(int x, int y, int z, short blockID, boolean playerInitiated) {
-        boolean destroyLight = Block.list[this.getBlockID(x, y, z)].isLightBlock(x,y,z, this) && blockID == Block.air.ID;
+    public synchronized void setBlockAndNotify(int x, int y, int z, short blockID, boolean playerInitiated) {
         boolean destroyWater = Block.list[this.getBlockID(x,y,z)] instanceof BlockWater && !(Block.list[blockID] instanceof BlockWater);
+        boolean destroyLight = Block.list[this.getBlockID(x,y,z)].isLightBlock(x,y,z, this);
         Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
         if(chunk == null)return;
-        chunk.setBlockWithNotify(x, y, z, blockID);
-        if (blockID == Block.air.ID) {
-            this.resetNearestLight(x, y, z);
-        }
-        if (Block.list[blockID].isLightBlock(x,y,z, this)) {
-            this.propagateLightSource(x, y, z, Block.list[blockID].lightBlockValue);
-        }
-        if (Block.list[blockID].isSolid) {
-            chunk.lighting[Chunk.getBlockIndexFromCoordinates(x, y, z)] = 0;
-            chunk.skyLight[Chunk.getBlockIndexFromCoordinates(x, y, z)] = 0;
-            this.queueSurroundingLightBlocks(x, y, z);
-        }
+        chunk.setBlockAndNotify(x, y, z, blockID);
+        chunk.dirtyLighting = true;
+        this.chunkController.updateChunkLighting(new ThreadUpdateLighting(this, chunk, x, y, z, blockID, destroyLight));
         this.notifySurroundingBlocks(x, y, z);
-        ChunkColumnSkylightMap lightMap = this.findChunkSkyLightMap(x >> 5, z >> 5);
         if (blockID == Block.air.ID) {
-            if (lightMap.isHeight(x, y, z)) {
-                lightMap.updateLightMap(x, this.findNextHighestSolidBlock(x, y, z), z);
-            }
             if(this.getBlockID(x - 1, y, z) == Block.flowingWater.ID || this.getBlockID(x - 1, y, z) == Block.fullWater.ID){
                 this.addTimeEvent(x - 1, y, z, this.ce.save.time +  ((BlockFlowingWater)Block.flowingWater).getUpdateTime(x,y,z,this));
             }
@@ -382,31 +358,22 @@ public abstract class World {
             if(this.getBlockID(x, y, z + 1) == Block.flowingWater.ID || this.getBlockID(x, y, z + 1) == Block.fullWater.ID){
                 this.addTimeEvent(x, y, z + 1, this.ce.save.time +  ((BlockFlowingWater)Block.flowingWater).getUpdateTime(x,y,z,this));
             }
-        } else if (Block.list[blockID].isSolid) {
-            if (lightMap.isHeightGreater(x, y, z)) {
-                lightMap.updateLightMap(x, y, z);
-            }
-        }
-        if (destroyLight) {
-            this.propagateDarkness(x, y, z);
         }
 
-        if(destroyWater){
-            if(Block.list[this.getBlockID(x - 1, y, z)] instanceof BlockFlowingWater){
-                this.addTimeEvent(x - 1, y, z, this.ce.save.time +  ((BlockFlowingWater)Block.flowingWater).getUpdateTime(x,y,z,this));
+        if(destroyWater) {
+            if (Block.list[this.getBlockID(x - 1, y, z)] instanceof BlockFlowingWater) {
+                this.addTimeEvent(x - 1, y, z, this.ce.save.time + ((BlockFlowingWater) Block.flowingWater).getUpdateTime(x, y, z, this));
             }
-            if(Block.list[this.getBlockID(x + 1, y, z)] instanceof BlockFlowingWater){
-                this.addTimeEvent(x + 1, y, z, this.ce.save.time +  ((BlockFlowingWater)Block.flowingWater).getUpdateTime(x,y,z,this));
+            if (Block.list[this.getBlockID(x + 1, y, z)] instanceof BlockFlowingWater) {
+                this.addTimeEvent(x + 1, y, z, this.ce.save.time + ((BlockFlowingWater) Block.flowingWater).getUpdateTime(x, y, z, this));
             }
-            if(Block.list[this.getBlockID(x, y, z - 1)] instanceof BlockFlowingWater){
-                this.addTimeEvent(x, y, z - 1, this.ce.save.time +  ((BlockFlowingWater)Block.flowingWater).getUpdateTime(x,y,z,this));
+            if (Block.list[this.getBlockID(x, y, z - 1)] instanceof BlockFlowingWater) {
+                this.addTimeEvent(x, y, z - 1, this.ce.save.time + ((BlockFlowingWater) Block.flowingWater).getUpdateTime(x, y, z, this));
             }
-            if(Block.list[this.getBlockID(x, y, z + 1)] instanceof BlockFlowingWater){
-                this.addTimeEvent(x, y, z + 1, this.ce.save.time +  ((BlockFlowingWater)Block.flowingWater).getUpdateTime(x,y,z,this));
+            if (Block.list[this.getBlockID(x, y, z + 1)] instanceof BlockFlowingWater) {
+                this.addTimeEvent(x, y, z + 1, this.ce.save.time + ((BlockFlowingWater) Block.flowingWater).getUpdateTime(x, y, z, this));
             }
         }
-
-        chunk.updateSkylight = true;
 
         if(playerInitiated){
             this.setPlayerIsInRoomState();
@@ -874,74 +841,74 @@ public abstract class World {
 
     }
 
-    private void resetNearestLight(int x, int y, int z) {
-        this.resetLightX = x;
-        this.resetLightY = y;
-        this.resetLightZ = z;
-        this.checkSurroundingBlocksToSearchForLight(x, y, z);
+    protected void resetNearestLight(int x, int y, int z) {
+        int[] resetLight = new int[]{x,y,z};
+        ArrayList<int[]> lightSearchQueue = new ArrayList<>();
+        ArrayList<int[]> previousLightSearchQueue = new ArrayList<>();
+        this.checkSurroundingBlocksToSearchForLight(x, y, z, lightSearchQueue, previousLightSearchQueue, resetLight);
         ArrayList<int[]> localCopyLightSearchQueue = new ArrayList<>();
         int[] coordinates;
         lightSearch:
-        while (!this.lightSearchQueue.isEmpty() && this.safetyThreshold < 100000) {
-            for (int i = 0; i < this.lightSearchQueue.size(); i++) {
-                coordinates = this.lightSearchQueue.get(i);
+        while (!lightSearchQueue.isEmpty() && this.safetyThreshold < 100000) {
+            for (int i = 0; i < lightSearchQueue.size(); i++) {
+                coordinates = lightSearchQueue.get(i);
                 if (Block.list[this.getBlockID(coordinates[0], coordinates[1], coordinates[2])].isLightBlock(x,y,z, this)) {
                     this.propagateDarkness(coordinates[0], coordinates[1], coordinates[2]);
                     break lightSearch;
                 }
             }
-            localCopyLightSearchQueue.addAll(this.lightSearchQueue);
-            this.lightSearchQueue.clear();
+            localCopyLightSearchQueue.addAll(lightSearchQueue);
+            lightSearchQueue.clear();
             for (int i = 0; i < localCopyLightSearchQueue.size(); i++) {
-                this.checkSurroundingBlocksToSearchForLight(localCopyLightSearchQueue.get(i));
+                this.checkSurroundingBlocksToSearchForLight(localCopyLightSearchQueue.get(i), lightSearchQueue, previousLightSearchQueue, resetLight);
             }
             localCopyLightSearchQueue.clear();
             this.safetyThreshold++;
         }
         this.safetyThreshold = 0;
-        this.previousLightSearchQueue.clear();
+        previousLightSearchQueue.clear();
     }
 
-    public void checkSurroundingBlocksToSearchForLight(int[] coordinates) {
-        this.checkSurroundingBlocksToSearchForLight(coordinates[0], coordinates[1], coordinates[2]);
+    public void checkSurroundingBlocksToSearchForLight(int[] coordinates, ArrayList<int[]> lightSearchQueue, ArrayList<int[]> previousLightSearchQueue, int[] resetLight) {
+        this.checkSurroundingBlocksToSearchForLight(coordinates[0], coordinates[1], coordinates[2], lightSearchQueue, previousLightSearchQueue, resetLight);
     }
 
-    public void checkSurroundingBlocksToSearchForLight(int x, int y, int z) {
-        if (this.shouldBlockAddToLightSearchQueue(x + 1, y, z)) {
-            this.lightSearchQueue.add(new int[]{x + 1, y, z});
-            this.previousLightSearchQueue.add(new int[]{x + 1, y, z});
+    public void checkSurroundingBlocksToSearchForLight(int x, int y, int z, ArrayList<int[]> lightSearchQueue, ArrayList<int[]> previousLightSearchQueue, int[] resetLight) {
+        if (this.shouldBlockAddToLightSearchQueue(x + 1, y, z, resetLight, previousLightSearchQueue)) {
+            lightSearchQueue.add(new int[]{x + 1, y, z});
+            previousLightSearchQueue.add(new int[]{x + 1, y, z});
         }
-        if (this.shouldBlockAddToLightSearchQueue(x - 1, y, z)) {
-            this.lightSearchQueue.add(new int[]{x - 1, y, z});
-            this.previousLightSearchQueue.add(new int[]{x - 1, y, z});
+        if (this.shouldBlockAddToLightSearchQueue(x - 1, y, z, resetLight, previousLightSearchQueue)) {
+            lightSearchQueue.add(new int[]{x - 1, y, z});
+            previousLightSearchQueue.add(new int[]{x - 1, y, z});
         }
-        if (this.shouldBlockAddToLightSearchQueue(x, y + 1, z)) {
-            this.lightSearchQueue.add(new int[]{x, y + 1, z});
-            this.previousLightSearchQueue.add(new int[]{x, y + 1, z});
+        if (this.shouldBlockAddToLightSearchQueue(x, y + 1, z, resetLight, previousLightSearchQueue)) {
+            lightSearchQueue.add(new int[]{x, y + 1, z});
+            previousLightSearchQueue.add(new int[]{x, y + 1, z});
         }
-        if (this.shouldBlockAddToLightSearchQueue(x, y - 1, z)) {
-            this.lightSearchQueue.add(new int[]{x, y - 1, z});
-            this.previousLightSearchQueue.add(new int[]{x, y - 1, z});
+        if (this.shouldBlockAddToLightSearchQueue(x, y - 1, z, resetLight, previousLightSearchQueue)) {
+            lightSearchQueue.add(new int[]{x, y - 1, z});
+            previousLightSearchQueue.add(new int[]{x, y - 1, z});
         }
-        if (this.shouldBlockAddToLightSearchQueue(x, y, z + 1)) {
-            this.lightSearchQueue.add(new int[]{x, y, z + 1});
-            this.previousLightSearchQueue.add(new int[]{x, y, z + 1});
+        if (this.shouldBlockAddToLightSearchQueue(x, y, z + 1, resetLight, previousLightSearchQueue)) {
+            lightSearchQueue.add(new int[]{x, y, z + 1});
+            previousLightSearchQueue.add(new int[]{x, y, z + 1});
         }
-        if (this.shouldBlockAddToLightSearchQueue(x, y, z - 1)) {
-            this.lightSearchQueue.add(new int[]{x, y, z - 1});
-            this.previousLightSearchQueue.add(new int[]{x, y, z - 1});
+        if (this.shouldBlockAddToLightSearchQueue(x, y, z - 1, resetLight, previousLightSearchQueue)) {
+            lightSearchQueue.add(new int[]{x, y, z - 1});
+            previousLightSearchQueue.add(new int[]{x, y, z - 1});
         }
     }
 
-    private boolean shouldBlockAddToLightSearchQueue(int x, int y, int z) {
-        return !Block.list[this.getBlockID(x, y, z)].isSolid && !this.hasBlockAlreadyLightSearchQueued(x, y, z) && this.calculateBlockDistance(x, y, z) <= 5;
+    private boolean shouldBlockAddToLightSearchQueue(int x, int y, int z, int[] resetLight, ArrayList<int[]> previousLightSearchQueue) {
+        return !Block.list[this.getBlockID(x, y, z)].isSolid && !this.hasBlockAlreadyLightSearchQueued(x, y, z, previousLightSearchQueue) && this.calculateBlockDistance(x, y, z, resetLight) <= 5;
     }
 
-    private int calculateBlockDistance(int x, int y, int z) {
+    private int calculateBlockDistance(int x, int y, int z, int[] resetLight) {
         int[] returns = new int[3];
-        returns[0] = this.resetLightX - x;
-        returns[1] = this.resetLightY - y;
-        returns[2] = this.resetLightZ - z;
+        returns[0] = resetLight[0] - x;
+        returns[1] = resetLight[1] - y;
+        returns[2] = resetLight[2] - z;
 
         for (int i = 0; i < returns.length; i++) {
             if (returns[i] < 0) {
@@ -953,10 +920,10 @@ public abstract class World {
         return returns[2];
     }
 
-    private boolean hasBlockAlreadyLightSearchQueued(int x, int y, int z) {
+    private boolean hasBlockAlreadyLightSearchQueued(int x, int y, int z, ArrayList<int[]> previousLightSearchQueue) {
         int[] comparedArray;
-        for (int i = 0; i < this.previousLightSearchQueue.size(); i++) {
-            comparedArray = this.previousLightSearchQueue.get(i);
+        for (int i = 0; i < previousLightSearchQueue.size(); i++) {
+            comparedArray = previousLightSearchQueue.get(i);
             if (comparedArray[0] == x && comparedArray[1] == y && comparedArray[2] == z) {
                 return true;
             }
@@ -964,7 +931,7 @@ public abstract class World {
         return false;
     }
 
-    private void queueSurroundingLightBlocks(int x, int y, int z) {
+    protected void queueSurroundingLightBlocks(int x, int y, int z) {
         final int xCenter = x;
         final int yCenter = y;
         final int zCenter = z;
@@ -1012,65 +979,67 @@ public abstract class World {
     }
 
     public void propagateDarkness(int x, int y, int z) {
+        ArrayList<int[]> darknessUpdateQueue = new ArrayList<>();
+        ArrayList<int[]> previouslyQueuedDarknessUpdate = new ArrayList<>();
         int previousLight = this.getBlockLightValue(x, y, z);
         this.clearBlockLight(x, y, z);
-        this.checkSurroundingBlocksToPropagateDarkness(x, y, z, previousLight);
+        this.checkSurroundingBlocksToPropagateDarkness(x, y, z, previousLight, darknessUpdateQueue, previouslyQueuedDarknessUpdate);
         ArrayList<int[]> localCopyDarknessQueue = new ArrayList<>();
-        while (!this.darknessUpdateQueue.isEmpty() && this.safetyThreshold < 100000) {
-            for (int i = 0; i < this.darknessUpdateQueue.size(); i++) {
-                this.clearBlockLight(this.darknessUpdateQueue.get(i));
+        while (!darknessUpdateQueue.isEmpty() && this.safetyThreshold < 100000) {
+            for (int i = 0; i < darknessUpdateQueue.size(); i++) {
+                this.clearBlockLight(darknessUpdateQueue.get(i));
             }
-            localCopyDarknessQueue.addAll(this.darknessUpdateQueue);
-            this.darknessUpdateQueue.clear();
+            localCopyDarknessQueue.addAll(darknessUpdateQueue);
+            darknessUpdateQueue.clear();
             for (int i = 0; i < localCopyDarknessQueue.size(); i++) {
-                this.checkSurroundingBlocksToPropagateDarkness(localCopyDarknessQueue.get(i));
+                this.checkSurroundingBlocksToPropagateDarkness(localCopyDarknessQueue.get(i), darknessUpdateQueue, previouslyQueuedDarknessUpdate);
             }
             localCopyDarknessQueue.clear();
             this.safetyThreshold++;
         }
         this.safetyThreshold = 0;
         int[] updatedBlocks;
-        for (int i = 0; i < this.previouslyQueuedDarknessUpdate.size(); i++) {
-            updatedBlocks = this.previouslyQueuedDarknessUpdate.get(i);
+        for (int i = 0; i < previouslyQueuedDarknessUpdate.size(); i++) {
+            updatedBlocks = previouslyQueuedDarknessUpdate.get(i);
             this.findChunkFromChunkCoordinates(updatedBlocks[0] >> 5, updatedBlocks[1] >> 5, updatedBlocks[2] >> 5).markDirty();
         }
-        this.previouslyQueuedDarknessUpdate.clear();
+        previouslyQueuedDarknessUpdate.clear();
         this.repairDamagedLights(x, y, z, previousLight);
     }
 
-    public void checkSurroundingBlocksToPropagateDarkness(int[] coordinates) {
-        this.checkSurroundingBlocksToPropagateDarkness(coordinates[0], coordinates[1], coordinates[2], coordinates[3]);
+    public void checkSurroundingBlocksToPropagateDarkness(int[] coordinates, ArrayList<int[]> darknessUpdateQueue, ArrayList<int[]> previouslyQueuedDarknessUpdate) {
+        this.checkSurroundingBlocksToPropagateDarkness(coordinates[0], coordinates[1], coordinates[2], coordinates[3], darknessUpdateQueue, previouslyQueuedDarknessUpdate);
     }
 
-    public void checkSurroundingBlocksToPropagateDarkness(int x, int y, int z, int neighborPreviousLightValue) {
-        if (this.shouldBlockAddToDarknessQueue(x + 1, y, z, neighborPreviousLightValue)) {
-            this.darknessUpdateQueue.add(new int[]{x + 1, y, z, this.getBlockLightValue(x + 1, y, z)});
-            this.previouslyQueuedDarknessUpdate.add(new int[]{x + 1, y, z, this.getBlockLightValue(x + 1, y, z)});
+    public void checkSurroundingBlocksToPropagateDarkness(int x, int y, int z, int neighborPreviousLightValue, ArrayList<int[]> darknessUpdateQueue, ArrayList<int[]> previouslyQueuedDarknessUpdate) {
+        if (this.shouldBlockAddToDarknessQueue(x + 1, y, z, neighborPreviousLightValue, previouslyQueuedDarknessUpdate)) {
+            darknessUpdateQueue.add(new int[]{x + 1, y, z, this.getBlockLightValue(x + 1, y, z)});
+            previouslyQueuedDarknessUpdate.add(new int[]{x + 1, y, z, this.getBlockLightValue(x + 1, y, z)});
         }
-        if (this.shouldBlockAddToDarknessQueue(x - 1, y, z, neighborPreviousLightValue)) {
-            this.darknessUpdateQueue.add(new int[]{x - 1, y, z, this.getBlockLightValue(x - 1, y, z)});
-            this.previouslyQueuedDarknessUpdate.add(new int[]{x - 1, y, z, this.getBlockLightValue(x - 1, y, z)});
+        if (this.shouldBlockAddToDarknessQueue(x - 1, y, z, neighborPreviousLightValue, previouslyQueuedDarknessUpdate)) {
+            darknessUpdateQueue.add(new int[]{x - 1, y, z, this.getBlockLightValue(x - 1, y, z)});
+            previouslyQueuedDarknessUpdate.add(new int[]{x - 1, y, z, this.getBlockLightValue(x - 1, y, z)});
         }
-        if (this.shouldBlockAddToDarknessQueue(x, y + 1, z, neighborPreviousLightValue)) {
-            this.darknessUpdateQueue.add(new int[]{x, y + 1, z, this.getBlockLightValue(x, y + 1, z)});
-            this.previouslyQueuedDarknessUpdate.add(new int[]{x, y + 1, z, this.getBlockLightValue(x, y + 1, z)});
+        if (this.shouldBlockAddToDarknessQueue(x, y + 1, z, neighborPreviousLightValue, previouslyQueuedDarknessUpdate)) {
+            darknessUpdateQueue.add(new int[]{x, y + 1, z, this.getBlockLightValue(x, y + 1, z)});
+            previouslyQueuedDarknessUpdate.add(new int[]{x, y + 1, z, this.getBlockLightValue(x, y + 1, z)});
         }
-        if (this.shouldBlockAddToDarknessQueue(x, y - 1, z, neighborPreviousLightValue)) {
-            this.darknessUpdateQueue.add(new int[]{x, y - 1, z, this.getBlockLightValue(x, y - 1, z)});
-            this.previouslyQueuedDarknessUpdate.add(new int[]{x, y - 1, z, this.getBlockLightValue(x, y - 1, z)});
+        if (this.shouldBlockAddToDarknessQueue(x, y - 1, z, neighborPreviousLightValue, previouslyQueuedDarknessUpdate)) {
+            darknessUpdateQueue.add(new int[]{x, y - 1, z, this.getBlockLightValue(x, y - 1, z)});
+            previouslyQueuedDarknessUpdate.add(new int[]{x, y - 1, z, this.getBlockLightValue(x, y - 1, z)});
         }
-        if (this.shouldBlockAddToDarknessQueue(x, y, z + 1, neighborPreviousLightValue)) {
-            this.darknessUpdateQueue.add(new int[]{x, y, z + 1, this.getBlockLightValue(x, y, z + 1)});
-            this.previouslyQueuedDarknessUpdate.add(new int[]{x, y, z + 1, this.getBlockLightValue(x, y, z + 1)});
+        if (this.shouldBlockAddToDarknessQueue(x, y, z + 1, neighborPreviousLightValue, previouslyQueuedDarknessUpdate)) {
+            darknessUpdateQueue.add(new int[]{x, y, z + 1, this.getBlockLightValue(x, y, z + 1)});
+            previouslyQueuedDarknessUpdate.add(new int[]{x, y, z + 1, this.getBlockLightValue(x, y, z + 1)});
         }
-        if (this.shouldBlockAddToDarknessQueue(x, y, z - 1, neighborPreviousLightValue)) {
-            this.darknessUpdateQueue.add(new int[]{x, y, z - 1, this.getBlockLightValue(x, y, z - 1)});
-            this.previouslyQueuedDarknessUpdate.add(new int[]{x, y, z - 1, this.getBlockLightValue(x, y, z - 1)});
+        if (this.shouldBlockAddToDarknessQueue(x, y, z - 1, neighborPreviousLightValue, previouslyQueuedDarknessUpdate)) {
+            darknessUpdateQueue.add(new int[]{x, y, z - 1, this.getBlockLightValue(x, y, z - 1)});
+            previouslyQueuedDarknessUpdate.add(new int[]{x, y, z - 1, this.getBlockLightValue(x, y, z - 1)});
         }
     }
 
-    private boolean shouldBlockAddToDarknessQueue(int x, int y, int z, int neighborPreviousLightValue) {
-        return !Block.list[this.getBlockID(x, y, z)].isSolid && !this.hasBlockAlreadyDarknessQueued(x, y, z) && (this.getBlockLightValue(x, y, z) < neighborPreviousLightValue);
+    private boolean shouldBlockAddToDarknessQueue(int x, int y, int z, int neighborPreviousLightValue, ArrayList<int[]> previouslyQueuedDarknessUpdate) {
+        return !Block.list[this.getBlockID(x, y, z)].isSolid && !this.hasBlockAlreadyDarknessQueued(x, y, z, previouslyQueuedDarknessUpdate) && (this.getBlockLightValue(x, y, z) < neighborPreviousLightValue);
     }
 
     private void clearBlockLight(int[] coordinates) {
@@ -1080,7 +1049,7 @@ public abstract class World {
     private void clearBlockLight(int x, int y, int z) {
         Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
         if(chunk != null){
-            if(chunk.lighting == null){
+            if(chunk.light == null){
                 chunk.initChunk();
             }
             chunk.setBlockLightValue(x, y, z, (byte) 0);
@@ -1088,10 +1057,10 @@ public abstract class World {
         }
     }
 
-    private boolean hasBlockAlreadyDarknessQueued(int x, int y, int z) {
+    private boolean hasBlockAlreadyDarknessQueued(int x, int y, int z, ArrayList<int[]> previouslyQueuedDarknessUpdate) {
         int[] comparedArray;
-        for (int i = 0; i < this.previouslyQueuedDarknessUpdate.size(); i++) {
-            comparedArray = this.previouslyQueuedDarknessUpdate.get(i);
+        for (int i = 0; i < previouslyQueuedDarknessUpdate.size(); i++) {
+            comparedArray = previouslyQueuedDarknessUpdate.get(i);
             if (comparedArray[0] == x && comparedArray[1] == y && comparedArray[2] == z) {
                 return true;
             }
@@ -1100,20 +1069,21 @@ public abstract class World {
     }
 
     public void propagateLightSource(int x, int y, int z, byte lightValue) {
-        this.activeBlockLight[0] = x;
-        this.activeBlockLight[1] = y;
-        this.activeBlockLight[2] = z;
-        this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).lighting[Chunk.getBlockIndexFromCoordinates(x, y, z)] = lightValue;
-        this.checkSurroundingBlocksToPropagateLight(x, y, z);
+        int[] activeBlockLight = new int[]{x,y,z};
+        ArrayList<int[]> lightUpdateQueue = new ArrayList<>();
+        ArrayList<int[]> previouslyQueuedLightUpdate = new ArrayList<>();
+        Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
+        chunk.setBlockLightValue(x,y,z, lightValue);
+        this.checkSurroundingBlocksToPropagateLight(x, y, z, lightUpdateQueue, previouslyQueuedLightUpdate);
         ArrayList<int[]> localCopyLightQueue = new ArrayList<>();
-        while (!this.lightUpdateQueue.isEmpty() && this.safetyThreshold < 100000) {
-            for (int i = 0; i < this.lightUpdateQueue.size(); i++) {
-                this.setBlockLight(this.lightUpdateQueue.get(i));
+        while (!lightUpdateQueue.isEmpty() && this.safetyThreshold < 100000) {
+            for (int i = 0; i < lightUpdateQueue.size(); i++) {
+                this.setBlockLight(lightUpdateQueue.get(i), activeBlockLight);
             }
-            localCopyLightQueue.addAll(this.lightUpdateQueue);
-            this.lightUpdateQueue.clear();
+            localCopyLightQueue.addAll(lightUpdateQueue);
+            lightUpdateQueue.clear();
             for (int i = 0; i < localCopyLightQueue.size(); i++) {
-                this.checkSurroundingBlocksToPropagateLight(localCopyLightQueue.get(i));
+                this.checkSurroundingBlocksToPropagateLight(localCopyLightQueue.get(i), lightUpdateQueue, previouslyQueuedLightUpdate);
             }
             localCopyLightQueue.clear();
             this.safetyThreshold++;
@@ -1121,57 +1091,57 @@ public abstract class World {
 
         this.safetyThreshold = 0;
         int[] updatedBlocks;
-        for (int i = 0; i < this.previouslyQueuedLightUpdate.size(); i++) {
-            updatedBlocks = this.previouslyQueuedLightUpdate.get(i);
+        for (int i = 0; i < previouslyQueuedLightUpdate.size(); i++) {
+            updatedBlocks = previouslyQueuedLightUpdate.get(i);
             this.findChunkFromChunkCoordinates(updatedBlocks[0] >> 5, updatedBlocks[1] >> 5, updatedBlocks[2] >> 5).markDirty();
         }
-        this.previouslyQueuedLightUpdate.clear();
+        previouslyQueuedLightUpdate.clear();
     }
 
-    private void checkSurroundingBlocksToPropagateLight(int[] coordinates) {
-        this.checkSurroundingBlocksToPropagateLight(coordinates[0], coordinates[1], coordinates[2]);
+    private void checkSurroundingBlocksToPropagateLight(int[] coordinates, ArrayList<int[]> lightUpdateQueue, ArrayList<int[]> previouslyQueuedLightUpdate) {
+        this.checkSurroundingBlocksToPropagateLight(coordinates[0], coordinates[1], coordinates[2], lightUpdateQueue, previouslyQueuedLightUpdate);
     }
 
-    public void checkSurroundingBlocksToPropagateLight(int x, int y, int z) {
+    public void checkSurroundingBlocksToPropagateLight(int x, int y, int z, ArrayList<int[]> lightUpdateQueue, ArrayList<int[]> previouslyQueuedLightUpdate) {
         if (this.getBlockLightValue(x, y, z) <= 0) {
             return;
         }
         int blockLightValue = this.getBlockLightValue(x, y, z);
 
-        if (this.shouldBlockAddToLightQueue(x + 1, y, z, blockLightValue)) {
-            this.lightUpdateQueue.add(new int[]{x + 1, y, z});
-            this.previouslyQueuedLightUpdate.add(new int[]{x + 1, y, z});
+        if (this.shouldBlockAddToLightQueue(x + 1, y, z, blockLightValue, previouslyQueuedLightUpdate)) {
+            lightUpdateQueue.add(new int[]{x + 1, y, z});
+            previouslyQueuedLightUpdate.add(new int[]{x + 1, y, z});
         }
-        if (this.shouldBlockAddToLightQueue(x - 1, y, z, blockLightValue)) {
-            this.lightUpdateQueue.add(new int[]{x - 1, y, z});
-            this.previouslyQueuedLightUpdate.add(new int[]{x - 1, y, z});
+        if (this.shouldBlockAddToLightQueue(x - 1, y, z, blockLightValue, previouslyQueuedLightUpdate)) {
+            lightUpdateQueue.add(new int[]{x - 1, y, z});
+            previouslyQueuedLightUpdate.add(new int[]{x - 1, y, z});
         }
-        if (this.shouldBlockAddToLightQueue(x, y + 1, z, blockLightValue)) {
-            this.lightUpdateQueue.add(new int[]{x, y + 1, z});
-            this.previouslyQueuedLightUpdate.add(new int[]{x, y + 1, z});
+        if (this.shouldBlockAddToLightQueue(x, y + 1, z, blockLightValue, previouslyQueuedLightUpdate)) {
+            lightUpdateQueue.add(new int[]{x, y + 1, z});
+            previouslyQueuedLightUpdate.add(new int[]{x, y + 1, z});
         }
-        if (this.shouldBlockAddToLightQueue(x, y - 1, z, blockLightValue)) {
-            this.lightUpdateQueue.add(new int[]{x, y - 1, z});
-            this.previouslyQueuedLightUpdate.add(new int[]{x, y - 1, z});
+        if (this.shouldBlockAddToLightQueue(x, y - 1, z, blockLightValue, previouslyQueuedLightUpdate)) {
+            lightUpdateQueue.add(new int[]{x, y - 1, z});
+            previouslyQueuedLightUpdate.add(new int[]{x, y - 1, z});
         }
-        if (this.shouldBlockAddToLightQueue(x, y, z + 1, blockLightValue)) {
-            this.lightUpdateQueue.add(new int[]{x, y, z + 1});
-            this.previouslyQueuedLightUpdate.add(new int[]{x, y, z + 1});
+        if (this.shouldBlockAddToLightQueue(x, y, z + 1, blockLightValue, previouslyQueuedLightUpdate)) {
+            lightUpdateQueue.add(new int[]{x, y, z + 1});
+            previouslyQueuedLightUpdate.add(new int[]{x, y, z + 1});
         }
-        if (this.shouldBlockAddToLightQueue(x, y, z - 1, blockLightValue)) {
-            this.lightUpdateQueue.add(new int[]{x, y, z - 1});
-            this.previouslyQueuedLightUpdate.add(new int[]{x, y, z - 1});
+        if (this.shouldBlockAddToLightQueue(x, y, z - 1, blockLightValue, previouslyQueuedLightUpdate)) {
+            lightUpdateQueue.add(new int[]{x, y, z - 1});
+            previouslyQueuedLightUpdate.add(new int[]{x, y, z - 1});
         }
     }
 
-    private boolean shouldBlockAddToLightQueue(int x, int y, int z, int neighborLightValue) {
-        return !Block.list[this.getBlockID(x, y, z)].isSolid && !this.hasBlockAlreadyLightQueued(x, y, z) && (this.getBlockLightValue(x, y, z) < neighborLightValue);
+    private boolean shouldBlockAddToLightQueue(int x, int y, int z, int neighborLightValue, ArrayList<int[]> previouslyQueuedLightUpdate) {
+        return !Block.list[this.getBlockID(x, y, z)].isSolid && !this.hasBlockAlreadyLightQueued(x, y, z, previouslyQueuedLightUpdate) && (this.getBlockLightValue(x, y, z) < neighborLightValue);
     }
 
-    private boolean hasBlockAlreadyLightQueued(int x, int y, int z) {
+    private boolean hasBlockAlreadyLightQueued(int x, int y, int z, ArrayList<int[]> previouslyQueuedLightUpdate) {
         int[] comparedArray;
-        for (int i = 0; i < this.previouslyQueuedLightUpdate.size(); i++) {
-            comparedArray = this.previouslyQueuedLightUpdate.get(i);
+        for (int i = 0; i < previouslyQueuedLightUpdate.size(); i++) {
+            comparedArray = previouslyQueuedLightUpdate.get(i);
             if (comparedArray[0] == x && comparedArray[1] == y && comparedArray[2] == z) {
                 return true;
             }
@@ -1180,13 +1150,13 @@ public abstract class World {
     }
 
 
-    private void setBlockLight(int[] coordinates) {
+    private void setBlockLight(int[] coordinates, int[] activeBlockLight) {
         Chunk chunk = this.chunkController.findChunkFromChunkCoordinates(coordinates[0] >> 5, coordinates[1] >> 5, coordinates[2] >> 5);
-        if (chunk.lighting == null) {
+        if (chunk.light == null) {
             chunk.initChunk();
         }
         chunk.setBlockLightValue(coordinates[0], coordinates[1], coordinates[2], this.getPropagatedLightValue(coordinates[0], coordinates[1], coordinates[2]));
-        chunk.setBlockLightColor(coordinates[0], coordinates[1], coordinates[2], Block.list[this.getBlockID(this.activeBlockLight[0], this.activeBlockLight[1], this.activeBlockLight[2])].lightColor);
+        chunk.setBlockLightColor(coordinates[0], coordinates[1], coordinates[2], Block.list[this.getBlockID(activeBlockLight[0], activeBlockLight[1], activeBlockLight[2])].lightColor);
     }
 
     private byte getPropagatedLightValue(int x, int y, int z) {
@@ -1258,134 +1228,7 @@ public abstract class World {
         }
     }
 
-    public void propagateSkyLight(int x, int y, int z, ArrayList<int[]> skyLightUpdateQueue, ArrayList<int[]> previousSkyLightUpdateQueue){
-        this.setSkyLight(x,y,z, (byte)15);
-        if(this.willSkyLightQueueMore(x,y,z, previousSkyLightUpdateQueue)) {
-            skyLightUpdateQueue.add(new int[]{x, y, z});
-            ArrayList<int[]> localCopySkyLightUpdateQueue = new ArrayList();
-            int[] lightCoordinates;
-            while (!skyLightUpdateQueue.isEmpty() && this.safetyThreshold < 100000) {
-                for (int i = 0; i < skyLightUpdateQueue.size(); i++) {
-                    lightCoordinates = skyLightUpdateQueue.get(i);
-                    this.setSkyLight(lightCoordinates[0], lightCoordinates[1], lightCoordinates[2], this.getSurroundingSkyLightLevel(lightCoordinates[0], lightCoordinates[1], lightCoordinates[2]));
-                }
-                localCopySkyLightUpdateQueue.addAll(skyLightUpdateQueue);
-                skyLightUpdateQueue.clear();
-                for (int i = 0; i < localCopySkyLightUpdateQueue.size(); i++) {
-                    this.queueSurroundingBlocksToPropagateSkyLight(localCopySkyLightUpdateQueue.get(i), this.getBlockSkyLightValue(localCopySkyLightUpdateQueue.get(i)), skyLightUpdateQueue, previousSkyLightUpdateQueue);
-                }
-                localCopySkyLightUpdateQueue.clear();
-                this.safetyThreshold++;
-            }
-            this.safetyThreshold = 0;
-        }
-    }
 
-    public void queueSurroundingBlocksToPropagateSkyLight(int[] lightCoordinates, byte currentLightLevel, ArrayList<int[]> skyLightUpdateQueue, ArrayList<int[]> previousSkyLightUpdateQueue){
-
-        if((!this.doesBlockHaveSkyAccess(lightCoordinates[0] + 1, lightCoordinates[1], lightCoordinates[2])) &&
-                !Block.list[this.getBlockID(lightCoordinates[0] + 1, lightCoordinates[1], lightCoordinates[2])].isSolid && currentLightLevel > 0 &&
-                this.getBlockSkyLightValue(lightCoordinates[0] + 1, lightCoordinates[1], lightCoordinates[2]) == 0 &&
-                !this.blockHasEnteredSkyLightQueue(lightCoordinates[0] + 1, lightCoordinates[1], lightCoordinates[2], previousSkyLightUpdateQueue)){
-            skyLightUpdateQueue.add(new int[]{lightCoordinates[0] + 1, lightCoordinates[1], lightCoordinates[2]});
-            previousSkyLightUpdateQueue.add(new int[]{lightCoordinates[0] + 1, lightCoordinates[1], lightCoordinates[2]});
-        }
-
-        if((!this.doesBlockHaveSkyAccess(lightCoordinates[0] - 1, lightCoordinates[1], lightCoordinates[2])) &&
-                !Block.list[this.getBlockID(lightCoordinates[0] - 1, lightCoordinates[1], lightCoordinates[2])].isSolid && currentLightLevel > 0 &&
-                this.getBlockSkyLightValue(lightCoordinates[0] - 1, lightCoordinates[1], lightCoordinates[2]) == 0 &&
-                !this.blockHasEnteredSkyLightQueue(lightCoordinates[0] - 1, lightCoordinates[1], lightCoordinates[2], previousSkyLightUpdateQueue)){
-            skyLightUpdateQueue.add(new int[]{lightCoordinates[0] - 1, lightCoordinates[1], lightCoordinates[2]});
-            previousSkyLightUpdateQueue.add(new int[]{lightCoordinates[0] - 1, lightCoordinates[1], lightCoordinates[2]});
-        }
-
-        if((!this.doesBlockHaveSkyAccess(lightCoordinates[0], lightCoordinates[1] + 1, lightCoordinates[2])) &&
-                !Block.list[this.getBlockID(lightCoordinates[0], lightCoordinates[1] + 1, lightCoordinates[2])].isSolid && currentLightLevel > 0 &&
-                this.getBlockSkyLightValue(lightCoordinates[0], lightCoordinates[1] + 1, lightCoordinates[2]) == 0 &&
-                !this.blockHasEnteredSkyLightQueue(lightCoordinates[0], lightCoordinates[1] + 1, lightCoordinates[2], previousSkyLightUpdateQueue)){
-            skyLightUpdateQueue.add(new int[]{lightCoordinates[0], lightCoordinates[1] + 1, lightCoordinates[2]});
-            previousSkyLightUpdateQueue.add(new int[]{lightCoordinates[0], lightCoordinates[1] + 1, lightCoordinates[2]});
-        }
-
-        if((!this.doesBlockHaveSkyAccess(lightCoordinates[0], lightCoordinates[1] - 1, lightCoordinates[2]) || Block.list[this.getBlockID(lightCoordinates[0], lightCoordinates[1] - 1, lightCoordinates[2])] instanceof BlockWater) &&
-                !Block.list[this.getBlockID(lightCoordinates[0], lightCoordinates[1] - 1, lightCoordinates[2])].isSolid && currentLightLevel > 0 &&
-                this.getBlockSkyLightValue(lightCoordinates[0], lightCoordinates[1] - 1, lightCoordinates[2]) == 0 &&
-                !this.blockHasEnteredSkyLightQueue(lightCoordinates[0], lightCoordinates[1] - 1, lightCoordinates[2], previousSkyLightUpdateQueue)){
-            skyLightUpdateQueue.add(new int[]{lightCoordinates[0], lightCoordinates[1] - 1, lightCoordinates[2]});
-            previousSkyLightUpdateQueue.add(new int[]{lightCoordinates[0], lightCoordinates[1] - 1, lightCoordinates[2]});
-        }
-
-        if((!this.doesBlockHaveSkyAccess(lightCoordinates[0], lightCoordinates[1], lightCoordinates[2] + 1)) &&
-                !Block.list[this.getBlockID(lightCoordinates[0], lightCoordinates[1], lightCoordinates[2] + 1)].isSolid && currentLightLevel > 0 &&
-                this.getBlockSkyLightValue(lightCoordinates[0], lightCoordinates[1], lightCoordinates[2] + 1) == 0 &&
-                !this.blockHasEnteredSkyLightQueue(lightCoordinates[0], lightCoordinates[1], lightCoordinates[2] + 1, previousSkyLightUpdateQueue)){
-            skyLightUpdateQueue.add(new int[]{lightCoordinates[0], lightCoordinates[1], lightCoordinates[2] + 1});
-            previousSkyLightUpdateQueue.add(new int[]{lightCoordinates[0], lightCoordinates[1], lightCoordinates[2] + 1});
-        }
-
-        if((!this.doesBlockHaveSkyAccess(lightCoordinates[0], lightCoordinates[1], lightCoordinates[2] - 1)) &&
-                !Block.list[this.getBlockID(lightCoordinates[0], lightCoordinates[1], lightCoordinates[2] - 1)].isSolid && currentLightLevel > 0 &&
-                this.getBlockSkyLightValue(lightCoordinates[0], lightCoordinates[1], lightCoordinates[2] - 1) == 0 &&
-                !this.blockHasEnteredSkyLightQueue(lightCoordinates[0], lightCoordinates[1], lightCoordinates[2] - 1, previousSkyLightUpdateQueue)){
-            skyLightUpdateQueue.add(new int[]{lightCoordinates[0], lightCoordinates[1], lightCoordinates[2] - 1});
-            previousSkyLightUpdateQueue.add(new int[]{lightCoordinates[0], lightCoordinates[1], lightCoordinates[2] - 1});
-        }
-    }
-
-    public boolean willSkyLightQueueMore(int x, int y, int z, ArrayList<int[]> previousSkyLightUpdateQueue){
-        return this.willSkyLightQueueMore(new int[]{x,y,z}, this.getSurroundingSkyLightLevel(x,y,z), previousSkyLightUpdateQueue);
-    }
-
-    public boolean willSkyLightQueueMore(int[] lightCoordinates, byte currentLightLevel, ArrayList<int[]> previousSkyLightUpdateQueue){
-        if((!this.doesBlockHaveSkyAccess(lightCoordinates[0] + 1, lightCoordinates[1], lightCoordinates[2])) &&
-                !Block.list[this.getBlockID(lightCoordinates[0] + 1, lightCoordinates[1], lightCoordinates[2])].isSolid && currentLightLevel > 0  &&
-                this.getBlockSkyLightValue(lightCoordinates[0] + 1, lightCoordinates[1], lightCoordinates[2]) == 0  &&
-                !this.blockHasEnteredSkyLightQueue(lightCoordinates[0] + 1, lightCoordinates[1], lightCoordinates[2], previousSkyLightUpdateQueue)){
-            return true;
-        }
-        if((!this.doesBlockHaveSkyAccess(lightCoordinates[0] - 1, lightCoordinates[1], lightCoordinates[2])) &&
-                !Block.list[this.getBlockID(lightCoordinates[0] - 1, lightCoordinates[1], lightCoordinates[2])].isSolid && currentLightLevel > 0  &&
-                this.getBlockSkyLightValue(lightCoordinates[0] - 1, lightCoordinates[1], lightCoordinates[2]) == 0 &&
-                !this.blockHasEnteredSkyLightQueue(lightCoordinates[0] - 1, lightCoordinates[1], lightCoordinates[2], previousSkyLightUpdateQueue)){
-            return true;
-        }
-        if((!this.doesBlockHaveSkyAccess(lightCoordinates[0], lightCoordinates[1] + 1, lightCoordinates[2])) &&
-                !Block.list[this.getBlockID(lightCoordinates[0], lightCoordinates[1] + 1, lightCoordinates[2])].isSolid && currentLightLevel > 0  &&
-                this.getBlockSkyLightValue(lightCoordinates[0], lightCoordinates[1] + 1, lightCoordinates[2]) == 0 &&
-                !this.blockHasEnteredSkyLightQueue(lightCoordinates[0], lightCoordinates[1] + 1, lightCoordinates[2], previousSkyLightUpdateQueue)){
-            return true;
-        }
-        if((!this.doesBlockHaveSkyAccess(lightCoordinates[0], lightCoordinates[1] - 1, lightCoordinates[2]) || Block.list[this.getBlockID(lightCoordinates[0], lightCoordinates[1] - 1, lightCoordinates[2])] instanceof BlockWater) &&
-                !Block.list[this.getBlockID(lightCoordinates[0], lightCoordinates[1] - 1, lightCoordinates[2])].isSolid && currentLightLevel > 0 &&
-                this.getBlockSkyLightValue(lightCoordinates[0], lightCoordinates[1] - 1, lightCoordinates[2]) == 0  &&
-                !this.blockHasEnteredSkyLightQueue(lightCoordinates[0], lightCoordinates[1] - 1, lightCoordinates[2], previousSkyLightUpdateQueue)){
-            return true;
-        }
-        if((!this.doesBlockHaveSkyAccess(lightCoordinates[0], lightCoordinates[1], lightCoordinates[2] + 1)) &&
-                !Block.list[this.getBlockID(lightCoordinates[0], lightCoordinates[1], lightCoordinates[2] + 1)].isSolid && currentLightLevel > 0 &&
-                this.getBlockSkyLightValue(lightCoordinates[0], lightCoordinates[1], lightCoordinates[2] + 1) == 0 &&
-                !this.blockHasEnteredSkyLightQueue(lightCoordinates[0], lightCoordinates[1], lightCoordinates[2] + 1, previousSkyLightUpdateQueue)){
-            return true;
-        }
-        if((!this.doesBlockHaveSkyAccess(lightCoordinates[0], lightCoordinates[1], lightCoordinates[2] - 1)) &&
-                !Block.list[this.getBlockID(lightCoordinates[0], lightCoordinates[1], lightCoordinates[2] - 1)].isSolid && currentLightLevel > 0 &&
-                this.getBlockSkyLightValue(lightCoordinates[0], lightCoordinates[1], lightCoordinates[2] - 1) == 0 &&
-                !this.blockHasEnteredSkyLightQueue(lightCoordinates[0], lightCoordinates[1], lightCoordinates[2] - 1, previousSkyLightUpdateQueue)){
-            return true;
-        }
-        return false;
-    }
-
-    private boolean blockHasEnteredSkyLightQueue(int x, int y, int z, ArrayList<int[]> previousSkyLightUpdateQueue){
-        int[] coordinates;
-        for(int i = 0; i < previousSkyLightUpdateQueue.size(); i++){
-            coordinates = previousSkyLightUpdateQueue.get(i);
-            if(coordinates[0] == x && coordinates[1] == y && coordinates[2] == z){
-                return true;
-            }
-        }
-        return false;
-    }
 
     public void setPlayerIsInRoomState() {
         int currentRainSoundState = this.ce.save.thePlayer.rainSoundState;
@@ -1513,29 +1356,15 @@ public abstract class World {
 
     public synchronized byte getBlockSkyLightValue(int x, int y, int z) {
         Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
-        if(chunk != null) {
-            if (chunk.skyLight != null) {
-                return chunk.getSkyLightValue(x, y, z);
-            } else {
-                return 15;
-            }
-        } else {
-            return 15;
-        }
+        return chunk.getSkyLightValue(x, y, z);
     }
+
 
     public synchronized byte getBlockLightValue(int x, int y, int z) {
         Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
-        if(chunk != null) {
-            if (chunk.lighting != null) {
-                return chunk.getBlockLightValue(x, y, z);
-            } else {
-                return 0;
-            }
-        } else {
-            return 0;
-        }
+        return chunk.getBlockLightValue(x, y, z);
     }
+
 
     public double getAverageTemperature(int x, int y, int z) { //Returns average temperature by not calculating seasonal variation
         if (!(this instanceof WorldEarth)) return 0;
@@ -1776,7 +1605,7 @@ public abstract class World {
         }
         x %= 32;
         z %= 32;
-        if(lightMap.lightMap[x + (z << 5)] < y){
+        if(lightMap.lightMap[x + (z << 5)] <= y){
             return this.isLineOfBlocksClear(x, y, z, lightMap);
         } else {
             return true;
@@ -1871,6 +1700,54 @@ public abstract class World {
         }
         return true;
     }
+
+    public boolean surroundingChunksArePopulated(int x, int y, int z) {
+        Chunk chunk;
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dy = -1; dy <= 1; dy++) {
+                for (int dz = -1; dz <= 1; dz++) {
+                    if (dx == 0 && dy == 0 && dz == 0) continue;
+                    chunk = findChunkFromChunkCoordinates(x + dx, y  + dy, z + dz);
+                    if (chunk == null || !chunk.populated) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+
+    public boolean surroundingChunksAreLit(int x, int y, int z) {
+        Chunk c;
+
+        // +X
+        c = findChunkFromChunkCoordinates(x + 1, y, z);
+        if (c == null || c.dirtyLighting) return false;
+
+        // -X
+        c = findChunkFromChunkCoordinates(x - 1, y, z);
+        if (c == null || c.dirtyLighting) return false;
+
+        // +Y
+        c = findChunkFromChunkCoordinates(x, y + 1, z);
+        if (c == null || c.dirtyLighting) return false;
+
+        // -Y
+        c = findChunkFromChunkCoordinates(x, y - 1, z);
+        if (c == null || c.dirtyLighting) return false;
+
+        // +Z
+        c = findChunkFromChunkCoordinates(x, y, z + 1);
+        if (c == null || c.dirtyLighting) return false;
+
+        // -Z
+        c = findChunkFromChunkCoordinates(x, y, z - 1);
+        if (c == null || c.dirtyLighting) return false;
+
+        return true;
+    }
+
 
     public Chunk[] getSurroundingChunks(int x, int y, int z){
         int index = 0;

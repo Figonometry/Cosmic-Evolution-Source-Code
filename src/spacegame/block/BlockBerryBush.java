@@ -136,6 +136,9 @@ public final class BlockBerryBush extends Block implements ITimeUpdate {
         BerryBushState berryBushState = (BerryBushState) CosmicEvolution.instance.save.activeWorld.getBlockState(x,y,z, MultiState.BERRY_BUSH_STATE);
         if(berryBushState == null)return this.textureID;
 
+        if(berryBushState.growthStage == BerryBushState.GROWTH_STAGE_1){
+            return BlockTextureList.SEED_TEXTURE;
+        }
 
         if(berryBushState.hasMatureFruit){
             return face != Block.FACE_UP ? BlockTextureList.BERRY_BUSH_SIDE_TEXTURE : BlockTextureList.BERRY_BUSH_TOP_TEXTURE;

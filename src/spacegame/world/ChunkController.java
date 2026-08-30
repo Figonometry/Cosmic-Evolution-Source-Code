@@ -25,16 +25,13 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class ChunkController {
     public World parentWorld;
-    private int lastQueuedX;
-    private int lastQueuedY;
-    private int lastQueuedZ;
-    private Chunk lastQueuedChunk;
     public Chunk[] sortedChunks;
     private int lastQueuedLightMapX = 10;
     private int lastQueuedLightMapZ = 10;
     private ChunkColumnSkylightMap lastQueuedLightMap;
     public final ConcurrentHashMap<Long, ChunkRegion> regionMap = new ConcurrentHashMap<>();
     public ArrayList<Chunk> dirtyChunks = new ArrayList<>();
+    public ArrayList<Chunk> lightingUpdateChunks = new ArrayList<>();
     public ArrayList<Chunk> nonPopulatedChunks = new ArrayList<>();
     public ArrayList<Chunk> bindingChunks = new ArrayList<>();
     public ArrayList<Chunk> removeChunks = new ArrayList<>();
@@ -153,6 +150,7 @@ public final class ChunkController {
             this.loadOrUnloadChunks();
             this.numberOfLoadedChunks = this.numberOfLoadedChunks();
             this.populateChunks();
+            this.updateChunkLighting();
             this.rebuildDirtyChunks();
         }
 
@@ -301,7 +299,6 @@ public final class ChunkController {
                         CosmicEvolution.threadJobs.incrementAndGet();
                         ThreadChunkJobScheduler.chunkJobQueue.add(new ChunkJob((float) MathUtil.distance3DSquared(playerChunkX << 5, playerChunkY << 5, playerChunkZ << 5, chunk.x << 5, chunk.y << 5, chunk.z << 5), new ThreadPopulateChunk(chunk, this.parentWorld)));
                         this.nonPopulatedChunks.remove(chunk);
-                        break; //Only execute the first available chunk and pop, 60 ticks pass in a second, most chunks should populate within a second, this reduces load on each frame since population is an intensive process and runs synchronously
                     }
                 }
             }
@@ -313,6 +310,32 @@ public final class ChunkController {
 
             this.prevNumberOfChunksToPopulate = this.numberOfChunksToPopulate;
         }
+    }
+
+
+    //This is meant to catch chunks that are loading in, individual block updates will add their threads directly to the queue
+    public void updateChunkLighting() {
+        synchronized (this.lightingUpdateChunks) {
+            Chunk chunk;
+            int i = 0;
+            for (i = 0; i < this.lightingUpdateChunks.size(); i++) {
+                chunk = this.lightingUpdateChunks.get(i);
+                if (chunk != null) {
+                    if (this.parentWorld.chunkFullySurrounded(chunk.x, chunk.y, chunk.z) && this.parentWorld.surroundingChunksArePopulated(chunk.x, chunk.y, chunk.z) && chunk.dirtyLighting) {
+                        CosmicEvolution.threadJobs.incrementAndGet();
+                        ThreadChunkJobScheduler.chunkJobQueue.add(new ChunkJob((float) MathUtil.distance3DSquared(playerChunkX << 5, playerChunkY << 5, playerChunkZ << 5, chunk.x << 5, chunk.y << 5, chunk.z << 5), new ThreadUpdateLighting(this.parentWorld, chunk, Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE, Short.MIN_VALUE, false)));
+                        this.lightingUpdateChunks.remove(chunk);
+                    }
+                }
+            }
+
+            this.lightingUpdateChunks.trimToSize();
+        }
+    }
+
+    public void updateChunkLighting(ThreadUpdateLighting threadUpdateLighting){
+        CosmicEvolution.threadJobs.incrementAndGet();
+        ThreadChunkJobScheduler.chunkJobQueue.add(new ChunkJob((float) MathUtil.distance3DSquared(playerChunkX << 5, playerChunkY << 5, playerChunkZ << 5, threadUpdateLighting.chunk.x << 5, threadUpdateLighting.chunk.y << 5, threadUpdateLighting.chunk.z << 5), threadUpdateLighting));
     }
 
     public void checkForMissedChunksAndCheckForUpdateTime(){
@@ -364,6 +387,7 @@ public final class ChunkController {
         synchronized (this.dirtyChunks) {
             Chunk chunk;
             boolean surrounded = false;
+            boolean lightStateGood = false;
             for (int i = 0; i < this.dirtyChunks.size(); i++) {
                 chunk = this.dirtyChunks.get(i);
                 if (chunk == null)continue;
@@ -372,12 +396,13 @@ public final class ChunkController {
                 if(chunk.empty)continue;
 
                 surrounded = this.parentWorld.chunkFullySurrounded(chunk.x, chunk.y, chunk.z);
+                lightStateGood = this.parentWorld.surroundingChunksAreLit(chunk.x, chunk.y, chunk.z);
 
                 if (surrounded && !chunk.populated) {
                     chunk.populated = true;
                 }
 
-                if (chunk.populated && surrounded) {
+                if (chunk.populated && surrounded && lightStateGood && !chunk.dirtyLighting) {
                     chunk.elementOffsetOpaque = 0;
                     chunk.elementOffsetTransparent = 0;
                     chunk.needsToUpdate = false;
@@ -406,17 +431,33 @@ public final class ChunkController {
 
             this.dirtyChunks.trimToSize();
 
+            int expectedChunks =
+                    (GameSettings.renderDistance * 2 + 1)
+                            * (GameSettings.renderDistance * 2 + 1)
+                            * (GameSettings.chunkColumnHeight * 2);
+
             this.numberOfLoadedChunks = this.numberOfLoadedChunks();
-            if ((!this.loadChunks && this.numberOfLoadedChunks >= ((GameSettings.renderDistance * 2 + 1) * (GameSettings.renderDistance * 2 + 1) * (GameSettings.chunkColumnHeight * 2))) || (this.numberOfLoadedChunks == this.prevNumberOfLoadedChunks)) {
+
+// Clear only if chunks have UNLOADED
+            boolean chunksUnloaded = this.numberOfLoadedChunks < this.prevNumberOfLoadedChunks;
+
+// Clear only if loading is disabled AND we've reached full load
+            boolean reachedMaxLoaded =
+                    !this.loadChunks && this.numberOfLoadedChunks >= expectedChunks;
+
+            if (chunksUnloaded || reachedMaxLoaded) {
                 this.dirtyChunks.clear();
             }
+
             this.prevNumberOfLoadedChunks = this.numberOfLoadedChunks;
+
         }
     }
 
     public void addChunkToRebuildQueue(Chunk addedChunk) {
         if(addedChunk == null)return;
         if(addedChunk.updating)return;
+        addedChunk.needsToUpdate = true;
 
         synchronized (this.dirtyChunks) {
             Chunk chunk;
@@ -491,25 +532,12 @@ public final class ChunkController {
 
 
     //all block coordinates must be right-hand bitshifted by 5 before calling this
+    //The queue system was removed due to causing async issues
     public Chunk findChunkFromChunkCoordinates(int x, int y, int z) {
-        if (this.lastQueuedX == x && this.lastQueuedY == y && this.lastQueuedZ == z) {
-            return this.lastQueuedChunk;
-        }
-        Chunk chunk = this.getChunkRegionFromChunkCoordinates(x, y, z).getChunk(x,y,z);
-
-        if(chunk != null) {
-            this.lastQueuedX = x;
-            this.lastQueuedY = y;
-            this.lastQueuedZ = z;
-            this.lastQueuedChunk = chunk;
-        }
-
-
-        return chunk;
-
+        return this.getChunkRegionFromChunkCoordinates(x, y, z).getChunk(x,y,z);
     }
 
-    public ChunkRegion getChunkRegionFromChunkCoordinates(int x, int y, int z) {
+    private ChunkRegion getChunkRegionFromChunkCoordinates(int x, int y, int z) {
         int rx = x >> 3;
         int ry = y >> 3;
         int rz = z >> 3;
@@ -560,6 +588,12 @@ public final class ChunkController {
 
         if (chunk.empty) {
             chunk.emptyChunk();
+            chunk.populated = true;
+        }
+
+        synchronized (this.lightingUpdateChunks) {
+            chunk.dirtyLighting = true;
+            this.lightingUpdateChunks.add(chunk);
         }
 
 
@@ -578,6 +612,14 @@ public final class ChunkController {
             if(!chunk.populated){
                 chunk.markToPopulate();
             }
+        } else {
+            chunk.populated = true;
+        }
+
+
+        synchronized (this.lightingUpdateChunks) {
+            chunk.dirtyLighting = true;
+            this.lightingUpdateChunks.add(chunk);
         }
 
         int x = 0;
@@ -593,13 +635,12 @@ public final class ChunkController {
             if(Block.list[chunk.blocks[i]].isSolid) {
                 if (lightMap.isHeightGreater(x, y, z)) {
                     lightMap.updateLightMap(x, y, z);
-                    chunk.lighting[Chunk.getBlockIndexFromCoordinates(x, y, z)] = 0;
-                    chunk.skyLight[Chunk.getBlockIndexFromCoordinates(x, y, z)] = 0;
+                    chunk.light[Chunk.getBlockIndexFromCoordinates(x, y, z)] = 0;
                     chunk.updateSkylight = true;
                 }
             }
             if(chunk.blocks[i] == Block.air.ID){
-                chunk.skyLight[Chunk.getBlockIndexFromCoordinates(x, y, z)] = 15;
+                chunk.light[Chunk.getBlockIndexFromCoordinates(x, y, z)] = (byte) (15 << 4);
             }
             if(chunk.blocks[i] == Block.tallGrass.ID){
                 chunk.tallGrassCount++;
@@ -715,12 +756,6 @@ public final class ChunkController {
                         if (!chunk.empty) {
                             chunk.blocks = chunkData.getShortArray("blocks");
                             chunk.decayableLeaves = chunkData.getShortArray("decayableLeaves");
-                            chunk.topFaceBitMask = chunkData.getIntArray("topFaceBitMask");
-                            chunk.bottomFaceBitMask = chunkData.getIntArray("bottomFaceBitMask");
-                            chunk.northFaceBitMask = chunkData.getIntArray("northFaceBitMask");
-                            chunk.southFaceBitMask = chunkData.getIntArray("southFaceBitMask");
-                            chunk.eastFaceBitMask = chunkData.getIntArray("eastFaceBitMask");
-                            chunk.westFaceBitMask = chunkData.getIntArray("westFaceBitMask");
                         }
 
                         if(entity != null) {

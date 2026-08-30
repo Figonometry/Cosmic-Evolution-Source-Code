@@ -112,12 +112,12 @@ public final class BlockPitKiln extends BlockContainer implements ITimeUpdate, I
 
         if(itemID == Item.block.ID){
             if(blockID == Block.rawRedClayCookingPot.ID) {
-                world.setBlockWithNotify(x, y, z, Block.redClayCookingPot.ID, false);
+                world.setBlockAndNotify(x, y, z, Block.redClayCookingPot.ID, false);
             }
         }
 
         if(itemID == Item.rawClayAdobeBrick.ID){
-            world.setBlockWithNotify(x,y,z, Block.brickPile.ID, false);
+            world.setBlockAndNotify(x,y,z, Block.brickPile.ID, false);
             Inventory pileInventory = new Inventory(1,1);
             pileInventory.itemStacks[0].item = Item.firedRedClayAdobeBrick;
             pileInventory.itemStacks[0].count = itemQuantity;

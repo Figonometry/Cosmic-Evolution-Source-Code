@@ -38,7 +38,7 @@ public final class BlockItem extends BlockContainer {
                 chest.inventory.itemStacks[0].metadata = Item.NULL_ITEM_METADATA;
                 chest.inventory.itemStacks[0].decayTime = 0L;
                 world.removeBlockState(x,y,z, MultiState.CHEST_STATE);
-                world.setBlockWithNotify(x,y,z, Block.air.ID, false);
+                world.setBlockAndNotify(x,y,z, Block.air.ID, false);
             }
             return;
         }

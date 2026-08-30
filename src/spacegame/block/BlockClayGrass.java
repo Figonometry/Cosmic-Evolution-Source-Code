@@ -17,7 +17,7 @@ public final class BlockClayGrass extends Block implements ITickable {
         if (CosmicEvolution.globalRand.nextInt(166) == 0) {
             if (world.getBlockLightValue(x, y + 1, z) <= 4 && this.canBlockDecayGrass(x, y + 1, z, world)) {
                 if(world.chunkFullySurrounded(x >> 5, y >> 5, z >> 5)) {
-                    world.setBlockWithNotify(x, y, z, getBlockIDForDecay(this.ID), false);
+                    world.setBlockAndNotify(x, y, z, getBlockIDForDecay(this.ID), false);
                 }
             }
         }
@@ -25,7 +25,7 @@ public final class BlockClayGrass extends Block implements ITickable {
             if(world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).tallGrassCount < 500) {
                 if ((world.getBlockLightValue(x, y + 1, z) >= 9 || world.getBlockSkyLightValue(x, y + 1, z) >= 9) && world.getBlockID(x, y + 1, z) == Block.air.ID) {
                     if (world.chunkFullySurrounded(x >> 5, (y + 1) >> 5, z >> 5)) {
-                        world.setBlockWithNotify(x, y + 1, z, Block.tallGrass.ID, false);
+                        world.setBlockAndNotify(x, y + 1, z, Block.tallGrass.ID, false);
                         world.findChunkFromChunkCoordinates(x >> 5, (y + 1) >> 5, z >> 5).tallGrassCount++;
                     }
                 }

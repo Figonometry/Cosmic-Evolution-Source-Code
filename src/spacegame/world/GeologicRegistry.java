@@ -3,6 +3,7 @@ package spacegame.world;
 import spacegame.block.Block;
 import spacegame.core.CosmicEvolution;
 
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class GeologicRegistry {
@@ -81,10 +82,12 @@ public final class GeologicRegistry {
     }
 
 
-    public byte getStoneTypeAtRandom(int rockType){
+    public byte getStoneTypeAtRandom(int rockType, long provinceSeed){
+        long combined = provinceSeed ^ (rockType * 0x9E3779B974A7C15L);
+        Random rand = new Random(combined);
         byte key;
         while(true){
-            key = (byte)CosmicEvolution.globalRand.nextInt(SERPENTINITE + 1);
+            key = (byte)rand.nextInt(SERPENTINITE + 1);
             RockType rockType1 = this.rockTypes.get(key);
             if(rockType1.rockType() == rockType){
                 return key;

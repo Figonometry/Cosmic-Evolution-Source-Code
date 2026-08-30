@@ -49,7 +49,7 @@ public final class BlockLogPile extends BlockPile {
                 chest.inventory.itemStacks[0].metadata = Item.NULL_ITEM_METADATA;
                 chest.inventory.itemStacks[0].durability = Item.NULL_ITEM_DURABILITY;
                 world.removeBlockState(x,y,z, MultiState.CHEST_STATE);
-                world.setBlockWithNotify(x,y,z, Block.air.ID, false);
+                world.setBlockAndNotify(x,y,z, Block.air.ID, false);
             }
 
             world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).notifyBlock(x,y,z);

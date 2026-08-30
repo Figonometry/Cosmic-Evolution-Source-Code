@@ -95,7 +95,7 @@ public final class InWorldCraftingItem extends BlockState {
             }
         }
 
-        CosmicEvolution.instance.save.activeWorld.setBlockWithNotify(x,y,z, Block.air.ID, false);
+        CosmicEvolution.instance.save.activeWorld.setBlockAndNotify(x,y,z, Block.air.ID, false);
 
         this.remove = true;
 

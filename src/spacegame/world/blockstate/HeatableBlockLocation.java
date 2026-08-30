@@ -9,6 +9,7 @@ import spacegame.item.IFuel;
 import spacegame.item.IHeatable;
 import spacegame.item.Item;
 import spacegame.world.Chunk;
+import spacegame.world.ThreadUpdateLighting;
 
 public final class HeatableBlockLocation extends BlockState { //Trigger every 15 ticks, also is a "chest" slot 0 is fuel, slot 1 is input, slot 2 is output
     public int index;
@@ -50,7 +51,10 @@ public final class HeatableBlockLocation extends BlockState { //Trigger every 15
                 campfireState.logCount--;
                 if(campfireState.logCount == 0){
                     campfireState.isLit = false;
-                    chunk.parentWorld.propagateDarkness(chunk.getBlockXFromIndex(this.index), chunk.getBlockYFromIndex(this.index), chunk.getBlockZFromIndex(this.index));
+
+                    chunk.parentWorld.chunkController.updateChunkLighting(
+                            new ThreadUpdateLighting(chunk.parentWorld, chunk,
+                                    chunk.getBlockXFromIndex(index), chunk.getBlockYFromIndex(index), chunk.getBlockZFromIndex(index), Block.campfire.ID, false));
                 }
                 chunk.markDirty();
             }

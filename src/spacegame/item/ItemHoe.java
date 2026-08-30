@@ -42,7 +42,7 @@ public final class ItemHoe extends ItemTool {
 
         float nutrientPercent = BlockSoil.getNutrientLevel(blockID);
 
-        world.setBlockWithNotify(x,y,z, Block.tilledSoil.ID, true);
+        world.setBlockAndNotify(x,y,z, Block.tilledSoil.ID, true);
         world.addTimeEvent(x,y,z, world.ce.save.time + ((BlockTilledSoil)Block.tilledSoil).getUpdateTime(x,y,z,world));
         world.addBlockState(x,y,z, MultiState.TILLED_SOIL_STATE, new TilledSoilState(Chunk.getBlockIndexFromCoordinates(x,y,z), 0.5f, nutrientPercent, nutrientPercent, nutrientPercent, TilledSoilState.NO_FERTILIZER));
         CosmicEvolution.instance.soundPlayer.playSound(player.x, player.y, player.z, new Sound(Sound.dirt, false, 1f), 1f);

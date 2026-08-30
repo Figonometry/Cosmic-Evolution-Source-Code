@@ -146,7 +146,7 @@ public class Block {
     public static final Block phylliteItemStone = new BlockItemStone(BlockIDList.PHYLLITE_ITEM_STONE, BlockTextureList.PHYLLITE_STONE, blockFolderPath + "phylliteItemStone.txt");
     public static final Block serpentiniteItemStone = new BlockItemStone(BlockIDList.SERPENTINITE_ITEM_STONE, BlockTextureList.SERPENTINITE_STONE, blockFolderPath + "serpentiniteItemStone.txt");
     public static final Block unused_field_93 = null;
-    public static final Block treeSeed = new BlockSapling(BlockIDList.TREE_SEED, BlockTextureList.NO_TEXTURE, blockFolderPath + "treeSeed.txt");
+    public static final Block treeSeed = new BlockSapling(BlockIDList.TREE_SEED, BlockTextureList.SEED_TEXTURE, blockFolderPath + "treeSeed.txt");
     public static final Block sapling = new BlockSapling(BlockIDList.SAPLING, BlockTextureList.NO_TEXTURE, blockFolderPath + "sapling.txt");
     public static final Block torchUnlit = new BlockTorch(BlockIDList.TORCH_UNLIT, BlockTextureList.TORCH_UNLIT_TEXTURE, blockFolderPath + "torchUnlit.txt");
     public static final Block unused_field_72 = null;
@@ -528,7 +528,7 @@ public class Block {
             }
             world.addBlockState(x,y,z, MultiState.CHEST_STATE, new ChestLocation(Chunk.getBlockIndexFromCoordinates(x,y,z),  kilnInventory, world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5)));
             world.addBlockState(x,y,z, MultiState.PIT_KILN_STATE, new PitKilnState(0,0, false, Chunk.getBlockIndexFromCoordinates(x,y,z)));
-            world.setBlockWithNotify(x,y,z, Block.pitKiln.ID, false);
+            world.setBlockAndNotify(x,y,z, Block.pitKiln.ID, false);
             player.removeItemFromInventory();
             MouseListener.rightClickReleased = false;
         }
@@ -559,7 +559,7 @@ public class Block {
 
     public void onLeftClickWithNoSpecialFunctions(int x, int y, int z, World world, EntityPlayer player){
         if (!this.canBeBroken) {return;}
-        world.setBlockWithNotify(x, y, z, Block.air.ID, true);
+        world.setBlockAndNotify(x, y, z, Block.air.ID, true);
         this.clearBlockStates(x,y,z, world);
 
         if(this instanceof ITickable){
@@ -586,7 +586,7 @@ public class Block {
 
 
         short currentBlockID = world.getBlockID(x,y,z);
-        world.setBlockWithNotify(x, y, z, list[currentBlockID].waterlogged || list[currentBlockID] instanceof BlockIce ? water.ID :  air.ID, true);
+        world.setBlockAndNotify(x, y, z, list[currentBlockID].waterlogged || list[currentBlockID] instanceof BlockIce ? water.ID :  air.ID, true);
         this.clearBlockStates(x,y,z, world);
 
 
@@ -804,7 +804,7 @@ public class Block {
 
                 }
                 world.addBlockState(x,y,z, MultiState.DOOR_STATE, newDoorState);
-                world.setBlockWithNotify(x, y + 1, z, Block.doorPrimitiveUpper.ID, true);
+                world.setBlockAndNotify(x, y + 1, z, Block.doorPrimitiveUpper.ID, true);
             }
         }
 
@@ -829,7 +829,7 @@ public class Block {
 
         CosmicEvolution.instance.soundPlayer.playSound(x, y, z, new Sound(list[player.getHeldBlock()].stepSound, false, 1f), new Random().nextFloat(0.6F, 1));
         player.removeItemFromInventory();
-        world.setBlockWithNotify(x, y, z, heldBlock, true);
+        world.setBlockAndNotify(x, y, z, heldBlock, true);
         player.isSwinging = true;
     }
 

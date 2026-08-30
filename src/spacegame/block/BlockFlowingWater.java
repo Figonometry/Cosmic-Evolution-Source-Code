@@ -23,7 +23,7 @@ public final class BlockFlowingWater extends BlockFluid implements ITimeUpdate {
             }
 
             if(flowingWaterState.waterLevel == FlowingWaterState.FLOW_LEVEL_7){
-                world.setBlockWithNotify(x,y,z, Block.air.ID, false);
+                world.setBlockAndNotify(x,y,z, Block.air.ID, false);
                 return;
             }
 
@@ -41,34 +41,34 @@ public final class BlockFlowingWater extends BlockFluid implements ITimeUpdate {
 
         if(this.ID == Block.fullWater.ID){
             if(!(Block.list[world.getBlockID(x, y + 1, z)] instanceof BlockWater)){
-                world.setBlockWithNotify(x,y,z, Block.air.ID, false);
+                world.setBlockAndNotify(x,y,z, Block.air.ID, false);
             }
         }
 
         if(this.canBlockSpreadWater(x, y - 1, z, world, x, y, z)){
-            world.setBlockWithNotify(x, y - 1, z, Block.fullWater.ID, false);
+            world.setBlockAndNotify(x, y - 1, z, Block.fullWater.ID, false);
             world.addTimeEvent(x, y - 1, z, world.ce.save.time + this.getUpdateTime(x,y,z, world));
             return;
         }
 
         if(this.ID == Block.water.ID || this.ID == Block.fullWater.ID){
             if(this.canBlockSpreadWater(x - 1, y, z, world, x, y, z)){
-                world.setBlockWithNotify(x - 1, y, z, Block.flowingWater.ID, false);
+                world.setBlockAndNotify(x - 1, y, z, Block.flowingWater.ID, false);
                 world.addBlockState(x - 1, y, z, MultiState.FLOWING_WATER_STATE, new FlowingWaterState(FlowingWaterState.FACE_DIRECTION_NORTH, FlowingWaterState.FLOW_LEVEL_1, Chunk.getBlockIndexFromCoordinates(x - 1, y, z)));
                 world.addTimeEvent(x - 1, y, z, world.ce.save.time +  this.getUpdateTime(x,y,z, world));
             }
             if(this.canBlockSpreadWater(x + 1, y, z, world, x, y, z)){
-                world.setBlockWithNotify(x + 1, y, z, Block.flowingWater.ID, false);
+                world.setBlockAndNotify(x + 1, y, z, Block.flowingWater.ID, false);
                 world.addBlockState(x + 1, y, z, MultiState.FLOWING_WATER_STATE, new FlowingWaterState(FlowingWaterState.FACE_DIRECTION_SOUTH, FlowingWaterState.FLOW_LEVEL_1, Chunk.getBlockIndexFromCoordinates(x + 1,y,z)));
                 world.addTimeEvent(x + 1, y, z, world.ce.save.time +  this.getUpdateTime(x,y,z, world));
             }
             if(this.canBlockSpreadWater(x, y, z - 1, world, x, y, z)){
-                world.setBlockWithNotify(x, y, z - 1, Block.flowingWater.ID, false);
+                world.setBlockAndNotify(x, y, z - 1, Block.flowingWater.ID, false);
                 world.addBlockState(x,y,z-1, MultiState.FLOWING_WATER_STATE, new FlowingWaterState(FlowingWaterState.FACE_DIRECTION_EAST, FlowingWaterState.FLOW_LEVEL_1, Chunk.getBlockIndexFromCoordinates(x,y,z-1)));
                 world.addTimeEvent(x, y, z - 1, world.ce.save.time +  this.getUpdateTime(x,y,z, world));
             }
             if(this.canBlockSpreadWater(x, y, z + 1, world, x, y, z)){
-                world.setBlockWithNotify(x, y, z + 1, Block.flowingWater.ID, false);
+                world.setBlockAndNotify(x, y, z + 1, Block.flowingWater.ID, false);
                 world.addBlockState(x,y,z+1, MultiState.FLOWING_WATER_STATE, new FlowingWaterState(FlowingWaterState.FACE_DIRECTION_WEST, FlowingWaterState.FLOW_LEVEL_1, Chunk.getBlockIndexFromCoordinates(x,y,z+1)));
                 world.addTimeEvent(x, y, z + 1, world.ce.save.time +  this.getUpdateTime(x,y,z, world));
             }
@@ -77,17 +77,17 @@ public final class BlockFlowingWater extends BlockFluid implements ITimeUpdate {
 
         if(flowingWaterState.facingDirection == FlowingWaterState.FACE_DIRECTION_NORTH){
             if(this.canBlockSpreadWater(x - 1, y, z, world, x, y, z)){
-                world.setBlockWithNotify(x - 1, y, z, Block.flowingWater.ID, false);
+                world.setBlockAndNotify(x - 1, y, z, Block.flowingWater.ID, false);
                 world.addBlockState(x - 1, y, z, MultiState.FLOWING_WATER_STATE, new FlowingWaterState(FlowingWaterState.FACE_DIRECTION_NORTH, flowingWaterState.waterLevel + 1, Chunk.getBlockIndexFromCoordinates(x-1,y,z)));
                 world.addTimeEvent(x - 1, y, z, world.ce.save.time + this.getUpdateTime(x,y,z, world));
             } else {
                 if(this.canBlockSpreadWater(x, y, z - 1, world, x, y, z)){
-                    world.setBlockWithNotify(x, y, z - 1, Block.flowingWater.ID, false);
+                    world.setBlockAndNotify(x, y, z - 1, Block.flowingWater.ID, false);
                     world.addBlockState(x,y,z-1, MultiState.FLOWING_WATER_STATE, new FlowingWaterState(FlowingWaterState.FACE_DIRECTION_EAST, flowingWaterState.waterLevel + 1, Chunk.getBlockIndexFromCoordinates(x,y,z-1)));
                     world.addTimeEvent(x, y, z - 1, world.ce.save.time + this.getUpdateTime(x,y,z, world));
                 }
                 if(this.canBlockSpreadWater(x, y, z + 1, world, x, y, z)){
-                    world.setBlockWithNotify(x, y, z + 1, Block.flowingWater.ID, false);
+                    world.setBlockAndNotify(x, y, z + 1, Block.flowingWater.ID, false);
                     world.addBlockState(x,y,z+1, MultiState.FLOWING_WATER_STATE, new FlowingWaterState(FlowingWaterState.FACE_DIRECTION_WEST, flowingWaterState.waterLevel + 1, Chunk.getBlockIndexFromCoordinates(x,y,z+1)));
                     world.addTimeEvent(x, y, z + 1, world.ce.save.time + this.getUpdateTime(x,y,z, world));
                 }
@@ -96,17 +96,17 @@ public final class BlockFlowingWater extends BlockFluid implements ITimeUpdate {
 
         if(flowingWaterState.facingDirection == FlowingWaterState.FACE_DIRECTION_SOUTH){
             if(this.canBlockSpreadWater(x + 1, y, z, world, x, y, z)) {
-                world.setBlockWithNotify(x + 1, y, z, Block.flowingWater.ID, false);
+                world.setBlockAndNotify(x + 1, y, z, Block.flowingWater.ID, false);
                 world.addBlockState(x + 1, y, z, MultiState.FLOWING_WATER_STATE, new FlowingWaterState(FlowingWaterState.FACE_DIRECTION_SOUTH, flowingWaterState.waterLevel + 1, Chunk.getBlockIndexFromCoordinates(x + 1, y, z)));
                 world.addTimeEvent(x + 1, y, z, world.ce.save.time + this.getUpdateTime(x,y,z, world));
             } else {
                 if(this.canBlockSpreadWater(x, y, z - 1, world, x, y, z)){
-                    world.setBlockWithNotify(x, y, z - 1, Block.flowingWater.ID, false);
+                    world.setBlockAndNotify(x, y, z - 1, Block.flowingWater.ID, false);
                     world.addBlockState(x, y, z - 1, MultiState.FLOWING_WATER_STATE, new FlowingWaterState(FlowingWaterState.FACE_DIRECTION_EAST, flowingWaterState.waterLevel + 1, Chunk.getBlockIndexFromCoordinates(x, y, z - 1)));
                     world.addTimeEvent(x, y, z - 1, world.ce.save.time + this.getUpdateTime(x,y,z, world));
                 }
                 if(this.canBlockSpreadWater(x, y, z + 1, world, x, y, z)){
-                    world.setBlockWithNotify(x, y, z + 1, Block.flowingWater.ID, false);
+                    world.setBlockAndNotify(x, y, z + 1, Block.flowingWater.ID, false);
                     world.addBlockState(x, y, z + 1, MultiState.FLOWING_WATER_STATE, new FlowingWaterState(FlowingWaterState.FACE_DIRECTION_WEST, flowingWaterState.waterLevel + 1, Chunk.getBlockIndexFromCoordinates(x, y, z + 1)));
                     world.addTimeEvent(x, y, z + 1, world.ce.save.time + this.getUpdateTime(x,y,z, world));
                 }
@@ -115,17 +115,17 @@ public final class BlockFlowingWater extends BlockFluid implements ITimeUpdate {
 
         if(flowingWaterState.facingDirection == FlowingWaterState.FACE_DIRECTION_EAST){
             if(this.canBlockSpreadWater(x, y, z - 1, world, x, y, z)) {
-                world.setBlockWithNotify(x, y, z - 1, Block.flowingWater.ID, false);
+                world.setBlockAndNotify(x, y, z - 1, Block.flowingWater.ID, false);
                 world.addBlockState(x, y, z - 1, MultiState.FLOWING_WATER_STATE, new FlowingWaterState(FlowingWaterState.FACE_DIRECTION_EAST, flowingWaterState.waterLevel + 1, Chunk.getBlockIndexFromCoordinates(x, y, z - 1)));
                 world.addTimeEvent(x, y, z - 1, world.ce.save.time + this.getUpdateTime(x,y,z, world));
             } else {
                 if(this.canBlockSpreadWater(x - 1, y, z, world, x, y, z)){
-                    world.setBlockWithNotify(x - 1, y, z, Block.flowingWater.ID, false);
+                    world.setBlockAndNotify(x - 1, y, z, Block.flowingWater.ID, false);
                     world.addBlockState(x - 1, y, z, MultiState.FLOWING_WATER_STATE, new FlowingWaterState(FlowingWaterState.FACE_DIRECTION_NORTH, flowingWaterState.waterLevel + 1, Chunk.getBlockIndexFromCoordinates(x-1,y,z)));
                     world.addTimeEvent(x - 1, y, z, world.ce.save.time + this.getUpdateTime(x,y,z, world));
                 }
                 if(this.canBlockSpreadWater(x + 1, y, z, world, x, y, z)){
-                    world.setBlockWithNotify(x + 1, y, z , Block.flowingWater.ID, false);
+                    world.setBlockAndNotify(x + 1, y, z , Block.flowingWater.ID, false);
                     world.addBlockState(x + 1, y, z, MultiState.FLOWING_WATER_STATE, new FlowingWaterState(FlowingWaterState.FACE_DIRECTION_SOUTH, flowingWaterState.waterLevel + 1, Chunk.getBlockIndexFromCoordinates(x + 1, y, z)));
                     world.addTimeEvent(x + 1, y, z , world.ce.save.time + this.getUpdateTime(x,y,z, world));
                 }
@@ -134,16 +134,16 @@ public final class BlockFlowingWater extends BlockFluid implements ITimeUpdate {
 
         if(flowingWaterState.facingDirection == FlowingWaterState.FACE_DIRECTION_WEST){
             if(this.canBlockSpreadWater(x, y, z + 1, world, x, y, z)) {
-                world.setBlockWithNotify(x, y, z + 1, Block.flowingWater.ID, false);
+                world.setBlockAndNotify(x, y, z + 1, Block.flowingWater.ID, false);
                 world.addTimeEvent(x, y, z + 1, world.ce.save.time + this.getUpdateTime(x,y,z, world));
             } else {
                 if(this.canBlockSpreadWater(x - 1, y, z, world, x, y, z)){
-                    world.setBlockWithNotify(x - 1, y, z, Block.flowingWater.ID, false);
+                    world.setBlockAndNotify(x - 1, y, z, Block.flowingWater.ID, false);
                     world.addBlockState(x - 1, y, z, MultiState.FLOWING_WATER_STATE, new FlowingWaterState(FlowingWaterState.FACE_DIRECTION_NORTH, flowingWaterState.waterLevel + 1, Chunk.getBlockIndexFromCoordinates(x-1,y,z)));
                     world.addTimeEvent(x - 1, y, z, world.ce.save.time + this.getUpdateTime(x,y,z, world));
                 }
                 if(this.canBlockSpreadWater(x + 1, y, z, world, x, y, z)){
-                    world.setBlockWithNotify(x + 1, y, z , Block.flowingWater.ID, false);
+                    world.setBlockAndNotify(x + 1, y, z , Block.flowingWater.ID, false);
                     world.addBlockState(x + 1, y, z, MultiState.FLOWING_WATER_STATE, new FlowingWaterState(FlowingWaterState.FACE_DIRECTION_SOUTH, flowingWaterState.waterLevel + 1, Chunk.getBlockIndexFromCoordinates(x + 1, y, z)));
                     world.addTimeEvent(x + 1, y, z , world.ce.save.time + this.getUpdateTime(x,y,z, world));
                 }

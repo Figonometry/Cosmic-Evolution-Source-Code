@@ -32,11 +32,13 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
     public int x;
     public int y;
     public int z;
-    public GuiCraftingStoneTools(CosmicEvolution cosmicEvolution, int x, int y, int z) {
+    public short stoneItemID;
+    public GuiCraftingStoneTools(CosmicEvolution cosmicEvolution, int x, int y, int z, short blockID) {
         super(cosmicEvolution);
         this.x = x;
         this.y = y;
         this.z = z;
+        this.stoneItemID = blockID;
         this.close = new Button(EnumButtonEffects.CLOSE.name(), 50, 50, 349, 190, this, this.ce);
         this.selectableRecipes = new RecipeSelector[6];
         this.setSelectableItemIDs();
@@ -330,8 +332,8 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
     public void handleLeftClick(){
         RecipeSelector recipeSelector = this.getSelectedRecipeSelector();
         if(recipeSelector != null){
-            CosmicEvolution.instance.save.activeWorld.setBlockWithNotify(this.x, this.y, this.z, Block.crafting3DItem.ID, true);
-            InWorld3DCraftingItem craftingBlock = new InWorld3DCraftingItem(Chunk.getBlockIndexFromCoordinates(this.x, this.y, this.z), CosmicEvolution.instance.save.activeWorld.chunkController.chunkEarthTerrainHandler.getStoneType(this.x, this.y, this.z), this.getInWorldCraftingRecipeName(recipeSelector.itemID), CosmicEvolution.instance.save.activeWorld.findChunkFromChunkCoordinates(this.x >> 5, this.y  >> 5, this.z >> 5));
+            CosmicEvolution.instance.save.activeWorld.setBlockAndNotify(this.x, this.y, this.z, Block.crafting3DItem.ID, true);
+            InWorld3DCraftingItem craftingBlock = new InWorld3DCraftingItem(Chunk.getBlockIndexFromCoordinates(this.x, this.y, this.z), this.stoneItemID, this.getInWorldCraftingRecipeName(recipeSelector.itemID), CosmicEvolution.instance.save.activeWorld.findChunkFromChunkCoordinates(this.x >> 5, this.y  >> 5, this.z >> 5));
             craftingBlock.activateCraftingLayer(0);
             CosmicEvolution.instance.save.activeWorld.addBlockState(this.x, this.y, this.z, MultiState.CRAFTING_3D_ITEM_STATE, craftingBlock);
             GLFW.glfwSetInputMode(CosmicEvolution.instance.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);

@@ -18,6 +18,7 @@ import spacegame.world.blockstate.*;
 import java.awt.*;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
@@ -25,9 +26,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class Chunk implements Comparable<Chunk> {
     public World parentWorld;
-    public boolean needsToUpdate = false;
+    public volatile boolean needsToUpdate = false;
+    public volatile boolean dirtyLighting = true;
     public long updateTime;
-    public boolean populated = false;
+    public volatile boolean populated = false;
     public boolean shouldRender;
     public boolean chunkWillUnload;
     public boolean updating;
@@ -50,8 +52,7 @@ public final class Chunk implements Comparable<Chunk> {
     public final int z;
     public boolean modifiedSinceLastSave;
     public short[] blocks = new short[32768];
-    public byte[] lighting = new byte[32768];
-    public byte[] skyLight = new byte[32768];
+    public byte[] light = new byte[32768]; //The skylight is stored in the upper half of the byte, the block lighting is stored in the lower half
     public int[] lightColor = new int[32768];
     public short[] tickableBlockIndex = new short[32768];
     public short[] decayableLeaves = new short[0];
@@ -91,6 +92,14 @@ public final class Chunk implements Comparable<Chunk> {
     public int transparentVBOID = -10;
     public int transparentVAOID = -10;
     public int transparentEBOID = -10;
+    public int opaqueIndexCount = 0;
+    public int transparentIndexCount = 0;
+    public int opaqueVertexCount = 0;
+    public int transparentVertexCount = 0;
+    public int opaqueMaxIndex = 0;
+    public int transparentMaxIndex = 0;
+    public boolean opaqueReady = false;
+    public boolean transparentReady = false;
     public static final int positionsSize = 1;
     public static final int colorSize = 1;
     public static final int texIndexSize = 1;
@@ -120,18 +129,18 @@ public final class Chunk implements Comparable<Chunk> {
     }
 
     public void setBlock(int x, int y, int z, short blockID) {
-        x %= 32;
-        y %= 32;
-        z %= 32;
+        x = (int) MathUtil.positiveMod(x, 32);
+        y = (int) MathUtil.positiveMod(y, 32);
+        z = (int) MathUtil.positiveMod(z, 32);
         if(this.blocks == null)this.initChunk();
         this.blocks[getBlockIndexFromCoordinates(x, y, z)] = blockID;
         this.modifiedSinceLastSave = true;
     }
 
-    public void setBlockWithNotify(int x, int y, int z, short blockID) {
-        x %= 32;
-        y %= 32;
-        z %= 32;
+    public void setBlockAndNotify(int x, int y, int z, short blockID) {
+        x = (int) MathUtil.positiveMod(x, 32);
+        y = (int) MathUtil.positiveMod(y, 32);
+        z = (int) MathUtil.positiveMod(z, 32);
         if(this.blocks == null)this.initChunk();
         this.blocks[getBlockIndexFromCoordinates(x, y, z)] = blockID;
         this.notifyBlock(x,y,z);
@@ -141,21 +150,12 @@ public final class Chunk implements Comparable<Chunk> {
 
 
     public void notifyBlock(int x, int y, int z) {
-        int x1 = x;
-        int y1 = y;
-        int z1 = z;
-        x %= 32;
-        y %= 32;
-        z %= 32;
-        if (x < 0) {
-            x += 32;
-        }
-        if (y < 0) {
-            y += 32;
-        }
-        if (z < 0) {
-            z += 32;
-        }
+        int x1 = x + (this.x << 5);
+        int y1 = y + (this.y << 5);
+        int z1 = z + (this.z << 5);
+        x = (int) MathUtil.positiveMod(x, 32);
+        y = (int) MathUtil.positiveMod(y, 32);
+        z = (int) MathUtil.positiveMod(z, 32);
         int mask;
         int topFaceBitmask = this.topFaceBitMask[calculateBitMaskIndex(x, z)];
         int bottomFaceBitMask = this.bottomFaceBitMask[calculateBitMaskIndex(x, z)];
@@ -239,21 +239,12 @@ public final class Chunk implements Comparable<Chunk> {
     }
 
     public void notifyBlockWithoutRebuild(int x, int y, int z) {
-        int x1 = x;
-        int y1 = y;
-        int z1 = z;
-        x %= 32;
-        y %= 32;
-        z %= 32;
-        if (x < 0) {
-            x *= -1;
-        }
-        if (y < 0) {
-            y *= -1;
-        }
-        if (z < 0) {
-            z *= -1;
-        }
+        int x1 = x + (this.x << 5);
+        int y1 = y + (this.y << 5);
+        int z1 = z + (this.z << 5);
+        x = (int) MathUtil.positiveMod(x, 32);
+        y = (int) MathUtil.positiveMod(y, 32);
+        z = (int) MathUtil.positiveMod(z, 32);
         int mask;
         int topFaceBitmask = this.topFaceBitMask[calculateBitMaskIndex(x, z)];
         int bottomFaceBitMask = this.bottomFaceBitMask[calculateBitMaskIndex(x, z)];
@@ -375,19 +366,19 @@ public final class Chunk implements Comparable<Chunk> {
 
 
     public static int getBlockIndexFromCoordinates(int x, int y, int z) {
-        return ((x & 31) + ((y & 31) << 10) + ((z & 31) << 5));
+        return (int) ((MathUtil.positiveMod(x, 32)) + (((int)MathUtil.positiveMod(y, 32)) << 10) + (((int)MathUtil.positiveMod(z, 32)) << 5));
     }
 
     public short getBlockID(int x, int y, int z){
         return this.blocks[getBlockIndexFromCoordinates(x,y,z)];
     }
 
-    public byte getBlockLightValue(int x, int y, int z) {
-        return this.lighting[getBlockIndexFromCoordinates(x, y, z)];
+    public  byte getBlockLightValue(int x, int y, int z) {
+        return (byte) (this.light[getBlockIndexFromCoordinates(x, y, z)] & 15);
     }
 
     public byte getSkyLightValue(int x, int y, int z){
-        return this.skyLight[getBlockIndexFromCoordinates(x,y,z)];
+        return (byte) ((this.light[getBlockIndexFromCoordinates(x,y,z)] >> 4) & 15);
     }
 
     public float[] getBlockLightColor(int x, int y, int z) {
@@ -406,25 +397,103 @@ public final class Chunk implements Comparable<Chunk> {
     }
 
     public void setSkyLight() {
-        Arrays.fill(this.skyLight, (byte)0);
-        ArrayList<int[]> skyLightUpdateQueue = new ArrayList<>();
-        ArrayList<int[]> previousSkyLightUpdateQueue = new ArrayList<>();
-        for (int i = 0; i < this.blocks.length; i++) {
-            if (!(Block.list[this.blocks[i]] instanceof BlockWater)) {
-                if (!Block.list[this.blocks[i]].isSolid && this.parentWorld.doesBlockHaveSkyAccess(this.getBlockXFromIndex(i), this.getBlockYFromIndex(i), this.getBlockZFromIndex(i))) {
-                    this.parentWorld.propagateSkyLight(this.getBlockXFromIndex(i), this.getBlockYFromIndex(i), this.getBlockZFromIndex(i), skyLightUpdateQueue, previousSkyLightUpdateQueue);
+
+        // 0. Clear skylight (upper nibble)
+        for (int i = 0; i < this.light.length; i++) {
+            this.light[i] = (byte)(this.light[i] & 0x0F);
+        }
+
+        // 1. Top-down seeding
+        int x, y, z, index;
+        byte currentSky;
+
+        for (x = this.chunkMinX; x <= this.chunkMaxX; x++) {
+            for (z = this.chunkMinZ; z <= this.chunkMaxZ; z++) {
+
+                currentSky = 15;
+
+                for (y = this.chunkMaxY; y >= this.chunkMinY; y--) {
+
+                    index = getBlockIndexFromCoordinates(x, y, z);
+
+                    if (Block.list[this.blocks[index]].isSolid)
+                        break;
+
+                    if (Block.list[this.blocks[index]] instanceof BlockWater)
+                        currentSky--;
+
+                    if (currentSky <= 0)
+                        break;
+
+                    // write skylight (upper nibble), preserve blocklight (lower nibble)
+                    this.light[index] = (byte)((this.light[index] & 0x0F) | (currentSky << 4));
+                }
+            }
+        }
+
+        // 2. BFS propagation (bright diffusion)
+        ArrayDeque<int[]> queue = new ArrayDeque<>();
+
+        // enqueue all blocks with skylight 15
+        for (int i = 0; i < this.light.length; i++) {
+            if (((this.light[i] >> 4) & 15) == 15)
+                queue.add(this.getBlockCoordinatesFromIndex(i));
+        }
+
+        while (!queue.isEmpty()) {
+            int[] p = queue.poll();
+            x = p[0];
+            y = p[1];
+            z = p[2];
+
+            byte current = (byte)((this.light[getBlockIndexFromCoordinates(x, y, z)] >> 4) & 15);
+            byte newValue = (byte)(current - 1);
+            if (newValue <= 0) continue;
+
+            int[][] neighbors = {
+                    {x - 1, y, z},
+                    {x + 1, y, z},
+                    {x, y - 1, z},
+                    {x, y + 1, z},
+                    {x, y, z - 1},
+                    {x, y, z + 1}
+            };
+
+            for (int[] n : neighbors) {
+                int nx = n[0], ny = n[1], nz = n[2];
+
+                if (Block.list[this.parentWorld.getBlockID(nx, ny, nz)].isSolid)
+                    continue;
+
+                // chunk boundary check
+                if (nx < this.chunkMinX || nx > this.chunkMaxX ||
+                        ny < this.chunkMinY || ny > this.chunkMaxY ||
+                        nz < this.chunkMinZ || nz > this.chunkMaxZ)
+                    continue;
+
+                index = getBlockIndexFromCoordinates(nx, ny, nz);
+                byte neighborSky = (byte)((this.light[index] >> 4) & 15);
+
+
+                if (newValue > neighborSky) {
+                    this.light[index] = (byte)((this.light[index] & 0x0F) | (newValue << 4));
+                    queue.add(new int[]{nx, ny, nz});
                 }
             }
         }
     }
 
 
+
+
+
+
     public synchronized void setBlockLightValue(int x, int y, int z, byte lightLevel) {
-        this.lighting[getBlockIndexFromCoordinates(x,y,z)] = lightLevel;
+        this.light[getBlockIndexFromCoordinates(x,y,z)] = (byte) ((this.light[getBlockIndexFromCoordinates(x,y,z)] >> 4 & 15) << 4 | lightLevel);
     }
 
     public synchronized void setBlockSkyLightValue(int x, int y, int z, byte lightLevel){
-        this.skyLight[getBlockIndexFromCoordinates(x,y,z)] = lightLevel;
+        this.light[getBlockIndexFromCoordinates(x,y,z)] = (byte) (lightLevel << 4 | this.light[getBlockIndexFromCoordinates(x,y,z)] & 15);
     }
 
     //Both sky and block light color can never have any component that is 0, things will break
@@ -526,7 +595,7 @@ public final class Chunk implements Comparable<Chunk> {
     }
 
     public int [] getBlockCoordinatesFromIndex(int index){
-        return new int[]{this.getBlockXFromIndex(index), this.getBlockZFromIndex(index), this.getBlockZFromIndex(index)};
+        return new int[]{this.getBlockXFromIndex(index), this.getBlockYFromIndex(index), this.getBlockZFromIndex(index)};
     }
 
 
@@ -543,6 +612,7 @@ public final class Chunk implements Comparable<Chunk> {
     }
 
     public void markDirty() {
+        this.needsToUpdate = true;
         this.parentWorld.chunkController.addChunkToRebuildQueue(this);
     }
     public void markToPopulate(){
@@ -587,7 +657,7 @@ public final class Chunk implements Comparable<Chunk> {
             z2 = this.getBlockZFromIndex(index + 1024);
         } else {
             Chunk chunk = this.parentWorld.findChunkFromChunkCoordinates(this.x, this.y + 1, this.z);
-            if(chunk == null)return true;
+            if(chunk == null)return false;
             firstBlock = this.blocks[index];
             if(chunk.blocks != null) {
                 secondBlock = chunk.blocks[index - 31744];
@@ -621,7 +691,7 @@ public final class Chunk implements Comparable<Chunk> {
             z2 = this.getBlockZFromIndex(index - 1024);
         } else {
             Chunk chunk = this.parentWorld.findChunkFromChunkCoordinates(this.x, this.y - 1, this.z);
-            if(chunk == null)return true;
+            if(chunk == null)return false;
             firstBlock = this.blocks[index];
             if(chunk.blocks != null) {
                 secondBlock = chunk.blocks[index + 31744];
@@ -653,7 +723,7 @@ public final class Chunk implements Comparable<Chunk> {
             z2 = this.getBlockZFromIndex(index - 1);
         } else {
             Chunk chunk = this.parentWorld.findChunkFromChunkCoordinates(this.x - 1, this.y, this.z);
-            if(chunk == null)return true;
+            if(chunk == null)return false;
             firstBlock = this.blocks[index];
             if(chunk.blocks != null) {
                 secondBlock = chunk.blocks[index + 31];
@@ -685,7 +755,7 @@ public final class Chunk implements Comparable<Chunk> {
             z2 = this.getBlockZFromIndex(index + 1);
         } else {
             Chunk chunk = this.parentWorld.findChunkFromChunkCoordinates(this.x + 1, this.y, this.z);
-            if(chunk == null)return true;
+            if(chunk == null)return false;
             firstBlock = this.blocks[index];
             if(chunk.blocks != null) {
                 secondBlock = chunk.blocks[index - 31];
@@ -717,7 +787,7 @@ public final class Chunk implements Comparable<Chunk> {
             z2 = this.getBlockZFromIndex(index - 32);
         } else {
             Chunk chunk = this.parentWorld.findChunkFromChunkCoordinates(this.x, this.y, this.z - 1);
-            if(chunk == null)return true;
+            if(chunk == null)return false;
             firstBlock = this.blocks[index];
             if(chunk.blocks != null) {
                 secondBlock = chunk.blocks[index + 992];
@@ -749,7 +819,7 @@ public final class Chunk implements Comparable<Chunk> {
             z2 = this.getBlockZFromIndex(index + 32);
         } else {
             Chunk chunk = this.parentWorld.findChunkFromChunkCoordinates(this.x, this.y, this.z + 1);
-            if(chunk == null)return true;
+            if(chunk == null)return false;
             firstBlock = this.blocks[index];
             if(chunk.blocks != null) {
                 secondBlock = chunk.blocks[index - 992];
@@ -849,17 +919,29 @@ public final class Chunk implements Comparable<Chunk> {
         int y = 0;
         int z = 0;
 
+        for (int i = 0; i < this.blocks.length; i++) {
+            x = this.getBlockXFromIndex(i);
+            y = this.getBlockYFromIndex(i);
+            z = this.getBlockZFromIndex(i);
+            this.notifyBlock(x, y, z);
+        }
+    }
+
+
+    public void floodFillBlockLightArray() {
+        int x = 0;
+        int y = 0;
+        int z = 0;
+
         ChunkColumnSkylightMap skylightMap = this.parentWorld.findChunkSkyLightMap(this.x >> 5, this.z >> 5);
 
         for (int i = 0; i < this.blocks.length; i++) {
             x = this.getBlockXFromIndex(i);
             y = this.getBlockYFromIndex(i);
             z = this.getBlockZFromIndex(i);
-            this.notifyBlock(x, y, z);
 
             if(Block.list[this.blocks[i]].isSolid){
-                this.lighting[i] = 0;
-                this.skyLight[i] = 0;
+                this.light[i] = 0;
             }
 
             if(this.blocks[i] != Block.air.ID){
@@ -873,7 +955,6 @@ public final class Chunk implements Comparable<Chunk> {
                 this.parentWorld.propagateLightSource(x,y,z, Block.list[this.blocks[i]].lightBlockValue);
             }
         }
-        this.markDirty();
     }
 
 
@@ -917,178 +998,245 @@ public final class Chunk implements Comparable<Chunk> {
 
     }
 
-    public void bindRenderData(){
-        if(this.opaqueVAOID == -10 || this.opaqueVBOID == -10 || this.opaqueEBOID == -10 || this.transparentVAOID == -10 || this.transparentVBOID == -10 || this.transparentEBOID == -10){
+    public void bindRenderData() {
+        // 1. Create VAOs/VBOs/EBOs and set attribute layout
+        if (this.opaqueVAOID == -10 || this.opaqueVBOID == -10 || this.opaqueEBOID == -10
+                || this.transparentVAOID == -10 || this.transparentVBOID == -10 || this.transparentEBOID == -10) {
+
             this.createGLObjects();
 
+            // Opaque VAO
             GL46.glBindVertexArray(this.opaqueVAOID);
             GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, this.opaqueVBOID);
+
             GL46.glVertexAttribPointer(0, Chunk.positionsSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes, 0);
             GL46.glEnableVertexAttribArray(0);
 
-            GL46.glVertexAttribPointer(1, Chunk.colorSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes, Chunk.positionsSize * Float.BYTES);
+            GL46.glVertexAttribPointer(1, Chunk.colorSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes,
+                    Chunk.positionsSize * Float.BYTES);
             GL46.glEnableVertexAttribArray(1);
 
-            GL46.glVertexAttribPointer(2, Chunk.texCoordsSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes, (Chunk.positionsSize + Chunk.colorSize) * Float.BYTES);
+            GL46.glVertexAttribPointer(2, Chunk.texCoordsSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes,
+                    (Chunk.positionsSize + Chunk.colorSize) * Float.BYTES);
             GL46.glEnableVertexAttribArray(2);
 
-            GL46.glVertexAttribPointer(3, Chunk.texIndexSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes, (Chunk.positionsSize + Chunk.colorSize + Chunk.texCoordsSize) * Float.BYTES);
+            GL46.glVertexAttribPointer(3, Chunk.texIndexSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes,
+                    (Chunk.positionsSize + Chunk.colorSize + Chunk.texCoordsSize) * Float.BYTES);
             GL46.glEnableVertexAttribArray(3);
 
-            GL46.glVertexAttribPointer(4, Chunk.normalSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes, (Chunk.positionsSize + Chunk.colorSize + Chunk.texCoordsSize + Chunk.texIndexSize) * Float.BYTES);
+            GL46.glVertexAttribPointer(4, Chunk.normalSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes,
+                    (Chunk.positionsSize + Chunk.colorSize + Chunk.texCoordsSize + Chunk.texIndexSize) * Float.BYTES);
             GL46.glEnableVertexAttribArray(4);
 
             GL46.glBindBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, this.opaqueEBOID);
-
             GL46.glBindVertexArray(0);
 
+            // Transparent VAO
             GL46.glBindVertexArray(this.transparentVAOID);
             GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, this.transparentVBOID);
+
             GL46.glVertexAttribPointer(0, Chunk.positionsSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes, 0);
             GL46.glEnableVertexAttribArray(0);
 
-            GL46.glVertexAttribPointer(1, Chunk.colorSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes, Chunk.positionsSize * Float.BYTES);
+            GL46.glVertexAttribPointer(1, Chunk.colorSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes,
+                    Chunk.positionsSize * Float.BYTES);
             GL46.glEnableVertexAttribArray(1);
 
-            GL46.glVertexAttribPointer(2, Chunk.texCoordsSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes, (Chunk.positionsSize + Chunk.colorSize) * Float.BYTES);
+            GL46.glVertexAttribPointer(2, Chunk.texCoordsSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes,
+                    (Chunk.positionsSize + Chunk.colorSize) * Float.BYTES);
             GL46.glEnableVertexAttribArray(2);
 
-            GL46.glVertexAttribPointer(3, Chunk.texIndexSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes, (Chunk.positionsSize + Chunk.colorSize + Chunk.texCoordsSize) * Float.BYTES);
+            GL46.glVertexAttribPointer(3, Chunk.texIndexSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes,
+                    (Chunk.positionsSize + Chunk.colorSize + Chunk.texCoordsSize) * Float.BYTES);
             GL46.glEnableVertexAttribArray(3);
 
-            GL46.glVertexAttribPointer(4, Chunk.normalSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes, (Chunk.positionsSize + Chunk.colorSize + Chunk.texCoordsSize + Chunk.texIndexSize) * Float.BYTES);
+            GL46.glVertexAttribPointer(4, Chunk.normalSize, GL46.GL_FLOAT, false, Chunk.vertexSizeBytes,
+                    (Chunk.positionsSize + Chunk.colorSize + Chunk.texCoordsSize + Chunk.texIndexSize) * Float.BYTES);
             GL46.glEnableVertexAttribArray(4);
 
             GL46.glBindBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, this.transparentEBOID);
+            GL46.glBindVertexArray(0);
         }
 
-        this.vertexBufferOpaque = this.tempVertexBufferOpaque != null ? BufferUtils.createFloatBuffer(this.tempVertexBufferOpaque.capacity()) : null;
-        this.elementBufferOpaque = this.tempElementBufferOpaque != null ? BufferUtils.createIntBuffer(this.tempElementBufferOpaque.capacity()) : null;
-        this.vertexBufferTransparent = this.tempVertexBufferTransparent != null ? BufferUtils.createFloatBuffer(this.tempVertexBufferTransparent.capacity()) : null;
-        this.elementBufferTransparent = this.tempElementBufferTransparent != null ? BufferUtils.createIntBuffer(this.tempElementBufferTransparent.capacity()) : null;
-
-        if(this.tempVertexBufferOpaque != null){
+        // 2. Flip temp buffers
+        if (this.tempVertexBufferOpaque != null && this.tempVertexBufferOpaque.position() > 0) {
             this.tempVertexBufferOpaque.flip();
+        } else {
+            this.tempVertexBufferOpaque = null;
+        }
+
+        if (this.tempElementBufferOpaque != null && this.tempElementBufferOpaque.position() > 0) {
+            this.tempElementBufferOpaque.flip();
+        } else {
+            this.tempElementBufferOpaque = null;
+        }
+
+        if (this.tempVertexBufferTransparent != null && this.tempVertexBufferTransparent.position() > 0) {
+            this.tempVertexBufferTransparent.flip();
+        } else {
+            this.tempVertexBufferTransparent = null;
+        }
+
+        if (this.tempElementBufferTransparent != null && this.tempElementBufferTransparent.position() > 0) {
+            this.tempElementBufferTransparent.flip();
+        } else {
+            this.tempElementBufferTransparent = null;
+        }
+
+        // 3. Allocate and copy OPAQUE final buffers
+        if (this.tempVertexBufferOpaque != null) {
+            this.vertexBufferOpaque = BufferUtils.createFloatBuffer(this.tempVertexBufferOpaque.limit());
             this.vertexBufferOpaque.put(this.tempVertexBufferOpaque);
             this.vertexBufferOpaque.flip();
+        } else {
+            this.vertexBufferOpaque = null;
         }
 
-        if(this.tempElementBufferOpaque != null){
-            this.tempElementBufferOpaque.flip();
+        if (this.tempElementBufferOpaque != null) {
+            this.elementBufferOpaque = BufferUtils.createIntBuffer(this.tempElementBufferOpaque.limit());
             this.elementBufferOpaque.put(this.tempElementBufferOpaque);
             this.elementBufferOpaque.flip();
+        } else {
+            this.elementBufferOpaque = null;
         }
 
-        if(this.tempVertexBufferTransparent != null){
-            this.tempVertexBufferTransparent.flip();
+        // 4. Allocate and copy TRANSPARENT final buffers
+        if (this.tempVertexBufferTransparent != null) {
+            this.vertexBufferTransparent = BufferUtils.createFloatBuffer(this.tempVertexBufferTransparent.limit());
             this.vertexBufferTransparent.put(this.tempVertexBufferTransparent);
             this.vertexBufferTransparent.flip();
+        } else {
+            this.vertexBufferTransparent = null;
         }
 
-        if(this.tempVertexBufferTransparent != null) {
-            this.tempElementBufferTransparent.flip();
+        if (this.tempElementBufferTransparent != null) {
+            this.elementBufferTransparent = BufferUtils.createIntBuffer(this.tempElementBufferTransparent.limit());
             this.elementBufferTransparent.put(this.tempElementBufferTransparent);
             this.elementBufferTransparent.flip();
+        } else {
+            this.elementBufferTransparent = null;
         }
 
+        // 5. Clear temp buffers
         this.tempVertexBufferOpaque = null;
         this.tempElementBufferOpaque = null;
         this.tempVertexBufferTransparent = null;
         this.tempElementBufferTransparent = null;
 
+        // 6. Null out truly empty final buffers
+        if (this.vertexBufferOpaque != null && this.vertexBufferOpaque.limit() == 0) {
+            this.vertexBufferOpaque = null;
+        }
+        if (this.elementBufferOpaque != null && this.elementBufferOpaque.limit() == 0) {
+            this.elementBufferOpaque = null;
+        }
+        if (this.vertexBufferTransparent != null && this.vertexBufferTransparent.limit() == 0) {
+            this.vertexBufferTransparent = null;
+        }
+        if (this.elementBufferTransparent != null && this.elementBufferTransparent.limit() == 0) {
+            this.elementBufferTransparent = null;
+        }
 
-        if(this.vertexBufferOpaque != null) {
+        // 7. Upload to GL + record counts/maxIndex
+        // OPAQUE
+        if (this.vertexBufferOpaque != null) {
+            GL46.glBindVertexArray(this.opaqueVAOID);
             GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, this.opaqueVBOID);
             GL46.glBufferData(GL46.GL_ARRAY_BUFFER, this.vertexBufferOpaque, GL46.GL_STATIC_DRAW);
+
+            this.opaqueVertexCount = this.vertexBufferOpaque.limit() / 6; // assuming 6 components per vertex
         }
 
-        if(this.elementBufferOpaque != null) {
+        if (this.elementBufferOpaque != null) {
+            GL46.glBindVertexArray(this.opaqueVAOID);
             GL46.glBindBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, this.opaqueEBOID);
             GL46.glBufferData(GL46.GL_ELEMENT_ARRAY_BUFFER, this.elementBufferOpaque, GL46.GL_STATIC_DRAW);
+
+            this.opaqueIndexCount = this.elementBufferOpaque.limit();
+
+            int max = 0;
+            for (int i = 0; i < this.elementBufferOpaque.limit(); i++) {
+                max = Math.max(max, this.elementBufferOpaque.get(i));
+            }
+            this.opaqueMaxIndex = max;
+            this.opaqueReady = true;
         }
 
-        if(this.vertexBufferTransparent != null) {
+        // TRANSPARENT
+        if (this.vertexBufferTransparent != null) {
+            GL46.glBindVertexArray(this.transparentVAOID);
             GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, this.transparentVBOID);
             GL46.glBufferData(GL46.GL_ARRAY_BUFFER, this.vertexBufferTransparent, GL46.GL_STATIC_DRAW);
+
+            this.transparentVertexCount = this.vertexBufferTransparent.limit() / 6; // same layout
         }
 
-        if(this.elementBufferTransparent != null) {
+        if (this.elementBufferTransparent != null) {
+            GL46.glBindVertexArray(this.transparentVAOID);
             GL46.glBindBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, this.transparentEBOID);
             GL46.glBufferData(GL46.GL_ELEMENT_ARRAY_BUFFER, this.elementBufferTransparent, GL46.GL_STATIC_DRAW);
+
+            this.transparentIndexCount = this.elementBufferTransparent.limit();
+
+            int maxT = 0;
+            for (int i = 0; i < this.elementBufferTransparent.limit(); i++) {
+                maxT = Math.max(maxT, this.elementBufferTransparent.get(i));
+            }
+            this.transparentMaxIndex = maxT;
+            this.transparentReady = true;
         }
 
+        // Optionally: drop CPU buffers now to avoid any accidental use
+         this.vertexBufferOpaque = null;
+         this.elementBufferOpaque = null;
+         this.vertexBufferTransparent = null;
+         this.elementBufferTransparent = null;
+
+        GL46.glBindVertexArray(0);
+
         this.updating = false;
+        this.parentWorld.chunkController.renderWorldScene.recalculateQueries = true;
     }
+
+
+
 
 
     public void renderOpaque(int sunX, int sunY, int sunZ) {
-        if(this.elementBufferOpaque == null || this.vertexBufferOpaque == null || this.opaqueVAOID == -10 || this.opaqueVBOID == -10 || this.opaqueEBOID == -10 || this.opaqueVAOID == 0 || this.opaqueVBOID == 0 || this.opaqueEBOID == 0)return;
+        // GPU-side readiness check
+        if (!opaqueReady) return;
+        if (opaqueIndexCount == 0 || opaqueVertexCount == 0) return;
 
-        if (elementBufferOpaque.limit() == 0) return;
-        if (vertexBufferOpaque.limit() == 0) return;
+        // Safety: ensure indices reference valid vertices
+        if (opaqueMaxIndex >= opaqueVertexCount) return;
 
-
-        int componentsPerVertex = 6;
-        int vertexCount = this.vertexBufferOpaque.limit() / componentsPerVertex;
-
-        this.elementBufferOpaque.position(0);
-        this.vertexBufferOpaque.position(0);
-
-
-        int maxIndex = -1;
-        for (int i = this.elementBufferOpaque.position(); i < this.elementBufferOpaque.limit(); i++) {
-            int idx = this.elementBufferOpaque.get(i);
-            if (idx > maxIndex) maxIndex = idx;
-        }
-
-        if (maxIndex >= vertexCount) return;
-
-        this.elementBufferOpaque.position(0);
-        this.vertexBufferOpaque.position(0);
-
+        // Upload uniforms
         Shader.terrainShader.uploadVec3f("chunkOffset", this.chunkOffset);
-        Shader.terrainShader.uploadVec3f("sunChunkOffset", new Vector3f((this.x - sunX) << 5, (this.y - sunY) << 5, (this.z - sunZ) << 5));
+        Shader.terrainShader.uploadVec3f("sunChunkOffset", new Vector3f(
+                (this.x - sunX) << 5,
+                (this.y - sunY) << 5,
+                (this.z - sunZ) << 5
+        ));
+
+        // Bind VAO and draw
         GL46.glBindVertexArray(this.opaqueVAOID);
-        GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, this.opaqueVBOID);
-        GL46.glBindBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, this.opaqueEBOID);
-        GL46.glDrawElements(GL46.GL_TRIANGLES, this.elementBufferOpaque.limit(), GL46.GL_UNSIGNED_INT, 0);
+        GL46.glDrawElements(GL46.GL_TRIANGLES, this.opaqueIndexCount, GL46.GL_UNSIGNED_INT, 0);
     }
+
 
     public void renderTransparent(int sunX, int sunY, int sunZ) {
-        if(this.elementBufferTransparent == null || this.vertexBufferTransparent == null || this.transparentVAOID == -10 || this.transparentVBOID == -10 || this.transparentEBOID == -10 || this.transparentVAOID == 0 || this.transparentVBOID == 0 || this.transparentEBOID == 0)return;
-
-        if (elementBufferTransparent.limit() == 0) return;
-        if (vertexBufferTransparent.limit() == 0) return;
-
-
-
-        int componentsPerVertex = 6;
-        int vertexCount = this.vertexBufferTransparent.limit() / componentsPerVertex;
-
-        this.elementBufferTransparent.position(0);
-        this.vertexBufferTransparent.position(0);
-
-
-        int maxIndex = -1;
-        for (int i = this.elementBufferTransparent.position(); i < this.elementBufferTransparent.limit(); i++) {
-            int idx = this.elementBufferTransparent.get(i);
-            if (idx > maxIndex) maxIndex = idx;
-        }
-
-        if (maxIndex >= vertexCount) return;
-
-
-        this.elementBufferTransparent.position(0);
-        this.vertexBufferTransparent.position(0);
-
+        if (!transparentReady) return;
+        if (transparentIndexCount == 0 || transparentVertexCount == 0) return;
+        if (transparentMaxIndex >= transparentVertexCount) return;
 
         Shader.terrainShader.uploadVec3f("chunkOffset", this.chunkOffset);
-        Shader.terrainShader.uploadVec3f("sunChunkOffset", new Vector3f((this.x - sunX) << 5, (this.y - sunY) << 5, (this.z - sunZ) << 5));
+        Shader.terrainShader.uploadVec3f("sunChunkOffset",
+                new Vector3f((this.x - sunX) << 5, (this.y - sunY) << 5, (this.z - sunZ) << 5));
+
         GL46.glBindVertexArray(this.transparentVAOID);
-        GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, this.transparentVBOID);
-        GL46.glBindBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, this.transparentEBOID);
-        GL46.glDrawElements(GL46.GL_TRIANGLES, this.elementBufferTransparent.limit(), GL46.GL_UNSIGNED_INT, 0);
+        GL46.glDrawElements(GL46.GL_TRIANGLES, this.transparentIndexCount, GL46.GL_UNSIGNED_INT, 0);
     }
+
 
     public void renderShadowMap(int sunX, int sunY, int sunZ) {
         if (this.elementBufferOpaque == null || this.opaqueVAOID == -10 || this.opaqueVBOID == -10 || this.opaqueEBOID == -10 || this.opaqueVAOID == 0 || this.opaqueVBOID == 0 || this.opaqueEBOID == 0) return;
@@ -1217,7 +1365,7 @@ public final class Chunk implements Comparable<Chunk> {
     public void emptyChunk() {
         this.empty = true;
         this.blocks = null;
-        this.lighting = null;
+        this.light = null;
         this.lightColor = null;
         this.topFaceBitMask = null;
         this.bottomFaceBitMask = null;
@@ -1230,7 +1378,7 @@ public final class Chunk implements Comparable<Chunk> {
     public void initChunk() {
         this.empty = false;
         this.blocks = new short[32768];
-        this.lighting = new byte[32768];
+        this.light = new byte[32768];
         this.lightColor = new int[32768];
         this.topFaceBitMask = new int[1024];
         this.bottomFaceBitMask = new int[1024];

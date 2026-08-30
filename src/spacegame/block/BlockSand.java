@@ -14,7 +14,7 @@ public final class BlockSand extends Block{
         if(this.canBlockFall(x,y,z, world)) {
             EntityFallingBlock entityFallingBlock = new EntityFallingBlock(x + 0.5, y, z + 0.5, this.ID, this.getBlockModel(x, y, z, world));
             world.addEntity(entityFallingBlock);
-            world.setBlockWithNotify(x, y, z, Block.air.ID, false);
+            world.setBlockAndNotify(x, y, z, Block.air.ID, false);
         }
     }
 

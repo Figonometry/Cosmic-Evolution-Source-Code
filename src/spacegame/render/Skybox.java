@@ -99,7 +99,7 @@ public final class Skybox {
         Vector3f vertex3;
         Vector3f vertex4;
         for (int latitude = -90; latitude < 90; latitude += 5) {
-            for (int longitude = 0; longitude < 360; longitude += 5) {
+            for (int longitude = 0; longitude < 365; longitude += 5) {
                 vertex1 = renderWorldScene.getPositionOnSphere(latitude + 5, longitude, 400000);
                 vertex2 = renderWorldScene.getPositionOnSphere(latitude + 5, longitude + 5, 400000);
                 vertex3 = renderWorldScene.getPositionOnSphere(latitude, longitude, 400000);

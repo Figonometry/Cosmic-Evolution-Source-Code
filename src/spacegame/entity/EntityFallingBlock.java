@@ -28,7 +28,7 @@ public final class EntityFallingBlock extends EntityNonLiving {
 
 
         if(this.collided){
-            CosmicEvolution.instance.save.activeWorld.setBlockWithNotify(MathUtil.floorDouble(this.x), MathUtil.floorDouble(this.y), MathUtil.floorDouble(this.z), this.blockID, false);
+            CosmicEvolution.instance.save.activeWorld.setBlockAndNotify(MathUtil.floorDouble(this.x), MathUtil.floorDouble(this.y), MathUtil.floorDouble(this.z), this.blockID, false);
             this.despawn = true;
         }
 

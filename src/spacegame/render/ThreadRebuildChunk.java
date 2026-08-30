@@ -36,10 +36,6 @@ public final class ThreadRebuildChunk implements Runnable {
             this.workingChunk.notifyAllBlocks();
             this.workingChunk.firstRender = false;
         }
-        if (this.workingChunk.updateSkylight) {
-            this.workingChunk.setSkyLight();
-            this.workingChunk.updateSkylight = false;
-        }
         this.workingChunk.shouldRender = this.workingChunk.checkIfChunkShouldRender();
         if (!this.workingChunk.shouldRender) {return;}
         RenderBlocks renderBlocks = new RenderBlocks();
@@ -193,7 +189,6 @@ public final class ThreadRebuildChunk implements Runnable {
         synchronized (this.parentWorld.chunkController.bindingChunks) {
            this.parentWorld.chunkController.bindingChunks.add(this.workingChunk);
         }
-        this.parentWorld.chunkController.renderWorldScene.recalculateQueries = true;
     }
 
     private void addBlockToRenderData(short block, int index, int face, int[] greedyMeshSize, RenderBlocks renderBlocks) {

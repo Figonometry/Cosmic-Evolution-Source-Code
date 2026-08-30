@@ -13,7 +13,7 @@ public abstract class Assets {
     public static int itemTextureArray;
 
     public static void enableBlockTextureArray(){
-        blockTextureArray = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/blocks/", RenderEngine.TEXTURE_TYPE_2D_ARRAY, 178, true); //One higher than the expected amount
+        blockTextureArray = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/blocks/", RenderEngine.TEXTURE_TYPE_2D_ARRAY, 179, true); //One higher than the expected amount
     }
 
     public static void enableItemTextureArray(){

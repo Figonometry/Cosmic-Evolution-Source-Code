@@ -16,12 +16,12 @@ public final class BlockSapling extends Block implements ITimeUpdate {
     public void onTimeUpdate(int x, int y, int z, World world) {
         switch (this.ID){
             case BlockIDList.TREE_SEED -> {
-                world.setBlockWithNotify(x,y,z, Block.sapling.ID, false);
+                world.setBlockAndNotify(x,y,z, Block.sapling.ID, false);
                 world.updateTimeEventTime(x,y,z, CosmicEvolution.instance.save.time + this.getUpdateTime(x,y,z, world));
             }
             case BlockIDList.SAPLING -> {
                 world.removeTimeEvent(x,y,z);
-                world.setBlockWithNotify(x,y,z, Block.air.ID, false);
+                world.setBlockAndNotify(x,y,z, Block.air.ID, false);
                 new WorldGenTree(world.findChunkFromChunkCoordinates(x >> 5, (y - 1) >> 5, z >> 5), (WorldEarth)world, Chunk.getBlockIndexFromCoordinates(x,y - 1,z));
             }
         }
@@ -36,4 +36,5 @@ public final class BlockSapling extends Block implements ITimeUpdate {
     public String getDisplayStringText(int x, int y, int z, World world) {
         return this.ID == Block.treeSeed.ID ? "Will Sprout In: " : "Will Grow In: ";
     }
+
 }

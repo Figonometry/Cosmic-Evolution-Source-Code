@@ -8,9 +8,9 @@ import spacegame.gui.ToolTip;
 import spacegame.gui.ToolTipGroup;
 import spacegame.item.Item;
 import spacegame.item.ItemIDList;
+import spacegame.render.texturelists.BlockTextureList;
 import spacegame.render.texturelists.MouseAndKeyIconTextureList;
 import spacegame.world.World;
-import spacegame.world.blockstate.BerryBushState;
 import spacegame.world.blockstate.LogState;
 import spacegame.world.blockstate.MultiState;
 
@@ -28,7 +28,7 @@ public final class BlockGrass extends Block implements ITickable {
         super.onRightClick(x,y,z, world, player);
         short playerHeldItem = player.getHeldItem();
         if(playerHeldItem == Item.reedCraftingGridTop.ID && (KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT))){
-            world.setBlockWithNotify(x,y,z, Block.primitiveCraftingTable.ID, false);
+            world.setBlockAndNotify(x,y,z, Block.primitiveCraftingTable.ID, false);
             player.removeItemFromInventory();
         }
     }
@@ -38,15 +38,27 @@ public final class BlockGrass extends Block implements ITickable {
         if (CosmicEvolution.globalRand.nextInt(166) == 0) {
             if (world.getBlockLightValue(x, y + 1, z) <= 4 && this.canBlockDecayGrass(x, y + 1, z, world)) {
                 if(world.chunkFullySurrounded(x >> 5, y >> 5, z >> 5)) {
-                    world.setBlockWithNotify(x, y, z, getBlockIDForDecay(this.ID), false);
+                    world.setBlockAndNotify(x, y, z, getBlockIDForDecay(this.ID), false);
+                }
+            }
+
+            if(getGrassLevel(this.ID) != GRASS_FULL && BlockSoil.getSoilFertility(this.ID) != BlockTextureList.SOIL_BARREN_FERTILITY_TEXTURE) {
+                if (world.getBlockLightValue(x, y + 1, z) >= 9 && !this.canBlockDecayGrass(x, y + 1, z, world)) {
+                    if (world.chunkFullySurrounded(x >> 5, y >> 5, z >> 5)) {
+                        world.setBlockAndNotify(x, y, z, getBlockIDForIncrememnt(this.ID), false);
+                    }
                 }
             }
         }
+
+
+
+
         if(CosmicEvolution.globalRand.nextInt(100000) == 0){
             if(world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).tallGrassCount < 500) {
                 if ((world.getBlockLightValue(x, y + 1, z) >= 9 || world.getBlockSkyLightValue(x, y + 1, z) >= 9) && world.getBlockID(x, y + 1, z) == Block.air.ID) {
                     if (world.chunkFullySurrounded(x >> 5, (y + 1) >> 5, z >> 5)) {
-                        world.setBlockWithNotify(x, y + 1, z, Block.tallGrass.ID, false);
+                        world.setBlockAndNotify(x, y + 1, z, Block.tallGrass.ID, false);
                         world.findChunkFromChunkCoordinates(x >> 5, (y + 1) >> 5, z >> 5).tallGrassCount++;
                     }
                 }
@@ -101,7 +113,7 @@ public final class BlockGrass extends Block implements ITickable {
 
     @Override
     public ToolTipGroup[] getBlockToolTips(int x, int y, int z, World world, EntityPlayer player){
-        return player.getHeldItem() == Item.stoneHoeHead.ID ? this.tooltips[0] : null;
+        return player.getHeldItem() == Item.stoneHoe.ID ? this.tooltips[0] : null;
     }
 
 
@@ -155,7 +167,45 @@ public final class BlockGrass extends Block implements ITickable {
             }
         }
 
+    }
 
+
+    public static short getBlockIDForIncrememnt(short grassBlockID) {
+        switch (grassBlockID) {
+
+            default -> {
+                return grassBlockID;
+            }
+
+            case BlockIDList.GRASS_HIGH_FERTILITY_SMALL_PATCH -> {
+                return BlockIDList.GRASS_HIGH_FERTILITY_LARGE_PATCH;
+            }
+            case BlockIDList.GRASS_HIGH_FERTILITY_LARGE_PATCH -> {
+                return BlockIDList.GRASS_HIGH_FERTILITY_FULL;
+            }
+
+            case BlockIDList.GRASS_MEDIUM_FERTILITY_SMALL_PATCH -> {
+                return BlockIDList.GRASS_MEDIUM_FERTILITY_LARGE_PATCH;
+            }
+            case BlockIDList.GRASS_MEDIUM_FERTILITY_LARGE_PATCH -> {
+                return BlockIDList.GRASS_MEDIUM_FERTILITY_FULL;
+            }
+
+
+            case BlockIDList.GRASS_LOW_FERTILITY_SMALL_PATCH -> {
+                return BlockIDList.GRASS_LOW_FERTILITY_LARGE_PATCH;
+            }
+            case BlockIDList.GRASS_LOW_FERTILITY_LARGE_PATCH -> {
+                return BlockIDList.GRASS_LOW_FERTILITY_FULL;
+            }
+
+            case BlockIDList.GRASS_BARREN_FERTILITY_SMALL_PATCH -> {
+                return BlockIDList.GRASS_BARREN_FERTILITY_LARGE_PATCH;
+            }
+            case BlockIDList.GRASS_BARREN_FERTILITY_LARGE_PATCH -> {
+                return BlockIDList.GRASS_BARREN_FERTILITY_FULL;
+            }
+        }
 
     }
 }

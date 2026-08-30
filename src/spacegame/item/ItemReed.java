@@ -31,7 +31,7 @@ public final class ItemReed extends Item {
         if(playerHeldItem == Item.stoneFragments.ID){
             world.addEntity(new EntityBlock(x + 0.5, y + 0.5, z + 0.5, Block.reedLower.ID, (byte)1));
             world.clearChestLocation(x,y,z);
-            world.setBlockWithNotify(x,y,z, Block.air.ID, false);
+            world.setBlockAndNotify(x,y,z, Block.air.ID, false);
             MouseListener.rightClickReleased = false;
         }
     }

@@ -51,7 +51,7 @@ public final class BlockBrickPile extends BlockPile {
                 chest.inventory.itemStacks[0].metadata = Item.NULL_ITEM_METADATA;
                 chest.inventory.itemStacks[0].durability = Item.NULL_ITEM_DURABILITY;
                 world.removeBlockState(x,y,z, MultiState.CHEST_STATE);
-                world.setBlockWithNotify(x,y,z, Block.air.ID, false);
+                world.setBlockAndNotify(x,y,z, Block.air.ID, false);
             }
 
             world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).notifyBlock(x,y,z);
@@ -64,7 +64,7 @@ public final class BlockBrickPile extends BlockPile {
             ChestLocation chestLocation = (ChestLocation) world.getBlockState(x,y,z, MultiState.CHEST_STATE);
             if(chestLocation.inventory.itemStacks[0].item.ID == Item.firedRedClayAdobeBrick.ID && chestLocation.inventory.itemStacks[0].count == 8){
                 world.clearChestLocation(x,y,z);
-                world.setBlockWithNotify(x,y,z, Block.air.ID, false);
+                world.setBlockAndNotify(x,y,z, Block.air.ID, false);
                 world.addEntity(new EntityBlock(x + 0.5, y + 0.5, z + 0.5, Block.adobeBrick.ID, (byte)2));
                 player.removeItemFromInventory();
                 return;
