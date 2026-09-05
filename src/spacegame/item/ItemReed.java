@@ -8,7 +8,7 @@ import spacegame.core.eventlisteners.MouseListener;
 import spacegame.entity.EntityBlock;
 import spacegame.entity.EntityPlayer;
 import spacegame.gui.GuiCraftingReeds;
-import spacegame.world.World;
+import spacegame.world.worldtypes.World;
 
 public final class ItemReed extends Item {
     public ItemReed(short ID, String modelFilePath, String filepath) {

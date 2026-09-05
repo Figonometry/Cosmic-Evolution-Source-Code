@@ -7,7 +7,7 @@ import spacegame.util.MathUtil;
 
 public final class RecipeSelector {
     public short itemID;
-    public short blockID;
+    public short metadata;
     public float x;
     public float y;
     public float width;
@@ -31,9 +31,9 @@ public final class RecipeSelector {
         this.requiredItemMetadata = requiredItemMetadata;
     }
 
-    public RecipeSelector(short itemID, short blockTextureID, float x, float y, float width, float height, String displayName, short[] requiredItems, int[] requiredItemCount, short[] requiredItemMetadata){
+    public RecipeSelector(short itemID, short blockTextureID, float x, float y, float width, float height, String displayName, short[] requiredItems, int[] requiredItemCount, short[] requiredItemMetadata, boolean isBlock){
         this.itemID = itemID;
-        this.blockID = blockTextureID;
+        this.metadata = blockTextureID;
         this.x = x;
         this.y = y;
         this.width = width;
@@ -42,7 +42,7 @@ public final class RecipeSelector {
         this.requiredItems = requiredItems;
         this.requiredItemCount = requiredItemCount;
         this.requiredItemMetadata = requiredItemMetadata;
-        this.isBlock = true;
+        this.isBlock = isBlock;
     }
 
     public boolean isMouseHoveredOver(){

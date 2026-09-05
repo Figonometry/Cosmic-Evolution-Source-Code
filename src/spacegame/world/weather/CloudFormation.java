@@ -4,7 +4,7 @@ import spacegame.core.CosmicEvolution;
 import spacegame.core.Timer;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.render.RenderEngine;
-import spacegame.world.World;
+import spacegame.world.worldtypes.World;
 
 import java.util.Random;
 

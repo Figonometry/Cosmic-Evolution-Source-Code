@@ -4,7 +4,7 @@ import spacegame.block.Block;
 import spacegame.entity.EntityPlayer;
 import spacegame.item.crafting.InWorldCraftingRecipe;
 import spacegame.world.Chunk;
-import spacegame.world.World;
+import spacegame.world.worldtypes.World;
 import spacegame.world.blockstate.InWorld3DCraftingItem;
 import spacegame.world.blockstate.MultiState;
 

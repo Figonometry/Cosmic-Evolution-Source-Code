@@ -1,8 +1,13 @@
-package spacegame.world;
+package spacegame.world.worldtypes.earthlike;
 
 
 import spacegame.core.CosmicEvolution;
 import spacegame.util.LongHasher;
+import spacegame.world.GeologicProvince;
+import spacegame.world.NoiseMap2D;
+import spacegame.world.NoiseMap3D;
+import spacegame.world.worldtypes.ChunkTerrainHandler;
+import spacegame.world.worldtypes.World;
 
 import java.io.File;
 
@@ -90,14 +95,19 @@ public final class WorldEarth extends World {
     @Override
     public void loadGeologicProvinces(){
         LongHasher longHasher = new LongHasher();
-        this.chunkController.chunkEarthTerrainHandler.geologicProvinces[0] = new GeologicProvince(longHasher.hash(this.ce.save.seed, "EarthGeologicProvince1"), -256, this.chunkController.chunkEarthTerrainHandler.geologicRegistry);
-        this.chunkController.chunkEarthTerrainHandler.geologicProvinces[1] = new GeologicProvince(longHasher.hash(this.ce.save.seed, "EarthGeologicProvince2"), -192, this.chunkController.chunkEarthTerrainHandler.geologicRegistry);
-        this.chunkController.chunkEarthTerrainHandler.geologicProvinces[2] = new GeologicProvince(longHasher.hash(this.ce.save.seed, "EarthGeologicProvince3"), -128, this.chunkController.chunkEarthTerrainHandler.geologicRegistry);
-        this.chunkController.chunkEarthTerrainHandler.geologicProvinces[3] = new GeologicProvince(longHasher.hash(this.ce.save.seed, "EarthGeologicProvince4"), -64, this.chunkController.chunkEarthTerrainHandler.geologicRegistry);
-        this.chunkController.chunkEarthTerrainHandler.geologicProvinces[4] = new GeologicProvince(longHasher.hash(this.ce.save.seed, "EarthGeologicProvince5"), 0, this.chunkController.chunkEarthTerrainHandler.geologicRegistry);
-        this.chunkController.chunkEarthTerrainHandler.geologicProvinces[5] = new GeologicProvince(longHasher.hash(this.ce.save.seed, "EarthGeologicProvince6"), 64, this.chunkController.chunkEarthTerrainHandler.geologicRegistry);
-        this.chunkController.chunkEarthTerrainHandler.geologicProvinces[6] = new GeologicProvince(longHasher.hash(this.ce.save.seed, "EarthGeologicProvince7"), 192, this.chunkController.chunkEarthTerrainHandler.geologicRegistry);
-        this.chunkController.chunkEarthTerrainHandler.geologicProvinces[7] = new GeologicProvince(longHasher.hash(this.ce.save.seed, "EarthGeologicProvince8"), 256, this.chunkController.chunkEarthTerrainHandler.geologicRegistry);
+        this.chunkTerrainHandler.geologicProvinces[0] = new GeologicProvince(longHasher.hash(this.ce.save.seed, "EarthGeologicProvince1"), -256, this.chunkTerrainHandler.geologicRegistry);
+        this.chunkTerrainHandler.geologicProvinces[1] = new GeologicProvince(longHasher.hash(this.ce.save.seed, "EarthGeologicProvince2"), -192, this.chunkTerrainHandler.geologicRegistry);
+        this.chunkTerrainHandler.geologicProvinces[2] = new GeologicProvince(longHasher.hash(this.ce.save.seed, "EarthGeologicProvince3"), -128, this.chunkTerrainHandler.geologicRegistry);
+        this.chunkTerrainHandler.geologicProvinces[3] = new GeologicProvince(longHasher.hash(this.ce.save.seed, "EarthGeologicProvince4"), -64, this.chunkTerrainHandler.geologicRegistry);
+        this.chunkTerrainHandler.geologicProvinces[4] = new GeologicProvince(longHasher.hash(this.ce.save.seed, "EarthGeologicProvince5"), 0, this.chunkTerrainHandler.geologicRegistry);
+        this.chunkTerrainHandler.geologicProvinces[5] = new GeologicProvince(longHasher.hash(this.ce.save.seed, "EarthGeologicProvince6"), 64, this.chunkTerrainHandler.geologicRegistry);
+        this.chunkTerrainHandler.geologicProvinces[6] = new GeologicProvince(longHasher.hash(this.ce.save.seed, "EarthGeologicProvince7"), 192, this.chunkTerrainHandler.geologicRegistry);
+        this.chunkTerrainHandler.geologicProvinces[7] = new GeologicProvince(longHasher.hash(this.ce.save.seed, "EarthGeologicProvince8"), 256, this.chunkTerrainHandler.geologicRegistry);
+    }
+
+    @Override
+    public ChunkTerrainHandler getChunkTerrainHandler() {
+        return new ChunkWorldEarthTerrainHandler(this.chunkController, this);
     }
 
     @Override

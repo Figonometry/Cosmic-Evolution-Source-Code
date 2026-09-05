@@ -27,4 +27,9 @@ public abstract class ItemState {
 
         return null;
     }
+
+
+    public abstract String getClassName();
+
+    public abstract boolean doStatesMeetMergeCriteria(ItemState incomingState);
 }

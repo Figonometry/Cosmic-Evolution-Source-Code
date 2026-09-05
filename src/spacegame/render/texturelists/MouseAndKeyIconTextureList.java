@@ -1,7 +1,5 @@
 package spacegame.render.texturelists;
 
-//Standard American keyboard layout starting from the bottom left of the board
-//Trebuchet MS for the font, size 36 font
 public abstract class MouseAndKeyIconTextureList {
     public static final int FULL_BOUND_BOX = 0;
     public static final int BOUND_BOX_LEFT = 3;

@@ -1,10 +1,12 @@
-package spacegame.world;
+package spacegame.world.threads;
 
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.util.Logger;
+import spacegame.world.Chunk;
+import spacegame.world.ChunkController;
 import spacegame.world.blockstateio.*;
 
 import java.io.File;

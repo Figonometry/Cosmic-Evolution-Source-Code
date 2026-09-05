@@ -23,6 +23,16 @@ public final class SeedState extends ItemState {
             return returnTag;
     }
 
+    @Override
+    public String getClassName() {
+        return this.getClass().getSimpleName();
+    }
+
+    @Override
+    public boolean doStatesMeetMergeCriteria(ItemState incomingState) {
+        SeedState incomingSeedState = (SeedState) incomingState;
+        return this.canMutate == incomingSeedState.canMutate && this.targetCrop.equals(incomingSeedState.targetCrop);
+    }
 
 
 }

@@ -1,7 +1,8 @@
-package spacegame.world;
+package spacegame.world.threads;
 
 import spacegame.core.CosmicEvolution;
 import spacegame.render.ThreadRebuildChunk;
+import spacegame.world.ChunkJob;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;

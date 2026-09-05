@@ -140,7 +140,7 @@ public final class GuiInventoryPlayer extends GuiInventory {
             model.rotateModel(-26, 1, 0, 0);
             model.scaleModel(0.25f);
         } else if(thePlayer.getHeldItem() != Item.NULL_ITEM_REFERENCE && thePlayer.getHeldItem() != Item.block.ID){
-            model = Item.list[thePlayer.getHeldItem()].itemModel.copyModel(); //Texture is -1 for some reason
+            model = Item.list[thePlayer.getHeldItem()].getItemModel((thePlayer.getHeldMetadata())).copyModel(); //Texture is -1 for some reason
         }
 
 

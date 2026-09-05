@@ -11,7 +11,7 @@ import spacegame.render.*;
 import spacegame.util.MathUtil;
 import spacegame.world.Save;
 import spacegame.world.SaveSettings;
-import spacegame.world.ThreadDeleteWorld;
+import spacegame.world.threads.ThreadDeleteWorld;
 
 import java.awt.*;
 import java.io.File;
@@ -28,9 +28,10 @@ public class Button {
     public int y;
     public int image = -1;
     public String name;
-    private Gui Gui;
+    protected Gui Gui;
     private CosmicEvolution ce;
     public static int buttonTextureLoader = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/button.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
+    public static int sliderPosition = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/slider.png", RenderEngine.TEXTURE_TYPE_2D, 0, false);
     public static TextureAtlas buttonTextureAtlas = CosmicEvolution.instance.renderEngine.createTextureAtlas(256,256, 256, 64, 3, 0);
 
 
@@ -127,11 +128,19 @@ public class Button {
                 }
             }
             case FOV -> {
-                if(this.sideOfButtonBeingClicked() == 0){
-                    GameSettings.decreaseFOV();
-                } else if(this.sideOfButtonBeingClicked() == 1){
-                    GameSettings.increaseFOV();
+                this.clicked = true;
+                double x = MouseListener.instance.xPos - CosmicEvolution.width/2D;
+                float adjustedButtonX = MathUtil.adjustXPosBasedOnScreenWidth((float) x);
+                float localMax = this.width;
+                float localX = adjustedButtonX - this.x + (this.width/2f);
+                float fovValue = localX / localMax;
+                if(localX < 0){
+                    fovValue = 0;
                 }
+                if(localX > this.width){
+                    fovValue = 1;
+                }
+                GameSettings.setFOVFromSlider(fovValue);
                 CosmicEvolution.camera.adjustProjection(GameSettings.fov, 0.1D);
             }
             case VSYNC -> {
@@ -146,25 +155,49 @@ public class Button {
                 this.ce.toggleFullscreen();
             }
             case MOUSE_SENSITIVITY -> {
-                if(this.sideOfButtonBeingClicked() == 0){
-                    GameSettings.decreaseSensitivity();
-                } else if(this.sideOfButtonBeingClicked() == 1){
-                    GameSettings.increaseSensitivity();
+                this.clicked = true;
+                double x = MouseListener.instance.xPos - CosmicEvolution.width/2D;
+                float adjustedButtonX = MathUtil.adjustXPosBasedOnScreenWidth((float) x);
+                float localMax = this.width;
+                float localX = adjustedButtonX - this.x + (this.width/2f);
+                float sensitivityValue = localX / localMax;
+                if(localX < 0){
+                    sensitivityValue = 0;
                 }
+                if(localX > this.width){
+                    sensitivityValue = 1;
+                }
+                GameSettings.setSensitivityFromSlider(sensitivityValue);
             }
             case VOLUME_SOUNDS -> {
-                if(this.sideOfButtonBeingClicked() == 0){
-                    GameSettings.decreaseVolume();
-                } else if(this.sideOfButtonBeingClicked() == 1){
-                    GameSettings.increaseVolume();
+                this.clicked = true;
+                double x = MouseListener.instance.xPos - CosmicEvolution.width/2D;
+                float adjustedButtonX = MathUtil.adjustXPosBasedOnScreenWidth((float) x);
+                float localMax = this.width;
+                float localX = adjustedButtonX - this.x + (this.width/2f);
+                float volumeValue = localX / localMax;
+                if(localX < 0){
+                    volumeValue = 0;
                 }
+                if(localX > this.width){
+                    volumeValue = 1;
+                }
+                GameSettings.setVolumeFromSlider(volumeValue);
             }
             case VOLUME_MUSIC -> {
-                if(this.sideOfButtonBeingClicked() == 0){
-                    GameSettings.decreaseMusicVolume();
-                } else if(this.sideOfButtonBeingClicked() == 1){
-                    GameSettings.increaseMusicVolume();
+                this.clicked = true;
+                double x = MouseListener.instance.xPos - CosmicEvolution.width/2D;
+                float adjustedButtonX = MathUtil.adjustXPosBasedOnScreenWidth((float) x);
+                float localMax = this.width;
+                float localX = adjustedButtonX - this.x + (this.width/2f);
+                float musicValue = localX / localMax;
+                if(localX < 0){
+                    musicValue = 0;
                 }
+                if(localX > this.width){
+                    musicValue = 1;
+                }
+                GameSettings.setMusicFromSlider(musicValue);
             }
             case SHOW_FPS -> {
                 GameSettings.showFPS = !GameSettings.showFPS;
@@ -549,6 +582,9 @@ public class Button {
             case BLOCK_TOOLTIPS -> {
                 GameSettings.blockTooltips = !GameSettings.blockTooltips;
             }
+            case DYNAMIC_LIGHTS -> {
+                GameSettings.dynamicLights = !GameSettings.dynamicLights;
+            }
         }
         GameSettings.saveOptions();
     }
@@ -673,16 +709,16 @@ public class Button {
                 string = "Fullscreen: " + GameSettings.fullscreen;
             }
             case FOV -> {
-                string = "- FOV: " + (int)Math.floor(GameSettings.fov * 100F) + "% +";
+                string = "FOV: " + (int)Math.floor(GameSettings.fov * 100F) + "%";
             }
             case MOUSE_SENSITIVITY -> {
-                string = "- Mouse Sensitivity: " + (int)Math.floor(GameSettings.sensitivity * 100F) + "% +";
+                string = "Mouse Sensitivity: " + (int)Math.floor(GameSettings.sensitivity * 100F) + "%";
             }
             case VOLUME_SOUNDS -> {
-                string = "- Sound Volume: " + (int)Math.floor(GameSettings.volume * 100F) + "% +";
+                string = "Sound Volume: " + (int)Math.floor(GameSettings.volume * 100F) + "%";
             }
             case VOLUME_MUSIC -> {
-                string = "- Music Volume: " + (int)Math.floor(GameSettings.musicVolume * 100F) + "% +";
+                string = "Music Volume: " + (int)Math.floor(GameSettings.musicVolume * 100F) + "%";
             }
             case CHUNK_VIEW_HORIZONTAL -> {
                 string = "- Horizontal View: " + GameSettings.renderDistance + " +";
@@ -891,12 +927,52 @@ public class Button {
             case BLOCK_TOOLTIPS -> {
                 string = "Block Tooltips: " + GameSettings.blockTooltips;
             }
+            case DYNAMIC_LIGHTS -> {
+                string = "Dynamic Lights: " + GameSettings.dynamicLights;
+            }
 
             default -> string = "";
         }
 
         FontRenderer fontRenderer = FontRenderer.instance;
-        fontRenderer.drawCenteredString(string, this.x, this.y - (this.height/2.5f), -15,16777215, 50, 255);
+        fontRenderer.drawCenteredString(string, this.x, this.y - (this.height/2.5f), -15,this.clicked ? 16771455 : 16777215, 50, 255);
+    }
+
+    protected float getOptionValue(){
+       switch (EnumButtonEffects.valueOf(this.name)){
+            case FOV -> {
+                return GameSettings.fov;
+            }
+           case VOLUME_MUSIC -> {
+                return GameSettings.musicVolume;
+           }
+           case VOLUME_SOUNDS -> {
+                return GameSettings.volume;
+           }
+           case MOUSE_SENSITIVITY -> {
+                return GameSettings.sensitivity;
+           }
+        }
+        return 0.5f; //If there's no valid value center the slider bar in the middle
+    }
+
+
+    protected float getOptionMinValue(){
+        switch (EnumButtonEffects.valueOf(this.name)){
+            case FOV -> {
+                return 0.3f;
+            }
+        }
+        return 0f; //If there's no valid value center the slider bar in the middle
+    }
+
+    protected float getOptionMaxValue(){
+        switch (EnumButtonEffects.valueOf(this.name)){
+            case FOV -> {
+                return 1.3f;
+            }
+        }
+        return 1f; //If there's no valid value center the slider bar in the middle
     }
 
 }

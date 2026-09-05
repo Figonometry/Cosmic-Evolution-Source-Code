@@ -5,7 +5,9 @@ import org.lwjgl.opengl.GL46;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.Timer;
 import spacegame.render.RenderEngine;
+import spacegame.render.RenderWorldScene;
 import spacegame.render.Shader;
+import spacegame.world.weather.Cloud;
 
 public final class GuiSavingWorld extends Gui {
     private CosmicEvolution ce;
@@ -23,6 +25,16 @@ public final class GuiSavingWorld extends Gui {
         this.transparentBackground = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
         this.fillableColorWithShadedBottom = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColorWithShadedBottom.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
         this.star = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/star.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
+    }
+
+    @Override
+    public void handleInput(){
+        if(CosmicEvolution.threadJobs.get() == 0) {
+            this.ce.save = null;
+            this.ce.setNewGui(new GuiMainMenu(this.ce));
+            this.ce.renderEngine.deleteTexture(Cloud.texture);
+            this.ce.renderEngine.deleteTexture(RenderWorldScene.rainTexture);
+        }
     }
 
     @Override

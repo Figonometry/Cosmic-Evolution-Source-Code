@@ -293,5 +293,17 @@ public final class GuiSelectAssetPackInGame extends Gui {
     }
 
 
+    @Override
+    public void handleLeftClick(){
+        AssetPack assetPack = this.getHoveredAssetPack();
+        if(assetPack != null){
+            if(!assetPack.filepath.equals(GameSettings.assetPackPath)){
+                GameSettings.setAssetPackPath(assetPack.filepath);
+                CosmicEvolution.instance.reloadAllTextures();
+            }
+        }
+    }
+
+
 }
 

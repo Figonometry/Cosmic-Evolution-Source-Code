@@ -4,7 +4,7 @@ import spacegame.entity.EntityPlayer;
 import spacegame.item.Inventory;
 import spacegame.item.Item;
 import spacegame.world.Chunk;
-import spacegame.world.World;
+import spacegame.world.worldtypes.World;
 import spacegame.world.blockstate.ChestLocation;
 import spacegame.world.blockstate.MultiState;
 
@@ -19,9 +19,9 @@ public abstract class BlockContainer extends Block {
 
 
     @Override
-    public void addBlockStates(int x, int y, int z, World world, EntityPlayer player, Chunk chunk){
-        short heldBlock = player.getHeldBlock();
+    public void addBlockStates(int x, int y, int z, short heldBlock, World world, EntityPlayer player, Chunk chunk){
         short heldItem = player.getHeldItem();
+        //Class cast exception here when placing item blocks
         ChestLocation chestLocation = new ChestLocation(Chunk.getBlockIndexFromCoordinates(x,y,z), new Inventory(((BlockContainer)(Block.list[heldBlock])).inventoryWidth, ((BlockContainer)(Block.list[heldBlock])).inventoryHeight), chunk);
         if(heldBlock == logPile.ID){
             chestLocation.inventory.itemStacks[0].count = 2;

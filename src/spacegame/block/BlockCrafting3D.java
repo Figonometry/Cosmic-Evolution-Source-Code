@@ -6,7 +6,7 @@ import spacegame.gui.ToolTip;
 import spacegame.gui.ToolTipGroup;
 import spacegame.item.Item;
 import spacegame.render.texturelists.MouseAndKeyIconTextureList;
-import spacegame.world.World;
+import spacegame.world.worldtypes.World;
 import spacegame.world.blockstate.InWorld3DCraftingItem;
 import spacegame.world.blockstate.MultiState;
 
@@ -32,7 +32,7 @@ public final class BlockCrafting3D extends Block {
         if(craftingBlock == null)return this.displayName; //This shouldnt be null but I'm checking it anyways
 
 
-        return Item.list[craftingBlock.craftingRecipe.outputItemID].getDisplayName(craftingBlock.craftingRecipe.outputBlockID) + " (Crafting)";
+        return Item.list[craftingBlock.craftingRecipe.outputItemID].getDisplayName(craftingBlock.craftingRecipe.outputBlockID, craftingBlock.calculateOutPutMetadata()) + " (Crafting)";
     }
 
 
@@ -48,7 +48,7 @@ public final class BlockCrafting3D extends Block {
 
         ToolTip rightClick = new ToolTip();
         rightClick.addMouseIcon(MouseAndKeyIconTextureList.RIGHT_CLICK);
-        rightClick.addText("to add material, possible");
+        rightClick.addText("to add material, if possible");
 
         this.tooltips[0][0].addToolTip(leftClick);
         this.tooltips[0][0].addToolTip(rightClick);

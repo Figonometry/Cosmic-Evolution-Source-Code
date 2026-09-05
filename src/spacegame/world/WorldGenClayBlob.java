@@ -6,8 +6,8 @@ import spacegame.block.BlockSoil;
 import spacegame.core.CosmicEvolution;
 import spacegame.util.LongHasher;
 import spacegame.util.MathUtil;
+import spacegame.world.worldtypes.earthlike.WorldEarth;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Random;

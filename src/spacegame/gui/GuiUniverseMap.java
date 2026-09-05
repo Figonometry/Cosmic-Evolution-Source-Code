@@ -7,6 +7,7 @@ import spacegame.celestial.CelestialObject;
 import spacegame.celestial.Sun;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
+import spacegame.core.eventlisteners.KeyListener;
 import spacegame.core.eventlisteners.MouseListener;
 import spacegame.render.Camera;
 import spacegame.render.RenderEngine;
@@ -46,6 +47,23 @@ public final class GuiUniverseMap extends Gui {
     @Override
     public void deleteTextures() {
         CosmicEvolution.instance.renderEngine.deleteTexture(orbitLine);
+    }
+
+
+    @Override
+    public void handleInput(){
+        if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_CAPS_LOCK) && KeyListener.keyReleased[GLFW.GLFW_KEY_CAPS_LOCK]) {
+            this.switchObject();
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_CAPS_LOCK);
+        }
+
+        this.updateCamera();
+
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_TAB) && KeyListener.keyReleased[GLFW.GLFW_KEY_TAB]) {
+            this.ce.setNewGui(new GuiInGame(this.ce));
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_TAB);
+        }
+
     }
 
     @Override

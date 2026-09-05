@@ -3,8 +3,8 @@ package spacegame.block;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.Timer;
 import spacegame.world.Chunk;
-import spacegame.world.World;
-import spacegame.world.WorldEarth;
+import spacegame.world.worldtypes.World;
+import spacegame.world.worldtypes.earthlike.WorldEarth;
 import spacegame.world.WorldGenTree;
 
 public final class BlockSapling extends Block implements ITimeUpdate {

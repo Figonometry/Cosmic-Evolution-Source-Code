@@ -14,7 +14,7 @@ import spacegame.item.ItemIDList;
 import spacegame.render.model.ModelLoader;
 import spacegame.render.texturelists.MouseAndKeyIconTextureList;
 import spacegame.world.Chunk;
-import spacegame.world.World;
+import spacegame.world.worldtypes.World;
 import spacegame.world.blockstate.LogState;
 import spacegame.world.blockstate.MultiState;
 
@@ -250,7 +250,7 @@ public abstract class BlockLog extends Block {
 
 
     @Override
-    public void addBlockStates(int x, int y, int z, World world, EntityPlayer player, Chunk chunk){
+    public void addBlockStates(int x, int y, int z, short heldBlock, World world, EntityPlayer player, Chunk chunk){
         chunk.addBlockState(Chunk.getBlockIndexFromCoordinates(x,y,z), MultiState.LOG_STATE, new LogState(LogState.FACE_DIRECTION_TOP_AND_BOTTOM, 16, Chunk.getBlockIndexFromCoordinates(x,y,z)));
     }
 

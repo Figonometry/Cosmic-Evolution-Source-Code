@@ -13,7 +13,7 @@ import spacegame.render.RenderEngine;
 import spacegame.render.model.Model;
 import spacegame.render.model.ModelDeer;
 import spacegame.util.MathUtil;
-import spacegame.world.World;
+import spacegame.world.worldtypes.World;
 
 import java.util.Random;
 

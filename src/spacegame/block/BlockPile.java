@@ -7,7 +7,7 @@ import spacegame.gui.ToolTip;
 import spacegame.gui.ToolTipGroup;
 import spacegame.item.Item;
 import spacegame.render.texturelists.MouseAndKeyIconTextureList;
-import spacegame.world.World;
+import spacegame.world.worldtypes.World;
 import spacegame.world.blockstate.ChestLocation;
 import spacegame.world.blockstate.MultiState;
 

@@ -8,6 +8,7 @@ import spacegame.block.*;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
 import spacegame.core.Timer;
+import spacegame.core.eventlisteners.KeyListener;
 import spacegame.core.eventlisteners.MouseListener;
 import spacegame.entity.*;
 import spacegame.entity.animations.PlayerAnimationThrustingSpear;
@@ -26,7 +27,7 @@ import spacegame.render.texturelists.MouseAndKeyIconTextureList;
 import spacegame.util.MathUtil;
 import spacegame.world.AxisAlignedBB;
 import spacegame.world.Chunk;
-import spacegame.world.World;
+import spacegame.world.worldtypes.World;
 import spacegame.world.blockstate.*;
 
 import java.lang.Math;
@@ -80,6 +81,80 @@ public final class GuiInGame extends Gui {
 
     @Override
     public void deleteTextures() {
+
+    }
+
+    @Override
+    public void handleInput(){
+        if(CosmicEvolution.instance.save.saveSettings.testingMode){
+            if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_BACKSLASH) && KeyListener.keyReleased[GLFW.GLFW_KEY_BACKSLASH]){
+                CosmicEvolution.instance.setNewGui(CosmicEvolution.instance.currentGui instanceof GuiInGame ? new GuiCommandEntry(CosmicEvolution.instance) : new GuiInGame(CosmicEvolution.instance));
+                CosmicEvolution.instance.save.activeWorld.toggleWorldPause();
+                KeyListener.setKeyReleased(GLFW.GLFW_KEY_BACKSLASH);
+            }
+        }
+
+
+        if (MouseListener.getScrollY() == -1) {
+            EntityPlayer.selectedInventorySlot++;
+            if (EntityPlayer.selectedInventorySlot > 8) {
+                EntityPlayer.selectedInventorySlot = 0;
+            }
+        } else if (MouseListener.getScrollY() == 1) {
+            EntityPlayer.selectedInventorySlot--;
+            if (EntityPlayer.selectedInventorySlot < 0) {
+                EntityPlayer.selectedInventorySlot = 8;
+            }
+        }
+
+
+        if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_1)) {
+            EntityPlayer.selectedInventorySlot = 0;
+        }
+
+        if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_2)) {
+            EntityPlayer.selectedInventorySlot = 1;
+        }
+
+        if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_3)) {
+            EntityPlayer.selectedInventorySlot = 2;
+        }
+
+        if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_4)) {
+            EntityPlayer.selectedInventorySlot = 3;
+        }
+
+        if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_5)) {
+            EntityPlayer.selectedInventorySlot = 4;
+        }
+
+        if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_6)) {
+            EntityPlayer.selectedInventorySlot = 5;
+        }
+
+        if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_7)) {
+            EntityPlayer.selectedInventorySlot = 6;
+        }
+
+        if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_8)) {
+            EntityPlayer.selectedInventorySlot = 7;
+        }
+
+        if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_9)) {
+            EntityPlayer.selectedInventorySlot = 8;
+        }
+
+
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_TAB) && KeyListener.keyReleased[GLFW.GLFW_KEY_TAB]) {
+            this.ce.setNewGui(new GuiUniverseMap(this.ce));
+            CosmicEvolution.setGLClearColor(0, 0, 0, 0);
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_TAB);
+        }
+
+        if(KeyListener.isKeyPressed(GameSettings.inventoryKey.keyCode) && KeyListener.keyReleased[GameSettings.inventoryKey.keyCode]) {
+            this.ce.setNewGui(new GuiInventoryPlayer(this.ce, this.ce.save.thePlayer.inventory));
+            KeyListener.setKeyReleased(GameSettings.inventoryKey.keyCode);
+        }
 
     }
 
@@ -358,17 +433,17 @@ public final class GuiInGame extends Gui {
         tessellator.drawTexture2D(transparentBackground, Shader.screen2DTexture, CosmicEvolution.camera);
         tessellator.toggleOrtho();
         y = 200;
-        fontRenderer.drawCenteredString(Item.list[craftingItem.outputRecipe.itemID].getDisplayName(craftingItem.outputRecipe.blockID), x, y, -14, 16777215, 50, 255);
+        fontRenderer.drawCenteredString(Item.list[craftingItem.outputRecipe.itemID].getDisplayName(craftingItem.outputRecipe.metadata, craftingItem.outputRecipe.metadata), x, y, -14, 16777215, 50, 255);
         y -= 120;
         for(int i = 0; i < craftingItem.itemsFilled.length; i++){
             fontRenderer.drawCenteredString((craftingItem.itemsFilled[i] ? "COMPLETED: " : "MISSING: ")  +
-                    Item.list[craftingItem.outputRecipe.requiredItems[i]].getDisplayName(craftingItem.outputRecipe.requiredItems[i] != Item.block.ID ? craftingItem.outputRecipe.requiredItems[i] : craftingItem.outputRecipe.requiredItemMetadata[i]), x, y,
+                    Item.list[craftingItem.outputRecipe.requiredItems[i]].getDisplayName(craftingItem.outputRecipe.requiredItems[i], craftingItem.outputRecipe.requiredItemMetadata[i]), x, y,
                     -14, craftingItem.itemsFilled[i] ? 255 << 8 : 255 << 16, 50, 255);
 
             if(!craftingItem.itemsFilled[i] && craftingItem.outputRecipe.requiredItems[i] != Item.block.ID) {
                 y -= 30;
 
-                ModelLoader model = Item.list[craftingItem.outputRecipe.requiredItems[i]].itemModel.copyModel();
+                ModelLoader model = Item.list[craftingItem.outputRecipe.requiredItems[i]].getItemModel(craftingItem.outputRecipe.requiredItemMetadata[i]).copyModel();
                 model.scaleModel(76f);
                 model.rotateModel(45, 0, 1, 0);
                 model.rotateModel(36, 1, 0, 0);
@@ -491,7 +566,7 @@ public final class GuiInGame extends Gui {
 
         if(craftingItem.outputRecipe.requiresBinding && !craftingItem.hasBeenBound && craftingItem.areAllItemsFilled()) {
             y -= 30;
-            fontRenderer.drawCenteredString("MISSING: " + Item.reedTwine.getDisplayName(Item.NULL_ITEM_REFERENCE), x, y, -14, 255 << 16, 50, 255);
+            fontRenderer.drawCenteredString("MISSING: " + Item.reedTwine.getDisplayName(Item.NULL_ITEM_REFERENCE, Item.NULL_ITEM_METADATA), x, y, -14, 255 << 16, 50, 255);
             tessellator.toggleOrtho();
             tessellator.addVertexTextureArrayWithCorner(16777215, x - 30, y - 30, -850, 3, Item.reedTwine.getTextureID(Item.reedTwine.ID, Item.NULL_ITEM_METADATA, RenderBlocks.WEST_FACE));
             tessellator.addVertexTextureArrayWithCorner(16777215, x + 30, y + 30, -850, 1, Item.reedTwine.getTextureID(Item.reedTwine.ID, Item.NULL_ITEM_METADATA, RenderBlocks.WEST_FACE));
@@ -728,6 +803,7 @@ public final class GuiInGame extends Gui {
     public static void renderHeldItem() {
         EntityPlayer player = CosmicEvolution.instance.save.thePlayer;
         final short heldBlock = player.getHeldBlock();
+        final short heldMetadata = player.getHeldMetadata();
         if(player.isHoldingBlock()) {
             if (heldBlock != Block.air.ID) {
                 float x = 3f;
@@ -1040,7 +1116,7 @@ public final class GuiInGame extends Gui {
                 int colorRGB = channelVal << 16 | channelVal << 8 | channelVal;
 
 
-                ModelLoader model = Item.list[itemID].itemModel.copyModel();
+                ModelLoader model = Item.list[itemID].getItemModel(heldMetadata).copyModel();
                 model.scaleModel(2);
 
                 Vector3f vertex1;
@@ -1565,7 +1641,7 @@ public final class GuiInGame extends Gui {
             if(craftingItem.outputRecipe.requiredItems[i] == Item.block.ID){
                 model = Block.list[craftingItem.outputRecipe.requiredItemMetadata[i]].getBlockModel(0,0,0, CosmicEvolution.instance.save.activeWorld).copyModel();
             } else {
-                model = Item.list[craftingItem.outputRecipe.requiredItems[i]].itemModel.copyModel();
+                model = Item.list[craftingItem.outputRecipe.requiredItems[i]].getItemModel(craftingItem.outputRecipe.requiredItemMetadata[i]).copyModel();
             }
 
             ModelFace face;
@@ -2255,7 +2331,7 @@ public final class GuiInGame extends Gui {
 
     private static void renderItemModelForTooltip(RenderEngine.Tessellator tessellator, float x, float y, float z, int itemID, int imageID){
         Item item = Item.list[itemID];
-        ModelLoader model = item.itemModel.copyModel();
+        ModelLoader model = item.getItemModel(Item.NULL_ITEM_METADATA).copyModel();
         model.scaleModel(78f);
         model.rotateModel(45, 0, 1, 0);
         model.rotateModel(36, 1, 0, 0);

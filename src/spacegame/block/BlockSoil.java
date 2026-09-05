@@ -10,7 +10,7 @@ import spacegame.item.Item;
 import spacegame.item.ItemIDList;
 import spacegame.render.texturelists.BlockTextureList;
 import spacegame.render.texturelists.MouseAndKeyIconTextureList;
-import spacegame.world.World;
+import spacegame.world.worldtypes.World;
 import spacegame.world.blockstate.LogState;
 import spacegame.world.blockstate.MultiState;
 

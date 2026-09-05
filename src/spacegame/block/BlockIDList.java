@@ -128,7 +128,7 @@ public abstract class BlockIDList {
     public static final short PHYLLITE_ITEM_STONE = 124;
     public static final short SERPENTINITE_ITEM_STONE = 125;
     public static final short TORCH_BURNED_OUT = 126;
-    public static final short TORCH_NORTH_BURNED = 127;
+    public static final short FLINT_ITEM_STONE = 127;
     public static final short TORCH_SOUTH_BURNED = 128;
     public static final short TORCH_EAST_BURNED = 129;
     public static final short TORCH_WEST_BURNED = 130;

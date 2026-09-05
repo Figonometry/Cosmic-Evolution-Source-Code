@@ -85,13 +85,12 @@ public final class InWorldCraftingItem extends BlockState {
         int y = this.chunk.getBlockYFromIndex(this.indexInChunk);
         int z = this.chunk.getBlockZFromIndex(this.indexInChunk);
 
-        if(!CosmicEvolution.instance.save.thePlayer.addItemToInventory(this.outputRecipe.itemID,
-                this.outputRecipe.isBlock ? this.outputRecipe.blockID : Item.NULL_ITEM_METADATA,
-                this.outputRecipe.outputItemCount, this.outputRecipe.isBlock ? Item.NULL_ITEM_DURABILITY :  Item.list[this.outputRecipe.itemID].durability, 0, null)){
+        if(!CosmicEvolution.instance.save.thePlayer.addItemToInventory(this.outputRecipe.itemID, this.outputRecipe.metadata, this.outputRecipe.outputItemCount,
+                this.outputRecipe.isBlock ? Item.NULL_ITEM_DURABILITY :  Item.list[this.outputRecipe.itemID].getDurability(this.outputRecipe.metadata), 0, null)){
             if(this.outputRecipe.isBlock){
-                CosmicEvolution.instance.save.activeWorld.addEntity(new EntityBlock(x + 0.5, y + 0.125, z + 0.5, this.outputRecipe.blockID, this.outputRecipe.outputItemCount));
+                CosmicEvolution.instance.save.activeWorld.addEntity(new EntityBlock(x + 0.5, y + 0.125, z + 0.5, this.outputRecipe.metadata, this.outputRecipe.outputItemCount));
             } else {
-                CosmicEvolution.instance.save.activeWorld.addEntity(new EntityItem(x + 0.5, y + 0.125, z + 0.5, this.outputRecipe.itemID, Item.NULL_ITEM_METADATA, this.outputRecipe.outputItemCount, Item.list[this.outputRecipe.itemID].durability, 0, null));
+                CosmicEvolution.instance.save.activeWorld.addEntity(new EntityItem(x + 0.5, y + 0.125, z + 0.5, this.outputRecipe.itemID, this.outputRecipe.metadata, this.outputRecipe.outputItemCount, Item.list[this.outputRecipe.itemID].getDurability(this.outputRecipe.metadata), 0, null));
             }
         }
 

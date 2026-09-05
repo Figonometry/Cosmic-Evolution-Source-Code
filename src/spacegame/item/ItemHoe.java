@@ -9,8 +9,9 @@ import spacegame.core.eventlisteners.MouseListener;
 import spacegame.core.Sound;
 import spacegame.entity.EntityPlayer;
 import spacegame.entity.animations.PlayerAnimationTillingSoil;
+import spacegame.render.model.ModelLoader;
 import spacegame.world.Chunk;
-import spacegame.world.World;
+import spacegame.world.worldtypes.World;
 import spacegame.world.blockstate.MultiState;
 import spacegame.world.blockstate.TilledSoilState;
 
@@ -47,5 +48,37 @@ public final class ItemHoe extends ItemTool {
         world.addBlockState(x,y,z, MultiState.TILLED_SOIL_STATE, new TilledSoilState(Chunk.getBlockIndexFromCoordinates(x,y,z), 0.5f, nutrientPercent, nutrientPercent, nutrientPercent, TilledSoilState.NO_FERTILIZER));
         CosmicEvolution.instance.soundPlayer.playSound(player.x, player.y, player.z, new Sound(Sound.dirt, false, 1f), 1f);
         player.reduceHeldItemDurability();
+    }
+
+    @Override
+    public ModelLoader getItemModel(short itemMetadata){
+        return this.getModelLoaderFromItemMetadata(itemMetadata);
+    }
+    @Override
+    public ModelLoader getModelLoaderFromItemMetadata(short itemMetadata) {
+        if(this.ID == Item.stoneHoe.ID) {
+            switch (itemMetadata) {
+                case StoneToolMetadata.ANDESITE -> {
+                    return ItemModelList.andesiteStoneHoe;
+                }
+                case StoneToolMetadata.GRANITE -> {
+                    return ItemModelList.graniteStoneHoe;
+                }
+                case StoneToolMetadata.BASALT -> {
+                    return ItemModelList.basaltStoneHoe;
+                }
+                case StoneToolMetadata.CHERT -> {
+                    return ItemModelList.chertStoneHoe;
+                }
+                case StoneToolMetadata.OBSIDIAN -> {
+                    return ItemModelList.obsidianStoneHoe;
+                }
+                case StoneToolMetadata.FLINT -> {
+                    return ItemModelList.flintStoneHoe;
+                }
+            }
+        }
+
+        return this.itemModel;
     }
 }

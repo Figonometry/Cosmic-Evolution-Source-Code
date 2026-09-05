@@ -1,15 +1,17 @@
 package spacegame.block;
 
 import spacegame.core.CosmicEvolution;
+import spacegame.entity.EntityBlock;
 import spacegame.entity.EntityItem;
 import spacegame.entity.EntityPlayer;
 import spacegame.gui.ToolTip;
 import spacegame.gui.ToolTipGroup;
 import spacegame.item.Item;
 import spacegame.item.ItemIDList;
+import spacegame.item.ItemKnife;
 import spacegame.item.itemstate.SeedState;
 import spacegame.render.texturelists.MouseAndKeyIconTextureList;
-import spacegame.world.World;
+import spacegame.world.worldtypes.World;
 
 public final class BlockTallGrass extends Block {
     public BlockTallGrass(short ID, int textureID, String filepath) {
@@ -54,5 +56,15 @@ public final class BlockTallGrass extends Block {
     @Override
     public ToolTipGroup[] getBlockToolTips(int x, int y, int z, World world, EntityPlayer player){
         return this.tooltips[0];
+    }
+
+    @Override
+    protected void handleSpecialLeftClickFunctions(int x, int y, int z, World world, EntityPlayer player){
+        short playerHeldItem = player.getHeldItem();
+        if(playerHeldItem != Item.NULL_ITEM_REFERENCE) {
+            if (Item.list[playerHeldItem] instanceof ItemKnife && playerHeldItem != Item.stoneHandKnifeBlade.ID) {
+                world.addEntity(new EntityItem(x + 0.5, y + 0.5, z + 0.5, Item.straw.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY, 0, null));
+            }
+        }
     }
 }

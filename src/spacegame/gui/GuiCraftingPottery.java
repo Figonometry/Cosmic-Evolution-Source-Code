@@ -51,8 +51,8 @@ public final class GuiCraftingPottery extends GuiCrafting {
 
         for(int i = 0; i < this.selectableRecipes.length; i++){
             switch (i) {
-                case 0 -> this.selectableRecipes[i] = new RecipeSelector(Item.rawClayAdobeBrick.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.rawClayAdobeBrick.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.straw.ID, Item.block.ID}, new int[]{1,1}, new short[]{Item.NULL_ITEM_METADATA, Block.itemClay.ID});
-                case 1 -> this.selectableRecipes[i] = new RecipeSelector(Item.block.ID, Block.rawRedClayCookingPot.ID,selectableX, selectableY, selectableWidth, selectableHeight, Item.block.getDisplayName(Block.rawRedClayCookingPot.ID), new short[]{Item.block.ID}, new int[]{16}, new short[]{Block.itemClay.ID});
+                case 0 -> this.selectableRecipes[i] = new RecipeSelector(Item.rawClayAdobeBrick.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.rawClayAdobeBrick.getDisplayName(Item.NULL_ITEM_REFERENCE, Item.NULL_ITEM_METADATA), new short[]{Item.straw.ID, Item.block.ID}, new int[]{1,1}, new short[]{Item.NULL_ITEM_METADATA, Block.itemClay.ID});
+                case 1 -> this.selectableRecipes[i] = new RecipeSelector(Item.block.ID, Block.rawRedClayCookingPot.ID,selectableX, selectableY, selectableWidth, selectableHeight, Item.block.getDisplayName(Block.rawRedClayCookingPot.ID, Item.NULL_ITEM_METADATA), new short[]{Item.block.ID}, new int[]{16}, new short[]{Block.itemClay.ID}, true);
             }
             selectableX += 64;
         }
@@ -164,7 +164,7 @@ public final class GuiCraftingPottery extends GuiCrafting {
         selectableZ = -880;
         for (int i = 0; i < this.selectableRecipes.length; i++) {
             if (this.selectableRecipes[i].isBlock) continue;
-            ModelLoader model = Item.list[this.selectableRecipes[i].itemID].itemModel.copyModel();
+            ModelLoader model = Item.list[this.selectableRecipes[i].itemID].getItemModel(Item.NULL_ITEM_METADATA).copyModel();
             model.scaleModel(38f);
             model.rotateModel(45, 0, 1, 0);
             model.rotateModel(36, 1, 0, 0);
@@ -222,7 +222,7 @@ public final class GuiCraftingPottery extends GuiCrafting {
 
         for (int i = 0; i < this.selectableRecipes.length; i++) {
             if (!this.selectableRecipes[i].isBlock) continue;
-            ModelLoader model = Block.list[this.selectableRecipes[i].blockID].blockModel.copyModel();
+            ModelLoader model = Block.list[this.selectableRecipes[i].metadata].blockModel.copyModel();
             model.translateModel(-0.5f, 0, -0.5f);
             ModelFace[] faces;
             float textureID;
@@ -239,7 +239,7 @@ public final class GuiCraftingPottery extends GuiCrafting {
                 faces = model.getModelFaceOfType(face);
                 for (int j = 0; j < faces.length; j++) {
                     if (faces[j] == null) continue;
-                    textureID = Block.list[this.selectableRecipes[i].blockID].getBlockTexture(this.selectableRecipes[i].blockID, 0, 0, 0, face);
+                    textureID = Block.list[this.selectableRecipes[i].metadata].getBlockTexture(this.selectableRecipes[i].metadata, 0, 0, 0, face);
 
                     vertex1 = new Vector3f(faces[j].vertices[0].x, faces[j].vertices[0].y, faces[j].vertices[0].z).mul(38).rotateY((float) (0.25 * Math.PI)).rotateX((float) (0.20 * Math.PI)).add(position);
                     vertex2 = new Vector3f(faces[j].vertices[1].x, faces[j].vertices[1].y, faces[j].vertices[1].z).mul(38).rotateY((float) (0.25 * Math.PI)).rotateX((float) (0.20 * Math.PI)).add(position);
@@ -312,7 +312,7 @@ public final class GuiCraftingPottery extends GuiCrafting {
                 fontRenderer.drawString(hoveredRecipe.requiredItemCount[i] + "x: ", x, y, -9, 16777215, 50, 255);
                 x += 64 + (hoveredRecipe.requiredItemCount[i] >= 100 ? 2 * 17 : hoveredRecipe.requiredItemCount[i] >= 10 ? 17 : 0);
                 y -= 8;
-                ModelLoader model = Item.list[hoveredRecipe.requiredItems[i]].itemModel.copyModel();
+                ModelLoader model = Item.list[hoveredRecipe.requiredItems[i]].getItemModel(Item.NULL_ITEM_METADATA).copyModel();
                 model.scaleModel(76f);
                 model.rotateModel(45, 0, 1, 0);
                 model.rotateModel(36, 1, 0, 0);
@@ -449,7 +449,7 @@ public final class GuiCraftingPottery extends GuiCrafting {
                 InWorld3DCraftingItem craftingBlock = new InWorld3DCraftingItem(Chunk.getBlockIndexFromCoordinates(x, y, z), Block.clay.ID, this.getInWorldCraftingRecipeName(recipeSelector.itemID), CosmicEvolution.instance.save.activeWorld.findChunkFromChunkCoordinates(this.x >> 5, this.y >> 5, this.z >> 5));
                 if (recipeSelector.itemID != Item.block.ID) {
                     craftingBlock.activateCraftingLayer(0);
-                } else if (recipeSelector.blockID == Block.rawRedClayCookingPot.ID) {
+                } else if (recipeSelector.metadata == Block.rawRedClayCookingPot.ID) {
                     craftingBlock.activateCraftingLayer(0);
                     craftingBlock.activeCraftingLayer++;
                 }
@@ -464,7 +464,7 @@ public final class GuiCraftingPottery extends GuiCrafting {
     private InWorldCraftingRecipe getInWorldCraftingRecipeName(short itemID){
         switch (itemID){
             case 0 -> {
-                switch (this.getSelectedRecipeSelector().blockID){
+                switch (this.getSelectedRecipeSelector().metadata){
                     case 73 -> {
                         return InWorldCraftingRecipe.rawCookingPot;
                     }

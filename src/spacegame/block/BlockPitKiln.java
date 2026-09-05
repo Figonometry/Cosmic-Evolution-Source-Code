@@ -13,7 +13,7 @@ import spacegame.item.Item;
 import spacegame.item.ItemIDList;
 import spacegame.render.texturelists.MouseAndKeyIconTextureList;
 import spacegame.world.Chunk;
-import spacegame.world.World;
+import spacegame.world.worldtypes.World;
 import spacegame.world.blockstate.ChestLocation;
 import spacegame.world.blockstate.MultiState;
 import spacegame.world.blockstate.PitKilnState;

@@ -27,6 +27,7 @@ public final class CommandParser {
         this.commands.add("/summonEntity");
         this.commands.add("/clear");
         this.commands.add("/killEntities");
+        this.commands.add("/setBlock");
     }
 
     public void parseCommand(String inputString){
@@ -85,9 +86,37 @@ public final class CommandParser {
             case "/killEntities" -> {
                 this.parseKillEntities(contents);
             }
+            case "/setBlock" -> {
+                this.parseSetBlock(contents);
+            }
         }
 
 
+    }
+
+
+    private void parseSetBlock(String[] commandArgs){ //Should contain 3 ints for the block position and a short for the ID
+        if(commandArgs.length != 5){
+            GuiInGame.setMessageText("Invalid number of arguments", 16777215);
+        }
+
+        int x;
+        int y;
+        int z;
+        short blockID;
+
+        try {
+            x = Integer.parseInt(commandArgs[1]);
+            y = Integer.parseInt(commandArgs[2]);
+            z = Integer.parseInt(commandArgs[3]);
+            blockID = Short.parseShort(commandArgs[4]);
+        } catch (NumberFormatException e){
+            GuiInGame.setMessageText("Coordinates set to invalid values", 16777215);
+            return;
+        }
+
+        CosmicEvolution.instance.save.activeWorld.setBlockAndNotify(x,y,z,blockID, false);
+        GuiInGame.setMessageText("Attempted to set block at " + x + " " + y + " " + z + " to " + Block.list[blockID].getDisplayName(x,y,z), 16777215);
     }
 
 
@@ -226,7 +255,7 @@ public final class CommandParser {
             CosmicEvolution.instance.save.activeWorld.addEntity(new EntityBlock(CosmicEvolution.instance.save.thePlayer.x, CosmicEvolution.instance.save.thePlayer.y, CosmicEvolution.instance.save.thePlayer.z, blockID, quantity));
         }
 
-        GuiInGame.setMessageText("Gave the player "  + quantity + " " + Item.list[Item.block.ID].getDisplayName(blockID), 16777215);
+        GuiInGame.setMessageText("Gave the player "  + quantity + " " + Item.list[Item.block.ID].getDisplayName(blockID, Item.NULL_ITEM_METADATA), 16777215);
 
     }
 
@@ -273,11 +302,11 @@ public final class CommandParser {
         }
 
 
-        if(!CosmicEvolution.instance.save.thePlayer.addItemToInventory(itemID, Item.NULL_ITEM_METADATA, quantity, Item.list[itemID].durability, 0, null)){
+        if(!CosmicEvolution.instance.save.thePlayer.addItemToInventory(itemID, Item.NULL_ITEM_METADATA, quantity, Item.list[itemID].getDurability(Item.NULL_ITEM_METADATA), 0, null)){
             CosmicEvolution.instance.save.activeWorld.addEntity(new EntityItem(CosmicEvolution.instance.save.thePlayer.x, CosmicEvolution.instance.save.thePlayer.y, CosmicEvolution.instance.save.thePlayer.z, itemID, Item.NULL_ITEM_METADATA, quantity, Item.list[itemID].durability, 0, null));
         }
 
-        GuiInGame.setMessageText("Gave the player " + quantity + " " + Item.list[itemID].getDisplayName(Item.NULL_ITEM_REFERENCE), 16777215);
+        GuiInGame.setMessageText("Gave the player " + quantity + " " + Item.list[itemID].getDisplayName(Item.NULL_ITEM_REFERENCE, Item.NULL_ITEM_METADATA), 16777215);
     }
 
     private void parseTime(String[] commandArgs){

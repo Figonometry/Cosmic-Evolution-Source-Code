@@ -93,44 +93,29 @@ public final class Inventory {
         this.itemStacks[slot].itemState = itemState;
     }
 
+
+    private boolean doesSlotHaveCompatibleItemState(ItemState currentSlotState, ItemState incomingItemState){
+        if(currentSlotState == null)return true; //If there is no itemstate in the current slot then yes the incoming item can merge
+        return currentSlotState.getClassName().equals(incomingItemState.getClassName()) && currentSlotState.doStatesMeetMergeCriteria(incomingItemState);
+    }
+
     public boolean addItemToInventory(short itemID, short metadata, byte count, short durability, long decayTime, ItemState itemState){
         ItemStack stack;
         for(int i = 0; i < this.itemStacks.length; i++) {
             stack = this.itemStacks[i];
             if (stack.item != null) {
 
-                //Abstract this system for expansion
-                SeedState seedStateInSlot = null;
-                if(this.itemStacks[i].itemState instanceof SeedState){
-                    seedStateInSlot = (SeedState)this.itemStacks[i].itemState;
-                }
 
+                if(!this.doesSlotHaveCompatibleItemState(stack.itemState, itemState))continue;
 
-                if(itemState instanceof SeedState incomingSeedState && seedStateInSlot != null){
-                    if(incomingSeedState.canMutate == seedStateInSlot.canMutate && incomingSeedState.targetCrop.equals(seedStateInSlot.targetCrop)) {
-
-                        if (stack.item.ID == itemID && stack.metadata == metadata && stack.durability == durability) {
-                            if (stack.count + count <= Item.list[itemID].stackLimit) {
-                                stack.count += count;
-                                return true;
-                            } else {
-                                while (stack.count != Item.list[itemID].stackLimit) {
-                                    stack.count++;
-                                    count--;
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    if (stack.item.ID == itemID && stack.metadata == metadata && stack.durability == durability) {
-                        if (stack.count + count <= Item.list[itemID].stackLimit) {
-                            stack.count += count;
-                            return true;
-                        } else {
-                            while (stack.count != Item.list[itemID].stackLimit) {
-                                stack.count++;
-                                count--;
-                            }
+                if (stack.item.ID == itemID && stack.metadata == metadata && stack.durability == durability) {
+                    if (stack.count + count <= Item.list[itemID].stackLimit) {
+                        stack.count += count;
+                        return true;
+                    } else {
+                        while (stack.count != Item.list[itemID].stackLimit) {
+                            stack.count++;
+                            count--;
                         }
                     }
                 }

@@ -6,6 +6,7 @@ import spacegame.core.CosmicEvolution;
 import spacegame.util.LongHasher;
 import spacegame.world.blockstate.LogState;
 import spacegame.world.blockstate.MultiState;
+import spacegame.world.worldtypes.earthlike.WorldEarth;
 
 import java.util.HashMap;
 import java.util.HashSet;

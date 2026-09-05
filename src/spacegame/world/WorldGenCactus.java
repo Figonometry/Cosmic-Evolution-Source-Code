@@ -4,6 +4,7 @@ import spacegame.block.Block;
 import spacegame.block.BlockSand;
 import spacegame.core.CosmicEvolution;
 import spacegame.util.LongHasher;
+import spacegame.world.worldtypes.earthlike.WorldEarth;
 
 import java.util.HashMap;
 import java.util.HashSet;

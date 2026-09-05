@@ -6,7 +6,7 @@ import spacegame.core.Timer;
 import spacegame.entity.EntityPlayer;
 import spacegame.item.Item;
 import spacegame.render.texturelists.BlockTextureList;
-import spacegame.world.World;
+import spacegame.world.worldtypes.World;
 import spacegame.world.blockstate.Crop;
 import spacegame.world.blockstate.CropState;
 import spacegame.world.blockstate.MultiState;

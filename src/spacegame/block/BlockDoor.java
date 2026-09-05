@@ -7,7 +7,7 @@ import spacegame.entity.EntityItem;
 import spacegame.entity.EntityPlayer;
 import spacegame.item.Item;
 import spacegame.world.AxisAlignedBB;
-import spacegame.world.World;
+import spacegame.world.worldtypes.World;
 import spacegame.world.blockstate.DoorState;
 import spacegame.world.blockstate.DoorTransition;
 import spacegame.world.blockstate.MultiState;
@@ -26,7 +26,7 @@ public final class BlockDoor extends Block {
         if(this.ID == Block.doorPrimitiveLower.ID){
             short block = world.getBlockID(x, y + 1, z);
 
-            world.addEntity(new EntityItem(x + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), y + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), z + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), list[block].droppedItemID, Item.NULL_ITEM_METADATA, (byte) 1, Item.list[list[block].droppedItemID].durability, 0, null));
+            world.addEntity(new EntityItem(x + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), y + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), z + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), list[block].droppedItemID, Item.NULL_ITEM_METADATA, (byte) 1, Item.list[list[block].droppedItemID].getDurability(Item.NULL_ITEM_METADATA), 0, null));
 
             world.setBlockAndNotify(x,y,z, Block.air.ID, true);
             world.setBlockAndNotify(x, y + 1, z, Block.air.ID, true);

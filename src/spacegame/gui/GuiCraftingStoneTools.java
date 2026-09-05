@@ -4,8 +4,10 @@ import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
+import spacegame.block.BlockIDList;
 import spacegame.core.CosmicEvolution;
 import spacegame.item.Item;
+import spacegame.item.StoneToolMetadata;
 import spacegame.item.crafting.InWorldCraftingRecipe;
 import spacegame.render.Assets;
 import spacegame.render.RenderBlocks;
@@ -52,12 +54,12 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
 
         for(int i = 0; i < this.selectableRecipes.length; i++){
             switch (i) {
-                case 5 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneSpearHead.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneSpearHead.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.block.ID}, new int[]{1}, new short[]{Block.andesiteItemStone.ID});
-                case 4 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneHoeHead.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneHoe.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.block.ID}, new int[]{1}, new short[]{Block.andesiteItemStone.ID});
-                case 3 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneFragments.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneFragments.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.block.ID}, new int[]{1}, new short[]{Block.andesiteItemStone.ID});
-                case 0 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneHandAxe.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneHandAxe.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.block.ID}, new int[]{1}, new short[]{Block.andesiteItemStone.ID});
-                case 1 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneHandKnifeBlade.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneHandKnifeBlade.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.block.ID}, new int[]{1}, new short[]{Block.andesiteItemStone.ID});
-                case 2 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneHandShovel.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneHandShovel.getDisplayName(Item.NULL_ITEM_REFERENCE), new short[]{Item.block.ID}, new int[]{1}, new short[]{Block.andesiteItemStone.ID});
+                case 5 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneSpearHead.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneSpearHead.getDisplayName(Item.NULL_ITEM_REFERENCE, this.calculateOutPutMetadata()), new short[]{Item.block.ID}, new int[]{1}, new short[]{Block.andesiteItemStone.ID});
+                case 4 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneHoeHead.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneHoe.getDisplayName(Item.NULL_ITEM_REFERENCE, this.calculateOutPutMetadata()), new short[]{Item.block.ID}, new int[]{1}, new short[]{Block.andesiteItemStone.ID});
+                case 3 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneFragments.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneFragments.getDisplayName(Item.NULL_ITEM_REFERENCE, this.calculateOutPutMetadata()), new short[]{Item.block.ID}, new int[]{1}, new short[]{Block.andesiteItemStone.ID});
+                case 0 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneHandAxe.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneHandAxe.getDisplayName(Item.NULL_ITEM_REFERENCE, this.calculateOutPutMetadata()), new short[]{Item.block.ID}, new int[]{1}, new short[]{Block.andesiteItemStone.ID});
+                case 1 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneHandKnifeBlade.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneHandKnifeBlade.getDisplayName(Item.NULL_ITEM_REFERENCE, this.calculateOutPutMetadata()), new short[]{Item.block.ID}, new int[]{1}, new short[]{Block.andesiteItemStone.ID});
+                case 2 -> this.selectableRecipes[i] = new RecipeSelector(Item.stoneHandShovel.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.stoneHandShovel.getDisplayName(Item.NULL_ITEM_REFERENCE, this.calculateOutPutMetadata()), new short[]{Item.block.ID}, new int[]{1}, new short[]{Block.andesiteItemStone.ID});
             }
             selectableX += 64;
         }
@@ -66,7 +68,7 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
 
     @Override
     public void loadTextures() {
-        this.backgroundTexture = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiTechTree/clayTexture.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
+        this.backgroundTexture = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiCrafting/stoneToolCrafting.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
         this.transparentBackground = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
         this.fillableColor = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColor.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
         this.outline = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/outline.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
@@ -81,6 +83,31 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
         if(this.recipeOverlay != 0){
             CosmicEvolution.instance.renderEngine.deleteTexture(this.recipeOverlay);
         }
+    }
+
+    private short calculateOutPutMetadata(){
+        switch (this.stoneItemID){
+            case BlockIDList.ANDESITE_ITEM_STONE -> {
+                return StoneToolMetadata.ANDESITE;
+            }
+            case BlockIDList.GRANITE_ITEM_STONE -> {
+                return StoneToolMetadata.GRANITE;
+            }
+            case BlockIDList.BASALT_ITEM_STONE -> {
+                return StoneToolMetadata.BASALT;
+            }
+            case BlockIDList.CHERT_ITEM_STONE -> {
+                return StoneToolMetadata.CHERT;
+            }
+            case BlockIDList.OBSIDIAN_ITEM_STONE -> {
+                return StoneToolMetadata.OBSIDIAN;
+            }
+            case BlockIDList.FLINT_ITEM_STONE -> {
+                return StoneToolMetadata.FLINT;
+            }
+        }
+
+        return Item.NULL_ITEM_METADATA;
     }
 
     @Override
@@ -139,7 +166,7 @@ public final class GuiCraftingStoneTools extends GuiCrafting {
             selectableZ = -880;
             for (int i = 0; i < this.selectableRecipes.length; i++) {
                 if (this.selectableRecipes[i].isBlock) continue;
-                ModelLoader model = Item.list[this.selectableRecipes[i].itemID].itemModel.copyModel();
+                ModelLoader model = Item.list[this.selectableRecipes[i].itemID].getItemModel(this.calculateOutPutMetadata()).copyModel();
                 model.scaleModel(76f);
                 model.rotateModel(45, 0, 1, 0);
                 model.rotateModel(36, 1, 0, 0);

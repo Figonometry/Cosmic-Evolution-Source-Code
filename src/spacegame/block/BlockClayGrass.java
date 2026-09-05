@@ -2,7 +2,7 @@ package spacegame.block;
 
 import spacegame.core.CosmicEvolution;
 import spacegame.render.texturelists.BlockTextureList;
-import spacegame.world.World;
+import spacegame.world.worldtypes.World;
 import spacegame.world.blockstate.LogState;
 import spacegame.world.blockstate.MultiState;
 

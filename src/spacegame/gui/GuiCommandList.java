@@ -32,6 +32,7 @@ public final class GuiCommandList extends Gui {
         commandFormats.add("/summonEntity <name> <x> <y> <z>");
         commandFormats.add("/clear");
         commandFormats.add("/killEntities <Type>");
+        commandFormats.add("/setBlock <x> <y> <z> <ID>");
     }
 
 

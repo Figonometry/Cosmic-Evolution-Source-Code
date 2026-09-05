@@ -6,7 +6,7 @@ import spacegame.block.BlockWater;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.Sound;
 import spacegame.util.MathUtil;
-import spacegame.world.World;
+import spacegame.world.worldtypes.World;
 import spacegame.world.blockstate.CampfireState;
 import spacegame.world.blockstate.MultiState;
 import spacegame.world.blockstate.PitKilnState;

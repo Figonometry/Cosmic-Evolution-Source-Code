@@ -374,7 +374,7 @@ public final class ModelPlayer extends Model {
         if(wornItem.item == null)return;
 
 
-        ModelLoader model = wornItem.item.itemModel.copyModel();
+        ModelLoader model = wornItem.item.getItemModel(Item.NULL_ITEM_METADATA).copyModel();
 
         float entityModX = MathUtil.positiveMod(player.x, 32);
         float entityModY = MathUtil.positiveMod(player.y, 32);
@@ -1012,7 +1012,7 @@ public final class ModelPlayer extends Model {
 
 
 
-        ModelLoader model = wornItem.item.itemModel.copyModel();
+        ModelLoader model = wornItem.item.getItemModel(Item.NULL_ITEM_METADATA).copyModel();
 
         model.scaleModel(150f);
         model.rotateModel(90, 0, 1, 0);

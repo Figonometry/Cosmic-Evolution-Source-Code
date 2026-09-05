@@ -4,17 +4,17 @@ import spacegame.block.Block;
 import spacegame.core.Sound;
 import spacegame.entity.EntityPlayer;
 import spacegame.render.model.ModelLoader;
-import spacegame.world.World;
+import spacegame.world.worldtypes.World;
 
 import java.io.*;
 
 public class Item {
     public static String modelFolderPath = "src/spacegame/assets/models/itemModels/";
     public static final Item[] list = new Item[Short.MAX_VALUE];
-    public static final Item block = new Item(ItemIDList.BLOCK, null, "src/spacegame/assets/itemFiles/block.txt");
+    public static final Item block = new Item(ItemIDList.BLOCK, "Block Model not needed", "src/spacegame/assets/itemFiles/block.txt");
     public static final Item stoneHoeHead = new ItemTool(ItemIDList.STONE_HOE_HEAD, modelFolderPath + "stoneHoeHead.obj", "src/spacegame/assets/itemFiles/stoneHoeHead.txt");
     public static final Item stoneHoe = new ItemHoe(ItemIDList.STONE_HOE, modelFolderPath + "stoneHoe.obj", "src/spacegame/assets/itemFiles/stoneHoe.txt", Material.STONE);
-    public static final Item stoneFragments = new Item(ItemIDList.STONE_FRAGMENTS,  modelFolderPath + "stoneFragments.obj", "src/spacegame/assets/itemFiles/stoneFragments.txt");
+    public static final Item stoneFragments = new ItemTool(ItemIDList.STONE_FRAGMENTS,  modelFolderPath + "stoneFragments.obj", "src/spacegame/assets/itemFiles/stoneFragments.txt");
     public static final Item stoneHandAxe = new ItemAxe(ItemIDList.STONE_HAND_AXE, modelFolderPath + "stoneHandAxe.obj", "src/spacegame/assets/itemFiles/stoneHandAxe.txt", Material.RAW_STONE);
     public static final Item berry = new ItemBerry(ItemIDList.BERRY, modelFolderPath + "berry.obj", "src/spacegame/assets/itemFiles/berry.txt", 50f);
     public static final Item seedWildGrass = new ItemSeed(ItemIDList.SEED_WILD_GRASS, modelFolderPath + "seedWildGrass.obj", "src/spacegame/assets/itemFiles/seedWildGrass.txt");
@@ -62,7 +62,7 @@ public class Item {
     public String itemName;
     public String toolType = "";
     public Material material;
-    private String displayName = "Undefined Name";
+    protected String displayName = "Undefined Name";
     public String itemType;
     public int storageLevel;
     public ModelLoader itemModel;
@@ -70,7 +70,7 @@ public class Item {
     public boolean canDrawBack = false;
     public static final short NULL_ITEM_REFERENCE = -1;
     public static final short NULL_ITEM_DURABILITY = -1;
-    public static final short NULL_ITEM_METADATA = 0;
+    public static final short NULL_ITEM_METADATA = -1;
     public static final String ITEM_TYPE_PLAYER_STORAGE = "playerStorage";
     public static final String ITEM_TYPE_ARMOR_HEAD = "armorHead";
     public static final String ITEM_TYPE_ARMOR_TORSO = "armorTorso";
@@ -88,7 +88,12 @@ public class Item {
     public short durability = NULL_ITEM_DURABILITY;   //If this is -1 that means the item has no durability and should never render a durability bar
     public short metadata = NULL_ITEM_METADATA;
 
+
     public Item(short ID, String modelFilePath, String filepath){
+        this(ID, new ModelLoader(modelFilePath, true), filepath);
+    }
+
+    public Item(short ID, ModelLoader itemModel, String filepath){
         if (list[ID] != null) {
             throw new RuntimeException("Block ID: " + ID + " ALREADY OCCUPIED WHEN ATTEMPTING TO ADD " + this + " TO THE LIST");
         }
@@ -100,8 +105,7 @@ public class Item {
             throw new RuntimeException("Missing item file at " + filepath);
         }
 
-        if(modelFilePath == null || !new File(modelFilePath).exists())modelFilePath = modelFolderPath + "defaultItem.obj"; //If the passed in model doesnt yet exist assign the default item model
-        this.itemModel = new ModelLoader(modelFilePath, true);
+        this.itemModel = itemModel;
 
 
         BufferedReader reader = null;
@@ -205,7 +209,15 @@ public class Item {
 
     }
 
-    public String getDisplayName(short blockID){
+    public short getDurability(short metadata){
+        return this.durability;
+    }
+
+    public ModelLoader getItemModel(short itemMetadata){
+        return this.itemModel;
+    }
+
+    public String getDisplayName(short blockID, short metadata){
         return this.ID == block.ID ? Block.list[blockID].getDisplayName(0,0,0) : this.displayName;
     }
 
@@ -216,12 +228,7 @@ public class Item {
 
 
     public void onDestroy(ItemStack itemStack){
-        itemStack.item = null;
-        itemStack.count = 0;
-        itemStack.metadata = 0;
-        itemStack.durability = 0;
-        itemStack.decayTime = 0L;
-        itemStack.itemState = null;
+        itemStack.clearDataFromStack();
     }
 
 }

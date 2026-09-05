@@ -2,7 +2,7 @@ package spacegame.celestial;
 
 import spacegame.core.CosmicEvolution;
 import spacegame.render.RenderEngine;
-import spacegame.world.World;
+import spacegame.world.worldtypes.World;
 
 public final class Universe {
     public Earth earth;

@@ -3,7 +3,6 @@ package spacegame.render;
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 import spacegame.block.*;
-import spacegame.core.CosmicEvolution;
 import spacegame.item.Item;
 import spacegame.item.ItemTool;
 import spacegame.render.model.ModelFace;
@@ -12,7 +11,7 @@ import spacegame.render.texturelists.BlockTextureList;
 import spacegame.util.LongHasher;
 import spacegame.util.MathUtil;
 import spacegame.world.Chunk;
-import spacegame.world.World;
+import spacegame.world.worldtypes.World;
 import spacegame.world.blockstate.*;
 
 import java.nio.FloatBuffer;
@@ -189,7 +188,7 @@ public class RenderBlocks {
         if(chestLocation == null)return;
         if(chestLocation.inventory.itemStacks[0].item == null)return;
 
-        ModelLoader itemModel = chestLocation.inventory.itemStacks[0].item.itemModel.copyModel();
+        ModelLoader itemModel = chestLocation.inventory.itemStacks[0].item.getItemModel(chestLocation.inventory.itemStacks[0].item.metadata).copyModel();
         itemModel.translateModel(0.5f,0.75f, 0.5f);
         for(int i = 0; i < itemModel.modelFaces.length; i++){
             if(itemModel.modelFaces[i].faceType != face)continue;
@@ -1040,7 +1039,7 @@ public class RenderBlocks {
         ChestLocation chestLocation = (ChestLocation) chunk.getBlockState(index, MultiState.CHEST_STATE);
         if(chestLocation == null)return;
 
-        ModelLoader model = chestLocation.inventory.itemStacks[0].item.itemModel.copyModel();
+        ModelLoader model = chestLocation.inventory.itemStacks[0].item.getItemModel(chestLocation.inventory.itemStacks[0].item.metadata).copyModel();
 
         if(chestLocation.inventory.itemStacks[0].item instanceof ItemTool){
             model.rotateModel(90, 0, 0, 1);
@@ -1151,7 +1150,7 @@ public class RenderBlocks {
                 model = Block.list[craftingItem.outputRecipe.requiredItemMetadata[i]].getBlockModel(chunk.getBlockXFromIndex(index), chunk.getBlockYFromIndex(index), chunk.getBlockZFromIndex(index), world).copyModel();
                 block = craftingItem.outputRecipe.requiredItemMetadata[i];
             } else {
-                model = Item.list[craftingItem.outputRecipe.requiredItems[i]].itemModel.copyModel();
+                model = Item.list[craftingItem.outputRecipe.requiredItems[i]].getItemModel(craftingItem.outputRecipe.requiredItemMetadata[i]).copyModel();
                 block = Block.itemBlock.ID;
             }
 

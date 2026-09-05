@@ -252,7 +252,7 @@ public final class EntityPlayer extends EntityLiving {
     private void checkItemDurability() {
         for (int i = 0; i < this.inventory.itemStacks.length; i++) {
             if (this.inventory.itemStacks[i].item != null) {
-                if (Item.list[this.inventory.itemStacks[i].item.ID].durability != -1) {
+                if (Item.list[this.inventory.itemStacks[i].item.ID].getDurability(Item.NULL_ITEM_METADATA) != -1) {
                     if (this.inventory.itemStacks[i].durability <= 0) {
                         this.inventory.itemStacks[i].item.onDestroy(this.inventory.itemStacks[i]);
                     }
@@ -397,13 +397,19 @@ public final class EntityPlayer extends EntityLiving {
     }
 
 
-    public Vector3f getNormalizedVectorFromEye(){
-        double[] vector = CosmicEvolution.camera.rayCast(10);
-        Vector3d difVector = new Vector3d(vector[0] - this.x, (vector[1] - this.y) + this.height / 2, vector[2] - this.z);
-        difVector.normalize();
+    public Vector3f getNormalizedVectorFromEye() {
+        double pitchRad = Math.toRadians(this.pitch);
+        double yawRad   = Math.toRadians(this.yaw - 90);
 
-        return new Vector3f((float) difVector.x, (float) difVector.y, (float) difVector.z);
+        float dirX = (float)( Math.cos(pitchRad) * Math.sin(yawRad) );
+        float dirY = (float)( Math.sin(pitchRad) );
+        float dirZ = (float)(-Math.cos(pitchRad) * Math.cos(yawRad) );
+
+        return new Vector3f(dirX, dirY, dirZ);
     }
+
+
+
 
 
     public short getHeldBlock() {
@@ -411,6 +417,13 @@ public final class EntityPlayer extends EntityLiving {
             if(this.inventory.itemStacks[selectedInventorySlot].item.ID == Item.block.ID) {
                 return this.inventory.itemStacks[selectedInventorySlot].metadata;
             }
+        }
+        return Item.NULL_ITEM_METADATA;
+    }
+
+    public short getHeldMetadata(){
+        if(this.inventory.itemStacks[selectedInventorySlot].item != null){
+                return this.inventory.itemStacks[selectedInventorySlot].metadata;
         }
         return Item.NULL_ITEM_METADATA;
     }
@@ -426,6 +439,7 @@ public final class EntityPlayer extends EntityLiving {
     private void dropItemFromInventory(){
         short itemID = this.getHeldItem();
         short blockID = this.getHeldBlock();
+        short itemMetadata = this.getHeldMetadata();
         if(itemID == Item.block.ID) {
             if (blockID != Block.air.ID) {
                 EntityBlock droppedBlock = new EntityBlock(this.x, this.y, this.z, blockID, (byte) 1);
@@ -438,7 +452,7 @@ public final class EntityPlayer extends EntityLiving {
                 this.ce.soundPlayer.playSound(this.x, this.y, this.z, new Sound(Sound.itemThrow, false, 1f), CosmicEvolution.globalRand.nextFloat(0.75f, 1f));
             }
         } else if(itemID != Item.NULL_ITEM_REFERENCE) {
-            EntityItem droppedItem = new EntityItem(this.x, this.y, this.z, itemID, Item.NULL_ITEM_METADATA, (byte) 1, this.getHeldItemDurability(), this.getHeldItemDecayTime(), this.getHeldItemState());
+            EntityItem droppedItem = new EntityItem(this.x, this.y, this.z, itemID, itemMetadata, (byte) 1, this.getHeldItemDurability(), this.getHeldItemDecayTime(), this.getHeldItemState());
             this.removeItemFromInventory();
             double[] vector = CosmicEvolution.camera.rayCast(1);
             Vector3d difVector = new Vector3d(vector[0] - this.x, (vector[1] - this.y) + this.height/2, vector[2] - this.z);
@@ -593,8 +607,8 @@ public final class EntityPlayer extends EntityLiving {
     }
 
     private void updateYawAndPitch() {
-        float rawDeltaYaw = (MouseListener.getDeltaX()) * GameSettings.sensitivity;
-        float rawDeltaPitch = (MouseListener.getDeltaY()) * GameSettings.sensitivity;
+        float rawDeltaYaw = (MouseListener.getDeltaX() / 4) * GameSettings.sensitivity;
+        float rawDeltaPitch = (MouseListener.getDeltaY() / 4) * GameSettings.sensitivity;
 
         if(GameSettings.invertMouse){
             rawDeltaPitch *= -1;
@@ -1312,7 +1326,7 @@ public final class EntityPlayer extends EntityLiving {
             model.translateModel(-0.5f, 0, -0.5f);
             model.scaleModel(0.25f);
         } else if(this.getHeldItem() != Item.NULL_ITEM_REFERENCE){
-            model = Item.list[this.getHeldItem()].itemModel.copyModel();
+            model = Item.list[this.getHeldItem()].getItemModel(Item.NULL_ITEM_METADATA).copyModel();
         }
 
         if(model == null)return;

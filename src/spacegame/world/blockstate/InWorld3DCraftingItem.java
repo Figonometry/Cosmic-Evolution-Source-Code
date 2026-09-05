@@ -1,14 +1,19 @@
 package spacegame.world.blockstate;
 
+import org.joml.Vector3f;
 import spacegame.block.Block;
-import spacegame.block.BlockStone;
+import spacegame.block.BlockIDList;
+import spacegame.block.BlockItemStone;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.Sound;
 import spacegame.entity.EntityItem;
+import spacegame.entity.EntityParticle;
 import spacegame.item.Item;
+import spacegame.item.StoneToolMetadata;
 import spacegame.item.crafting.InWorldCraftingRecipe;
 import spacegame.render.RenderEngine;
 import spacegame.world.Chunk;
+import spacegame.render.texturelists.BlockTextureList;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -49,6 +54,31 @@ public final class InWorld3DCraftingItem extends BlockState{
         }
     }
 
+    public short calculateOutPutMetadata(){
+        switch (this.materialBlockID){
+            case BlockIDList.ANDESITE_ITEM_STONE -> {
+                return StoneToolMetadata.ANDESITE;
+            }
+            case BlockIDList.GRANITE_ITEM_STONE -> {
+                return StoneToolMetadata.GRANITE;
+            }
+            case BlockIDList.BASALT_ITEM_STONE -> {
+                return StoneToolMetadata.BASALT;
+            }
+            case BlockIDList.CHERT_ITEM_STONE -> {
+                return StoneToolMetadata.CHERT;
+            }
+            case BlockIDList.OBSIDIAN_ITEM_STONE -> {
+                return StoneToolMetadata.OBSIDIAN;
+            }
+            case BlockIDList.FLINT_ITEM_STONE -> {
+                return StoneToolMetadata.FLINT;
+            }
+        }
+
+        return Item.list[this.craftingRecipe.outputItemID].metadata;
+    }
+
     public void checkCurrentCraftingLayerForCompletion(){
         int[] currentCraftingLayer = this.subVoxelIndices[this.activeCraftingLayer];
         int[] currentCraftingLayerRecipe = this.craftingRecipe.recipeIndices[this.activeCraftingLayer];
@@ -65,8 +95,8 @@ public final class InWorld3DCraftingItem extends BlockState{
             if(this.craftingRecipe.outputBlockID != Block.NULL_BLOCK_REFERENCE){
                 this.chunk.setBlockAndNotify(this.chunk.getBlockXFromIndex(this.indexInChunk), this.chunk.getBlockYFromIndex(this.indexInChunk), this.chunk.getBlockZFromIndex(this.indexInChunk), this.craftingRecipe.outputBlockID);
             } else {
-                if (!CosmicEvolution.instance.save.thePlayer.addItemToInventory(this.craftingRecipe.outputItemID, Item.list[this.craftingRecipe.outputItemID].metadata, (byte) this.craftingRecipe.outputCount, Item.list[this.craftingRecipe.outputItemID].durability, 0, null)) {
-                    CosmicEvolution.instance.save.activeWorld.addEntity(new EntityItem(this.chunk.getBlockXFromIndex(this.indexInChunk) + 0.5, this.chunk.getBlockYFromIndex(this.indexInChunk) + 0.25, this.chunk.getBlockZFromIndex(this.indexInChunk) + 0.5, this.craftingRecipe.outputItemID, Item.list[this.craftingRecipe.outputItemID].metadata, (byte) this.craftingRecipe.outputCount, Item.list[this.craftingRecipe.outputItemID].durability, 0, null));
+                if (!CosmicEvolution.instance.save.thePlayer.addItemToInventory(this.craftingRecipe.outputItemID, this.calculateOutPutMetadata(), (byte) this.craftingRecipe.outputCount, Item.list[this.craftingRecipe.outputItemID].getDurability(this.calculateOutPutMetadata()), 0, null)) {
+                    CosmicEvolution.instance.save.activeWorld.addEntity(new EntityItem(this.chunk.getBlockXFromIndex(this.indexInChunk) + 0.5, this.chunk.getBlockYFromIndex(this.indexInChunk) + 0.25, this.chunk.getBlockZFromIndex(this.indexInChunk) + 0.5, this.craftingRecipe.outputItemID, this.calculateOutPutMetadata(), (byte) this.craftingRecipe.outputCount, Item.list[this.craftingRecipe.outputItemID].getDurability(this.calculateOutPutMetadata()), 0, null));
                 }
 
                 this.chunk.blocks[this.indexInChunk] = Block.air.ID;
@@ -80,10 +110,11 @@ public final class InWorld3DCraftingItem extends BlockState{
         this.activeCraftingLayer++;
     }
 
-    public void removeSubVoxel(int index){
-        if(Block.list[this.materialBlockID] instanceof BlockStone){
+    public void removeSubVoxel(int index, double worldX, double worldY, double worldZ){
+        if(Block.list[this.materialBlockID] instanceof BlockItemStone){
             if(this.craftingRecipe.recipeIndices[this.activeCraftingLayer][index] != 1){
                 this.subVoxelIndices[this.activeCraftingLayer][index] = 0;
+                this.generateParticlesOnStoneSubVoxelBreak(worldX, worldY, worldZ);
                 this.removeNonConnectedMaterial();
             }
         } else {
@@ -95,7 +126,7 @@ public final class InWorld3DCraftingItem extends BlockState{
     }
 
     public void addSubVoxel(int index){
-        if(this.subVoxelIndices[this.activeCraftingLayer][index] == 1 || Block.list[this.materialBlockID] instanceof BlockStone)return;
+        if(this.subVoxelIndices[this.activeCraftingLayer][index] == 1 || Block.list[this.materialBlockID] instanceof BlockItemStone)return;
 
 
         this.subVoxelIndices[this.activeCraftingLayer][index] = 1;
@@ -129,6 +160,26 @@ public final class InWorld3DCraftingItem extends BlockState{
         } catch (Exception e){
             e.printStackTrace();
             return;
+        }
+    }
+
+    public void generateParticlesOnStoneSubVoxelBreak(double x, double y, double z){
+        EntityParticle[] particles = new EntityParticle[16];
+
+
+        for(int i = 0; i < particles.length; i++){
+            float xMove = CosmicEvolution.globalRand.nextFloat(0.5f, 1);
+            xMove = CosmicEvolution.globalRand.nextBoolean() ? xMove : -xMove;
+            float zMove = CosmicEvolution.globalRand.nextFloat(0.5f, 1);
+            zMove = CosmicEvolution.globalRand.nextBoolean() ? zMove : -zMove;
+
+            particles[i] = new EntityParticle(x, y, z, true, 240, this.materialBlockID, true, false, true, true, CosmicEvolution.globalRand.nextInt(31), CosmicEvolution.globalRand.nextInt(31));
+
+            particles[i].setMovementVector(new Vector3f(xMove, 0, zMove));
+
+            particles[i].size = 0.03125f;
+
+            this.chunk.parentWorld.addEntity(particles[i]);
         }
     }
 

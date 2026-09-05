@@ -4,9 +4,10 @@ import spacegame.core.CosmicEvolution;
 import spacegame.core.Sound;
 import spacegame.entity.EntityPlayer;
 import spacegame.entity.EntityThrownSpear;
-import spacegame.world.World;
+import spacegame.render.model.ModelLoader;
+import spacegame.world.worldtypes.World;
 
-public final class ItemSpear extends ItemTool {
+public final class ItemSpear extends ItemTool implements IMultiModel {
     public ItemSpear(short ID, String modelFilePath, String filepath, Material material) {
         super(ID, modelFilePath, filepath);
         this.durability = (short) (1 * material.durabilityModifier);
@@ -26,4 +27,37 @@ public final class ItemSpear extends ItemTool {
     public Sound getEntityHitSound(){
         return new Sound(Sound.stabEntity, false, 1f);
     }
+
+    @Override
+    public ModelLoader getItemModel(short itemMetadata){
+        return this.getModelLoaderFromItemMetadata(itemMetadata);
+    }
+    @Override
+    public ModelLoader getModelLoaderFromItemMetadata(short itemMetadata) {
+        if(this.ID == Item.stoneSpear.ID) {
+            switch (itemMetadata) {
+                case StoneToolMetadata.ANDESITE -> {
+                    return ItemModelList.andesiteStoneSpear;
+                }
+                case StoneToolMetadata.GRANITE -> {
+                    return ItemModelList.graniteStoneSpear;
+                }
+                case StoneToolMetadata.BASALT -> {
+                    return ItemModelList.basaltStoneSpear;
+                }
+                case StoneToolMetadata.CHERT -> {
+                    return ItemModelList.chertStoneSpear;
+                }
+                case StoneToolMetadata.OBSIDIAN -> {
+                    return ItemModelList.obsidianStoneSpear;
+                }
+                case StoneToolMetadata.FLINT -> {
+                    return ItemModelList.flintStoneSpear;
+                }
+            }
+        }
+
+        return this.itemModel;
+    }
+
 }

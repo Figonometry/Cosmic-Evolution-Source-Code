@@ -6,7 +6,7 @@ import spacegame.gui.ToolTip;
 import spacegame.gui.ToolTipGroup;
 import spacegame.item.Item;
 import spacegame.render.texturelists.MouseAndKeyIconTextureList;
-import spacegame.world.World;
+import spacegame.world.worldtypes.World;
 import spacegame.world.blockstate.InWorldCraftingItem;
 import spacegame.world.blockstate.MultiState;
 
@@ -18,7 +18,7 @@ public final class BlockCrafting extends Block {
     @Override
     public String getDisplayName(int x, int y, int z){
         InWorldCraftingItem craftingItem = (InWorldCraftingItem) CosmicEvolution.instance.save.activeWorld.getBlockState(x,y,z, MultiState.CRAFTING_ITEM_STATE);
-        return craftingItem == null ? "Error" :  Item.list[craftingItem.outputRecipe.itemID].getDisplayName(craftingItem.outputRecipe.itemID) + " (Crafting)";
+        return craftingItem == null ? "Error" :  Item.list[craftingItem.outputRecipe.itemID].getDisplayName(craftingItem.outputRecipe.itemID, craftingItem.outputRecipe.metadata) + " (Crafting)";
     }
 
 

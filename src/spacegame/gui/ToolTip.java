@@ -54,7 +54,7 @@ public final class ToolTip {
         }
     }
 
-    //This should add the blockID for now, it will be converted to the block model during the vertex assembly
+    //This should add the metadata for now, it will be converted to the block model during the vertex assembly
     public void addBlockID(short blockID){
         this.tooltip.add(BLOCK_ARRAY);
         this.tooltip.add((int) blockID);

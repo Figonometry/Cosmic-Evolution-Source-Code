@@ -2,9 +2,9 @@ package spacegame.render.texturelists;
 
 //List of texture IDs for the item texture array to use as constants throughout the program
 public abstract class ItemTextureList {
-    public static final int UNUSED_TEXTURE_1 = 0;
-    public static final int UNUSED_TEXTURE_2 = 1;
-    public static final int STONE_TEXTURE = 2;
+    //For whatever reason texture 0 does not work properly, do not use that slot
+    public static final int GRANITE_TEXTURE = 1;
+    public static final int STONE_TEXTURE = 2; //Despite this texture being no longer visible, it's defined in order to load the stone item model variants
     public static final int BERRY_TEXTURE = 3;
     public static final int LEAF_TEXTURE = 4;
     public static final int FIREWOOD_TEXTURE = 5;
@@ -28,4 +28,9 @@ public abstract class ItemTextureList {
     public static final int BONEMEAL_TEXTURE = 23;
     public static final int EINKORN_WHEAT_TEXTURE = 24;
     public static final int WHEAT_TEXTURE = 25;
+    public static final int BASALT_TEXTURE = 26;
+    public static final int CHERT_TEXTURE = 27;
+    public static final int OBSIDIAN_TEXTURE = 28;
+    public static final int FLINT_TEXTURE = 29;
+    public static final int ANDESITE_TEXTURE = 30;
 }

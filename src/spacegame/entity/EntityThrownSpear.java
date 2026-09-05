@@ -35,18 +35,23 @@ public final class EntityThrownSpear extends EntityProjectile {
     }
 
 
-    private void adjustPitch(){
-        if(this.y == this.prevY)return;
+    private void adjustPitch() {
+        double dx = this.x - this.prevX;
+        double dy = this.y - this.prevY;
+        double dz = this.z - this.prevZ;
 
-        double hypotenuse = MathUtil.distance3D(this.x, this.y, this.z, this.prevX, this.prevY, this.prevZ);
-        double adjacent = Math.abs(this.y - this.prevY);
-        double angleCos = adjacent / hypotenuse;
-        double angle = Math.acos(angleCos);
+        if (dx == 0 && dy == 0 && dz == 0) return;
 
-        angle = Math.toDegrees(angle);
+        double horizontal = Math.sqrt(dx * dx + dz * dz);
 
-        this.pitch = this.y > this.prevY ? (float) (90 - angle) : ((float) -(90 - angle));
+        double angleRad = Math.atan2(dy, horizontal);
+        double angleDeg = Math.toDegrees(angleRad);
+
+        // Your convention: 0 = flat, +90 = up, -90 = down
+        this.pitch = (float) angleDeg;
     }
+
+
 
     private void setEntityState(){
 
@@ -54,9 +59,9 @@ public final class EntityThrownSpear extends EntityProjectile {
             CosmicEvolution.instance.soundPlayer.playSound(this.x, this.y, this.z, new Sound(Sound.spearImpact, false, 4f), 1f);
         }
 
-        if(this.collided){
-            this.canMoveWithVector = false;
+        if (this.collided != this.prevCollided) {
         }
+
 
 
         this.boundingBox.adjustEntityBoundingBox(this.x, this.y, this.z, this.width, this.height, this.depth);

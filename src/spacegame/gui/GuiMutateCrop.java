@@ -16,7 +16,7 @@ import spacegame.render.model.ModelFace;
 import spacegame.render.model.ModelLoader;
 import spacegame.util.MathUtil;
 import spacegame.world.Chunk;
-import spacegame.world.World;
+import spacegame.world.worldtypes.World;
 import spacegame.world.blockstate.Crop;
 import spacegame.world.blockstate.CropState;
 import spacegame.world.blockstate.MultiState;
@@ -213,7 +213,7 @@ public class GuiMutateCrop extends GuiCrafting {
             selectableZ = -880;
             for (int i = 0; i < this.selectableRecipes.length; i++) {
                 if (this.selectableRecipes[i].isBlock) continue;
-                ModelLoader model = Item.list[this.selectableRecipes[i].itemID].itemModel.copyModel();
+                ModelLoader model = Item.list[this.selectableRecipes[i].itemID].getItemModel(Item.NULL_ITEM_METADATA).copyModel();
                 model.scaleModel(38f);
                 model.rotateModel(45, 0, 1, 0);
                 model.rotateModel(36, 1, 0, 0);
@@ -271,7 +271,7 @@ public class GuiMutateCrop extends GuiCrafting {
 
             for (int i = 0; i < this.selectableRecipes.length; i++) {
                 if (!this.selectableRecipes[i].isBlock) continue;
-                ModelLoader model = Block.list[this.selectableRecipes[i].blockID].blockModel.copyModel();
+                ModelLoader model = Block.list[this.selectableRecipes[i].metadata].blockModel.copyModel();
                 model.translateModel(-0.5f, 0, -0.5f);
                 ModelFace[] faces;
                 float textureID;
@@ -288,7 +288,7 @@ public class GuiMutateCrop extends GuiCrafting {
                     faces = model.getModelFaceOfType(face);
                     for (int j = 0; j < faces.length; j++) {
                         if (faces[j] == null) continue;
-                        textureID = Block.list[this.selectableRecipes[i].blockID].getBlockTexture(this.selectableRecipes[i].blockID, 0, 0, 0, face);
+                        textureID = Block.list[this.selectableRecipes[i].metadata].getBlockTexture(this.selectableRecipes[i].metadata, 0, 0, 0, face);
 
                         vertex1 = new Vector3f(faces[j].vertices[0].x, faces[j].vertices[0].y, faces[j].vertices[0].z).mul(38).rotateY((float) (0.25 * Math.PI)).rotateX((float) (0.20 * Math.PI)).add(position);
                         vertex2 = new Vector3f(faces[j].vertices[1].x, faces[j].vertices[1].y, faces[j].vertices[1].z).mul(38).rotateY((float) (0.25 * Math.PI)).rotateX((float) (0.20 * Math.PI)).add(position);

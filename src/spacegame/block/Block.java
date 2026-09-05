@@ -17,7 +17,7 @@ import spacegame.render.model.ModelLoader;
 import spacegame.util.MathUtil;
 import spacegame.world.AxisAlignedBB;
 import spacegame.world.Chunk;
-import spacegame.world.World;
+import spacegame.world.worldtypes.World;
 import spacegame.world.blockstate.*;
 
 import java.io.*;
@@ -145,7 +145,7 @@ public class Block {
     public static final Block slateItemStone = new BlockItemStone(BlockIDList.SLATE_ITEM_STONE, BlockTextureList.SLATE_STONE, blockFolderPath + "slateItemStone.txt");
     public static final Block phylliteItemStone = new BlockItemStone(BlockIDList.PHYLLITE_ITEM_STONE, BlockTextureList.PHYLLITE_STONE, blockFolderPath + "phylliteItemStone.txt");
     public static final Block serpentiniteItemStone = new BlockItemStone(BlockIDList.SERPENTINITE_ITEM_STONE, BlockTextureList.SERPENTINITE_STONE, blockFolderPath + "serpentiniteItemStone.txt");
-    public static final Block unused_field_93 = null;
+    public static final Block flintItemStone = new BlockStone(BlockIDList.FLINT_ITEM_STONE, BlockTextureList.FLINT_TEXTURE, blockFolderPath + "flintItemStone.txt");
     public static final Block treeSeed = new BlockSapling(BlockIDList.TREE_SEED, BlockTextureList.SEED_TEXTURE, blockFolderPath + "treeSeed.txt");
     public static final Block sapling = new BlockSapling(BlockIDList.SAPLING, BlockTextureList.NO_TEXTURE, blockFolderPath + "sapling.txt");
     public static final Block torchUnlit = new BlockTorch(BlockIDList.TORCH_UNLIT, BlockTextureList.TORCH_UNLIT_TEXTURE, blockFolderPath + "torchUnlit.txt");
@@ -539,12 +539,6 @@ public class Block {
     }
 
     protected void handleSpecialLeftClickFunctions(int x, int y, int z, World world, EntityPlayer player){
-        short playerHeldItem = player.getHeldItem();
-        if(playerHeldItem != Item.NULL_ITEM_REFERENCE) {
-            if (this.ID == tallGrass.ID && Item.list[playerHeldItem] instanceof ItemKnife) {
-                world.addEntity(new EntityItem(x + 0.5, y + 0.5, z + 0.5, Item.straw.ID, Item.NULL_ITEM_METADATA, (byte)1, Item.NULL_ITEM_DURABILITY, 0, null));
-            }
-        }
         if(this.ID == clay.ID){
             int extraClay = CosmicEvolution.globalRand.nextInt(2,4);
             for(int i = 0; i < extraClay; i++){
@@ -575,7 +569,7 @@ public class Block {
         if (list[blockID].droppedItemID != Item.NULL_ITEM_REFERENCE) {
             if (list[blockID].droppedItemID != Item.block.ID) {
                 if (list[blockID].itemDropChance > CosmicEvolution.globalRand.nextFloat()) {
-                    world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).addEntityToList(new EntityItem(x + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), y + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), z + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), list[blockID].droppedItemID, Item.NULL_ITEM_METADATA, (byte) 1, Item.list[list[blockID].droppedItemID].durability, 0, null));
+                    world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).addEntityToList(new EntityItem(x + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), y + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), z + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), list[blockID].droppedItemID, Item.NULL_ITEM_METADATA, (byte) 1, Item.list[list[blockID].droppedItemID].getDurability(Item.NULL_ITEM_METADATA), 0, null));
                 }
             } else {
                 if (list[blockID].itemDropChance > CosmicEvolution.globalRand.nextFloat()) {
@@ -638,7 +632,7 @@ public class Block {
                 if (list[blockID].droppedItemID != Item.NULL_ITEM_REFERENCE) {
                     if (list[blockID].droppedItemID != Item.block.ID) {
                         if (list[blockID].itemDropChance > CosmicEvolution.globalRand.nextFloat()) {
-                            world.findChunkFromChunkCoordinates(blockX >> 5, blockY >> 5, blockZ >> 5).addEntityToList(new EntityItem(blockX + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), blockY + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), blockZ + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), list[blockID].droppedItemID, Item.NULL_ITEM_METADATA, (byte) 1, Item.list[list[blockID].droppedItemID].durability, 0, null));
+                            world.findChunkFromChunkCoordinates(blockX >> 5, blockY >> 5, blockZ >> 5).addEntityToList(new EntityItem(blockX + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), blockY + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), blockZ + 0.5 + CosmicEvolution.globalRand.nextDouble(-0.3, 0.3), list[blockID].droppedItemID, Item.NULL_ITEM_METADATA, (byte) 1, Item.list[list[blockID].droppedItemID].getDurability(Item.NULL_ITEM_METADATA), 0, null));
                         }
                     } else {
                         if (list[blockID].itemDropChance > CosmicEvolution.globalRand.nextFloat()) {
@@ -815,7 +809,7 @@ public class Block {
         }
 
 
-        Block.list[heldBlock].addBlockStates(x,y,z, world, player, chunk);
+        Block.list[heldBlock].addBlockStates(x,y,z, heldBlock, world, player, chunk);
 
         if(Block.list[heldBlock] instanceof ITimeUpdate){
             chunk.addTimeUpdateEvent(x,y,z, CosmicEvolution.instance.save.time + ((ITimeUpdate) Block.list[heldBlock]).getUpdateTime(x,y,z, world));
@@ -845,7 +839,7 @@ public class Block {
         return this.blockModel;
     }
 
-    public void addBlockStates(int x, int y, int z, World world, EntityPlayer player, Chunk chunk){
+    public void addBlockStates(int x, int y, int z, short heldBlock, World world, EntityPlayer player, Chunk chunk){
 
     }
 

@@ -4,7 +4,7 @@ import spacegame.core.CosmicEvolution;
 import spacegame.core.eventlisteners.MouseListener;
 import spacegame.entity.EntityPlayer;
 import spacegame.gui.GuiInGame;
-import spacegame.world.World;
+import spacegame.world.worldtypes.World;
 
 public class ItemFood extends Item {
     public float saturationIncrease;

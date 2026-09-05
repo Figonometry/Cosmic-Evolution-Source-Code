@@ -14,7 +14,7 @@ import spacegame.render.texturelists.BlockTextureList;
 import spacegame.render.model.ModelLoader;
 import spacegame.render.texturelists.MouseAndKeyIconTextureList;
 import spacegame.world.Chunk;
-import spacegame.world.World;
+import spacegame.world.worldtypes.World;
 import spacegame.world.blockstate.BerryBushState;
 import spacegame.world.blockstate.MultiState;
 
@@ -160,7 +160,7 @@ public final class BlockBerryBush extends Block implements ITimeUpdate {
     }
 
     @Override
-    public void addBlockStates(int x, int y, int z, World world, EntityPlayer player, Chunk chunk){
+    public void addBlockStates(int x, int y, int z, short heldBlock, World world, EntityPlayer player, Chunk chunk){
         int key = Chunk.getBlockIndexFromCoordinates(x,y,z);
         chunk.addBlockState(key, MultiState.BERRY_BUSH_STATE, new BerryBushState(BerryBushState.GROWTH_STAGE_1, false, false, key));
     }

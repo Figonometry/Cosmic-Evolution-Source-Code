@@ -9,7 +9,7 @@ import spacegame.item.IFuel;
 import spacegame.item.IHeatable;
 import spacegame.item.Item;
 import spacegame.world.Chunk;
-import spacegame.world.ThreadUpdateLighting;
+import spacegame.world.threads.ThreadUpdateLighting;
 
 public final class HeatableBlockLocation extends BlockState { //Trigger every 15 ticks, also is a "chest" slot 0 is fuel, slot 1 is input, slot 2 is output
     public int index;

@@ -12,9 +12,11 @@ import spacegame.item.ItemIDList;
 import spacegame.render.texturelists.BlockTextureList;
 import spacegame.render.texturelists.ItemTextureList;
 import spacegame.render.texturelists.MouseAndKeyIconTextureList;
-import spacegame.world.World;
+import spacegame.world.worldtypes.World;
 import spacegame.world.blockstate.ChestLocation;
 import spacegame.world.blockstate.MultiState;
+
+import java.util.concurrent.BlockingQueue;
 
 public final class BlockItem extends BlockContainer {
     public BlockItem(short ID, int textureID, String filepath, int inventoryWidth, int inventoryHeight) {
@@ -53,7 +55,7 @@ public final class BlockItem extends BlockContainer {
     public String getDisplayName(int x, int y, int z){
         ChestLocation chest = (ChestLocation) CosmicEvolution.instance.save.activeWorld.getBlockState(x,y,z, MultiState.CHEST_STATE);
         if(chest == null)return "Error: Chest is null";
-        return chest.inventory.itemStacks[0].item.getDisplayName(chest.inventory.itemStacks[0].metadata);
+        return chest.inventory.itemStacks[0].item.getDisplayName(chest.inventory.itemStacks[0].metadata, chest.inventory.itemStacks[0].metadata);
     }
 
 
@@ -86,6 +88,12 @@ public final class BlockItem extends BlockContainer {
             case ItemTextureList.BONEMEAL_TEXTURE -> BlockTextureList.ITEM_BONEMEAL_TEXTURE;
             case ItemTextureList.EINKORN_WHEAT_TEXTURE -> BlockTextureList.ITEM_EINKORN_WHEAT;
             case ItemTextureList.WHEAT_TEXTURE -> BlockTextureList.ITEM_WHEAT_TEXTURE;
+            case ItemTextureList.ANDESITE_TEXTURE -> BlockTextureList.ANDESITE_STONE;
+            case ItemTextureList.BASALT_TEXTURE -> BlockTextureList.BASALT_STONE;
+            case ItemTextureList.CHERT_TEXTURE -> BlockTextureList.CHERT_STONE;
+            case ItemTextureList.FLINT_TEXTURE -> BlockTextureList.FLINT_TEXTURE;
+            case ItemTextureList.GRANITE_TEXTURE -> BlockTextureList.GRANITE_STONE;
+            case ItemTextureList.OBSIDIAN_TEXTURE -> BlockTextureList.OBSIDIAN_STONE;
 
             default -> this.textureID;
         };

@@ -12,7 +12,7 @@ import spacegame.item.ItemSeed;
 import spacegame.item.itemstate.SeedState;
 import spacegame.render.texturelists.BlockTextureList;
 import spacegame.world.Chunk;
-import spacegame.world.World;
+import spacegame.world.worldtypes.World;
 import spacegame.world.blockstate.Crop;
 import spacegame.world.blockstate.CropState;
 import spacegame.world.blockstate.MultiState;
@@ -176,7 +176,7 @@ public class BlockCrop extends Block implements ITimeUpdate {
     }
 
     @Override
-    public void addBlockStates(int x, int y, int z, World world, EntityPlayer player, Chunk chunk){
+    public void addBlockStates(int x, int y, int z, short heldBlock, World world, EntityPlayer player, Chunk chunk){
         short heldItem = player.getHeldItem();
         TilledSoilState tilledSoilState = (TilledSoilState) world.getBlockState(x, y - 1, z, MultiState.TILLED_SOIL_STATE);
 

@@ -3,6 +3,7 @@ package spacegame.render;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL46;
 import spacegame.block.Block;
+import spacegame.block.BlockTorch;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
 import spacegame.item.Item;
@@ -20,7 +21,7 @@ public final class RenderEntityItem {
     public boolean render3D;
     public boolean isBlock;
     public short itemID;
-    public short blockID;
+    public short metadata;
     public float red = 1;
     public float green = 1;
     public float blue = 1;
@@ -42,7 +43,7 @@ public final class RenderEntityItem {
         this.render3D = render3D;
         this.isBlock = isBlock;
         this.itemID = itemID;
-        this.blockID = itemMetadata;
+        this.metadata = itemMetadata;
         this.entityHeight = entityHeight;
         this.entityWidth = entityWidth;
         this.entityYaw = entityYaw;
@@ -103,25 +104,42 @@ public final class RenderEntityItem {
 
         int colorRGB;
 
-        ModelLoader model = Item.list[this.itemID].itemModel.copyModel();
-        if((Item.list[this.itemID] instanceof ItemTool || this.itemID == Item.primitiveDoor.ID) && !(Item.list[this.itemID] instanceof ItemSpear)){
-           model.rotateModel(90, 0, 0, 1);
+        ModelLoader model = Item.list[this.itemID].getItemModel(this.metadata).copyModel();
+
+// Tool / door rotation
+        if ((Item.list[this.itemID] instanceof ItemTool || this.itemID == Item.primitiveDoor.ID)
+                && !(Item.list[this.itemID] instanceof ItemSpear)) {
+            model.rotateModel(90, 0, 0, 1);
         }
-        if(Item.list[this.itemID] instanceof ItemClothing){
+
+// Clothing rotation
+        if (Item.list[this.itemID] instanceof ItemClothing) {
             model.rotateModel(90, 1, 0, 0);
             model.translateModel(0, 0.175f, 0);
         }
 
+/* -------------------------
+   FIXED ROTATION ORDER
+   -------------------------
+   1. Pitch (local X)
+   2. Spear orientation (local Y)
+   3. Yaw (world Y)
+   ------------------------- */
 
+// 1. Apply pitch FIRST (local axis)
+        model.rotateModel(this.entityPitch, 1, 0, 0);
 
-        model.rotateModel(-this.entityYaw, 0, 1, 0);
-        if(Item.list[this.itemID] instanceof ItemSpear){
+// 2. Spear orientation (still local)
+        if (Item.list[this.itemID] instanceof ItemSpear) {
             model.rotateModel(90, 0, 1, 0);
         }
-        model.pitchModel(-this.entityPitch);
 
+// 3. Apply yaw LAST (world axis)
+        model.rotateModel(-this.entityYaw, 0, 1, 0);
 
-        model.translateModel(x,y,z);
+// Final translation
+        model.translateModel(x, y, z);
+
 
 
         for (int i = 0; i < model.modelFaces.length; i++) {
@@ -157,10 +175,16 @@ public final class RenderEntityItem {
         this.chunkY = MathUtil.floorDouble(this.y) >> 5;
         this.chunkZ = MathUtil.floorDouble(this.z) >> 5;
 
-        ModelLoader model = Block.list[this.blockID].blockModel.copyModel();
+        ModelLoader model = Block.list[this.metadata].blockModel.copyModel();
         model.translateModel( -0.5f, 0, -0.5f);
         if(!this.renderFromFallingBlock) {
             model.scaleModel(0.25f);
+        }
+
+
+        if(Block.list[this.metadata] instanceof BlockTorch){
+            model.scaleModel(2);
+            model.rotateModel(90, 1, 0, 0);
         }
 
         Shader.worldShaderTextureArray.uploadBoolean("useFog", true);
@@ -207,7 +231,7 @@ public final class RenderEntityItem {
         for (int i = 0; i < model.modelFaces.length; i++) {
             if (model.modelFaces[i] == null) continue;
 
-            textureID = model.usesMultipleTextures ? model.modelFaces[i].texture : Block.list[this.blockID].getBlockTexture(this.blockID, 0, 0, 0, model.modelFaces[i].faceType);
+            textureID = model.usesMultipleTextures ? model.modelFaces[i].texture : Block.list[this.metadata].getBlockTexture(this.metadata, 0, 0, 0, model.modelFaces[i].faceType);
 
 
             for(int j = 0; j < model.modelFaces[i].vertices.length; j++){
@@ -254,7 +278,7 @@ public final class RenderEntityItem {
             z += 32;
         }
 
-        ModelLoader model = Item.list[this.itemID].itemModel.copyModel();
+        ModelLoader model = Item.list[this.itemID].getItemModel(this.metadata).copyModel();
         if(Item.list[this.itemID] instanceof ItemTool || this.itemID == Item.primitiveDoor.ID){
            model.rotateModel(90, 0, 0, 1);
         }
@@ -297,7 +321,7 @@ public final class RenderEntityItem {
             z += 32;
         }
 
-        ModelLoader model = Block.list[this.blockID].blockModel.copyModel();
+        ModelLoader model = Block.list[this.metadata].blockModel.copyModel();
         model.translateModel( -0.5f, 0, -0.5f);
         model.scaleModel(0.25f);
 

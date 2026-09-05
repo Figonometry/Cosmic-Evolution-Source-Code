@@ -7,8 +7,8 @@ import spacegame.core.CosmicEvolution;
 import spacegame.util.LongHasher;
 import spacegame.util.MathUtil;
 import spacegame.world.NoiseMap2D;
-import spacegame.world.World;
-import spacegame.world.WorldEarth;
+import spacegame.world.worldtypes.World;
+import spacegame.world.worldtypes.earthlike.WorldEarth;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;

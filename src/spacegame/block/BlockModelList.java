@@ -37,7 +37,7 @@ public abstract class BlockModelList {
     public static final ModelLoader reedTop = new ModelLoader(modelFolderPath + "reedTop.obj", true);
     public static final ModelLoader reedBottom = new ModelLoader(modelFolderPath + "reedLower.obj", true);
     public static final ModelLoader leafModel = new ModelLoader(modelFolderPath + "leafModel.obj", false);
-    public static final ModelLoader seedModel = new ModelLoader(modelFolderPath + "seed.obj", true);
+    public static final ModelLoader seedModel = new ModelLoader(modelFolderPath + "seed.obj", false);
     public static final ModelLoader saplingModel = new ModelLoader(modelFolderPath + "sapling.obj", true);
     public static final ModelLoader primitiveCraftingTableModel = new ModelLoader(modelFolderPath + "primitiveCraftingTable.obj", true);
     public static final ModelLoader waterDefault= new ModelLoader(modelFolderPath + "waterDefault.obj", false);

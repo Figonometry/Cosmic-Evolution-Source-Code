@@ -3,7 +3,7 @@ package spacegame.block;
 import spacegame.core.Timer;
 import spacegame.render.model.ModelLoader;
 import spacegame.world.Chunk;
-import spacegame.world.World;
+import spacegame.world.worldtypes.World;
 import spacegame.world.blockstate.FlowingWaterState;
 import spacegame.world.blockstate.MultiState;
 

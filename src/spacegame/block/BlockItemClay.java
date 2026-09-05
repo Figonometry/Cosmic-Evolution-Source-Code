@@ -7,7 +7,7 @@ import spacegame.gui.GuiCraftingPottery;
 import spacegame.gui.ToolTip;
 import spacegame.gui.ToolTipGroup;
 import spacegame.render.texturelists.MouseAndKeyIconTextureList;
-import spacegame.world.World;
+import spacegame.world.worldtypes.World;
 
 public final class BlockItemClay extends Block {
     public BlockItemClay(short ID, int textureID, String filepath) {

@@ -4,6 +4,7 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
+import spacegame.core.eventlisteners.MouseListener;
 import spacegame.render.AssetPack;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
@@ -105,6 +106,19 @@ public final class GuiSelectAssetPackMainMenu extends Gui {
         this.title = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/assetPackTitle.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
         this.earth = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/earth.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
         this.background = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
+    }
+
+    @Override
+    public void handleInput(){
+        if (this.scrollbar != null) {
+            if (MouseListener.getScrollY() == -1) {
+                //Up
+                this.scrollbar.move(true);
+            } else if (MouseListener.getScrollY() == 1) {
+                //Down
+                this.scrollbar.move(false);
+            }
+        }
     }
 
     @Override
@@ -313,4 +327,14 @@ public final class GuiSelectAssetPackMainMenu extends Gui {
     }
 
 
+    @Override
+    public void handleLeftClick(){
+        AssetPack assetPack = this.getHoveredAssetPack();
+        if(assetPack != null){
+            if(!assetPack.filepath.equals(GameSettings.assetPackPath)){
+                GameSettings.setAssetPackPath(assetPack.filepath);
+                CosmicEvolution.instance.reloadAllTextures();
+            }
+        }
+    }
 }

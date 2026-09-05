@@ -27,6 +27,7 @@ public abstract class GameSettings {
     public static boolean blockTooltips = true;
     public static String assetPackPath = "Default:null";
     public static boolean usingDefaultAssets;
+    public static boolean dynamicLights = false;
     public static KeyBinding keyBeingModified;
     public static KeyBinding forwardKey = new KeyBinding("Forward", "W", GLFW.GLFW_KEY_W);
     public static KeyBinding backwardKey = new KeyBinding("Backward", "S", GLFW.GLFW_KEY_S);
@@ -123,6 +124,9 @@ public abstract class GameSettings {
 
                         usingDefaultAssets = packName.equals("Default");
                     }
+                    if(options[0].equals("dynamicLights")){
+                        dynamicLights = options[1].equals("true");
+                    }
                     if(options[0].equals("forwardKey")){
                         forwardKey.key = options[1];
                         forwardKey.keyCode = KeyMappings.getKeyCodeFromMap(forwardKey.key, forwardKey.keyCode);
@@ -181,6 +185,7 @@ public abstract class GameSettings {
             writer.println("wavyLeaves:" + wavyLeaves);
             writer.println("transparentLeaves:" + transparentLeaves);
             writer.println("assetPackPath:" + assetPackPath);
+            writer.println("dynamicLights:" + dynamicLights);
             writer.println("forwardKey:" + forwardKey.key);
             writer.println("backwardKey:" + backwardKey.key);
             writer.println("leftKey:" + leftKey.key);
@@ -203,43 +208,22 @@ public abstract class GameSettings {
     }
 
 
-    public static void increaseVolume(){
-        volume += KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT) ? 0.1f : 0.01F;
-        if(volume >= 1){
-            volume = 1;
-        }
+    public static void setVolumeFromSlider(float volumeValue){
+        volume = volumeValue;
     }
 
-    public static void decreaseVolume(){
-        volume -= KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT) ? 0.1f : 0.01F;
-        if(volume <= 0){
-            volume = 0;
-        }
+
+    public static void setMusicFromSlider(float musicValue){
+        musicVolume = musicValue;
     }
 
-    public static void increaseMusicVolume(){
-        musicVolume += KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT) ? 0.1f : 0.01F;
-        if(musicVolume >= 1){
-            musicVolume = 1;
-        }
-    }
-
-    public static void decreaseMusicVolume(){
-        musicVolume -= KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT) ? 0.1f : 0.01F;
-        if(musicVolume <= 0){
-            musicVolume = 0;
-        }
-    }
-
-    public static void increaseFOV(){
-        fov += KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT) ? 0.1f : 0.01F;
+    public static void setFOVFromSlider(float fovValue){
+        //Should range from 0 to 1
+        fov = 0.3f + fovValue;
         if(fov >= 1.3F){
             fov = 1.3F;
         }
-    }
 
-    public static void decreaseFOV(){
-        fov -= KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT) ? 0.1f : 0.01F;
         if(fov <= 0.3F){
             fov = 0.3F;
         }
@@ -258,18 +242,8 @@ public abstract class GameSettings {
     }
 
 
-    public static void increaseSensitivity(){
-        sensitivity += KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT) ? 0.1f : 0.01F;
-        if(sensitivity >= 10){
-            sensitivity = 10;
-        }
-    }
-
-    public static void decreaseSensitivity(){
-        sensitivity -= KeyListener.isKeyPressed(GLFW.GLFW_KEY_LEFT_SHIFT) || KeyListener.isKeyPressed(GLFW.GLFW_KEY_RIGHT_SHIFT) ? 0.1f : 0.01F;
-        if(sensitivity <= 0){
-            sensitivity = 0;
-        }
+    public static void setSensitivityFromSlider(float value){
+        sensitivity = value;
     }
 
 

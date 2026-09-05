@@ -7,7 +7,7 @@ import spacegame.core.Timer;
 import spacegame.entity.EntityPlayer;
 import spacegame.render.model.ModelLoader;
 import spacegame.world.Chunk;
-import spacegame.world.World;
+import spacegame.world.worldtypes.World;
 import spacegame.world.blockstate.MultiState;
 import spacegame.world.blockstate.TorchState;
 
@@ -54,7 +54,7 @@ public final class BlockTorch extends Block implements ITimeUpdate {
     }
 
     @Override
-    public void addBlockStates(int x, int y, int z, World world, EntityPlayer player, Chunk chunk){
+    public void addBlockStates(int x, int y, int z, short heldBlock, World world, EntityPlayer player, Chunk chunk){
        int torchFacingDirection = switch (facingDirection) {
             case FACE_NORTH -> TorchState.TORCH_FACE_NORTH;
             case FACE_SOUTH -> TorchState.TORCH_FACE_SOUTH;

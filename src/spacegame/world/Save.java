@@ -10,6 +10,7 @@ import spacegame.item.ItemSpear;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.util.MathUtil;
+import spacegame.world.worldtypes.World;
 
 import java.io.File;
 import java.io.FileInputStream;

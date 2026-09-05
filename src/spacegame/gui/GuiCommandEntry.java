@@ -3,6 +3,7 @@ package spacegame.gui;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
 import spacegame.core.CosmicEvolution;
+import spacegame.core.eventlisteners.KeyListener;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
 public final class GuiCommandEntry extends Gui {
@@ -20,6 +21,17 @@ public final class GuiCommandEntry extends Gui {
     @Override
     public void loadTextures() {
         this.transparentBackground = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
+    }
+
+    @Override
+    public void handleInput(){
+        if(this.ce.save.saveSettings.testingMode){
+            if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_BACKSLASH) && KeyListener.keyReleased[GLFW.GLFW_KEY_BACKSLASH]){
+                this.ce.setNewGui(this.ce.currentGui instanceof GuiInGame ? new GuiCommandEntry(this.ce) : new GuiInGame(this.ce));
+                this.ce.save.activeWorld.toggleWorldPause();
+                KeyListener.setKeyReleased(GLFW.GLFW_KEY_BACKSLASH);
+            }
+        }
     }
 
     @Override

@@ -13,7 +13,7 @@ import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
 import spacegame.render.model.ModelLoader;
 import spacegame.util.MathUtil;
-import spacegame.world.World;
+import spacegame.world.worldtypes.World;
 
 public final class EntityParticle extends EntityNonLiving {
     public boolean useGravity;

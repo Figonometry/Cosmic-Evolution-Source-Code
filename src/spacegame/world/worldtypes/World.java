@@ -1,4 +1,4 @@
-package spacegame.world;
+package spacegame.world.worldtypes;
 
 import org.joml.Vector3d;
 import org.joml.Vector3f;
@@ -17,11 +17,14 @@ import spacegame.render.RenderEngine;
 import spacegame.render.RenderWorldScene;
 import spacegame.render.Shader;
 import spacegame.util.MathUtil;
+import spacegame.world.*;
 import spacegame.world.blockstate.*;
+import spacegame.world.threads.ThreadUpdateLighting;
 import spacegame.world.weather.Cloud;
 import spacegame.world.weather.CloudFormation;
 import spacegame.world.weather.RainQuad;
 import spacegame.world.weather.WeatherSystem;
+import spacegame.world.worldtypes.earthlike.WorldEarth;
 
 import java.awt.*;
 import java.io.File;
@@ -41,7 +44,6 @@ public abstract class World {
     public int cloudCount;
     public int safetyThreshold = 0;
     public byte delayWhenExitingUI;
-    public float sunAngle;
     public CosmicEvolution ce;
     public byte skyLightLevel;
     public float[] skyColor; //used for glClear on the color buffer
@@ -53,6 +55,7 @@ public abstract class World {
     public static int totalMaps;
     public File worldFolder;
     public ChunkController chunkController;
+    public ChunkTerrainHandler chunkTerrainHandler;
     public boolean paused = false;
     public boolean raining;
     public boolean prevRaining;
@@ -73,11 +76,13 @@ public abstract class World {
         this.ce = cosmicEvolution;
         this.size = size;
         this.chunkController = new ChunkController(this);
+        this.chunkTerrainHandler = this.getChunkTerrainHandler();
         Cloud.texture = cosmicEvolution.renderEngine.createTexture("src/spacegame/assets/textures/misc/cloud.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
         RenderWorldScene.rainTexture = cosmicEvolution.renderEngine.createTexture("src/spacegame/assets/textures/misc/rainTexture.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
     }
 
     public void tick() {
+        //this code should likely be delegated down to WorldEarth, the only thing this should really be doing is ticking is the chunk controller
         WeatherSystem weatherSystem;
         CloudFormation cloudFormation;
         Cloud cloud;
@@ -281,17 +286,17 @@ public abstract class World {
 
     public abstract void loadGeologicProvinces();
 
-
+    public abstract ChunkTerrainHandler getChunkTerrainHandler();
 
     public void toggleWorldPause(){
         this.paused = !this.paused;
     }
 
-    public synchronized void addEntity(Entity entity){
+    public  void addEntity(Entity entity){
         this.findChunkFromChunkCoordinates(MathUtil.floorDouble(entity.x) >> 5, MathUtil.floorDouble(entity.y) >> 5, MathUtil.floorDouble(entity.z) >> 5).addEntityToList(entity);
     }
 
-    public synchronized void setBlock(int x, int y, int z, short blockID) {
+    public  void setBlock(int x, int y, int z, short blockID) {
         Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
         if(chunk == null)return;
         if(chunk.blocks == null){
@@ -333,7 +338,7 @@ public abstract class World {
         chunk.updateSkylight = true;
     }
 
-    public synchronized void setBlockAndNotify(int x, int y, int z, short blockID, boolean playerInitiated) {
+    public  void setBlockAndNotify(int x, int y, int z, short blockID, boolean playerInitiated) {
         boolean destroyWater = Block.list[this.getBlockID(x,y,z)] instanceof BlockWater && !(Block.list[blockID] instanceof BlockWater);
         boolean destroyLight = Block.list[this.getBlockID(x,y,z)].isLightBlock(x,y,z, this);
         Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
@@ -386,7 +391,7 @@ public abstract class World {
         return this.chunkController.findChunkFromChunkCoordinates(x, y, z);
     }
 
-    public synchronized ChunkColumnSkylightMap findChunkSkyLightMap(int x, int z) {
+    public  ChunkColumnSkylightMap findChunkSkyLightMap(int x, int z) {
         return this.chunkController.findChunkSkyLightMap(x, z);
     }
 
@@ -431,7 +436,7 @@ public abstract class World {
 
     //Weather systems cover a 512x512 range,
     // this will determine if a weather system exists for a chunk column and load from the inactive list if it finds it otherwise it will generate a new system
-    public synchronized void generateWeatherSystems(int chunkColumnX, int chunkColumnZ){
+    public  void generateWeatherSystems(int chunkColumnX, int chunkColumnZ){
         chunkColumnX >>= 5;
         chunkColumnZ >>= 5;
         if(this.doesWeatherSystemAlreadyExist(chunkColumnX, chunkColumnZ))return;
@@ -748,7 +753,7 @@ public abstract class World {
         return blockBoundingBoxes;
     }
 
-    public synchronized void notifySurroundingBlocks(int x, int y, int z) {
+    public  void notifySurroundingBlocks(int x, int y, int z) {
         this.notifySurroundingBlock(x + 1, y, z);
         this.notifySurroundingBlock(x - 1, y, z);
         this.notifySurroundingBlock(x, y + 1, z);
@@ -757,7 +762,7 @@ public abstract class World {
         this.notifySurroundingBlock(x, y, z - 1);
     }
 
-    public synchronized void notifySurroundingBlocksWithoutRebuild(int x, int y, int z) {
+    public  void notifySurroundingBlocksWithoutRebuild(int x, int y, int z) {
         this.notifySurroundingBlockWithoutRebuild(x + 1, y, z);
         this.notifySurroundingBlockWithoutRebuild(x - 1, y, z);
         this.notifySurroundingBlockWithoutRebuild(x, y + 1, z);
@@ -841,7 +846,7 @@ public abstract class World {
 
     }
 
-    protected void resetNearestLight(int x, int y, int z) {
+    public void resetNearestLight(int x, int y, int z) {
         int[] resetLight = new int[]{x,y,z};
         ArrayList<int[]> lightSearchQueue = new ArrayList<>();
         ArrayList<int[]> previousLightSearchQueue = new ArrayList<>();
@@ -931,7 +936,7 @@ public abstract class World {
         return false;
     }
 
-    protected void queueSurroundingLightBlocks(int x, int y, int z) {
+    public void queueSurroundingLightBlocks(int x, int y, int z) {
         final int xCenter = x;
         final int yCenter = y;
         final int zCenter = z;
@@ -1188,7 +1193,7 @@ public abstract class World {
         return y;
     }
 
-    public synchronized short getBlockID(int x, int y, int z) {
+    public  short getBlockID(int x, int y, int z) {
         Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
         if(chunk != null) {
             if (chunk.blocks != null) {
@@ -1350,24 +1355,25 @@ public abstract class World {
         return Block.list[this.getBlockID(x,y,z)].ID == Block.leaf.ID && MathUtil.floorDouble(this.ce.save.thePlayer.y) < y;
     }
 
-    public synchronized byte getBlockSkyLightValue(int[] coordinates){
+    public  byte getBlockSkyLightValue(int[] coordinates){
         return this.getBlockSkyLightValue(coordinates[0], coordinates[1], coordinates[2]);
     }
 
-    public synchronized byte getBlockSkyLightValue(int x, int y, int z) {
+    public  byte getBlockSkyLightValue(int x, int y, int z) {
         Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
-        return chunk.getSkyLightValue(x, y, z);
+        return chunk == null ? 15 : chunk.getSkyLightValue(x, y, z);
     }
 
 
-    public synchronized byte getBlockLightValue(int x, int y, int z) {
+    public byte getBlockLightValue(int x, int y, int z) {
         Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
-        return chunk.getBlockLightValue(x, y, z);
+        return chunk == null ? 15 : chunk.getBlockLightValue(x, y, z);
     }
 
 
+    //Temp and rainfall should be turned to abstract methods and subclassed
     public double getAverageTemperature(int x, int y, int z) { //Returns average temperature by not calculating seasonal variation
-        if (!(this instanceof WorldEarth)) return 0;
+        if (!(this instanceof WorldEarth)) return 1;
 
         WorldEarth earth = (WorldEarth) this;
 
@@ -1434,11 +1440,11 @@ public abstract class World {
 
             return (globalRainfall + localRainfall + localRainfall2) * 0.85;
         }
-        return 0;
+        return 1;
     }
 
     public double getTemperatureWithoutTimeOfDay(int x, int y, int z){
-        if (!(this instanceof WorldEarth)) return 0;
+        if (!(this instanceof WorldEarth)) return 1;
 
         WorldEarth earth = (WorldEarth) this;
 
@@ -1495,7 +1501,7 @@ public abstract class World {
 
 
     public double getTemperatureWithTimeOfDay(int x, int y, int z) {
-        if (!(this instanceof WorldEarth)) return 0;
+        if (!(this instanceof WorldEarth)) return 1;
 
         WorldEarth earth = (WorldEarth) this;
 
@@ -1550,7 +1556,7 @@ public abstract class World {
         if(this instanceof WorldEarth){
             return this.getTemperatureWithoutTimeOfDay(x,y,z);
         }
-        return 0;
+        return 1;
     }
 
 
@@ -1567,7 +1573,7 @@ public abstract class World {
     }
 
 
-    public synchronized float[] getBlockLightColor(int x, int y, int z) {
+    public  float[] getBlockLightColor(int x, int y, int z) {
         Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
         if(chunk != null) {
             if (chunk.lightColor != null && this.getBlockSkyLightValue(x,y,z) < 1) {
@@ -1580,7 +1586,7 @@ public abstract class World {
         }
     }
 
-    public synchronized int getBlockLightColorAsInt(int x, int y, int z) {
+    public  int getBlockLightColorAsInt(int x, int y, int z) {
         Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
         if(chunk != null) {
             if (chunk.lightColor != null) {
@@ -1593,7 +1599,7 @@ public abstract class World {
         }
     }
 
-    public synchronized boolean doesBlockHaveSkyAccess(int x, int y, int z) {
+    public  boolean doesBlockHaveSkyAccess(int x, int y, int z) {
         ChunkColumnSkylightMap lightMap = this.findChunkSkyLightMap(x >> 5, z >> 5);
         if (x < 0) {
             x %= 32;
@@ -1650,7 +1656,7 @@ public abstract class World {
         }
     }
 
-    private synchronized boolean isLineOfBlocksClear(int x, int y, int z, ChunkColumnSkylightMap lightMap){
+    private  boolean isLineOfBlocksClear(int x, int y, int z, ChunkColumnSkylightMap lightMap){
         int endY = lightMap.lightMap[x + (z << 5)];
 
         for(int i = y; i <= endY; i++){
@@ -1662,7 +1668,7 @@ public abstract class World {
         return true;
     }
 
-    private synchronized boolean doesBlockStopSkyLight(int x, int y, int z){
+    private  boolean doesBlockStopSkyLight(int x, int y, int z){
         String blockName = Block.list[this.getBlockID(x,y,z)].blockName;
         switch (blockName){
             case "LEAF", "AIR":
@@ -2229,7 +2235,7 @@ public abstract class World {
             // --- 6. LEFT CLICK: remove highlighted voxel if filled ---
             if (isLeftClick) {
                 if (filled) {
-                    craftingBlock.removeSubVoxel(highlightedIndex);
+                    craftingBlock.removeSubVoxel(highlightedIndex, x + bx, y + by, z + bz);
                 } else {
                     continue;
                 }

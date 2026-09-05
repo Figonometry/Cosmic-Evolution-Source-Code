@@ -1,7 +1,10 @@
-package spacegame.world;
+package spacegame.world.threads;
 
 import spacegame.block.Block;
 import spacegame.core.CosmicEvolution;
+import spacegame.world.Chunk;
+import spacegame.world.ChunkColumnSkylightMap;
+import spacegame.world.worldtypes.World;
 
 public final class ThreadUpdateLighting implements Runnable {
     public World world;

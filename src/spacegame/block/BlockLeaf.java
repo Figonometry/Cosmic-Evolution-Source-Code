@@ -6,7 +6,7 @@ import spacegame.entity.EntityBlock;
 import spacegame.entity.EntityPlayer;
 import spacegame.render.texturelists.BlockTextureList;
 import spacegame.world.Chunk;
-import spacegame.world.World;
+import spacegame.world.worldtypes.World;
 
 public final class BlockLeaf extends Block {
     public BlockLeaf(short ID, int textureID, String filepath) {

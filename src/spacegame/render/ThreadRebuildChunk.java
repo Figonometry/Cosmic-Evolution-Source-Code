@@ -6,8 +6,8 @@ import spacegame.block.BlockGrass;
 import spacegame.core.CosmicEvolution;
 import spacegame.util.Logger;
 import spacegame.world.Chunk;
-import spacegame.world.ThreadChunkJobScheduler;
-import spacegame.world.World;
+import spacegame.world.threads.ThreadChunkJobScheduler;
+import spacegame.world.worldtypes.World;
 
 public final class ThreadRebuildChunk implements Runnable {
     public Chunk workingChunk;

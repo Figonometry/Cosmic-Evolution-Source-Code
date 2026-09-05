@@ -240,8 +240,8 @@ public class ModelLoader{
                 }
             }
         } catch (IOException e) {
-            System.out.println(this.filepath); //I need to know which model threw since these are all loaded at class load
-            throw new RuntimeException(e);
+            System.out.println("Missing model file: "  + this.filepath); //I need to know which model threw since these are all loaded at class load
+            return;
         }
 
         // shrink to exact size
@@ -443,19 +443,26 @@ public class ModelLoader{
         float rad = (float) Math.toRadians(deg);
 
         Matrix4f rot = new Matrix4f();
-        rot.rotateLocalX(-rad);
+        rot.rotateLocalX(rad); // <-- FIXED
         Quaternionf quaternionf = rot.getUnnormalizedRotation(new Quaternionf());
 
         for(int i = 0; i < this.modelFaces.length; i++){
             if(this.modelFaces[i] != null){
-
                 for(int j = 0; j < this.modelFaces[i].vertices.length; j++){
-
                     this.modelFaces[i].vertices[j].rotate(quaternionf);
-
                 }
-
             }
+        }
+
+        return this;
+    }
+
+
+    public ModelLoader replaceTargetTexture(int targetTexture, int newTexture){
+        for(int i = 0; i < this.modelFaces.length; i++){
+            if(this.modelFaces[i] == null)continue;
+            if(this.modelFaces[i].texture != targetTexture)continue;
+            this.modelFaces[i].texture = newTexture;
         }
 
         return this;

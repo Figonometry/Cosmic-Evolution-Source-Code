@@ -1,5 +1,7 @@
 package spacegame.world;
 
+import spacegame.world.worldtypes.earthlike.WorldEarth;
+
 import java.util.HashSet;
 import java.util.Random;
 

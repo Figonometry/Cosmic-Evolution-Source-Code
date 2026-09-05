@@ -8,7 +8,7 @@ import spacegame.core.Sound;
 import spacegame.entity.EntityPlayer;
 import spacegame.item.Item;
 import spacegame.world.AxisAlignedBB;
-import spacegame.world.World;
+import spacegame.world.worldtypes.World;
 import spacegame.world.blockstate.ChestLocation;
 import spacegame.world.blockstate.MultiState;
 

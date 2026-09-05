@@ -1,6 +1,6 @@
 package spacegame.entity;
 
-import spacegame.world.World;
+import spacegame.world.worldtypes.World;
 
 public interface IHarvestable {
 

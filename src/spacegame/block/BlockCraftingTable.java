@@ -6,7 +6,7 @@ import spacegame.entity.EntityPlayer;
 import spacegame.gui.GuiCraftingTableRecipeSelection;
 import spacegame.item.Item;
 import spacegame.item.crafting.CraftingBlockRecipes;
-import spacegame.world.World;
+import spacegame.world.worldtypes.World;
 
 public final class BlockCraftingTable extends Block {
     public BlockCraftingTable(short ID, int textureID, String filepath) {

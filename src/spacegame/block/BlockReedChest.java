@@ -4,7 +4,7 @@ import spacegame.core.CosmicEvolution;
 import spacegame.core.eventlisteners.MouseListener;
 import spacegame.entity.EntityPlayer;
 import spacegame.gui.GuiInventoryStrawChest;
-import spacegame.world.World;
+import spacegame.world.worldtypes.World;
 import spacegame.world.blockstate.ChestLocation;
 import spacegame.world.blockstate.MultiState;
 

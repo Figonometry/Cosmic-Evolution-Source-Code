@@ -13,8 +13,8 @@ import spacegame.gui.ToolTipGroup;
 import spacegame.item.*;
 import spacegame.render.texturelists.MouseAndKeyIconTextureList;
 import spacegame.world.Chunk;
-import spacegame.world.ThreadUpdateLighting;
-import spacegame.world.World;
+import spacegame.world.threads.ThreadUpdateLighting;
+import spacegame.world.worldtypes.World;
 import spacegame.world.blockstate.CampfireState;
 import spacegame.world.blockstate.ChestLocation;
 import spacegame.world.blockstate.HeatableBlockLocation;
@@ -230,7 +230,7 @@ public final class BlockCampFire extends BlockHeating implements ITickable, IPar
     }
 
     @Override
-    public void addBlockStates(int x, int y, int z, World world, EntityPlayer player, Chunk chunk){
+    public void addBlockStates(int x, int y, int z, short heldBlock, World world, EntityPlayer player, Chunk chunk){
         world.addBlockState(x,y,z, MultiState.CHEST_STATE , new ChestLocation(Chunk.getBlockIndexFromCoordinates(x,y,z), new Inventory(1, 2), world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5)));
         world.addBlockState(x,y,z, MultiState.CAMPFIRE_STATE, new CampfireState(Chunk.getBlockIndexFromCoordinates(x,y,z), false, 0,0));
     }

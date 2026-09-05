@@ -8,8 +8,8 @@ import spacegame.render.Shader;
 
 public final class GuiSettingsMainMenu extends Gui {
     private CosmicEvolution ce;
-    public Button volumeSounds;
-    public Button volumeMusic;
+    public Slider volumeSounds;
+    public Slider volumeMusic;
     public Button videoSettings;
     public Button screenshotFolder;
     public Button keyBinds;
@@ -24,8 +24,8 @@ public final class GuiSettingsMainMenu extends Gui {
     public GuiSettingsMainMenu(CosmicEvolution cosmicEvolution) {
         super(cosmicEvolution);
         this.ce = cosmicEvolution;
-        this.volumeSounds = new Button(EnumButtonEffects.VOLUME_SOUNDS.name(), 512, 64, -300,150, this, this.ce);
-        this.volumeMusic = new Button(EnumButtonEffects.VOLUME_MUSIC.name(), 512, 64, 300, 150, this, this.ce);
+        this.volumeSounds = new Slider(EnumButtonEffects.VOLUME_SOUNDS.name(), 512, 64, -300,150, this, this.ce);
+        this.volumeMusic = new Slider(EnumButtonEffects.VOLUME_MUSIC.name(), 512, 64, 300, 150, this, this.ce);
         this.videoSettings = new Button(EnumButtonEffects.VIDEO_SETTINGS.name(), 512, 64, 0, -150, this, this.ce);
         this.screenshotFolder = new Button(EnumButtonEffects.SCREENSHOT_FOLDER.name(), 512, 64, 0, -250, this, this.ce);
         this.keyBinds = new Button(EnumButtonEffects.KEYBINDS.name(), 512, 64, 0, -50, this, this.ce);

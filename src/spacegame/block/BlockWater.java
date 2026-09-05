@@ -7,7 +7,7 @@ import spacegame.entity.EntityPlayer;
 import spacegame.item.Item;
 import spacegame.render.texturelists.BlockTextureList;
 import spacegame.render.RenderBlocks;
-import spacegame.world.World;
+import spacegame.world.worldtypes.World;
 
 public final class BlockWater extends BlockFluid {
     public BlockWater(short ID, int textureID, String filepath) {

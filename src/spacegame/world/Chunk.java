@@ -14,6 +14,7 @@ import spacegame.render.Shader;
 import spacegame.render.ShouldFaceRenderSorter;
 import spacegame.util.MathUtil;
 import spacegame.world.blockstate.*;
+import spacegame.world.worldtypes.World;
 
 import java.awt.*;
 import java.nio.FloatBuffer;
@@ -120,7 +121,7 @@ public final class Chunk implements Comparable<Chunk> {
         this.parentWorld = world;
     }
 
-    protected boolean isBlockInCallingChunkExcludeEdge(int x, int y, int z){
+    public boolean isBlockInCallingChunkExcludeEdge(int x, int y, int z){
         return x > this.chunkMinX && x < this.chunkMaxX && y > this.chunkMinY && y < this.chunkMaxY && z > this.chunkMinZ && z < this.chunkMaxZ;
     }
 
@@ -935,6 +936,10 @@ public final class Chunk implements Comparable<Chunk> {
 
         ChunkColumnSkylightMap skylightMap = this.parentWorld.findChunkSkyLightMap(this.x >> 5, this.z >> 5);
 
+        if(this.blocks == null){
+            this.initChunk();
+        }
+
         for (int i = 0; i < this.blocks.length; i++) {
             x = this.getBlockXFromIndex(i);
             y = this.getBlockYFromIndex(i);
@@ -1239,71 +1244,52 @@ public final class Chunk implements Comparable<Chunk> {
 
 
     public void renderShadowMap(int sunX, int sunY, int sunZ) {
-        if (this.elementBufferOpaque == null || this.opaqueVAOID == -10 || this.opaqueVBOID == -10 || this.opaqueEBOID == -10 || this.opaqueVAOID == 0 || this.opaqueVBOID == 0 || this.opaqueEBOID == 0) return;
-        if (this.elementBufferOpaque.limit() == 0) return;
 
+        // ----- OPAQUE PASS -----
+        if (!opaqueReady) return;
+        if (opaqueIndexCount == 0 || opaqueVertexCount == 0) return;
+        if (opaqueMaxIndex >= opaqueVertexCount) return;
 
-
-        int indexCount  = this.elementBufferTransparent.limit();
-        int vertexCount = this.vertexBufferTransparent.limit();
-
-        if (indexCount == 0 || vertexCount == 0)return;
-
-
-        int maxIndex = -1;
-        for (int i = this.elementBufferTransparent.position(); i < this.elementBufferTransparent.limit(); i++) {
-            int idx = this.elementBufferTransparent.get(i);
-            if (idx > maxIndex) maxIndex = idx;
-        }
-
-        if (maxIndex >= vertexCount)return;
-
-        indexCount  = this.elementBufferOpaque.limit();
-        vertexCount = this.vertexBufferOpaque.limit();
-
-        if (indexCount == 0 || vertexCount == 0)return;
-
-
-        maxIndex = -1;
-        for (int i = this.elementBufferOpaque.position(); i < this.elementBufferOpaque.limit(); i++) {
-            int idx = this.elementBufferOpaque.get(i);
-            if (idx > maxIndex) maxIndex = idx;
-        }
-
-        if (maxIndex >= vertexCount)return;
-
-
-
-        Shader.shadowMapShaderTerrain.uploadVec3f("chunkOffset", new Vector3f((this.x - sunX) << 5, (this.y - sunY) << 5, (this.z - sunZ) << 5));
+        Shader.shadowMapShaderTerrain.uploadVec3f(
+                "chunkOffset",
+                new Vector3f((this.x - sunX) << 5,
+                        (this.y - sunY) << 5,
+                        (this.z - sunZ) << 5)
+        );
 
         GL46.glBindVertexArray(this.opaqueVAOID);
-        GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, this.opaqueVBOID);
-        GL46.glBindBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, this.opaqueEBOID);
-        GL46.glDrawElements(GL46.GL_TRIANGLES, this.elementBufferOpaque.limit(), GL46.GL_UNSIGNED_INT, 0);
+        GL46.glDrawElements(GL46.GL_TRIANGLES, this.opaqueIndexCount, GL46.GL_UNSIGNED_INT, 0);
 
-        if (this.elementBufferTransparent == null) return;
-        if (this.elementBufferTransparent.limit() == 0)return;
+
+        // ----- TRANSPARENT PASS -----
+        if (!transparentReady) return;
+        if (transparentIndexCount == 0 || transparentVertexCount == 0) return;
+        if (transparentMaxIndex >= transparentVertexCount) return;
 
         GL46.glBindVertexArray(this.transparentVAOID);
-        GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, this.transparentVBOID);
-        GL46.glBindBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, this.transparentEBOID);
-        GL46.glDrawElements(GL46.GL_TRIANGLES, this.elementBufferTransparent.limit(), GL46.GL_UNSIGNED_INT, 0);
+        GL46.glDrawElements(GL46.GL_TRIANGLES, this.transparentIndexCount, GL46.GL_UNSIGNED_INT, 0);
 
 
+        // ----- ENTITY PASS -----
         Entity entity;
-        for(int i = 0; i < this.entities.size(); i++){
+        for (int i = 0; i < this.entities.size(); i++) {
             entity = this.entities.get(i);
-            if(entity instanceof EntityParticle){
-                if(MathUtil.distance3D(entity.x, entity.y, entity.z, CosmicEvolution.instance.save.thePlayer.x, CosmicEvolution.instance.save.thePlayer.y, CosmicEvolution.instance.save.thePlayer.z) <= 32){
-                    entity.renderForShadowMap(sunX, sunY, sunZ);
-                }
+
+            float dist = (float) MathUtil.distance3D(
+                    entity.x, entity.y, entity.z,
+                    CosmicEvolution.instance.save.thePlayer.x,
+                    CosmicEvolution.instance.save.thePlayer.y,
+                    CosmicEvolution.instance.save.thePlayer.z
+            );
+
+            if (entity instanceof EntityParticle) {
+                if (dist <= 32) entity.renderForShadowMap(sunX, sunY, sunZ);
             } else {
-                if(MathUtil.distance3D(entity.x, entity.y, entity.z, CosmicEvolution.instance.save.thePlayer.x, CosmicEvolution.instance.save.thePlayer.y, CosmicEvolution.instance.save.thePlayer.z) <= 128){
-                    entity.renderForShadowMap(sunX, sunY, sunZ);
-                }
+                if (dist <= 128) entity.renderForShadowMap(sunX, sunY, sunZ);
             }
         }
     }
+
 
 
 
@@ -1363,6 +1349,9 @@ public final class Chunk implements Comparable<Chunk> {
     }
 
     public void emptyChunk() {
+        if(true){
+            return;
+        }
         this.empty = true;
         this.blocks = null;
         this.light = null;

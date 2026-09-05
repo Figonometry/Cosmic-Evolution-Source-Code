@@ -3,7 +3,7 @@ package spacegame.item;
 import spacegame.block.Block;
 import spacegame.entity.EntityItem;
 import spacegame.entity.EntityPlayer;
-import spacegame.world.World;
+import spacegame.world.worldtypes.World;
 
 public final class ItemBone extends Item {
     public ItemBone(short ID, String modelFilePath, String filepath) {

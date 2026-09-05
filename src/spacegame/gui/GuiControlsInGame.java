@@ -19,7 +19,7 @@ public final class GuiControlsInGame extends Gui {
     private Button sitKey;
     private Button shiftKey;
     private Button sprintKey;
-    private Button mouseSensitivity;
+    private Slider mouseSensitivity;
     public int title;
     public int background;
 
@@ -36,7 +36,7 @@ public final class GuiControlsInGame extends Gui {
         this.sitKey = new Button(EnumButtonEffects.KEY_SIT.name(), 250, 64, 150, -200, this, this.ce);
         this.shiftKey = new Button(EnumButtonEffects.KEY_SHIFT.name(), 250, 64, -150, -300, this, this.ce);
         this.sprintKey = new Button(EnumButtonEffects.KEY_SPRINT.name(), 250, 64, 150, -300, this, this.ce);
-        this.mouseSensitivity = new Button(EnumButtonEffects.MOUSE_SENSITIVITY.name(), 550, 64, 0, 200, this, this.ce);
+        this.mouseSensitivity = new Slider(EnumButtonEffects.MOUSE_SENSITIVITY.name(), 550, 64, 0, 200, this, this.ce);
         this.back = new Button(EnumButtonEffects.BACK.name(), 550, 64, 0, -400, this, this.ce);
     }
 

@@ -16,7 +16,11 @@ public abstract class Gui {
 
     public abstract void drawGui();
 
+    public void handleInput(){}
 
+    public void handleLeftClick(){}
+
+    public void handleRightClick(){}
 
     public abstract Button getActiveButton();
 

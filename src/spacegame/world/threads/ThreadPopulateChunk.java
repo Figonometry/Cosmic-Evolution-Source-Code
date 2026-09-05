@@ -1,6 +1,8 @@
-package spacegame.world;
+package spacegame.world.threads;
 
 import spacegame.core.CosmicEvolution;
+import spacegame.world.Chunk;
+import spacegame.world.worldtypes.World;
 
 public final class ThreadPopulateChunk implements Runnable {
     private Chunk chunk;
@@ -12,7 +14,7 @@ public final class ThreadPopulateChunk implements Runnable {
     }
     @Override
     public void run() {
-        this.world.chunkController.chunkEarthTerrainHandler.populateChunk(this.chunk);
+        this.world.chunkTerrainHandler.populateChunk(this.chunk);
 
         synchronized (this.world.chunkController.lightingUpdateChunks){ //Once populated immediatly pass to the lighting thread
             this.chunk.dirtyLighting = true;

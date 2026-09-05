@@ -30,7 +30,10 @@ import spacegame.render.*;
 import spacegame.util.Logger;
 import spacegame.util.ScreenshotHandler;
 import spacegame.world.*;
-import spacegame.world.weather.Cloud;
+import spacegame.world.threads.ThreadChunkJobScheduler;
+import spacegame.world.worldtypes.World;
+import spacegame.world.worldtypes.earthlike.WorldEarth;
+import spacegame.world.worldtypes.testworld.WorldTest;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -50,6 +53,7 @@ public final class CosmicEvolution implements Runnable {
     public final String launcherFilepath;
     public static final Random globalRand = new Random();
     public volatile boolean running;
+    private static final boolean TEST_WORLD = false;
     public String title;
     public static int width = 1920;
     public static int height = 1080;
@@ -70,6 +74,7 @@ public final class CosmicEvolution implements Runnable {
     public static final AtomicInteger threadJobs = new AtomicInteger();
     public Thread dirtyChunksSchedulerThread;
     public String osName;
+    public Button currentButtonOnMouse;
 
 
     public static void main(String[] args) {
@@ -118,7 +123,7 @@ public final class CosmicEvolution implements Runnable {
         threadPool = new ThreadPoolExecutor(workerCount, workerCount, 0L, TimeUnit.MILLISECONDS, new PriorityBlockingQueue<>());
         this.dirtyChunksSchedulerThread = new Thread(new ThreadChunkJobScheduler());
         this.dirtyChunksSchedulerThread.start();
-        this.title = "Cosmic Evolution Alpha v0.53.1";
+        this.title = "Cosmic Evolution Alpha v0.54";
         GameSettings.loadOptionsFromFile(this.launcherDirectory);
         Block.registerAllBlockTooltips();
         EntityLiving.registerEntityLivingToolTip();
@@ -268,7 +273,6 @@ public final class CosmicEvolution implements Runnable {
             this.timer.advanceTime();
             for (int i = 0; i < this.timer.ticks; i++) {
                 this.tick();
-
                 fpsTimer--;
                 if (fpsTimer <= 0) {
                     this.fps = (int) (1000000000.0 / (lastTime - System.nanoTime()));
@@ -291,13 +295,17 @@ public final class CosmicEvolution implements Runnable {
         this.save.thePlayer = new EntityPlayer(this, 0, 0, 0);
         this.save.thePlayer.setPlayerActualPos(x,2, z);
         this.setNewGui(new GuiWorldLoading(this));
-        this.save.setActiveWorld(new WorldEarth(this, 400704));
+        this.save.setActiveWorld(TEST_WORLD ? new WorldTest(this, 400704) : new WorldEarth(this, 400704));
         this.save.activeWorld.paused = true;
 
-        Thread textureLoadThread = new Thread(new ThreadGenerateCelestialBodyTextures(this.everything.earth, true));
-        textureLoadThread.setName("Celestial Load Thread");
-        textureLoadThread.setPriority(10);
-        textureLoadThread.start();
+        if(!(this.save.activeWorld instanceof WorldTest)) {
+            Thread textureLoadThread = new Thread(new ThreadGenerateCelestialBodyTextures(this.everything.earth, true));
+            textureLoadThread.setName("Celestial Load Thread");
+            textureLoadThread.setPriority(10);
+            textureLoadThread.start();
+        } else {
+            World.worldLoadPhase = 2;
+        }
     }
 
     public void startSave(File saveFile) {
@@ -318,13 +326,18 @@ public final class CosmicEvolution implements Runnable {
         }
         this.save.thePlayer.setPlayerActualPos(x, y, z); //This needs to read and set the position using the player's actual location read from file
         this.setNewGui(new GuiWorldLoading(this));
-        this.save.setActiveWorld(new WorldEarth(this, 400704));
+        this.save.setActiveWorld(TEST_WORLD ? new WorldTest(this, 400704) : new WorldEarth(this, 400704));
         this.save.activeWorld.paused = true;
 
-        Thread textureLoadThread = new Thread(new ThreadGenerateCelestialBodyTextures(this.everything.earth, false));
-        textureLoadThread.setName("Celestial Load Thread");
-        textureLoadThread.setPriority(10);
-        textureLoadThread.start();
+
+        if(!(this.save.activeWorld instanceof WorldTest)) {
+            Thread textureLoadThread = new Thread(new ThreadGenerateCelestialBodyTextures(this.everything.earth, false));
+            textureLoadThread.setName("Celestial Load Thread");
+            textureLoadThread.setPriority(10);
+            textureLoadThread.start();
+        } else {
+            World.worldLoadPhase = 2;
+        }
     }
 
     private void tick() {
@@ -390,17 +403,19 @@ public final class CosmicEvolution implements Runnable {
     private void processInput() {
         GameSettings.switchKeyBinds();
         this.checkKeyBindStates();
-
-        if(this.currentGui instanceof GuiUniverseMap) {
-            if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_CAPS_LOCK) && KeyListener.keyReleased[GLFW.GLFW_KEY_CAPS_LOCK]) {
-                ((GuiUniverseMap)this.currentGui).switchObject();
-                KeyListener.setKeyReleased(GLFW.GLFW_KEY_CAPS_LOCK);
-            }
-        }
+        this.currentGui.handleInput();
 
         if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_CAPS_LOCK) && KeyListener.keyReleased[GLFW.GLFW_KEY_CAPS_LOCK]){
             KeyListener.capsLockEnabled = !KeyListener.capsLockEnabled;
             KeyListener.setKeyReleased(GLFW.GLFW_KEY_CAPS_LOCK);
+        }
+
+
+        if(!MouseListener.mouseButtonDown(GLFW.GLFW_MOUSE_BUTTON_LEFT)){
+            if(this.currentButtonOnMouse != null) {
+                this.currentButtonOnMouse.clicked = false;
+                this.currentButtonOnMouse = null;
+            }
         }
 
         if(this.save != null) {
@@ -440,15 +455,6 @@ public final class CosmicEvolution implements Runnable {
                     KeyListener.setKeyReleased(GLFW.GLFW_KEY_U);
                 }
             }
-
-
-            if(this.save.saveSettings.testingMode && this.currentGui instanceof GuiInGame || this.currentGui instanceof GuiCommandEntry){
-                if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_BACKSLASH) && KeyListener.keyReleased[GLFW.GLFW_KEY_BACKSLASH]){
-                    this.setNewGui(this.currentGui instanceof GuiInGame ? new GuiCommandEntry(this) : new GuiInGame(this));
-                    this.save.activeWorld.toggleWorldPause();
-                    KeyListener.setKeyReleased(GLFW.GLFW_KEY_BACKSLASH);
-                }
-            }
         }
 
         if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_F2) && KeyListener.keyReleased[GLFW.GLFW_KEY_F2]) {
@@ -461,43 +467,15 @@ public final class CosmicEvolution implements Runnable {
             }
         }
 
-        if(this.currentGui instanceof GuiInGame) {
-            if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_1)) {
-                EntityPlayer.selectedInventorySlot = 0;
-            }
 
-            if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_2)) {
-                EntityPlayer.selectedInventorySlot = 1;
-            }
-
-            if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_3)) {
-                EntityPlayer.selectedInventorySlot = 2;
-            }
-
-            if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_4)) {
-                EntityPlayer.selectedInventorySlot = 3;
-            }
-
-            if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_5)) {
-                EntityPlayer.selectedInventorySlot = 4;
-            }
-
-            if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_6)) {
-                EntityPlayer.selectedInventorySlot = 5;
-            }
-
-            if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_7)) {
-                EntityPlayer.selectedInventorySlot = 6;
-            }
-
-            if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_8)) {
-                EntityPlayer.selectedInventorySlot = 7;
-            }
-
-            if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_9)) {
-                EntityPlayer.selectedInventorySlot = 8;
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_F3) && KeyListener.isKeyPressed(GLFW.GLFW_KEY_A)){
+            if(this.save != null) {
+                if (this.save.activeWorld != null) {
+                    this.save.activeWorld.chunkController.markAllChunksDirty();
+                }
             }
         }
+
 
 
 
@@ -510,73 +488,11 @@ public final class CosmicEvolution implements Runnable {
                 }
             }
         }
+
         if (MouseListener.mouseButtonDown(GLFW.GLFW_MOUSE_BUTTON_RIGHT)) {
             this.rightClick();
         }
 
-        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_TAB) && KeyListener.keyReleased[GLFW.GLFW_KEY_TAB]){
-            if(this.currentGui instanceof GuiInGame){
-                this.setNewGui(new GuiUniverseMap(this));
-                setGLClearColor(0,0,0,0);
-            } else if(this.currentGui instanceof GuiUniverseMap){
-                this.setNewGui(new GuiInGame(this));
-            }
-            KeyListener.setKeyReleased(GLFW.GLFW_KEY_TAB);
-        }
-
-        if(KeyListener.isKeyPressed(GameSettings.inventoryKey.keyCode) && KeyListener.keyReleased[GameSettings.inventoryKey.keyCode]){
-            if(this.currentGui instanceof GuiInGame){
-                this.setNewGui(new GuiInventoryPlayer(this, this.save.thePlayer.inventory));
-            } else if(this.currentGui instanceof GuiInventory){
-                this.setNewGui(new GuiInGame(this));
-                GLFW.glfwSetInputMode(this.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
-            }
-            KeyListener.setKeyReleased(GameSettings.inventoryKey.keyCode);
-        }
-
-        if(this.currentGui instanceof GuiUniverseMap){
-            ((GuiUniverseMap)this.currentGui).updateCamera();
-        }
-
-        if(this.currentGui instanceof GuiDeletingWorld){
-            if(((GuiDeletingWorld)this.currentGui).associatedThread.completed){
-                this.setNewGui(new GuiWorldSelect(this));
-            }
-        }
-
-        if(this.currentGui instanceof GuiSavingWorld){
-            if(threadJobs.get() == 0) {
-                this.save = null;
-                this.setNewGui(new GuiMainMenu(this));
-                this.renderEngine.deleteTexture(Cloud.texture);
-                this.renderEngine.deleteTexture(RenderWorldScene.rainTexture);
-            }
-        }
-
-        if(this.currentGui instanceof GuiInGame) {
-            if (MouseListener.getScrollY() == -1) {
-                EntityPlayer.selectedInventorySlot++;
-                if (EntityPlayer.selectedInventorySlot > 8) {
-                    EntityPlayer.selectedInventorySlot = 0;
-                }
-            } else if (MouseListener.getScrollY() == 1) {
-                EntityPlayer.selectedInventorySlot--;
-                if (EntityPlayer.selectedInventorySlot < 0) {
-                    EntityPlayer.selectedInventorySlot = 8;
-                }
-            }
-        }
-        if(this.currentGui instanceof GuiSelectAssetPackMainMenu) {
-            if (((GuiSelectAssetPackMainMenu) this.currentGui).scrollbar != null) {
-                if (MouseListener.getScrollY() == -1) {
-                    //Up
-                    ((GuiSelectAssetPackMainMenu) this.currentGui).scrollbar.move((true));
-                } else if (MouseListener.getScrollY() == 1) {
-                    //Down
-                    ((GuiSelectAssetPackMainMenu) this.currentGui).scrollbar.move((false));
-                }
-            }
-        }
         MouseListener.instance.scrollY = 0;
         MouseListener.endFrame();
         GLFW.glfwPollEvents();
@@ -621,130 +537,44 @@ public final class CosmicEvolution implements Runnable {
         KeyListener.checkIfKeysArePressed();
     }
 
-    //This function needs to be cleaned up, it does 4 things which should be sub functioned, and if possible the item stack code should be simplified so it's not impossible to read
+    //This function needs to be cleaned up, it does 4 things which should be sub functioned,
+    // and if possible the item stack code should be simplified so it's not impossible to read
+    //Delegate to the GUI class tree
     private void leftClick() {
-        if(this.save != null) {
+        if (this.save != null) {
             this.save.handleLeftClick();
         }
-        if(this.currentGui instanceof GuiInventory && MouseListener.leftClickReleased){
-            ItemStack stack;
-            stack = ((GuiInventory)this.currentGui).getHoveredItemStack();
-            if(stack != null) {
-                if(ItemStack.itemStackOnMouse.item != null) {
-                    if(ItemStack.itemStackOnMouse.item.equals(stack.item) && (stack.metadata == ItemStack.itemStackOnMouse.metadata) && stack.doStatesMatch(ItemStack.itemStackOnMouse.itemState)){
-                        if(stack.count + ItemStack.itemStackOnMouse.count <= stack.item.stackLimit) {
-                            if (MouseListener.leftClickReleased) {
-                                stack.mergeStack(ItemStack.itemStackOnMouse);
-                                ItemStack.itemStackOnMouse.item = null;
-                                ItemStack.itemStackOnMouse.count = 0;
-                                ItemStack.itemStackOnMouse.metadata = Item.NULL_ITEM_METADATA;
-                                ItemStack.itemStackOnMouse.durability = Item.NULL_ITEM_DURABILITY;
-                                ItemStack.itemStackOnMouse.decayTime = 0L;
-                                ItemStack.itemStackOnMouse.itemState = null;
-                            }
-                        } else {
-                            if (MouseListener.leftClickReleased) {
-                                while (stack.count < stack.item.stackLimit) {
-                                    stack.count++;
-                                    ItemStack.itemStackOnMouse.count--;
-                                }
-                            }
-                        }
-                    } else if(stack.item == null){
-                        if (MouseListener.leftClickReleased) {
-                            if (stack.usesExclusiveItem && stack.exclusiveItemType.equals(ItemStack.itemStackOnMouse.item.itemType)) {
-                                stack.item = ItemStack.itemStackOnMouse.item;
-                                stack.count = ItemStack.itemStackOnMouse.count;
-                                stack.metadata = ItemStack.itemStackOnMouse.metadata;
-                                stack.durability = ItemStack.itemStackOnMouse.durability;
-                                stack.decayTime = ItemStack.itemStackOnMouse.decayTime;
-                                stack.itemState = ItemStack.itemStackOnMouse.itemState != null ? ItemStack.itemStackOnMouse.itemState.copy() : null;
-                                ItemStack.itemStackOnMouse.item = null;
-                                ItemStack.itemStackOnMouse.count = 0;
-                                ItemStack.itemStackOnMouse.metadata = Item.NULL_ITEM_METADATA;
-                                ItemStack.itemStackOnMouse.durability = Item.NULL_ITEM_DURABILITY;
-                                ItemStack.itemStackOnMouse.decayTime = 0L;
-                                ItemStack.itemStackOnMouse.itemState = null;
-                                if(stack.exclusiveItemType.equals(Item.ITEM_TYPE_PLAYER_STORAGE)){
-                                    this.save.thePlayer.setPlayerStorageLevel((byte) stack.item.storageLevel);
-                                }
-                            } else if(!stack.usesExclusiveItem){
-                                stack.item = ItemStack.itemStackOnMouse.item;
-                                stack.count = ItemStack.itemStackOnMouse.count;
-                                stack.metadata = ItemStack.itemStackOnMouse.metadata;
-                                stack.durability = ItemStack.itemStackOnMouse.durability;
-                                stack.decayTime = ItemStack.itemStackOnMouse.decayTime;
-                                stack.itemState = ItemStack.itemStackOnMouse.itemState != null ? ItemStack.itemStackOnMouse.itemState.copy() : null;
-                                ItemStack.itemStackOnMouse.item = null;
-                                ItemStack.itemStackOnMouse.count = 0;
-                                ItemStack.itemStackOnMouse.metadata = Item.NULL_ITEM_METADATA;
-                                ItemStack.itemStackOnMouse.durability = Item.NULL_ITEM_DURABILITY;
-                                ItemStack.itemStackOnMouse.decayTime = 0L;
-                                ItemStack.itemStackOnMouse.itemState = null;
-                            }
-                        }
-                    } else if(!stack.item.equals(ItemStack.itemStackOnMouse.item) || (stack.metadata != ItemStack.itemStackOnMouse.metadata) || !stack.doStatesMatch(ItemStack.itemStackOnMouse.itemState)){
-                        ItemStack tempStack = new ItemStack(null, (byte)0, 0,0);
-                        tempStack.item = stack.item;
-                        tempStack.count = stack.count;
-                        tempStack.durability = stack.durability;
-                        tempStack.metadata = stack.metadata;
-                        tempStack.decayTime = stack.decayTime;
-                        tempStack.itemState = stack.itemState != null ? stack.itemState.copy() : null;
+        this.currentGui.handleLeftClick();
 
-                        stack.item = ItemStack.itemStackOnMouse.item;;
-                        stack.count = ItemStack.itemStackOnMouse.count;
-                        stack.durability = ItemStack.itemStackOnMouse.durability;
-                        stack.metadata = ItemStack.itemStackOnMouse.metadata;
-                        stack.decayTime = ItemStack.itemStackOnMouse.decayTime;
-                        stack.itemState = ItemStack.itemStackOnMouse.itemState != null ? ItemStack.itemStackOnMouse.itemState.copy() : null;
 
-                        ItemStack.itemStackOnMouse.item = tempStack.item;
-                        ItemStack.itemStackOnMouse.count = tempStack.count;
-                        ItemStack.itemStackOnMouse.durability = tempStack.durability;
-                        ItemStack.itemStackOnMouse.metadata = tempStack.metadata;
-                        ItemStack.itemStackOnMouse.decayTime = tempStack.decayTime;
-                        ItemStack.itemStackOnMouse.itemState = tempStack.itemState != null ? tempStack.itemState.copy() : null;
-                    }
-                } else if(stack.item != null) {
-                    if (MouseListener.leftClickReleased) {
-                        ItemStack.itemStackOnMouse.item = stack.item;
-                        ItemStack.itemStackOnMouse.count = stack.count;
-                        ItemStack.itemStackOnMouse.metadata = stack.metadata;
-                        ItemStack.itemStackOnMouse.durability = stack.durability;
-                        ItemStack.itemStackOnMouse.decayTime = stack.decayTime;
-                        ItemStack.itemStackOnMouse.exclusiveItemType = stack.exclusiveItemType;
-                        ItemStack.itemStackOnMouse.itemState = stack.itemState != null ? stack.itemState.copy() : null;
-                        stack.item = null;
-                        stack.count = 0;
-                        stack.metadata = Item.NULL_ITEM_METADATA;
-                        stack.durability = Item.NULL_ITEM_DURABILITY;
-                        stack.decayTime = 0L;
-                        stack.itemState = null;
-                        if(stack.usesExclusiveItem && stack.exclusiveItemType.equals(Item.ITEM_TYPE_PLAYER_STORAGE)){
-                            this.save.thePlayer.setPlayerStorageLevel((byte) 1);
-                        }
+        Button button = this.currentGui.getActiveButton();
+        if (button != null) {
+            if (MouseListener.leftClickReleased) {
+                if (!button.clicked) {
+                    if (this.save != null) {
+                        CosmicEvolution.instance.soundPlayer.playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound("src/spacegame/assets/sound/buttonPress.ogg", false, 1f), 1);
+                    } else {
+                        CosmicEvolution.instance.soundPlayer.playSound(CosmicEvolution.camera.position.x, CosmicEvolution.camera.position.y, CosmicEvolution.camera.position.z, new Sound("src/spacegame/assets/sound/buttonPress.ogg", false, 1f), 1);
                     }
                 }
+                button.onLeftClick();
             }
         }
-        Button button =  this.currentGui.getActiveButton();
-        if(button != null){
-            if(MouseListener.leftClickReleased) {
-                if(this.save != null) {
-                    CosmicEvolution.instance.soundPlayer.playSound(this.save.thePlayer.x, this.save.thePlayer.y, this.save.thePlayer.z, new Sound("src/spacegame/assets/sound/buttonPress.ogg", false, 1f), 1);
-                } else {
-                    CosmicEvolution.instance.soundPlayer.playSound(CosmicEvolution.camera.position.x, CosmicEvolution.camera.position.y, CosmicEvolution.camera.position.z, new Sound("src/spacegame/assets/sound/buttonPress.ogg", false, 1f), 1);
-                }
-                    button.onLeftClick();
-            }
+
+
+        if(this.currentButtonOnMouse != null && this.currentButtonOnMouse instanceof Slider){
+            this.currentButtonOnMouse.onLeftClick();
+        }
+
+        if (this.currentButtonOnMouse == null || !this.currentButtonOnMouse.clicked) {
+            this.currentButtonOnMouse = button;
         }
 
         TextField textField = this.currentGui.getTextField();
-        if(textField != null){
-            if(MouseListener.leftClickReleased) {
-                if(textField != this.currentlySelectedField){
-                    if(this.currentlySelectedField != null){
+        if (textField != null) {
+            if (MouseListener.leftClickReleased) {
+                if (textField != this.currentlySelectedField) {
+                    if (this.currentlySelectedField != null) {
                         this.currentlySelectedField.typing = false;
                     }
                 }
@@ -754,32 +584,7 @@ public final class CosmicEvolution implements Runnable {
         }
 
 
-        if(this.currentGui instanceof GuiCrafting){
-           ((GuiCrafting)this.currentGui).handleLeftClick();
-        }
-
-        if(this.currentGui instanceof GuiSelectAssetPackMainMenu){
-          AssetPack assetPack = ((GuiSelectAssetPackMainMenu) this.currentGui).getHoveredAssetPack();
-          if(assetPack != null){
-              if(!assetPack.filepath.equals(GameSettings.assetPackPath)){
-                  GameSettings.setAssetPackPath(assetPack.filepath);
-                  this.reloadAllTextures();
-              }
-          }
-        }
-
-        if(this.currentGui instanceof GuiSelectAssetPackInGame){
-            AssetPack assetPack = ((GuiSelectAssetPackInGame) this.currentGui).getHoveredAssetPack();
-            if(assetPack != null){
-                if(!assetPack.filepath.equals(GameSettings.assetPackPath)){
-                    GameSettings.setAssetPackPath(assetPack.filepath);
-                    this.reloadAllTextures();
-                }
-            }
-        }
-
-
-        MouseListener.leftClickReleased = false;
+        MouseListener.leftClickReleased = button instanceof Slider;
     }
 
 

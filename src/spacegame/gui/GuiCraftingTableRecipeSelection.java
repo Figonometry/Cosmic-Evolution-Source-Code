@@ -8,6 +8,7 @@ import spacegame.block.BlockCraftingTable;
 import spacegame.core.CosmicEvolution;
 import spacegame.entity.EntityPlayer;
 import spacegame.item.Item;
+import spacegame.item.ItemSpear;
 import spacegame.item.crafting.CraftingBlockRecipes;
 import spacegame.render.Assets;
 import spacegame.render.RenderBlocks;
@@ -53,34 +54,35 @@ public final class GuiCraftingTableRecipeSelection extends GuiCrafting {
 
         ArrayList<Integer> checkedIDs = new ArrayList<>();
         short checkedItemID = 0;
+        short checkedMetadata = 0;
         ArrayList<RecipeSelector> selectableRecipeList = new ArrayList<>();
         EntityPlayer player = CosmicEvolution.instance.save.thePlayer;
 
         for(int i = 0; i < player.inventory.itemStacks.length; i++){
             if(player.inventory.itemStacks[i].item == null)continue;
             checkedItemID = player.inventory.itemStacks[i].item.ID; //Obtain the item id from each inventory stack
+            checkedMetadata = player.inventory.itemStacks[i].metadata;
+
 
             for(int j = 0; j < CraftingBlockRecipes.list.length; j++){ //Compare each recipe to see if it contains the checked item, skipping any that have already been listed, if it does add it to the list
                 if(CraftingBlockRecipes.list[j] == null)continue;
                 if(CraftingBlockRecipes.list[j].techLevelRequired > this.craftingTableTechLevel)continue;
                 if(this.hasRecipeAlreadyAppeared(CraftingBlockRecipes.list[j].ID, checkedIDs))continue;
 
-                if(this.doesRecipeContainItem(checkedItemID, CraftingBlockRecipes.list[j])){
+                if(this.doesRecipeContainItemAndMetadata(checkedItemID, checkedMetadata, CraftingBlockRecipes.list[j])){
                     checkedIDs.add(CraftingBlockRecipes.list[j].ID);
 
                     RecipeSelector recipeSelector;
-                    if(CraftingBlockRecipes.list[j].isBlock){
-                        recipeSelector = new RecipeSelector(CraftingBlockRecipes.list[j].itemID, CraftingBlockRecipes.list[j].blockID, selectableX, selectableY, selectableWidth, selectableHeight
-                        , Item.list[CraftingBlockRecipes.list[j].itemID].getDisplayName(Item.NULL_ITEM_REFERENCE),
-                                CraftingBlockRecipes.list[j].requiredItems, CraftingBlockRecipes.list[j].requiredItemCount, CraftingBlockRecipes.list[j].requiredItemMetadata);
-                    } else {
-                        recipeSelector = new RecipeSelector(CraftingBlockRecipes.list[j].itemID,selectableX, selectableY, selectableWidth, selectableHeight
-                                , Item.list[CraftingBlockRecipes.list[j].itemID].getDisplayName(Item.NULL_ITEM_REFERENCE),
-                                CraftingBlockRecipes.list[j].requiredItems, CraftingBlockRecipes.list[j].requiredItemCount, CraftingBlockRecipes.list[j].requiredItemMetadata);
-                    }
+                    recipeSelector = new RecipeSelector(CraftingBlockRecipes.list[j].itemID, CraftingBlockRecipes.list[j].metadata, selectableX, selectableY, selectableWidth, selectableHeight
+                    , Item.list[CraftingBlockRecipes.list[j].itemID].getDisplayName(CraftingBlockRecipes.list[j].itemID, CraftingBlockRecipes.list[j].metadata),
+                            CraftingBlockRecipes.list[j].requiredItems, CraftingBlockRecipes.list[j].requiredItemCount, CraftingBlockRecipes.list[j].requiredItemMetadata, CraftingBlockRecipes.list[j].itemID == Item.block.ID);
 
                     selectableRecipeList.add(recipeSelector);
                     selectableX += 64;
+                    if(selectableX == 384){
+                        selectableY -= 64;
+                        selectableX = -320;
+                    }
                 }
 
             }
@@ -97,13 +99,17 @@ public final class GuiCraftingTableRecipeSelection extends GuiCrafting {
         return selectableRecipes;
     }
 
-    private boolean doesRecipeContainItem(short checkedItemID, CraftingBlockRecipes recipe){
+    private boolean doesRecipeContainItemAndMetadata(short checkedItemID, short checkedMetadata, CraftingBlockRecipes recipe){
         for(int i = 0; i < recipe.requiredItems.length; i++){
-            if(recipe.requiredItems[i] == checkedItemID){
+            if(recipe.requiredItems[i] == checkedItemID && recipe.requiredItemMetadata[i] == checkedMetadata){
                 return true;
             }
         }
         return false;
+    }
+
+    private boolean doesRecipeContainItemAndMetadataNew(short checkedItemID, short checkedMetadata, CraftingBlockRecipes recipe){
+        return recipe.minimumRequiredItemID == checkedItemID && recipe.minimumRequiredItemMetadata == checkedMetadata;
     }
 
     private boolean hasRecipeAlreadyAppeared(int recipeID, ArrayList<Integer> checkedIDs){
@@ -133,7 +139,7 @@ public final class GuiCraftingTableRecipeSelection extends GuiCrafting {
         if(recipeSelector != null){
             if(recipeSelector.meetsCriteriaToMakeRecipe(CosmicEvolution.instance.save.thePlayer) &&  !(Block.list[this.ce.save.activeWorld.getBlockID(this.x, this.y + 1, this.z)] instanceof BlockCraftingTable)){
                 this.ce.save.activeWorld.setBlockAndNotify(this.x, this.y + 1, this.z, Block.craftingItem.ID, false);
-                this.ce.save.activeWorld.addBlockState(this.x, this.y + 1, this.z, MultiState.CRAFTING_ITEM_STATE, new InWorldCraftingItem(CraftingBlockRecipes.getRecipeFromOutputItem(recipeSelector.itemID), Chunk.getBlockIndexFromCoordinates(this.x, this.y + 1, this.z), this.ce.save.activeWorld.findChunkFromChunkCoordinates(this.x >> 5, (this.y + 1) >> 5, this.z >> 5)));
+                this.ce.save.activeWorld.addBlockState(this.x, this.y + 1, this.z, MultiState.CRAFTING_ITEM_STATE, new InWorldCraftingItem(CraftingBlockRecipes.getRecipeFromOutputItemAndMetadata(recipeSelector.itemID, recipeSelector.metadata), Chunk.getBlockIndexFromCoordinates(this.x, this.y + 1, this.z), this.ce.save.activeWorld.findChunkFromChunkCoordinates(this.x >> 5, (this.y + 1) >> 5, this.z >> 5)));
                 GLFW.glfwSetInputMode(CosmicEvolution.instance.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
                 CosmicEvolution.instance.setNewGui(new GuiInGame(CosmicEvolution.instance));
             }
@@ -142,7 +148,7 @@ public final class GuiCraftingTableRecipeSelection extends GuiCrafting {
 
     @Override
     public void loadTextures() {
-        this.backgroundTexture = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiCrafting/potteryBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
+        this.backgroundTexture = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiCrafting/primitiveCraftingTableBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
         this.transparentBackground = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
         this.fillableColor = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/fillableColor.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
         this.outline = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/outline.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
@@ -245,11 +251,11 @@ public final class GuiCraftingTableRecipeSelection extends GuiCrafting {
             selectableZ = -880;
             for (int i = 0; i < this.selectableRecipes.length; i++) {
                 if (this.selectableRecipes[i].isBlock) continue;
-                ModelLoader model = Item.list[this.selectableRecipes[i].itemID].itemModel.copyModel();
-                model.scaleModel(38f);
+                ModelLoader model = Item.list[this.selectableRecipes[i].itemID].getItemModel(this.selectableRecipes[i].metadata).copyModel();
+                model.scaleModel(Item.list[this.selectableRecipes[i].itemID] instanceof ItemSpear ? 28f : 38f);
                 model.rotateModel(45, 0, 1, 0);
                 model.rotateModel(36, 1, 0, 0);
-                Vector3f position = new Vector3f(this.selectableRecipes[i].x, this.selectableRecipes[i].y, -50);
+                Vector3f position = new Vector3f(this.selectableRecipes[i].x, this.selectableRecipes[i].y, -200);
                 model.translateModel(position.x, position.y, position.z);
                 ModelFace[] faces;
                 float textureID;
@@ -303,14 +309,14 @@ public final class GuiCraftingTableRecipeSelection extends GuiCrafting {
 
             for (int i = 0; i < this.selectableRecipes.length; i++) {
                 if (!this.selectableRecipes[i].isBlock) continue;
-                ModelLoader model = Block.list[this.selectableRecipes[i].blockID].blockModel.copyModel();
+                ModelLoader model = Block.list[this.selectableRecipes[i].metadata].blockModel.copyModel();
                 model.translateModel(-0.5f, 0, -0.5f);
                 model.scaleModel(38f);
                 model.rotateModel(45, 0, 1, 0);
                 model.rotateModel(36, 1, 0, 0);
                 model.translateModel(0.5f, 0, 0.5f);
                 Vector3f position = new Vector3f(this.selectableRecipes[i].x, this.selectableRecipes[i].y - 16, -50);
-               model.translateModel(position.x, position.y, position.z);
+                model.translateModel(position.x, position.y, position.z);
                 ModelFace[] faces;
                 float textureID;
                 int colorRGB = 255;
@@ -328,7 +334,7 @@ public final class GuiCraftingTableRecipeSelection extends GuiCrafting {
                     faces = model.getModelFaceOfType(face);
                     for (int j = 0; j < faces.length; j++) {
                         if (faces[j] == null) continue;
-                        textureID = Block.list[this.selectableRecipes[i].blockID].getBlockTexture(this.selectableRecipes[i].blockID, 0, 0, 0, face);
+                        textureID = Block.list[this.selectableRecipes[i].metadata].getBlockTexture(this.selectableRecipes[i].metadata, 0, 0, 0, face);
 
 
                         switch (faces[j].faceType){
@@ -414,11 +420,11 @@ public final class GuiCraftingTableRecipeSelection extends GuiCrafting {
                 fontRenderer.drawString(hoveredRecipe.requiredItemCount[i] + "x: ", x, y, -9, 16777215, 50, 255);
                 x += 64 + (hoveredRecipe.requiredItemCount[i] >= 100 ? 2 * 17 : hoveredRecipe.requiredItemCount[i] >= 10 ? 17 : 0);
                 y -= 8;
-                ModelLoader model = Item.list[hoveredRecipe.requiredItems[i]].itemModel.copyModel();
+                ModelLoader model = Item.list[hoveredRecipe.requiredItems[i]].getItemModel(hoveredRecipe.requiredItemMetadata[i]).copyModel();
                 model.scaleModel(76f);
                 model.rotateModel(45, 0, 1, 0);
                 model.rotateModel(36, 1, 0, 0);
-                Vector3f position = new Vector3f(x + 32, y + 32, -200);
+                Vector3f position = new Vector3f(x + 32, y + 32, -100);
                 model.translateModel(position.x, position.y, position.z);
                 ModelFace[] faces;
                 float textureID;
@@ -485,7 +491,7 @@ public final class GuiCraftingTableRecipeSelection extends GuiCrafting {
                 model.rotateModel(45, 0, 1, 0);
                 model.rotateModel(36, 1, 0, 0);
                 model.translateModel(0.5f, 0, 0.5f);
-                model.translateModel(x + 96, y + 16, -200);
+                model.translateModel(x + 96, y + 16, -100);
                 ModelFace modelFace;
                 float textureID;
                 int colorRGB = 0;

@@ -120,10 +120,10 @@ public final class RenderWorldScene {
         Shader.terrainShader.uploadFloat("rainFogFactor", rainFogFactor);
 
         boolean isPlayerHoldingLight = CosmicEvolution.instance.save.thePlayer.getHeldBlock() == Block.torch.ID;
-        Shader.terrainShader.uploadBoolean("isHoldingLight", isPlayerHoldingLight);
-        Shader.worldShaderTextureArray.uploadBoolean("isHoldingLight", isPlayerHoldingLight);
-        Shader.worldShader2DTexture.uploadBoolean("isHoldingLight", isPlayerHoldingLight);
-        Shader.worldShader2DTextureWithAtlas.uploadBoolean("isHoldingLight", isPlayerHoldingLight);
+        Shader.terrainShader.uploadBoolean("isHoldingLight", isPlayerHoldingLight && GameSettings.dynamicLights);
+        Shader.worldShaderTextureArray.uploadBoolean("isHoldingLight", isPlayerHoldingLight && GameSettings.dynamicLights);
+        Shader.worldShader2DTexture.uploadBoolean("isHoldingLight", isPlayerHoldingLight && GameSettings.dynamicLights);
+        Shader.worldShader2DTextureWithAtlas.uploadBoolean("isHoldingLight", isPlayerHoldingLight && GameSettings.dynamicLights);
 
 
         Shader.worldShader2DTexture.uploadBoolean("raining", this.controller.parentWorld.raining);

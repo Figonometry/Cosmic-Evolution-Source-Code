@@ -1,7 +1,7 @@
 package spacegame.block;
 
 import spacegame.entity.EntityFallingBlock;
-import spacegame.world.World;
+import spacegame.world.worldtypes.World;
 
 public final class BlockSand extends Block{
     public BlockSand(short ID, int textureID, String filepath) {

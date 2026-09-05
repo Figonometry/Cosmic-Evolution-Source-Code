@@ -61,5 +61,6 @@ public enum EnumButtonEffects {
     DROP_INVENTORY_ON_DEATH,
     TESTING_MODE,
     COMMAND_LIST,
-    BLOCK_TOOLTIPS;
+    BLOCK_TOOLTIPS,
+    DYNAMIC_LIGHTS;
 }

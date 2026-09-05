@@ -12,7 +12,7 @@ public final class GuiVideoSettingsMainMenu extends Gui {
     public Button back;
     public Button showFPS;
     public Button fullscreen;
-    public Button fov;
+    public Slider fov;
     public Button viewBobbing;
     public Button shadowMap;
     public Button chunkViewDistanceVertical;
@@ -23,6 +23,7 @@ public final class GuiVideoSettingsMainMenu extends Gui {
     public Button wavyLeaves;
     public Button transparentLeaves;
     public Button blockTooltips;
+    public Button dynamicLights;
     public int star;
     public int title;
     public int earth;
@@ -39,7 +40,7 @@ public final class GuiVideoSettingsMainMenu extends Gui {
         this.transparentLeaves = new Button(EnumButtonEffects.TRANSPARENT_LEAVES.name(), 512, 64, 587, 150, this, this.ce);
         this.showFPS = new Button(EnumButtonEffects.SHOW_FPS.name(), 512, 64, -587, 0, this, this.ce);
         this.fullscreen = new Button(EnumButtonEffects.FULLSCREEN.name(), 512, 64, 0,0, this, this.ce);
-        this.fov = new Button(EnumButtonEffects.FOV.name(), 512, 64, 587, 0, this, this.ce);
+        this.fov = new Slider(EnumButtonEffects.FOV.name(), 512, 64, 587, 0, this, this.ce);
         this.vsync = new Button(EnumButtonEffects.VSYNC.name(), 512, 64, -587, -150,  this, this.ce);
         this.chunkViewDistanceHorizontal = new Button(EnumButtonEffects.CHUNK_VIEW_HORIZONTAL.name(), 512,64, 0, -150, this, this.ce);
         this.chunkViewDistanceVertical = new Button(EnumButtonEffects.CHUNK_VIEW_VERTICAL.name(), 512, 64, 587, -150, this, this.ce);
@@ -47,6 +48,7 @@ public final class GuiVideoSettingsMainMenu extends Gui {
         this.wavyWater = new Button(EnumButtonEffects.WAVY_WATER.name(), 512, 64, -587,150, this, this.ce);
         this.wavyLeaves = new Button(EnumButtonEffects.WAVY_LEAVES.name(), 512, 64, 0, 150, this, this.ce);
         this.blockTooltips = new Button(EnumButtonEffects.BLOCK_TOOLTIPS.name(), 512, 64, 587, 150, this, this.ce);
+        this.dynamicLights = new Button(EnumButtonEffects.DYNAMIC_LIGHTS.name(), 512, 64, -587,0, this, this.ce);
 
 
         this.back = new Button(EnumButtonEffects.BACK.name(), 512, 64, 0, -400, this, this.ce);
@@ -140,6 +142,7 @@ public final class GuiVideoSettingsMainMenu extends Gui {
                 this.wavyWater.renderButton();
                 this.wavyLeaves.renderButton();
                 this.blockTooltips.renderButton();
+                this.dynamicLights.renderButton();
                 this.pageLeft.renderButton();
             }
         }
@@ -183,6 +186,8 @@ public final class GuiVideoSettingsMainMenu extends Gui {
                     return this.wavyLeaves;
                 } else if (this.blockTooltips.isMouseHoveredOver() && this.blockTooltips.active) {
                     return this.blockTooltips;
+                } else if(this.dynamicLights.isMouseHoveredOver() && this.dynamicLights.active){
+                    return this.dynamicLights;
                 } else if (this.pageLeft.isMouseHoveredOver() && this.pageLeft.active) {
                     return this.pageLeft;
                 }

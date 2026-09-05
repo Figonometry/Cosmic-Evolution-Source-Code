@@ -10,7 +10,7 @@ import spacegame.gui.ToolTipGroup;
 import spacegame.item.Item;
 import spacegame.item.ItemIDList;
 import spacegame.render.texturelists.MouseAndKeyIconTextureList;
-import spacegame.world.World;
+import spacegame.world.worldtypes.World;
 
 import java.util.Random;
 

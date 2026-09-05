@@ -1,25 +1,21 @@
-package spacegame.world;
+package spacegame.world.worldtypes.earthlike;
 
 import spacegame.block.*;
 import spacegame.core.CosmicEvolution;
 import spacegame.util.LongHasher;
+import spacegame.world.*;
+import spacegame.world.worldtypes.ChunkTerrainHandler;
+import spacegame.world.worldtypes.World;
 
 import java.awt.*;
 import java.util.Random;
 
-public final class ChunkEarthTerrainHandler {
-    public ChunkController controller;
-    public double solidNoiseThreshold = 0D;
-    public World world;
+public final class ChunkWorldEarthTerrainHandler extends ChunkTerrainHandler {
     public WorldEarth earth;
-    public GeologicRegistry geologicRegistry;
-    public GeologicProvince[] geologicProvinces = new GeologicProvince[8];
-    public ChunkEarthTerrainHandler(ChunkController controller, World world){
-        this.controller = controller;
-        this.world = world;
-        if(this.world instanceof WorldEarth){
-            this.earth = (WorldEarth) this.world;
-        }
+    public ChunkWorldEarthTerrainHandler(ChunkController controller, World world) {
+        super(controller, world);
+        this.earth = (WorldEarth) this.world;
+        this.geologicProvinces = new GeologicProvince[8];
         this.geologicRegistry = new GeologicRegistry();
     }
 
@@ -61,7 +57,7 @@ public final class ChunkEarthTerrainHandler {
                 chunk.light[Chunk.getBlockIndexFromCoordinates(x, y, z)] = (byte) (15 << 4);
             }
 
-            if(y > 3 && y < 128) {
+            if(y > this.getBeachHeight(x,z) && y < 128) {
                 if (this.getTerrainNoise(x, y, z) >= this.solidNoiseThreshold) {
                     if (this.getTerrainNoise(x, y + 1, z) < this.solidNoiseThreshold) {
                         blocks[i] = isDesert ? this.getSandType(x,y,z) : this.getGrassType(x,y,z);
@@ -174,14 +170,16 @@ public final class ChunkEarthTerrainHandler {
         return (int) (this.earth.treeDensityNoise1.getNoiseIntCasted(x,z) + this.earth.treeDensityNoise2.getNoiseIntCasted(x,z) * 0.5f);
     }
 
+    //Re-use a noisemap for this, it's not worth holding another noisemap just for this in memory
+    public int getBeachHeight(int x, int z){
+        return this.earth.dirtNoise.getNoiseIntCasted(x,z);
+    }
+
     public void populateChunk(Chunk chunk) {
         //retrieve a list of all grass blocks, and maybe other blocks to not have to loop all 32k blocks at once
         Random rand = new Random(CosmicEvolution.instance.save.seed & new LongHasher().hash(CosmicEvolution.instance.save.seed, String.valueOf(chunk.x & chunk.y * chunk.z)));
         WorldGenTree worldGenTree;
-        int rockCount = 0;
-        if(chunk.parentWorld instanceof WorldEarth){
-            rockCount = 2 + ((WorldEarth)chunk.parentWorld).treeNoise.getNoiseIntCasted(chunk.z, chunk.x);
-        }
+        int rockCount = rand.nextInt(6);
         int berryClusterCount = rand.nextInt(40) == 0 ? 1 : 0;
         int cactusCount = rand.nextInt(10) == 0 ? 4 : 1;
         int tallGrassCount = rand.nextInt(20, 30);
@@ -264,8 +262,9 @@ public final class ChunkEarthTerrainHandler {
             y = chunk.getBlockYFromIndex(stonePlacementIndex) + 1;
             z = chunk.getBlockZFromIndex(stonePlacementIndex);
 
+            //There is a 25% chance that the stone placed is flint instead
             if(this.world.getBlockID(x,y,z) == Block.air.ID && Block.list[this.world.getBlockID(x, y - 1, z)] instanceof BlockGrass){
-                this.world.setBlockAndNotify(x,y,z, this.getItemStoneType(x,y,z), false);
+                this.world.setBlockAndNotify(x,y,z, rand.nextInt(5) == 0 ? Block.flintItemStone.ID : this.getItemStoneType(x,y,z), false);
             }
             rockCount--;
         }
@@ -307,7 +306,7 @@ public final class ChunkEarthTerrainHandler {
         chunk.populated = true;
     }
 
-    private GeologicProvince getGeologicProvince(int x, int y, int z){
+    protected GeologicProvince getGeologicProvince(int x, int y, int z){
         GeologicProvince geologicProvince = null;
 
         // --- Normal range check ---
@@ -389,15 +388,15 @@ public final class ChunkEarthTerrainHandler {
 
 
 
-    public short getStoneType(int x, int y, int z){
+    protected short getStoneType(int x, int y, int z){
         return this.geologicRegistry.getStoneTypeID(this.getGeologicProvince(x,y,z).getRockType(x,z));
     }
 
-    public short getSandType(int x, int y, int z){
+    protected short getSandType(int x, int y, int z){
         return this.geologicRegistry.getSandTypeID(this.getGeologicProvince(x,y,z).getRockType(x,z));
     }
 
-    public short getGravelType(int x, int y, int z){
+    protected short getGravelType(int x, int y, int z){
         return this.geologicRegistry.getGravelTypeID(this.getGeologicProvince(x,y,z).getRockType(x,z));
     }
 

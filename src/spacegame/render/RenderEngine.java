@@ -112,26 +112,21 @@ public final class RenderEngine {
 
         switch (textureType){
             case TEXTURE_TYPE_2D -> {
-
                 File file = new File(filepath);
-                if (!file.exists()) {
-                    filepath = CosmicEvolution.imageFallbackPath;
-                }
+                if (!file.exists()) filepath = CosmicEvolution.imageFallbackPath;
 
-
-                //Generate the texture on GPU
                 int texID = GL46.glGenTextures();
                 GL46.glActiveTexture(GL46.GL_TEXTURE0);
                 GL46.glBindTexture(GL46.GL_TEXTURE_2D, texID);
 
-                //set texture parameters
-                //repeat image in both directions
-                GL46.glTexParameteri(GL46.GL_TEXTURE_2D, GL46.GL_TEXTURE_WRAP_S, clampTextureToEdge ? GL46.GL_CLAMP_TO_EDGE : GL46.GL_REPEAT);
-                GL46.glTexParameteri(GL46.GL_TEXTURE_2D, GL46.GL_TEXTURE_WRAP_T, clampTextureToEdge ? GL46.GL_CLAMP_TO_EDGE : GL46.GL_REPEAT);
-                //When stretching the image pixelate
+                GL46.glTexParameteri(GL46.GL_TEXTURE_2D, GL46.GL_TEXTURE_WRAP_S,
+                        clampTextureToEdge ? GL46.GL_CLAMP_TO_EDGE : GL46.GL_REPEAT);
+                GL46.glTexParameteri(GL46.GL_TEXTURE_2D, GL46.GL_TEXTURE_WRAP_T,
+                        clampTextureToEdge ? GL46.GL_CLAMP_TO_EDGE : GL46.GL_REPEAT);
                 GL46.glTexParameteri(GL46.GL_TEXTURE_2D, GL46.GL_TEXTURE_MIN_FILTER, GL46.GL_NEAREST);
-                //when shrinking an image, pixelate
                 GL46.glTexParameteri(GL46.GL_TEXTURE_2D, GL46.GL_TEXTURE_MAG_FILTER, GL46.GL_NEAREST);
+
+                GL46.glPixelStorei(GL46.GL_UNPACK_ALIGNMENT, 1);
 
                 IntBuffer width = BufferUtils.createIntBuffer(1);
                 IntBuffer height = BufferUtils.createIntBuffer(1);
@@ -139,22 +134,27 @@ public final class RenderEngine {
                 ByteBuffer image = STBImage.stbi_load(filepath, width, height, channels, 0);
 
                 if (image != null) {
-                    if (channels.get(0) == 3) {
-                        GL46.glTexImage2D(GL46.GL_TEXTURE_2D, 0, GL46.GL_RGB, width.get(0), height.get(0),
-                                0, GL46.GL_RGB, GL46.GL_UNSIGNED_BYTE, image);
-                    } else if (channels.get(0) == 4) {
-                        GL46.glTexImage2D(GL46.GL_TEXTURE_2D, 0, GL46.GL_RGBA, width.get(0), height.get(0),
-                                0, GL46.GL_RGBA, GL46.GL_UNSIGNED_BYTE, image);
+                    int channelCount = channels.get(0);
+                    if (channelCount == 3) {
+                        GL46.glTexImage2D(GL46.GL_TEXTURE_2D, 0, GL46.GL_RGB,
+                                width.get(0), height.get(0), 0, GL46.GL_RGB,
+                                GL46.GL_UNSIGNED_BYTE, image);
+                    } else if (channelCount == 4) {
+                        GL46.glTexImage2D(GL46.GL_TEXTURE_2D, 0, GL46.GL_RGBA,
+                                width.get(0), height.get(0), 0, GL46.GL_RGBA,
+                                GL46.GL_UNSIGNED_BYTE, image);
                     } else {
-                        assert false : "Error: (labyrinthgame.Texture) Unknown number of channels '" + channels.get(0) + "'";
+                        throw new IllegalStateException("Unknown channel count: " + channelCount);
                     }
+
+                    GL46.glGenerateMipmap(GL46.GL_TEXTURE_2D);
+                    STBImage.stbi_image_free(image);
                 } else {
-                    assert false : "Error: (labyrinthgame.Texture) Could not load image '" + filepath + "'";
+                    throw new RuntimeException("Could not load image: " + filepath);
                 }
 
-                STBImage.stbi_image_free(image);
-
                 return texID;
+
             }
             case TEXTURE_TYPE_2D_ARRAY -> {
                 int textureArray = GL46.glGenTextures();
@@ -573,11 +573,13 @@ public final class RenderEngine {
                 case BlockTextureList.SERPENTINITE_GRAVEL -> "serpentiniteGravel";
                 case BlockTextureList.SERPENTINITE_SAND -> "serpentiniteSand";
                 case BlockTextureList.SEED_TEXTURE -> "seed";
+                case BlockTextureList.FLINT_TEXTURE -> "flint";
                 default -> "missing";
             };
         } else if(textureFolderpath.contains("item")){
             return switch (textureNumber) {
-                case 0,1 -> "missing";
+                //For whatever reason texture 0 does not work properly, do not use that slot
+                case ItemTextureList.GRANITE_TEXTURE -> "graniteStone";
                 case ItemTextureList.STONE_TEXTURE -> "stone";
                 case ItemTextureList.BERRY_TEXTURE -> "berry";
                 case ItemTextureList.LEAF_TEXTURE -> "leaf";
@@ -602,6 +604,11 @@ public final class RenderEngine {
                 case ItemTextureList.BONEMEAL_TEXTURE -> "boneMeal";
                 case ItemTextureList.EINKORN_WHEAT_TEXTURE -> "einkornWheat";
                 case ItemTextureList.WHEAT_TEXTURE -> "wheat";
+                case ItemTextureList.BASALT_TEXTURE -> "basaltStone";
+                case ItemTextureList.CHERT_TEXTURE -> "chertStone";
+                case ItemTextureList.OBSIDIAN_TEXTURE -> "obsidianStone";
+                case ItemTextureList.FLINT_TEXTURE -> "flint";
+                case ItemTextureList.ANDESITE_TEXTURE -> "andesiteStone";
                 default -> "missing";
             };
         }

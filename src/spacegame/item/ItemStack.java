@@ -46,7 +46,7 @@ public final class ItemStack {
         this.item = item;
         this.count = count;
         if(this.item != null) {
-            this.durability = this.item.durability;
+            this.durability = this.item.getDurability(Item.NULL_ITEM_METADATA);
         }
         this.x = x;
         this.y = y;
@@ -58,7 +58,7 @@ public final class ItemStack {
         this.item = item;
         this.count = count;
         if(this.item != null) {
-            this.durability = this.item.durability;
+            this.durability = this.item.getDurability(Item.NULL_ITEM_METADATA);
         }
         this.x = x;
         this.y = y;
@@ -70,6 +70,32 @@ public final class ItemStack {
 
     public void setMetadata(short metadata){
         this.metadata = metadata;
+    }
+
+
+    public void copyDataToStack(ItemStack stackCopyingFrom){
+       this.item = stackCopyingFrom.item;
+       this.count = stackCopyingFrom.count;
+       this.metadata = stackCopyingFrom.metadata;
+       this.durability = stackCopyingFrom.durability;
+       this.decayTime = stackCopyingFrom.decayTime;
+       this.itemState = stackCopyingFrom.itemState != null ? stackCopyingFrom.itemState.copy() : null;
+    }
+
+    public void clearDataFromStack(){
+        this.item = null;
+        this.count = 0;
+        this.metadata = Item.NULL_ITEM_METADATA;
+        this.durability = Item.NULL_ITEM_DURABILITY;
+        this.decayTime = 0L;
+        this.itemState = null;
+    }
+
+
+    public boolean canItemStackMerge(ItemStack stackAttemptingToMerge){
+        if(this.item == null)return false;
+
+        return this.item.equals(stackAttemptingToMerge.item) && this.metadata == stackAttemptingToMerge.metadata && this.doStatesMatch(stackAttemptingToMerge.itemState);
     }
 
 
@@ -146,7 +172,7 @@ public final class ItemStack {
                 }
                 tessellator.drawTextureArray(Assets.blockTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
             } else {
-                ModelLoader model = this.item.itemModel.copyModel();
+                ModelLoader model = this.item.getItemModel(this.metadata).copyModel();
                 model.scaleModel(39f);
                 model.rotateModel(45, 0, 1, 0);
                 model.rotateModel(36, 1, 0, 0);
@@ -293,7 +319,7 @@ public final class ItemStack {
                 }
                 tessellator.drawTextureArray(Assets.blockTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
             } else {
-                ModelLoader model = this.item.itemModel.copyModel();
+                ModelLoader model = this.item.getItemModel(this.metadata).copyModel();
                model.scaleModel(57f);
                model.rotateModel(45, 0, 1, 0);
                model.rotateModel(36, 1, 0, 0);
@@ -404,7 +430,7 @@ public final class ItemStack {
 
     private void renderDurabilityBar(){
         if(this.item == null)return;
-        float ratio = (float) this.durability / Item.list[this.item.ID].durability;
+        float ratio = (float) this.durability / Item.list[this.item.ID].getDurability(this.metadata);
         if(ratio > 1 || ratio < 0){return;}
         if(ratio == 1 || this.durability <= 0){return;}
         int texID = 0;
@@ -475,12 +501,7 @@ public final class ItemStack {
                 droppedItem.setMovementVector(new Vector3f((float) difVector.x, (float) difVector.y, (float) difVector.z));
                 cosmicEvolution.save.activeWorld.findChunkFromChunkCoordinates(MathUtil.floorDouble(cosmicEvolution.save.thePlayer.x) >> 5, MathUtil.floorDouble(cosmicEvolution.save.thePlayer.y) >> 5, MathUtil.floorDouble(cosmicEvolution.save.thePlayer.z) >> 5).addEntityToList(droppedItem);
             }
-            ItemStack.itemStackOnMouse.item = null;
-            ItemStack.itemStackOnMouse.count = 0;
-            ItemStack.itemStackOnMouse.metadata = Item.NULL_ITEM_METADATA;
-            ItemStack.itemStackOnMouse.durability = Item.NULL_ITEM_DURABILITY;
-            ItemStack.itemStackOnMouse.decayTime = 0L;
-            ItemStack.itemStackOnMouse.itemState = null;
+            ItemStack.itemStackOnMouse.clearDataFromStack();
         }
     }
 

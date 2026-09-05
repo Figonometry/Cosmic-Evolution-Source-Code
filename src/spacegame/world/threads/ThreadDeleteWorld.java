@@ -1,4 +1,4 @@
-package spacegame.world;
+package spacegame.world.threads;
 
 import spacegame.util.GeneralUtil;
 

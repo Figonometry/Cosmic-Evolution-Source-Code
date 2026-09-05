@@ -4,7 +4,7 @@ import spacegame.block.Block;
 import spacegame.core.Timer;
 import spacegame.entity.EntityBlock;
 import spacegame.entity.EntityPlayer;
-import spacegame.world.World;
+import spacegame.world.worldtypes.World;
 
 public final class ItemBerry extends ItemFood implements IDecayItem {
     public ItemBerry(short ID, String modelFilePath, String filepath, float saturationIncrease) {

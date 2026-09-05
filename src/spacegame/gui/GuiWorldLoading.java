@@ -7,7 +7,7 @@ import spacegame.core.GameSettings;
 import spacegame.core.Timer;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
-import spacegame.world.World;
+import spacegame.world.worldtypes.World;
 
 public final class GuiWorldLoading extends Gui {
     private CosmicEvolution ce;

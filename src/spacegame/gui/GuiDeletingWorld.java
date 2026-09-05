@@ -6,7 +6,7 @@ import spacegame.core.CosmicEvolution;
 import spacegame.core.Timer;
 import spacegame.render.RenderEngine;
 import spacegame.render.Shader;
-import spacegame.world.ThreadDeleteWorld;
+import spacegame.world.threads.ThreadDeleteWorld;
 
 public final class GuiDeletingWorld extends Gui {
     public int background;
@@ -25,6 +25,13 @@ public final class GuiDeletingWorld extends Gui {
         this.earth = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/earth.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
         this.title = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/guiMainMenu/deleteWorld.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
         this.background = CosmicEvolution.instance.renderEngine.createTexture("src/spacegame/assets/textures/gui/transparentBackground.png", RenderEngine.TEXTURE_TYPE_2D, 0, true);
+    }
+
+    @Override
+    public void handleInput(){
+        if(this.associatedThread.completed){
+            this.ce.setNewGui(new GuiWorldSelect(this.ce));
+        }
     }
 
     @Override
