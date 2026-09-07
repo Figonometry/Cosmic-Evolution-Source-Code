@@ -99,7 +99,7 @@ public final class GuiCraftingTableRecipeSelection extends GuiCrafting {
         return selectableRecipes;
     }
 
-    private boolean doesRecipeContainItemAndMetadata(short checkedItemID, short checkedMetadata, CraftingBlockRecipes recipe){
+    private boolean doesRecipeContainItemAndMetadataOld(short checkedItemID, short checkedMetadata, CraftingBlockRecipes recipe){
         for(int i = 0; i < recipe.requiredItems.length; i++){
             if(recipe.requiredItems[i] == checkedItemID && recipe.requiredItemMetadata[i] == checkedMetadata){
                 return true;
@@ -108,7 +108,7 @@ public final class GuiCraftingTableRecipeSelection extends GuiCrafting {
         return false;
     }
 
-    private boolean doesRecipeContainItemAndMetadataNew(short checkedItemID, short checkedMetadata, CraftingBlockRecipes recipe){
+    private boolean doesRecipeContainItemAndMetadata(short checkedItemID, short checkedMetadata, CraftingBlockRecipes recipe){
         return recipe.minimumRequiredItemID == checkedItemID && recipe.minimumRequiredItemMetadata == checkedMetadata;
     }
 

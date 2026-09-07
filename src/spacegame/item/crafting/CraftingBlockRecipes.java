@@ -207,6 +207,8 @@ public final class CraftingBlockRecipes {
         this.requiresBinding = requiresBinding;
         this.bindingCount = bindingCount;
         this.requiredItemMetadata = requiredItemMetadata;
+        this.minimumRequiredItemID = minimumRequiredItemID;
+        this.minimumRequiredItemMetadata = minimumRequiredItemMetadata;
         this.ID = ID;
     }
     public CraftingBlockRecipes(short itemID, short metadata, String displayName, short[] requiredItems, int[] requiredItemCount, int techLevelRequired,
@@ -233,6 +235,8 @@ public final class CraftingBlockRecipes {
         this.requiresBinding = requiresBinding;
         this.bindingCount = bindingCount;
         this.requiredItemMetadata = requiredItemMetadata;
+        this.minimumRequiredItemID = minimumRequiredItemID;
+        this.minimumRequiredItemMetadata = minimumRequiredItemMetadata;
         this.ID = ID;
     }
 

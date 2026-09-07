@@ -218,7 +218,7 @@ public class Item {
     }
 
     public String getDisplayName(short blockID, short metadata){
-        return this.ID == block.ID ? Block.list[blockID].getDisplayName(0,0,0) : this.displayName;
+        return this.ID == block.ID ? Block.list[metadata].getDisplayName(0,0,0) : this.displayName;
     }
 
     public Sound getEntityHitSound(){

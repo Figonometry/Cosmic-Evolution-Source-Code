@@ -123,7 +123,7 @@ public final class CosmicEvolution implements Runnable {
         threadPool = new ThreadPoolExecutor(workerCount, workerCount, 0L, TimeUnit.MILLISECONDS, new PriorityBlockingQueue<>());
         this.dirtyChunksSchedulerThread = new Thread(new ThreadChunkJobScheduler());
         this.dirtyChunksSchedulerThread.start();
-        this.title = "Cosmic Evolution Alpha v0.54";
+        this.title = "Cosmic Evolution Alpha v0.54.1";
         GameSettings.loadOptionsFromFile(this.launcherDirectory);
         Block.registerAllBlockTooltips();
         EntityLiving.registerEntityLivingToolTip();
@@ -412,7 +412,13 @@ public final class CosmicEvolution implements Runnable {
 
 
         if(!MouseListener.mouseButtonDown(GLFW.GLFW_MOUSE_BUTTON_LEFT)){
-            if(this.currentButtonOnMouse != null) {
+            if(this.currentButtonOnMouse != null &&
+                    !this.currentButtonOnMouse.name.equals(EnumButtonEffects.SAVE_1.name())
+            && !this.currentButtonOnMouse.name.equals(EnumButtonEffects.SAVE_2.name())
+            && !this.currentButtonOnMouse.name.equals(EnumButtonEffects.SAVE_3.name())
+            && !this.currentButtonOnMouse.name.equals(EnumButtonEffects.SAVE_4.name())
+            && !this.currentButtonOnMouse.name.equals(EnumButtonEffects.SAVE_5.name())
+            && !this.currentButtonOnMouse.name.equals(EnumButtonEffects.DELETE.name())) {
                 this.currentButtonOnMouse.clicked = false;
                 this.currentButtonOnMouse = null;
             }

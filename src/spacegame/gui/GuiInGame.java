@@ -409,7 +409,7 @@ public final class GuiInGame extends Gui {
         GL46.glDisable(GL46.GL_BLEND);
     }
 
-    private static void renderCraftingItemInfoOverlay(int bx, int by, int bz){
+    private static void renderCraftingItemInfoOverlay(int bx, int by, int bz) {
         RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
         FontRenderer fontRenderer = FontRenderer.instance;
 
@@ -417,7 +417,7 @@ public final class GuiInGame extends Gui {
         GL46.glBlendFunc(GL46.GL_ONE, GL46.GL_ONE_MINUS_SRC_ALPHA);
 
         InWorldCraftingItem craftingItem = (InWorldCraftingItem) CosmicEvolution.instance.save.activeWorld.getBlockState(bx, by, bz, MultiState.CRAFTING_ITEM_STATE);
-        if(craftingItem == null)return;
+        if (craftingItem == null) return;
 
         tessellator.toggleOrtho();
         int x = 640;
@@ -433,14 +433,14 @@ public final class GuiInGame extends Gui {
         tessellator.drawTexture2D(transparentBackground, Shader.screen2DTexture, CosmicEvolution.camera);
         tessellator.toggleOrtho();
         y = 200;
-        fontRenderer.drawCenteredString(Item.list[craftingItem.outputRecipe.itemID].getDisplayName(craftingItem.outputRecipe.metadata, craftingItem.outputRecipe.metadata), x, y, -14, 16777215, 50, 255);
+        fontRenderer.drawCenteredString(Item.list[craftingItem.outputRecipe.itemID].getDisplayName(craftingItem.outputRecipe.itemID, craftingItem.outputRecipe.metadata), x, y, -14, 16777215, 50, 255);
         y -= 120;
-        for(int i = 0; i < craftingItem.itemsFilled.length; i++){
-            fontRenderer.drawCenteredString((craftingItem.itemsFilled[i] ? "COMPLETED: " : "MISSING: ")  +
-                    Item.list[craftingItem.outputRecipe.requiredItems[i]].getDisplayName(craftingItem.outputRecipe.requiredItems[i], craftingItem.outputRecipe.requiredItemMetadata[i]), x, y,
+        for (int i = 0; i < craftingItem.itemsFilled.length; i++) {
+            fontRenderer.drawCenteredString((craftingItem.itemsFilled[i] ? "COMPLETED: " : "MISSING: ") +
+                            Item.list[craftingItem.outputRecipe.requiredItems[i]].getDisplayName(craftingItem.outputRecipe.requiredItems[i], craftingItem.outputRecipe.requiredItemMetadata[i]), x, y,
                     -14, craftingItem.itemsFilled[i] ? 255 << 8 : 255 << 16, 50, 255);
 
-            if(!craftingItem.itemsFilled[i] && craftingItem.outputRecipe.requiredItems[i] != Item.block.ID) {
+            if (!craftingItem.itemsFilled[i] && craftingItem.outputRecipe.requiredItems[i] != Item.block.ID) {
                 y -= 30;
 
                 ModelLoader model = Item.list[craftingItem.outputRecipe.requiredItems[i]].getItemModel(craftingItem.outputRecipe.requiredItemMetadata[i]).copyModel();
@@ -462,10 +462,10 @@ public final class GuiInGame extends Gui {
                 int colorEast = ((colorVal - 40) << 16) | ((colorVal - 40) << 8) | colorVal - 40;
                 int colorWest = ((colorVal - 50) << 16) | ((colorVal - 50) << 8) | colorVal - 50;
 
-                for(int faceIndex = 0; faceIndex < model.modelFaces.length; faceIndex++){
+                for (int faceIndex = 0; faceIndex < model.modelFaces.length; faceIndex++) {
                     face = model.modelFaces[faceIndex];
 
-                    switch (face.faceType){
+                    switch (face.faceType) {
                         case RenderBlocks.TOP_FACE -> {
                             colorRGB = colorTop;
                         }
@@ -501,10 +501,10 @@ public final class GuiInGame extends Gui {
                 tessellator.toggleOrtho();
             }
 
-            if(!craftingItem.itemsFilled[i] && craftingItem.outputRecipe.requiredItems[i] == Item.block.ID) {
+            if (!craftingItem.itemsFilled[i] && craftingItem.outputRecipe.requiredItems[i] == Item.block.ID) {
                 y -= 30;
 
-                ModelLoader model = Block.list[craftingItem.outputRecipe.requiredItemMetadata[i]].getBlockModel(0,0,0, CosmicEvolution.instance.save.activeWorld).copyModel();
+                ModelLoader model = Block.list[craftingItem.outputRecipe.requiredItemMetadata[i]].getBlockModel(0, 0, 0, CosmicEvolution.instance.save.activeWorld).copyModel();
                 model.translateModel(-0.5f, 0, -0.5f);
                 model.scaleModel(76f);
                 model.rotateModel(45, 0, 1, 0);
@@ -524,11 +524,11 @@ public final class GuiInGame extends Gui {
                 int colorSouth = ((colorVal - 30) << 16) | ((colorVal - 30) << 8) | colorVal - 30;
                 int colorEast = ((colorVal - 40) << 16) | ((colorVal - 40) << 8) | colorVal - 40;
                 int colorWest = ((colorVal - 50) << 16) | ((colorVal - 50) << 8) | colorVal - 50;
-                for(int faceIndex = 0; faceIndex < model.modelFaces.length; faceIndex++){
+                for (int faceIndex = 0; faceIndex < model.modelFaces.length; faceIndex++) {
                     face = model.modelFaces[faceIndex];
                     textureID = Block.list[craftingItem.outputRecipe.requiredItemMetadata[i]].getBlockTexture(craftingItem.outputRecipe.requiredItemMetadata[i], 0, 0, 0, face.faceType);
 
-                    switch (face.faceType){
+                    switch (face.faceType) {
                         case RenderBlocks.TOP_FACE -> {
                             colorRGB = colorTop;
                         }
@@ -564,20 +564,70 @@ public final class GuiInGame extends Gui {
             y -= !craftingItem.itemsFilled[i] ? 75 : 30;
         }
 
-        if(craftingItem.outputRecipe.requiresBinding && !craftingItem.hasBeenBound && craftingItem.areAllItemsFilled()) {
+        if (craftingItem.outputRecipe.requiresBinding && !craftingItem.hasBeenBound && craftingItem.areAllItemsFilled()) {
             y -= 30;
             fontRenderer.drawCenteredString("MISSING: " + Item.reedTwine.getDisplayName(Item.NULL_ITEM_REFERENCE, Item.NULL_ITEM_METADATA), x, y, -14, 255 << 16, 50, 255);
             tessellator.toggleOrtho();
-            tessellator.addVertexTextureArrayWithCorner(16777215, x - 30, y - 30, -850, 3, Item.reedTwine.getTextureID(Item.reedTwine.ID, Item.NULL_ITEM_METADATA, RenderBlocks.WEST_FACE));
-            tessellator.addVertexTextureArrayWithCorner(16777215, x + 30, y + 30, -850, 1, Item.reedTwine.getTextureID(Item.reedTwine.ID, Item.NULL_ITEM_METADATA, RenderBlocks.WEST_FACE));
-            tessellator.addVertexTextureArrayWithCorner(16777215, x - 30, y + 30, -850, 2, Item.reedTwine.getTextureID(Item.reedTwine.ID, Item.NULL_ITEM_METADATA, RenderBlocks.WEST_FACE));
-            tessellator.addVertexTextureArrayWithCorner(16777215, x + 30, y - 30, -850, 0, Item.reedTwine.getTextureID(Item.reedTwine.ID, Item.NULL_ITEM_METADATA, RenderBlocks.WEST_FACE));
-            tessellator.addElementsCW();
-            tessellator.drawTextureArray(Assets.itemTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
-            tessellator.toggleOrtho();
-        }
 
-        GL46.glDisable(GL46.GL_BLEND);
+            ModelLoader model = Item.reedTwine.getItemModel(Item.NULL_ITEM_METADATA).copyModel();
+            model.translateModel(-0.5f, 0, -0.5f);
+            model.scaleModel(76f);
+            model.rotateModel(45, 0, 1, 0);
+            model.rotateModel(36, 1, 0, 0);
+            model.translateModel(0.5f, 0, 0.5f);
+            model.translateModel(x, y, -200);
+
+            ModelFace face;
+            float textureID;
+            int colorVal = 255;
+
+            int colorRGB = 0;
+
+            int colorTop = ((colorVal) << 16) | ((colorVal) << 8) | colorVal;
+            int colorBottom = ((colorVal - 10) << 16) | ((colorVal - 10) << 8) | colorVal - 10;
+            int colorNorth = ((colorVal - 20) << 16) | ((colorVal - 20) << 8) | colorVal - 20;
+            int colorSouth = ((colorVal - 30) << 16) | ((colorVal - 30) << 8) | colorVal - 30;
+            int colorEast = ((colorVal - 40) << 16) | ((colorVal - 40) << 8) | colorVal - 40;
+            int colorWest = ((colorVal - 50) << 16) | ((colorVal - 50) << 8) | colorVal - 50;
+            for (int faceIndex = 0; faceIndex < model.modelFaces.length; faceIndex++) {
+                face = model.modelFaces[faceIndex];
+                textureID = face.texture;
+
+                switch (face.faceType) {
+                    case RenderBlocks.TOP_FACE -> {
+                        colorRGB = colorTop;
+                    }
+                    case RenderBlocks.BOTTOM_FACE -> {
+                        colorRGB = colorBottom;
+                    }
+                    case RenderBlocks.NORTH_FACE -> {
+                        colorRGB = colorNorth;
+                    }
+                    case RenderBlocks.SOUTH_FACE -> {
+                        colorRGB = colorSouth;
+                    }
+                    case RenderBlocks.EAST_FACE -> {
+                        colorRGB = colorEast;
+                    }
+                    case RenderBlocks.WEST_FACE -> {
+                        colorRGB = colorWest;
+                    }
+                }
+
+
+                tessellator.addVertexTextureArrayWithUV(colorRGB, face.vertices[0].x, face.vertices[0].y, face.vertices[0].z, textureID, face.UVs[0][0], face.UVs[0][1]);
+                tessellator.addVertexTextureArrayWithUV(colorRGB, face.vertices[1].x, face.vertices[1].y, face.vertices[1].z, textureID, face.UVs[1][0], face.UVs[1][1]);
+                tessellator.addVertexTextureArrayWithUV(colorRGB, face.vertices[2].x, face.vertices[2].y, face.vertices[2].z, textureID, face.UVs[2][0], face.UVs[2][1]);
+                tessellator.addVertexTextureArrayWithUV(colorRGB, face.vertices[3].x, face.vertices[3].y, face.vertices[3].z, textureID, face.UVs[3][0], face.UVs[3][1]);
+                tessellator.addElementsCCW();
+
+
+                tessellator.drawTextureArray(Assets.itemTextureArray, Shader.screenTextureArray, CosmicEvolution.camera);
+                tessellator.toggleOrtho();
+            }
+
+            GL46.glDisable(GL46.GL_BLEND);
+        }
     }
 
     public static void renderMessageText() {
