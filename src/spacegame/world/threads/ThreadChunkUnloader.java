@@ -76,14 +76,12 @@ public final class ThreadChunkUnloader implements Runnable {
                 chunkData.setInteger("x", this.chunks[chunkIndex].x);
                 chunkData.setInteger("y", this.chunks[chunkIndex].y);
                 chunkData.setInteger("z", this.chunks[chunkIndex].z);
-                chunkData.setBoolean("populated", this.chunks[chunkIndex].populated);
+                chunkData.setBoolean("isPopulated", this.chunks[chunkIndex].isPopulated);
                 chunkData.setBoolean("containsWater", this.chunks[chunkIndex].containsWater);
                 chunkData.setBoolean("containsAir", this.chunks[chunkIndex].containsAir);
-                chunkData.setBoolean("empty", this.chunks[chunkIndex].empty);
-                if (!this.chunks[chunkIndex].empty) {
-                    chunkData.setShortArray("blocks", this.chunks[chunkIndex].blocks);
+                chunkData.setBoolean("chunkContainsOnlyAir", this.chunks[chunkIndex].chunkContainsOnlyAir);
+                    chunkData.setShortArray("blocks", this.chunks[chunkIndex].blockPallette.decompressBlocks());
                     chunkData.setShortArray("decayableLeaves", this.chunks[chunkIndex].decayableLeaves);
-                }
 
 
                 if (this.chunks[chunkIndex].entities.size() > 0) {

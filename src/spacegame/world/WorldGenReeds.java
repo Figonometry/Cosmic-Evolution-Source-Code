@@ -18,7 +18,7 @@ public final class WorldGenReeds extends WorldGen {
     public int startY;
     public int startZ;
     public WorldGenReeds(Chunk chunk, WorldEarth worldEarth, int index){
-        if(chunk.blocks[index] != Block.water.ID)return;
+        if(chunk.getBlockID(index) != Block.water.ID)return;
 
         int x = chunk.getBlockXFromIndex(index);
         int y = chunk.getBlockYFromIndex(index);
@@ -53,7 +53,7 @@ public final class WorldGenReeds extends WorldGen {
 
     private boolean isBlockSuitableToGenerateReeds(int x, int y, int z){
        if(this.isBlockInCallingChunk(x,y,z) && this.isBlockInCallingChunk(x, y + 1, z)){
-           return this.chunk.blocks[Chunk.getBlockIndexFromCoordinates(x,y,z)] == Block.water.ID && this.chunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y + 1, z)] == Block.air.ID && Block.list[this.chunk.blocks[Chunk.getBlockIndexFromCoordinates(x,y,z)]].isSolid;
+           return this.chunk.getBlockID(x,y,z) == Block.water.ID && this.chunk.getBlockID(x, y + 1, z) == Block.air.ID && Block.list[this.chunk.getBlockID(x,y,z)].isSolid;
        } else {
            return worldEarth.getBlockID(x, y, z) == Block.water.ID && worldEarth.getBlockID(x, y + 1, z) == Block.air.ID && Block.list[worldEarth.getBlockID(x, y - 1, z)].isSolid;
        }
@@ -83,14 +83,14 @@ public final class WorldGenReeds extends WorldGen {
                 for(int z = boxStartZ; z <= boxEndZ; z++){
                     if(this.doesBlockIntersectSphere(x,y,z, xStart, yStart, zStart, this.radius * this.radius) && this.rand.nextInt(4) == 0 && this.isBlockSuitableToGenerateReeds(x,y,z)){
                         if(this.isBlockInCallingChunk(x,y,z)){
-                            this.chunk.blocks[Chunk.getBlockIndexFromCoordinates(x,y,z)] = Block.reedLower.ID;
+                            this.chunk.setBlock(x,y,z, Block.reedLower.ID);
                         } else {
                             this.worldEarth.setBlock(x,y,z, Block.reedLower.ID);
                         }
 
 
                         if(this.isBlockInCallingChunk(x, y + 1, z)){
-                            this.chunk.blocks[Chunk.getBlockIndexFromCoordinates(x,y + 1,z)] = Block.reedUpper.ID;
+                            this.chunk.setBlock(x, y + 1, z, Block.reedUpper.ID);
                         } else {
                             this.worldEarth.setBlock(x,y + 1,z, Block.reedUpper.ID);
                         }

@@ -13,10 +13,10 @@ public final class WindowResizeListener {
 
         GL46.glViewport(0, 0, screenWidth, screenHeight);
 
-        CosmicEvolution.camera.readjustProjectionMatrices();
+        //CosmicEvolution.camera.readjustProjectionMatrices();
 
-        Shader.toolTipShader.uploadInt("width", screenWidth);
-        Shader.toolTipShader.uploadInt("height", screenHeight);
+        //Shader.toolTipShader.uploadInt("width", screenWidth);
+        //Shader.toolTipShader.uploadInt("height", screenHeight);
     }
 
 

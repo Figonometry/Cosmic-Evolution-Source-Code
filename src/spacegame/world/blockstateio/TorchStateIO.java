@@ -19,7 +19,7 @@ public final class TorchStateIO {
             torchStateTags[i].setBoolean("isBurnedOut", torchState.isBurnedOut);
             torchStateTags[i].setInteger("facingDirection", torchState.facingDirection);
             torchStateTags[i].setInteger("index", torchState.index);
-            nbtTagCompound.setTag("torchState" + torchStates, torchStateTags[i]);
+            nbtTagCompound.setTag("torchState" + torchStateCount, torchStateTags[i]);
             torchStateCount++;
         }
         nbtTagCompound.setInteger("torchStateCount", torchStateCount);

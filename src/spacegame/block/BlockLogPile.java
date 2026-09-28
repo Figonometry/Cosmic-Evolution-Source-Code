@@ -32,7 +32,6 @@ public final class BlockLogPile extends BlockPile {
             player.removeItemFromInventory();
             KeyListener.setKeyReleased(GLFW.GLFW_KEY_LEFT_SHIFT);
             CosmicEvolution.instance.soundPlayer.playSound(x, y, z, new Sound(Sound.wood, false, 1f), new Random().nextFloat(0.6F, 1));
-            world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).notifyBlock(x,y,z);
             world.notifyChunk(x,y,z);
             return;
         }
@@ -52,7 +51,6 @@ public final class BlockLogPile extends BlockPile {
                 world.setBlockAndNotify(x,y,z, Block.air.ID, false);
             }
 
-            world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5).notifyBlock(x,y,z);
             world.notifyChunk(x,y,z);
         }
     }

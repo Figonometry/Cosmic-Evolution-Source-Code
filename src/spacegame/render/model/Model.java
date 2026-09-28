@@ -26,12 +26,13 @@ public abstract class Model {
         blue = 1F;
     }
 
-    public void setVertexLight1Arg(byte light, float x, float y, float z, float[] lightColor) {
+    public void setVertexLight1Arg(byte light, float x, float y, float z, int lightColor) {
         float finalLight = getLightValueFromMap(light);
 
-        red = lightColor[0];
-        green = lightColor[1];
-        blue = lightColor[2];
+        red = MathUtil.intToFloatRGBA((lightColor >> 16) & 255);
+        green =  MathUtil.intToFloatRGBA((lightColor >> 8) & 255);
+        blue =  MathUtil.intToFloatRGBA((lightColor & 255) + 256);
+
 
         red *= finalLight;
         green *= finalLight;
@@ -93,7 +94,7 @@ public abstract class Model {
         int yInt = MathUtil.floorDouble(y);
         int zInt = MathUtil.floorDouble(z);
 
-        float[] lightColor = CosmicEvolution.instance.save.activeWorld.getBlockLightColor(xInt, yInt, zInt);
+       int lightColor = CosmicEvolution.instance.save.activeWorld.getBlockLightColor(xInt, yInt, zInt);
 
 
         byte lightVal = CosmicEvolution.instance.save.activeWorld.getBlockLightValue(xInt, yInt, zInt);

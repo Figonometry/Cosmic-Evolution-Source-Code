@@ -1188,7 +1188,7 @@ public final class EntityPlayer extends EntityLiving {
             Shader.worldShader2DTexture.uploadFloat("fogRed", CosmicEvolution.instance.save.activeWorld.skyColor[0]);
             Shader.worldShader2DTexture.uploadFloat("fogGreen", CosmicEvolution.instance.save.activeWorld.skyColor[1]);
             Shader.worldShader2DTexture.uploadFloat("fogBlue", CosmicEvolution.instance.save.activeWorld.skyColor[2]);
-            Shader.worldShader2DTexture.uploadFloat("fogDistance", GameSettings.renderDistance * 20f);
+            Shader.worldShader2DTexture.uploadFloat("fogDistance", CosmicEvolution.instance.save.activeWorld.chunkController.renderWorldScene.fogDistance);
             Vector3f chunkOffset = new Vector3f(0,0,0);
             Shader.worldShader2DTexture.uploadVec3f("chunkOffset", chunkOffset);
             RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;

@@ -11,7 +11,6 @@ import spacegame.core.GameSettings;
 import spacegame.core.Timer;
 import spacegame.entity.EntityParticle;
 import spacegame.gui.GuiInGame;
-import spacegame.gui.GuiUniverseMap;
 import spacegame.render.model.ModelFace;
 import spacegame.render.model.ModelLoader;
 import spacegame.util.MathUtil;
@@ -33,6 +32,7 @@ public final class RenderWorldScene {
     public ArrayList<Chunk> chunksThatContainEntities = new ArrayList<>();
     public ArrayList<Sun> nearbyStars = new ArrayList<>();
     public ArrayList<Vector3f> nearbyStarPos = new ArrayList<>();
+    public float fogDistance;
     public boolean recalculateQueries = true;
     public int sunX;
     public int sunY;
@@ -89,24 +89,32 @@ public final class RenderWorldScene {
             GL46.glBindTexture(GL46.GL_TEXTURE_2D, this.nearbyStars.get(0).shadowMap.depthMap);
         }
 
+        this.fogDistance = this.controller.chunkFogDistance * 20f;
+
         Vector3f playerPositionInChunk = new Vector3f(MathUtil.positiveMod(CosmicEvolution.instance.save.thePlayer.x, 32), MathUtil.positiveMod(CosmicEvolution.instance.save.thePlayer.y, 32), MathUtil.positiveMod(CosmicEvolution.instance.save.thePlayer.z, 32));
         Shader.terrainShader.uploadVec3f("playerPositionInChunk", playerPositionInChunk);
         Shader.worldShaderTextureArray.uploadVec3f("playerPositionInChunk", playerPositionInChunk);
         Shader.worldShader2DTexture.uploadVec3f("playerPositionInChunk", playerPositionInChunk);
         Shader.worldShader2DTextureWithAtlas.uploadVec3f("playerPositionInChunk", playerPositionInChunk);
+
         Shader.terrainShader.uploadInt("shadowMap", 1);
         Shader.terrainShader.uploadMat4d("uProjection", CosmicEvolution.camera.projectionMatrix);
         Shader.terrainShader.uploadMat4d("uView", CosmicEvolution.camera.viewMatrix);
         Shader.terrainShader.uploadInt("textureArray", 0);
         Shader.terrainShader.uploadBoolean("useFog", true);
-        Shader.terrainShader.uploadFloat("fogDistance", GameSettings.renderDistance * 20f);
+        Shader.terrainShader.uploadFloat("fogDistance", this.fogDistance);
 
-        Shader.worldShader2DTexture.uploadFloat("fogDistance", GameSettings.renderDistance * 20f);
+        Shader.worldShader2DTexture.uploadFloat("fogDistance", this.fogDistance);
+        Shader.cloudShader.uploadFloat("fogDistance", this.fogDistance);
         Shader.worldShader2DTexture.uploadBoolean("useFog", true);
 
         Shader.terrainShader.uploadFloat("fogRed", this.skyBase.x);
         Shader.terrainShader.uploadFloat("fogGreen", this.skyBase.y);
         Shader.terrainShader.uploadFloat("fogBlue", this.skyBase.z);
+
+        Shader.cloudShader.uploadFloat("fogRed", this.skyBase.x);
+        Shader.cloudShader.uploadFloat("fogGreen", this.skyBase.y);
+        Shader.cloudShader.uploadFloat("fogBlue", this.skyBase.z);
 
         Shader.worldShader2DTexture.uploadFloat("fogRed", this.skyBase.x);
         Shader.worldShader2DTexture.uploadFloat("fogGreen", this.skyBase.y);
@@ -116,10 +124,27 @@ public final class RenderWorldScene {
 
         Shader.terrainShader.uploadBoolean("raining", this.controller.parentWorld.raining);
         Shader.terrainShader.uploadDouble("playerAbsoluteHeight", CosmicEvolution.instance.save.thePlayer.y);
-        float rainFogFactor = this.controller.parentWorld.raining ? ((CosmicEvolution.instance.save.time - this.controller.parentWorld.timeStartedRaining) / 60f) * 0.75f : 0.75f - (((CosmicEvolution.instance.save.time - this.controller.parentWorld.timeStartedRaining) / 60f) * 0.75f);
-        Shader.terrainShader.uploadFloat("rainFogFactor", rainFogFactor);
+        this.rainFogFactor = this.controller.parentWorld.raining ? ((CosmicEvolution.instance.save.time - this.controller.parentWorld.timeChangedRainState) / 60f) * 0.75f : 0.75f - (((CosmicEvolution.instance.save.time - this.controller.parentWorld.timeChangedRainState) / 60f) * 0.75f);
+
+        if(this.rainFogFactor > 1){
+            this.rainFogFactor = 1;
+        }
+
+        if(this.rainFogFactor < 0){
+            this.rainFogFactor = 0;
+        }
+        Shader.terrainShader.uploadFloat("rainFogFactor", this.rainFogFactor);
+        Shader.worldSkyboxInner.uploadFloat("rainFogFactor", this.rainFogFactor);
+
 
         boolean isPlayerHoldingLight = CosmicEvolution.instance.save.thePlayer.getHeldBlock() == Block.torch.ID;
+        if(isPlayerHoldingLight) {
+            int heldLightColor = Block.list[CosmicEvolution.instance.save.thePlayer.getHeldBlock()].lightColor;
+            Shader.terrainShader.uploadInt("heldLightColor", heldLightColor);
+            Shader.worldShaderTextureArray.uploadInt("heldLightColor", heldLightColor);
+            Shader.worldShader2DTexture.uploadInt("heldLightColor", heldLightColor);
+            Shader.worldShader2DTextureWithAtlas.uploadInt("heldLightColor", heldLightColor);
+        }
         Shader.terrainShader.uploadBoolean("isHoldingLight", isPlayerHoldingLight && GameSettings.dynamicLights);
         Shader.worldShaderTextureArray.uploadBoolean("isHoldingLight", isPlayerHoldingLight && GameSettings.dynamicLights);
         Shader.worldShader2DTexture.uploadBoolean("isHoldingLight", isPlayerHoldingLight && GameSettings.dynamicLights);
@@ -169,14 +194,17 @@ public final class RenderWorldScene {
 
             if (!chunk.occluded) {
                 this.controller.drawCalls++;
-                chunk.queryID = GL46.glGenQueries();
-
-                GL46.glBeginQuery(GL46.GL_ANY_SAMPLES_PASSED, chunk.queryID);
+                if(chunk.queryID == -10) {
+                    chunk.queryID = GL46.glGenQueries();
+                    GL46.glBeginQuery(GL46.GL_ANY_SAMPLES_PASSED, chunk.queryID);
+                }
                 chunk.chunkOffset.x = xOffset;
                 chunk.chunkOffset.y = yOffset;
                 chunk.chunkOffset.z = zOffset;
                 chunk.renderOpaque(this.sunX,this.sunY,this.sunZ);
-                GL46.glEndQuery(GL46.GL_ANY_SAMPLES_PASSED);
+                if(chunk.queryID == -10) {
+                    GL46.glEndQuery(GL46.GL_ANY_SAMPLES_PASSED);
+                }
             }
 
             if (chunk.transparentReady && chunk.transparentIndexCount > 0) {
@@ -262,7 +290,6 @@ public final class RenderWorldScene {
 
 
     private void renderRain(){
-        if(true)return;
         if(!this.controller.parentWorld.raining)return;
         Matrix4d preservedViewMatrix = CosmicEvolution.camera.viewMatrix.get(new Matrix4d());
         Quaterniond viewMatrixRotation = CosmicEvolution.camera.viewMatrix.getUnnormalizedRotation(new Quaterniond());
@@ -283,6 +310,7 @@ public final class RenderWorldScene {
         Vector3f position = new Vector3f();
         ModelLoader rainModel;
         ModelFace modelFace;
+
 
         for(int i = 0; i < this.rainQuads.length; i++){
             if(this.rainQuads[i] == null)continue;
@@ -363,6 +391,16 @@ public final class RenderWorldScene {
 
         Vector3f coolColor = new Vector3f(0.2f, 0.3f, 0.5f);
         this.skyBase.fma(awayFromSun * warmSpread * 0.5f * nightFactor, coolColor);
+
+        final float rainFogColor = 0.4f;
+
+        float colorDifRed = this.skyBase.x - rainFogColor;
+        float colorDifGreen = this.skyBase.y - rainFogColor;
+        float colorDifBlue = this.skyBase.z - rainFogColor;
+
+        this.skyBase.x -= colorDifRed * this.rainFogFactor;
+        this.skyBase.y -= colorDifGreen * this.rainFogFactor;
+        this.skyBase.z -= colorDifBlue * this.rainFogFactor;
     }
 
 
@@ -374,23 +412,23 @@ public final class RenderWorldScene {
 
 
     private void renderClouds(){
-        if(true)return; //disable, upload a matrix transform instead of shoving vertex and element data to the GPU every frame, do the same with rain
         Matrix4d preservedViewMatrix = CosmicEvolution.camera.viewMatrix.get(new Matrix4d());
         Quaterniond viewMatrixRotation = CosmicEvolution.camera.viewMatrix.getUnnormalizedRotation(new Quaterniond());
         CosmicEvolution.camera.viewMatrix = new Matrix4d();
         CosmicEvolution.camera.viewMatrix.rotate(viewMatrixRotation);
 
+        GL46.glBindTexture(GL46.GL_TEXTURE_2D, Cloud.texture);
+
         GL46.glEnable(GL46.GL_BLEND);
-        GL46.glBlendFunc(GL46.GL_SRC_ALPHA, GL46.GL_ONE_MINUS_SRC_ALPHA);
-        Shader.worldShader2DTexture.uploadBoolean("useFog", false);
-        Shader.worldShader2DTexture.uploadBoolean("performNormals", true);
-        RenderEngine.WorldTessellator tessellator = RenderEngine.WorldTessellator.instance;
+        GL46.glBlendFunc(GL46.GL_ONE_MINUS_SRC_ALPHA, GL46.GL_SRC_ALPHA);
+        Shader.cloudShader.uploadMat4d("uView", CosmicEvolution.camera.viewMatrix);
+        Shader.cloudShader.uploadMat4d("uProjection", CosmicEvolution.camera.projectionMatrix);
         for(int i = 0; i < this.controller.parentWorld.activeWeatherSystems.size(); i++){
-            this.controller.parentWorld.activeWeatherSystems.get(i).render(this.baseLight, this.sunRed, this.sunGreen, this.sunBlue, tessellator);
+            this.controller.parentWorld.activeWeatherSystems.get(i).render();
         }
-        Shader.worldShader2DTexture.uploadVec3f("chunkOffset", new Vector3f());
-        tessellator.drawTexture2D(Cloud.texture, Shader.worldShader2DTexture, CosmicEvolution.camera);
         GL46.glDisable(GL46.GL_BLEND);
+        GL46.glBindTexture(GL46.GL_TEXTURE_2D, 0);
+        GL46.glBindVertexArray(0);
 
         CosmicEvolution.camera.viewMatrix = preservedViewMatrix;
     }
@@ -401,6 +439,7 @@ public final class RenderWorldScene {
             Shader.terrainShader.uploadVec3f("normalizedLightVector", dir); //This needs be called in order to set the direction vector even if shadows are turned off otherwise vertex normals will not work
             Shader.worldShader2DTexture.uploadVec3f("normalizedLightVector", dir);
             Shader.worldShaderTextureArray.uploadVec3f("normalizedLightVector", dir);
+            Shader.cloudShader.uploadVec3f("normalizedLightVector", dir);
             if (GameSettings.shadowMap) {
                 float lightDist = 128;
                 float orthoSize = 64;
@@ -708,6 +747,7 @@ public final class RenderWorldScene {
         Shader.terrainShader.uploadFloat("baseLight", baseLight);
         Shader.worldShaderTextureArray.uploadFloat("baseLight", baseLight);
         Shader.worldShader2DTexture.uploadFloat("baseLight", baseLight);
+        Shader.cloudShader.uploadFloat("baseLight", baseLight);
         this.baseLight = baseLight;
     }
 
@@ -776,11 +816,14 @@ public final class RenderWorldScene {
         Shader.terrainShader.uploadVec4f("lightColor",lightColor);
         Shader.worldShaderTextureArray.uploadVec4f("lightColor", lightColor);
         Shader.worldShader2DTexture.uploadVec4f("lightColor", lightColor);
+        Shader.cloudShader.uploadVec4f("lightColor", lightColor);
+
         this.sunRed = interpolatedR;
         this.sunGreen = interpolatedG;
         this.sunBlue = interpolatedB;
 
         Shader.worldSkyboxInner.uploadVec3f("sunFlareColor", new Vector3f(lightColor.x, lightColor.y, lightColor.z));
+
     }
 
     private byte calculateSkyLightLevel(float yVecComponent){

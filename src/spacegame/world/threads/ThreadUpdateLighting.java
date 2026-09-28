@@ -33,48 +33,52 @@ public final class ThreadUpdateLighting implements Runnable {
 
     @Override
     public void run() {
-        if (this.triggeredFromBlockUpdate) {
-            if (triggeringBlock == Block.air.ID) {
-                world.resetNearestLight(x, y, z);
-            }
-
-
-            if (Block.list[triggeringBlock].isLightBlock(x, y, z, world)) {
-                world.propagateLightSource(x, y, z, Block.list[triggeringBlock].lightBlockValue);
-            }
-
-
-            if (Block.list[triggeringBlock].isSolid) {
-                chunk.light[Chunk.getBlockIndexFromCoordinates(x, y, z)] = 0;
-                world.queueSurroundingLightBlocks(x, y, z);
-            }
-
-
-            ChunkColumnSkylightMap lightMap = world.findChunkSkyLightMap(x >> 5, z >> 5);
-            if (triggeringBlock == Block.air.ID) {
-                if (lightMap.isHeight(x, y, z)) {
-                    lightMap.updateLightMap(x, world.findNextHighestSolidBlock(x, y, z), z);
+        try {
+            if (this.triggeredFromBlockUpdate) {
+                if (triggeringBlock == Block.air.ID) {
+                    world.resetNearestLight(x, y, z);
                 }
-            } else if (Block.list[triggeringBlock].isSolid) {
-                if (lightMap.isHeightGreater(x, y, z)) {
-                    lightMap.updateLightMap(x, y, z);
+
+
+                if (Block.list[triggeringBlock].isLightBlock(x, y, z, world)) {
+                    world.propagateLightSource(x, y, z, Block.list[triggeringBlock].lightBlockValue);
+                }
+
+
+                if (Block.list[triggeringBlock].isSolid) {
+                    chunk.setBlockSkyLightValue(x,y,z, (byte) 0);
+                    world.queueSurroundingLightBlocks(x, y, z);
+                }
+
+
+                ChunkColumnSkylightMap lightMap = world.findChunkSkyLightMap(x >> 5, z >> 5);
+                if (triggeringBlock == Block.air.ID) {
+                    if (lightMap.isHeight(x, y, z)) {
+                        lightMap.updateLightMap(x, world.findNextHighestSolidBlock(x, y, z), z);
+                    }
+                } else if (Block.list[triggeringBlock].isSolid) {
+                    if (lightMap.isHeightGreater(x, y, z)) {
+                        lightMap.updateLightMap(x, y, z);
+                    }
+                }
+                if (destroyLight) {
+                    world.propagateDarkness(x, y, z);
+                }
+
+            } else {
+                if (this.chunk.firstRender) {
+                    this.chunk.floodFillBlockLightArray();
                 }
             }
-            if (destroyLight) {
-                world.propagateDarkness(x, y, z);
-            }
 
-        } else {
-            if (this.chunk.firstRender) {
-                this.chunk.floodFillBlockLightArray();
-            }
+            this.chunk.setSkyLight();
+
+            this.chunk.hasDirtyLighting = false;
+        } catch (Exception e){
+            e.printStackTrace();
+        } finally {
+            CosmicEvolution.threadJobs.decrementAndGet();
         }
-
-        this.chunk.setSkyLight();
-
-
-        this.chunk.dirtyLighting = false;
-        CosmicEvolution.threadJobs.decrementAndGet();
     }
 
 }

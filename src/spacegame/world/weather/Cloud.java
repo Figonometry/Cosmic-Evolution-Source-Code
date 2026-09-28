@@ -2,8 +2,10 @@ package spacegame.world.weather;
 
 import spacegame.core.CosmicEvolution;
 import spacegame.nbt.NBTTagCompound;
-import spacegame.render.RenderEngine;
 import spacegame.util.MathUtil;
+
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 
 public final class Cloud {
     public double x;
@@ -12,29 +14,17 @@ public final class Cloud {
     public float width; //x
     public float height; //y
     public float depth; //z
-    public float strength = 0.001f;
     public static int texture;
-    public boolean weaken;
-    public float precipitation;
-    public long killTime;
-    public float maxStrength;
 
 
 
-    public Cloud(double x, double y, double z, float width, float height, float depth, float precipitation, long killTime, float maxStrength){
+    public Cloud(double x, double y, double z, float width, float height, float depth){
         this.x = x;
         this.y = y;
         this.z = z;
         this.width = width;
         this.height = height;
         this.depth = depth;
-        this.precipitation = precipitation;
-        this.killTime = killTime;
-
-        if(maxStrength == 1){
-            maxStrength = 0.9f;
-        }
-        this.maxStrength = maxStrength;
     }
 
     public Cloud(NBTTagCompound cloudTag){
@@ -44,11 +34,6 @@ public final class Cloud {
         this.width = cloudTag.getFloat("width");
         this.height = cloudTag.getFloat("height");
         this.depth = cloudTag.getFloat("depth");
-        this.strength = cloudTag.getFloat("strength");
-        this.weaken = cloudTag.getBoolean("weaken");
-        this.precipitation = cloudTag.getFloat("precipitation");
-        this.killTime = cloudTag.getLong("killTime");
-        this.maxStrength = cloudTag.getFloat("maxStrength");
     }
 
     public void saveCloudToFile(NBTTagCompound cloudTag){
@@ -58,121 +43,101 @@ public final class Cloud {
         cloudTag.setFloat("width", this.width);
         cloudTag.setFloat("height", this.height);
         cloudTag.setFloat("depth", this.depth);
-        cloudTag.setFloat("strength", this.strength);
-        cloudTag.setBoolean("weaken", this.weaken);
-        cloudTag.setFloat("precipitation", this.precipitation);
-        cloudTag.setLong("killTime", this.killTime);
-        cloudTag.setFloat("maxStrength", this.maxStrength);
     }
 
-    private int calculateAlpha(){
-        return this.strength <= 1f ? MathUtil.floatToIntRGBA(this.strength) : 229;
-    }
+    public void addCloudToRenderData(FloatBuffer vertexBuffer, IntBuffer elementBuffer, CloudFormation parentFormation){
+        //Shift the coordinates into model space relative by subtracting the parent position from this position
 
-    private int calculateColor(){
-        return  255 - MathUtil.floatToIntRGBA(this.precipitation * 0.5f);
-    }
 
-    public void render(float skyLightValue, float sunRed, float sunGreen, float sunBlue, RenderEngine.WorldTessellator tessellator){
-        int alphaVal = this.calculateAlpha();
-        int colorVal = this.calculateColor();
-        float red = MathUtil.intToFloatRGBA(colorVal);
-        float green = MathUtil.intToFloatRGBA(colorVal);
-        float blue = MathUtil.intToFloatRGBA(colorVal);
-        if(CosmicEvolution.instance.save.activeWorld.chunkController.renderWorldScene.sunYVector <= -0.13){
-            float upperColorR = 1;
-            float upperColorG = 1;
-            float upperColorB = 1;
-            float lowerColorR = 1;
-            float lowerColorG = 1;
-            float lowerColorB = 1;
+        float xMin = (float) ((this.x - parentFormation.x) - (this.width * 0.5f));
+        float xMax = (float) ((this.x - parentFormation.x) + (this.width * 0.5f));
+        float yMin = (float) ((this.y - parentFormation.y) - (this.height * 0.5f));
+        float yMax = (float) ((this.y - parentFormation.y) + (this.height * 0.5f));
+        float zMin = (float) ((this.z - parentFormation.z) - (this.depth * 0.5f));
+        float zMax = (float) ((this.z - parentFormation.z) + (this.depth * 0.5f));
 
-            upperColorR = 255f / 255f;
-            upperColorG = 77f / 255f;
-            upperColorB = 53f / 255f;
-            lowerColorR = 0;
-            lowerColorG = 0;
-            lowerColorB = 0;
+         //xMin = MathUtil.positiveMod(xMin, 32);
+         //yMin = MathUtil.positiveMod(yMin, 32);
+         //zMin = MathUtil.positiveMod(zMin, 32);
+         //xMax = MathUtil.positiveMod(xMax, 32);
+         //yMax = MathUtil.positiveMod(yMax, 32);
+         //zMax = MathUtil.positiveMod(zMax, 32);
 
-            float yVecComponent = CosmicEvolution.instance.save.activeWorld.chunkController.renderWorldScene.sunYVector;
-
-            yVecComponent += 0.2;
-            yVecComponent %= 0.07;
-
-            float colorDifR = upperColorR - lowerColorR;
-            float colorDifG = upperColorG - lowerColorG;
-            float colorDifB = upperColorB - lowerColorB;
-
-            float ratio = yVecComponent / 0.07f;
-
-            sunRed = lowerColorR + (colorDifR * ratio);
-            sunGreen = lowerColorG + (colorDifG * ratio);
-            sunBlue = lowerColorB + (colorDifB * ratio);
-        } else if(CosmicEvolution.instance.save.activeWorld.chunkController.renderWorldScene.sunYVector <= -0.2){
-            sunRed = 0.25f;
-            sunGreen = 0.25f;
-            sunBlue = 0.25f;
-        }
-        red *= sunRed;
-        green *= sunGreen;
-        blue *= sunBlue;
-        int color = (MathUtil.floatToIntRGBA(red) << 16) | (MathUtil.floatToIntRGBA(green) << 8) | MathUtil.floatToIntRGBA(blue);
-        float xMin = (float) ((this.x - CosmicEvolution.instance.save.thePlayer.x) - this.width * 0.5f);
-        float xMax = (float) ((this.x - CosmicEvolution.instance.save.thePlayer.x) + this.width * 0.5f);
-        float yMin = (float) ((this.y - CosmicEvolution.instance.save.thePlayer.y) - this.height * 0.5f);
-        float yMax = (float) ((this.y - CosmicEvolution.instance.save.thePlayer.y) + this.height * 0.5f);
-        float zMin = (float) ((this.z - CosmicEvolution.instance.save.thePlayer.z) - this.depth * 0.5f);
-        float zMax = (float) ((this.z - CosmicEvolution.instance.save.thePlayer.z) + this.depth * 0.5f);
+        //General shape is applied here, it's scaled via a uniform whenever scale is updated
         //top
-        tessellator.addVertex2DTexture(color, xMax, yMax, zMin, 3, 0, 1, 0, skyLightValue, alphaVal);
-        tessellator.addVertex2DTexture(color, xMin, yMax, zMax, 1, 0, 1, 0, skyLightValue, alphaVal);
-        tessellator.addVertex2DTexture(color, xMax, yMax, zMax, 2, 0, 1, 0, skyLightValue, alphaVal);
-        tessellator.addVertex2DTexture(color, xMin, yMax, zMin, 0, 0, 1, 0, skyLightValue, alphaVal);
-        tessellator.addElementsCW();
+        this.addVertex(vertexBuffer, xMax, yMax, zMin, 3, 0, 1, 0);
+        this.addVertex(vertexBuffer, xMin, yMax, zMax, 1, 0, 1, 0);
+        this.addVertex(vertexBuffer, xMax, yMax, zMax, 2, 0, 1, 0);
+        this.addVertex(vertexBuffer, xMin, yMax, zMin, 0, 0, 1, 0);
+        this.addElementsCW(elementBuffer, parentFormation);
         //Bottom
-        tessellator.addVertex2DTexture(color, xMin, yMin, zMin, 3, 0, -1, 0, skyLightValue, alphaVal);
-        tessellator.addVertex2DTexture(color, xMax, yMin, zMax, 1, 0, -1, 0, skyLightValue, alphaVal);
-        tessellator.addVertex2DTexture(color, xMin, yMin, zMax, 2, 0, -1, 0, skyLightValue, alphaVal);
-        tessellator.addVertex2DTexture(color, xMax, yMin, zMin, 0, 0, -1, 0, skyLightValue, alphaVal);
-        tessellator.addElementsCW();
+        this.addVertex(vertexBuffer, xMin, yMin, zMin, 3, 0, -1, 0);
+        this.addVertex(vertexBuffer, xMax, yMin, zMax, 1, 0, -1, 0);
+        this.addVertex(vertexBuffer, xMin, yMin, zMax, 2, 0, -1, 0);
+        this.addVertex(vertexBuffer, xMax, yMin, zMin, 0, 0, -1, 0);
+        this.addElementsCW(elementBuffer, parentFormation);
         //North
-        tessellator.addVertex2DTexture(color, xMin, yMin, zMin, 3, -1, 0, 0, skyLightValue, alphaVal);
-        tessellator.addVertex2DTexture(color, xMin, yMax, zMax, 1, -1, 0, 0, skyLightValue, alphaVal);
-        tessellator.addVertex2DTexture(color, xMin, yMax, zMin, 2, -1, 0, 0, skyLightValue, alphaVal);
-        tessellator.addVertex2DTexture(color, xMin, yMin, zMax, 0, -1, 0, 0, skyLightValue, alphaVal);
-        tessellator.addElementsCW();
+        this.addVertex(vertexBuffer, xMin, yMin, zMin, 3, -1, 0, 0);
+        this.addVertex(vertexBuffer, xMin, yMax, zMax, 1, -1, 0, 0);
+        this.addVertex(vertexBuffer, xMin, yMax, zMin, 2, -1, 0, 0);
+        this.addVertex(vertexBuffer, xMin, yMin, zMax, 0, -1, 0, 0);
+        this.addElementsCW(elementBuffer, parentFormation);
         //South
-        tessellator.addVertex2DTexture(color, xMax, yMin, zMax, 3, 1, 0, 0, skyLightValue, alphaVal);
-        tessellator.addVertex2DTexture(color, xMax, yMax, zMin, 1, 1, 0, 0, skyLightValue, alphaVal);
-        tessellator.addVertex2DTexture(color, xMax, yMax, zMax, 2, 1, 0, 0, skyLightValue, alphaVal);
-        tessellator.addVertex2DTexture(color, xMax, yMin, zMin, 0, 1, 0, 0, skyLightValue, alphaVal);
-        tessellator.addElementsCW();
+        this.addVertex(vertexBuffer, xMax, yMin, zMax, 3, 1, 0, 0);
+        this.addVertex(vertexBuffer, xMax, yMax, zMin, 1, 1, 0, 0);
+        this.addVertex(vertexBuffer, xMax, yMax, zMax, 2, 1, 0, 0);
+        this.addVertex(vertexBuffer, xMax, yMin, zMin, 0, 1, 0, 0);
+        this.addElementsCW(elementBuffer, parentFormation);
         //East
-        tessellator.addVertex2DTexture(color, xMax, yMin, zMin, 3, 0, 0, -1, skyLightValue, alphaVal);
-        tessellator.addVertex2DTexture(color, xMin, yMax, zMin, 1, 0, 0, -1, skyLightValue, alphaVal);
-        tessellator.addVertex2DTexture(color, xMax, yMax, zMin, 2, 0, 0, -1, skyLightValue, alphaVal);
-        tessellator.addVertex2DTexture(color, xMin, yMin, zMin, 0, 0, 0, -1, skyLightValue, alphaVal);
-        tessellator.addElementsCW();
+        this.addVertex(vertexBuffer, xMax, yMin, zMin, 3, 0, 0, -1);
+        this.addVertex(vertexBuffer, xMin, yMax, zMin, 1, 0, 0, -1);
+        this.addVertex(vertexBuffer, xMax, yMax, zMin, 2, 0, 0, -1);
+        this.addVertex(vertexBuffer, xMin, yMin, zMin, 0, 0, 0, -1);
+        this.addElementsCW(elementBuffer, parentFormation);
         //West
-        tessellator.addVertex2DTexture(color, xMin, yMin, zMax, 3, 0, 0, 1, skyLightValue, alphaVal);
-        tessellator.addVertex2DTexture(color, xMax, yMax, zMax, 1, 0, 0, 1, skyLightValue, alphaVal);
-        tessellator.addVertex2DTexture(color, xMin, yMax, zMax, 2, 0, 0, 1, skyLightValue, alphaVal);
-        tessellator.addVertex2DTexture(color, xMax, yMin, zMax, 0, 0, 0, 1, skyLightValue, alphaVal);
-        tessellator.addElementsCW();
+        this.addVertex(vertexBuffer, xMin, yMin, zMax, 3, 0, 0, 1);
+        this.addVertex(vertexBuffer, xMax, yMax, zMax, 1, 0, 0, 1);
+        this.addVertex(vertexBuffer, xMin, yMax, zMax, 2, 0, 0, 1);
+        this.addVertex(vertexBuffer, xMax, yMin, zMax, 0, 0, 0, 1);
+        this.addElementsCW(elementBuffer, parentFormation);
     }
 
-    public void update(){
-        this.weaken = CosmicEvolution.instance.save.time >= this.killTime;
-        this.z -= 0.01f;
+    private void addVertex(FloatBuffer vertexBuffer, float x, float y, float z, int corner, float normalX, float normalY, float normalZ){
 
-        this.strength += this.weaken ? -0.001f : 0.001f;
-        this.strength = Math.min(this.strength, this.maxStrength);
+
+        vertexBuffer.put(x);
+        vertexBuffer.put(y);
+        vertexBuffer.put(z);
+        switch (corner) {
+            case 0 -> {
+                vertexBuffer.put(1f);
+                vertexBuffer.put(1f);
+            }
+            case 1 -> {
+               vertexBuffer.put(1f);
+               vertexBuffer.put(0f);
+            }
+            case 2 -> {
+                vertexBuffer.put(0f);
+                vertexBuffer.put(0f);
+            }
+            case 3 -> {
+                vertexBuffer.put(0F);
+                vertexBuffer.put(1F);
+            }
+        }
+        vertexBuffer.put(normalX);
+        vertexBuffer.put(normalY);
+        vertexBuffer.put(normalZ);
     }
 
-
-    public void scale(float scaleFactor){
-        this.width *= scaleFactor;
-        this.height *= scaleFactor;
-        this.depth *= scaleFactor;
+    private void addElementsCW(IntBuffer elementBuffer, CloudFormation cloudFormation){
+        elementBuffer.put(cloudFormation.elementOffset + 2);
+        elementBuffer.put(cloudFormation.elementOffset + 1);
+        elementBuffer.put(cloudFormation.elementOffset + 0);
+        elementBuffer.put(cloudFormation.elementOffset + 0);
+        elementBuffer.put(cloudFormation.elementOffset + 1);
+        elementBuffer.put(cloudFormation.elementOffset + 3);
+        cloudFormation.elementOffset += 4;
     }
 }

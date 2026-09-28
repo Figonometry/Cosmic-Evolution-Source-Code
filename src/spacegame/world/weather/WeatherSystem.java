@@ -202,13 +202,8 @@ public final class WeatherSystem {
                 formation.scale(1.01f);
             }
 
-            deleteFormation:
-            if(formation.centralCloud == null){
-                for(int j = 0; j < formation.clouds.length; j++){
-                    if(formation.clouds[j] != null){
-                        break deleteFormation;
-                    }
-                }
+            if(formation.strength < 0){
+                formation.clearOpenGLState();
                 this.cloudFormations.remove(formation);
             }
         }
@@ -222,11 +217,11 @@ public final class WeatherSystem {
         }
     }
 
-    public void render(float skyLightValue, float sunRed, float sunGreen, float sunBlue, RenderEngine.WorldTessellator tessellator){
+    public void render(){
         CloudFormation formation;
         for(int i = 0; i < this.cloudFormations.size(); i++){
             formation = this.cloudFormations.get(i);
-            formation.render(skyLightValue, sunRed, sunGreen, sunBlue, tessellator);
+            formation.render();
         }
     }
 }

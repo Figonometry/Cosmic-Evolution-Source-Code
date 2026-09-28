@@ -59,8 +59,8 @@ public class ChestLocationIO { //This must be instance and not static since it w
             NBTTagCompound inventory = chestLoadedTag.getCompoundTag("Inventory");
             int index = chestLoadedTag.getInteger("index");
             NBTTagCompound item;
-            if (Block.list[chunk.blocks[index]] instanceof BlockContainer) {
-                Inventory chestInventory = new Inventory(((BlockContainer) (Block.list[chunk.blocks[index]])).inventoryWidth, ((BlockContainer) (Block.list[chunk.blocks[index]])).inventoryHeight);
+            if (Block.list[chunk.getBlockID(index)] instanceof BlockContainer) {
+                Inventory chestInventory = new Inventory(((BlockContainer) (Block.list[chunk.getBlockID(index)])).inventoryWidth, ((BlockContainer) (Block.list[chunk.getBlockID(index)])).inventoryHeight);
                 for (int j = 0; j < chestInventory.itemStacks.length; j++) {
                     item = inventory.getCompoundTag("slot " + j);
                     if (item != null) {

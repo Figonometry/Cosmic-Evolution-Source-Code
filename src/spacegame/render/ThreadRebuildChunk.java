@@ -32,18 +32,29 @@ public final class ThreadRebuildChunk implements Runnable {
     }
 
     public void rebuildChunk() {
-        if (this.workingChunk.firstRender) {
-            this.workingChunk.notifyAllBlocks();
-            this.workingChunk.firstRender = false;
-        }
+        this.workingChunk.topFaceBitMask = new int[1024];
+        this.workingChunk.bottomFaceBitMask = new int[1024];
+        this.workingChunk.northFaceBitMask = new int[1024];
+        this.workingChunk.southFaceBitMask = new int[1024];
+        this.workingChunk.eastFaceBitMask = new int[1024];
+        this.workingChunk.westFaceBitMask = new int[1024];
+        this.workingChunk.notifyAllBlocks();
         this.workingChunk.shouldRender = this.workingChunk.checkIfChunkShouldRender();
-        if (!this.workingChunk.shouldRender) {return;}
+        if (!this.workingChunk.shouldRender) {
+            this.workingChunk.topFaceBitMask = null;
+            this.workingChunk.bottomFaceBitMask = null;
+            this.workingChunk.northFaceBitMask = null;
+            this.workingChunk.southFaceBitMask = null;
+            this.workingChunk.eastFaceBitMask = null;
+            this.workingChunk.westFaceBitMask = null;
+            return;
+        }
         RenderBlocks renderBlocks = new RenderBlocks();
         int faceNumber = this.workingChunk.calculateFaceNumber();
-        this.workingChunk.tempVertexBufferOpaque = BufferUtils.createFloatBuffer(faceNumber * 24);
-        this.workingChunk.tempElementBufferOpaque = BufferUtils.createIntBuffer(faceNumber * 6);
-        this.workingChunk.tempVertexBufferTransparent = BufferUtils.createFloatBuffer(faceNumber * 24);
-        this.workingChunk.tempElementBufferTransparent = BufferUtils.createIntBuffer(faceNumber * 6);
+        this.workingChunk.vertexBufferOpaque = BufferUtils.createFloatBuffer(faceNumber * 24);
+        this.workingChunk.elementBufferOpaque = BufferUtils.createIntBuffer(faceNumber * 6);
+        this.workingChunk.vertexBufferTransparent = BufferUtils.createFloatBuffer(faceNumber * 24);
+        this.workingChunk.elementBufferTransparent = BufferUtils.createIntBuffer(faceNumber * 6);
         this.workingChunk.excludeTopFace = new int[1024];
         this.workingChunk.excludeBottomFace = new int[1024];
         this.workingChunk.excludeNorthFace = new int[1024];
@@ -56,120 +67,126 @@ public final class ThreadRebuildChunk implements Runnable {
         int index;
         boolean needsToSetUpdateTime = false;
 
-        for(int i = 0; i < this.workingChunk.topFaceBitMask.length; i++){
-            if(this.workingChunk.topFaceBitMask[i] == 0)continue;
+        for (int i = 0; i < this.workingChunk.topFaceBitMask.length; i++) {
+            if (this.workingChunk.topFaceBitMask[i] == 0) continue;
 
-            for(int j = 0; j < 32; j ++){
-                if(this.workingChunk.checkBitValue(this.workingChunk.topFaceBitMask[i], 1 << j) == 0 || this.workingChunk.checkBitValue(this.workingChunk.excludeTopFace[i], 1 << j) != 0)continue;
+            for (int j = 0; j < 32; j++) {
+                if (this.workingChunk.checkBitValue(this.workingChunk.topFaceBitMask[i], 1 << j) == 0 || this.workingChunk.checkBitValue(this.workingChunk.excludeTopFace[i], 1 << j) != 0)
+                    continue;
                 index = this.workingChunk.calculateIndexInTopOrBottomFaceBitMasks(i, j);
-                if(this.workingChunk.blocks[index] == Block.air.ID)continue;
+                if (this.workingChunk.getBlockID(index) == Block.air.ID) continue;
                 blockX = this.workingChunk.getBlockXFromIndex(index);
                 blockY = this.workingChunk.getBlockYFromIndex(index);
                 blockZ = this.workingChunk.getBlockZFromIndex(index);
-                needsToSetUpdateTime = Block.list[this.workingChunk.blocks[index]] instanceof BlockGrass || Block.list[this.workingChunk.blocks[index]].ID == Block.leaf.ID;
-                if (Block.list[this.workingChunk.blocks[index]].canGreedyMesh && this.shouldStaringBlockGreedyMesh(index, RenderBlocks.TOP_FACE)) {
-                    this.addBlockToRenderData(this.workingChunk.blocks[index], index, RenderBlocks.TOP_FACE, this.calculateGreedyMeshSize(blockX, blockY, blockZ, RenderBlocks.TOP_FACE), renderBlocks);
+                needsToSetUpdateTime = Block.list[this.workingChunk.getBlockID(index)] instanceof BlockGrass || Block.list[this.workingChunk.getBlockID(index)].ID == Block.leaf.ID;
+                if (Block.list[this.workingChunk.getBlockID(index)].canGreedyMesh && this.shouldStaringBlockGreedyMesh(index, RenderBlocks.TOP_FACE)) {
+                    this.addBlockToRenderData(this.workingChunk.getBlockID(index), index, RenderBlocks.TOP_FACE, this.calculateGreedyMeshSize(blockX, blockY, blockZ, RenderBlocks.TOP_FACE), renderBlocks);
                 } else {
-                    this.addBlockToRenderData(this.workingChunk.blocks[index], index, RenderBlocks.TOP_FACE, new int[2], renderBlocks);
+                    this.addBlockToRenderData(this.workingChunk.getBlockID(index), index, RenderBlocks.TOP_FACE, new int[2], renderBlocks);
                 }
 
             }
         }
 
-        for(int i = 0; i < this.workingChunk.bottomFaceBitMask.length; i++){
-            if(this.workingChunk.bottomFaceBitMask[i] == 0)continue;
+        for (int i = 0; i < this.workingChunk.bottomFaceBitMask.length; i++) {
+            if (this.workingChunk.bottomFaceBitMask[i] == 0) continue;
 
-            for(int j = 0; j < 32; j ++){
-                if(this.workingChunk.checkBitValue(this.workingChunk.bottomFaceBitMask[i], 1 << j) == 0 || this.workingChunk.checkBitValue(this.workingChunk.excludeBottomFace[i], 1 << j) != 0)continue;
+            for (int j = 0; j < 32; j++) {
+                if (this.workingChunk.checkBitValue(this.workingChunk.bottomFaceBitMask[i], 1 << j) == 0 || this.workingChunk.checkBitValue(this.workingChunk.excludeBottomFace[i], 1 << j) != 0)
+                    continue;
                 index = this.workingChunk.calculateIndexInTopOrBottomFaceBitMasks(i, j);
-                if(this.workingChunk.blocks[index] == Block.air.ID)continue;
+                if (this.workingChunk.getBlockID(index) == Block.air.ID) continue;
                 blockX = this.workingChunk.getBlockXFromIndex(index);
                 blockY = this.workingChunk.getBlockYFromIndex(index);
                 blockZ = this.workingChunk.getBlockZFromIndex(index);
-                needsToSetUpdateTime = Block.list[this.workingChunk.blocks[index]] instanceof BlockGrass || Block.list[this.workingChunk.blocks[index]].ID == Block.leaf.ID;
-                if (Block.list[this.workingChunk.blocks[index]].canGreedyMesh && this.shouldStaringBlockGreedyMesh(index, RenderBlocks.BOTTOM_FACE)) {
-                    this.addBlockToRenderData(this.workingChunk.blocks[index], index, RenderBlocks.BOTTOM_FACE, this.calculateGreedyMeshSize(blockX, blockY, blockZ, RenderBlocks.BOTTOM_FACE), renderBlocks);
+                needsToSetUpdateTime = Block.list[this.workingChunk.getBlockID(index)] instanceof BlockGrass || Block.list[this.workingChunk.getBlockID(index)].ID == Block.leaf.ID;
+                if (Block.list[this.workingChunk.getBlockID(index)].canGreedyMesh && this.shouldStaringBlockGreedyMesh(index, RenderBlocks.BOTTOM_FACE)) {
+                    this.addBlockToRenderData(this.workingChunk.getBlockID(index), index, RenderBlocks.BOTTOM_FACE, this.calculateGreedyMeshSize(blockX, blockY, blockZ, RenderBlocks.BOTTOM_FACE), renderBlocks);
                 } else {
-                    this.addBlockToRenderData(this.workingChunk.blocks[index], index, RenderBlocks.BOTTOM_FACE, new int[2], renderBlocks);
+                    this.addBlockToRenderData(this.workingChunk.getBlockID(index), index, RenderBlocks.BOTTOM_FACE, new int[2], renderBlocks);
                 }
 
             }
         }
 
-        for(int i = 0; i < this.workingChunk.northFaceBitMask.length; i++){
-            if(this.workingChunk.northFaceBitMask[i] == 0)continue;
+        for (int i = 0; i < this.workingChunk.northFaceBitMask.length; i++) {
+            if (this.workingChunk.northFaceBitMask[i] == 0) continue;
 
-            for(int j = 0; j < 32; j ++){
-                if(this.workingChunk.checkBitValue(this.workingChunk.northFaceBitMask[i], 1 << j) == 0 || this.workingChunk.checkBitValue(this.workingChunk.excludeNorthFace[i], 1 << j) != 0)continue;
+            for (int j = 0; j < 32; j++) {
+                if (this.workingChunk.checkBitValue(this.workingChunk.northFaceBitMask[i], 1 << j) == 0 || this.workingChunk.checkBitValue(this.workingChunk.excludeNorthFace[i], 1 << j) != 0)
+                    continue;
                 index = this.workingChunk.calculateIndexInNorthOrSouthFaceBitMasks(i, j);
-                if(this.workingChunk.blocks[index] == Block.air.ID)continue;
+                if (this.workingChunk.getBlockID(index) == Block.air.ID) continue;
                 blockX = this.workingChunk.getBlockXFromIndex(index);
                 blockY = this.workingChunk.getBlockYFromIndex(index);
                 blockZ = this.workingChunk.getBlockZFromIndex(index);
-                needsToSetUpdateTime = Block.list[this.workingChunk.blocks[index]] instanceof BlockGrass || Block.list[this.workingChunk.blocks[index]].ID == Block.leaf.ID;
-                if (Block.list[this.workingChunk.blocks[index]].canGreedyMesh && this.shouldStaringBlockGreedyMesh(index, RenderBlocks.NORTH_FACE)) {
-                    this.addBlockToRenderData(this.workingChunk.blocks[index], index, RenderBlocks.NORTH_FACE, this.calculateGreedyMeshSize(blockX, blockY, blockZ, RenderBlocks.NORTH_FACE), renderBlocks);
+                needsToSetUpdateTime = Block.list[this.workingChunk.getBlockID(index)] instanceof BlockGrass || Block.list[this.workingChunk.getBlockID(index)].ID == Block.leaf.ID;
+                if (Block.list[this.workingChunk.getBlockID(index)].canGreedyMesh && this.shouldStaringBlockGreedyMesh(index, RenderBlocks.NORTH_FACE)) {
+                    this.addBlockToRenderData(this.workingChunk.getBlockID(index), index, RenderBlocks.NORTH_FACE, this.calculateGreedyMeshSize(blockX, blockY, blockZ, RenderBlocks.NORTH_FACE), renderBlocks);
                 } else {
-                    this.addBlockToRenderData(this.workingChunk.blocks[index], index, RenderBlocks.NORTH_FACE, new int[2], renderBlocks);
+                    this.addBlockToRenderData(this.workingChunk.getBlockID(index), index, RenderBlocks.NORTH_FACE, new int[2], renderBlocks);
                 }
 
             }
         }
 
-        for(int i = 0; i < this.workingChunk.southFaceBitMask.length; i++){
-            if(this.workingChunk.southFaceBitMask[i] == 0)continue;
+        for (int i = 0; i < this.workingChunk.southFaceBitMask.length; i++) {
+            if (this.workingChunk.southFaceBitMask[i] == 0) continue;
 
-            for(int j = 0; j < 32; j ++){
-                if(this.workingChunk.checkBitValue(this.workingChunk.southFaceBitMask[i], 1 << j) == 0 || this.workingChunk.checkBitValue(this.workingChunk.excludeSouthFace[i], 1 << j) != 0)continue;
+            for (int j = 0; j < 32; j++) {
+                if (this.workingChunk.checkBitValue(this.workingChunk.southFaceBitMask[i], 1 << j) == 0 || this.workingChunk.checkBitValue(this.workingChunk.excludeSouthFace[i], 1 << j) != 0)
+                    continue;
                 index = this.workingChunk.calculateIndexInNorthOrSouthFaceBitMasks(i, j);
-                if(this.workingChunk.blocks[index] == Block.air.ID)continue;
+                if (this.workingChunk.getBlockID(index) == Block.air.ID) continue;
                 blockX = this.workingChunk.getBlockXFromIndex(index);
                 blockY = this.workingChunk.getBlockYFromIndex(index);
                 blockZ = this.workingChunk.getBlockZFromIndex(index);
-                needsToSetUpdateTime = Block.list[this.workingChunk.blocks[index]] instanceof BlockGrass || Block.list[this.workingChunk.blocks[index]].ID == Block.leaf.ID;
-                if (Block.list[this.workingChunk.blocks[index]].canGreedyMesh && this.shouldStaringBlockGreedyMesh(index, RenderBlocks.SOUTH_FACE)) {
-                    this.addBlockToRenderData(this.workingChunk.blocks[index], index, RenderBlocks.SOUTH_FACE, this.calculateGreedyMeshSize(blockX, blockY, blockZ, RenderBlocks.SOUTH_FACE), renderBlocks);
+                needsToSetUpdateTime = Block.list[this.workingChunk.getBlockID(index)] instanceof BlockGrass || Block.list[this.workingChunk.getBlockID(index)].ID == Block.leaf.ID;
+                if (Block.list[this.workingChunk.getBlockID(index)].canGreedyMesh && this.shouldStaringBlockGreedyMesh(index, RenderBlocks.SOUTH_FACE)) {
+                    this.addBlockToRenderData(this.workingChunk.getBlockID(index), index, RenderBlocks.SOUTH_FACE, this.calculateGreedyMeshSize(blockX, blockY, blockZ, RenderBlocks.SOUTH_FACE), renderBlocks);
                 } else {
-                    this.addBlockToRenderData(this.workingChunk.blocks[index], index, RenderBlocks.SOUTH_FACE, new int[2], renderBlocks);
+                    this.addBlockToRenderData(this.workingChunk.getBlockID(index), index, RenderBlocks.SOUTH_FACE, new int[2], renderBlocks);
                 }
 
             }
         }
 
-        for(int i = 0; i < this.workingChunk.eastFaceBitMask.length; i++){
-            if(this.workingChunk.eastFaceBitMask[i] == 0)continue;
+        for (int i = 0; i < this.workingChunk.eastFaceBitMask.length; i++) {
+            if (this.workingChunk.eastFaceBitMask[i] == 0) continue;
 
-            for(int j = 0; j < 32; j ++){
-                if(this.workingChunk.checkBitValue(this.workingChunk.eastFaceBitMask[i], 1 << j) == 0 || this.workingChunk.checkBitValue(this.workingChunk.excludeEastFace[i], 1 << j) != 0)continue;
+            for (int j = 0; j < 32; j++) {
+                if (this.workingChunk.checkBitValue(this.workingChunk.eastFaceBitMask[i], 1 << j) == 0 || this.workingChunk.checkBitValue(this.workingChunk.excludeEastFace[i], 1 << j) != 0)
+                    continue;
                 index = this.workingChunk.calculateIndexInEastOrWestFaceBitMasks(i, j);
-                if(this.workingChunk.blocks[index] == Block.air.ID)continue;
+                if (this.workingChunk.getBlockID(index) == Block.air.ID) continue;
                 blockX = this.workingChunk.getBlockXFromIndex(index);
                 blockY = this.workingChunk.getBlockYFromIndex(index);
                 blockZ = this.workingChunk.getBlockZFromIndex(index);
-                needsToSetUpdateTime = Block.list[this.workingChunk.blocks[index]] instanceof BlockGrass || Block.list[this.workingChunk.blocks[index]].ID == Block.leaf.ID;
-                if (Block.list[this.workingChunk.blocks[index]].canGreedyMesh && this.shouldStaringBlockGreedyMesh(index, RenderBlocks.EAST_FACE)) {
-                    this.addBlockToRenderData(this.workingChunk.blocks[index], index, RenderBlocks.EAST_FACE, this.calculateGreedyMeshSize(blockX, blockY, blockZ, RenderBlocks.EAST_FACE), renderBlocks);
+                needsToSetUpdateTime = Block.list[this.workingChunk.getBlockID(index)] instanceof BlockGrass || Block.list[this.workingChunk.getBlockID(index)].ID == Block.leaf.ID;
+                if (Block.list[this.workingChunk.getBlockID(index)].canGreedyMesh && this.shouldStaringBlockGreedyMesh(index, RenderBlocks.EAST_FACE)) {
+                    this.addBlockToRenderData(this.workingChunk.getBlockID(index), index, RenderBlocks.EAST_FACE, this.calculateGreedyMeshSize(blockX, blockY, blockZ, RenderBlocks.EAST_FACE), renderBlocks);
                 } else {
-                    this.addBlockToRenderData(this.workingChunk.blocks[index], index, RenderBlocks.EAST_FACE, new int[2], renderBlocks);
+                    this.addBlockToRenderData(this.workingChunk.getBlockID(index), index, RenderBlocks.EAST_FACE, new int[2], renderBlocks);
                 }
             }
         }
 
-        for(int i = 0; i < this.workingChunk.westFaceBitMask.length; i++){
-            if(this.workingChunk.westFaceBitMask[i] == 0)continue;
+        for (int i = 0; i < this.workingChunk.westFaceBitMask.length; i++) {
+            if (this.workingChunk.westFaceBitMask[i] == 0) continue;
 
-            for(int j = 0; j < 32; j ++){
-                if(this.workingChunk.checkBitValue(this.workingChunk.westFaceBitMask[i], 1 << j) == 0 || this.workingChunk.checkBitValue(this.workingChunk.excludeWestFace[i], 1 << j) != 0)continue;
+            for (int j = 0; j < 32; j++) {
+                if (this.workingChunk.checkBitValue(this.workingChunk.westFaceBitMask[i], 1 << j) == 0 || this.workingChunk.checkBitValue(this.workingChunk.excludeWestFace[i], 1 << j) != 0)
+                    continue;
                 index = this.workingChunk.calculateIndexInEastOrWestFaceBitMasks(i, j);
-                if(this.workingChunk.blocks[index] == Block.air.ID)continue;
+                if (this.workingChunk.getBlockID(index) == Block.air.ID) continue;
                 blockX = this.workingChunk.getBlockXFromIndex(index);
                 blockY = this.workingChunk.getBlockYFromIndex(index);
                 blockZ = this.workingChunk.getBlockZFromIndex(index);
-                needsToSetUpdateTime = Block.list[this.workingChunk.blocks[index]] instanceof BlockGrass || Block.list[this.workingChunk.blocks[index]].ID == Block.leaf.ID;
-                if (Block.list[this.workingChunk.blocks[index]].canGreedyMesh && this.shouldStaringBlockGreedyMesh(index, RenderBlocks.WEST_FACE)) {
-                    this.addBlockToRenderData(this.workingChunk.blocks[index], index, RenderBlocks.WEST_FACE, this.calculateGreedyMeshSize(blockX, blockY, blockZ, RenderBlocks.WEST_FACE), renderBlocks);
+                needsToSetUpdateTime = Block.list[this.workingChunk.getBlockID(index)] instanceof BlockGrass || Block.list[this.workingChunk.getBlockID(index)].ID == Block.leaf.ID;
+                if (Block.list[this.workingChunk.getBlockID(index)].canGreedyMesh && this.shouldStaringBlockGreedyMesh(index, RenderBlocks.WEST_FACE)) {
+                    this.addBlockToRenderData(this.workingChunk.getBlockID(index), index, RenderBlocks.WEST_FACE, this.calculateGreedyMeshSize(blockX, blockY, blockZ, RenderBlocks.WEST_FACE), renderBlocks);
                 } else {
-                    this.addBlockToRenderData(this.workingChunk.blocks[index], index, RenderBlocks.WEST_FACE, new int[2], renderBlocks);
+                    this.addBlockToRenderData(this.workingChunk.getBlockID(index), index, RenderBlocks.WEST_FACE, new int[2], renderBlocks);
                 }
             }
         }
@@ -181,13 +198,19 @@ public final class ThreadRebuildChunk implements Runnable {
         this.workingChunk.excludeSouthFace = null;
         this.workingChunk.excludeEastFace = null;
         this.workingChunk.excludeWestFace = null;
+        this.workingChunk.topFaceBitMask = null;
+        this.workingChunk.bottomFaceBitMask = null;
+        this.workingChunk.northFaceBitMask = null;
+        this.workingChunk.southFaceBitMask = null;
+        this.workingChunk.eastFaceBitMask = null;
+        this.workingChunk.westFaceBitMask = null;
         this.workingChunk.needsToUpdate = false;
 
-        if(needsToSetUpdateTime) {
+        if (needsToSetUpdateTime) {
             this.workingChunk.updateTime = CosmicEvolution.globalRand.nextLong(CosmicEvolution.instance.save.time + CosmicEvolution.instance.everything.getObjectAssociatedWithWorld(CosmicEvolution.instance.save.activeWorld).rotationPeriod / 2, CosmicEvolution.instance.save.time + CosmicEvolution.instance.everything.getObjectAssociatedWithWorld(CosmicEvolution.instance.save.activeWorld).rotationPeriod);
         }
         synchronized (this.parentWorld.chunkController.bindingChunks) {
-           this.parentWorld.chunkController.bindingChunks.add(this.workingChunk);
+            this.parentWorld.chunkController.bindingChunks.add(this.workingChunk);
         }
     }
 
@@ -269,7 +292,7 @@ public final class ThreadRebuildChunk implements Runnable {
         int returnZ = 31 - (z % 32);
 
         for (int i = 0; i <= returnX; i++) {
-            if (!this.canBlockFaceGreedyMesh(this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)], this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x + i, y, z)], this.workingChunk.topFaceBitMask[Chunk.calculateBitMaskIndex(x + i, z)], this.workingChunk.excludeTopFace[Chunk.calculateBitMaskIndex(x + i, z)], y, this.parentWorld.getBlockLightValue(x, y + 1, z), this.parentWorld.getBlockLightValue(x + i, y + 1, z), this.parentWorld.getBlockLightColorAsInt(x, y + 1, z), this.parentWorld.getBlockLightColorAsInt(x + i, y + 1, z), this.parentWorld.getBlockSkyLightValue(x, y + 1, z), this.parentWorld.getBlockSkyLightValue(x + i, y + 1, z)) || !this.areCornersClear(x + i, y, z, 0)) {
+            if (!this.canBlockFaceGreedyMesh(this.workingChunk.getBlockID(x,y,z), this.workingChunk.getBlockID(x + i, y, z), this.workingChunk.topFaceBitMask[Chunk.calculateBitMaskIndex(x + i, z)], this.workingChunk.excludeTopFace[Chunk.calculateBitMaskIndex(x + i, z)], y, this.parentWorld.getBlockLightValue(x, y + 1, z), this.parentWorld.getBlockLightValue(x + i, y + 1, z), this.parentWorld.getBlockLightColor(x, y + 1, z), this.parentWorld.getBlockLightColor(x + i, y + 1, z), this.parentWorld.getBlockSkyLightValue(x, y + 1, z), this.parentWorld.getBlockSkyLightValue(x + i, y + 1, z)) || !this.areCornersClear(x + i, y, z, 0)) {
                 returnX = i - 1;
                 break;
             }
@@ -282,7 +305,7 @@ public final class ThreadRebuildChunk implements Runnable {
         loop:
         for (int j = 0; j <= returnZ; j++) {
             for (int i = 0; i <= returnX; i++) {
-                if (!this.canBlockFaceGreedyMesh(this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)], this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x + i, y, z + j)], this.workingChunk.topFaceBitMask[Chunk.calculateBitMaskIndex(x + i, z + j)], this.workingChunk.excludeTopFace[Chunk.calculateBitMaskIndex(x + i, z + j)], y, this.parentWorld.getBlockLightValue(x, y + 1, z), this.parentWorld.getBlockLightValue(x + i, y + 1, z + j), this.parentWorld.getBlockLightColorAsInt(x, y + 1, z), this.parentWorld.getBlockLightColorAsInt(x + i, y + 1, z + j), this.parentWorld.getBlockSkyLightValue(x, y + 1, z), this.parentWorld.getBlockSkyLightValue(x + i, y + 1, z + j)) || !this.areCornersClear(x + i, y, z + j, 0)) {
+                if (!this.canBlockFaceGreedyMesh(this.workingChunk.getBlockID(x,y,z), this.workingChunk.getBlockID(x + i, y, z + j), this.workingChunk.topFaceBitMask[Chunk.calculateBitMaskIndex(x + i, z + j)], this.workingChunk.excludeTopFace[Chunk.calculateBitMaskIndex(x + i, z + j)], y, this.parentWorld.getBlockLightValue(x, y + 1, z), this.parentWorld.getBlockLightValue(x + i, y + 1, z + j), this.parentWorld.getBlockLightColor(x, y + 1, z), this.parentWorld.getBlockLightColor(x + i, y + 1, z + j), this.parentWorld.getBlockSkyLightValue(x, y + 1, z), this.parentWorld.getBlockSkyLightValue(x + i, y + 1, z + j)) || !this.areCornersClear(x + i, y, z + j, 0)) {
                     returnZ = j - 1;
                     break loop;
                 }
@@ -310,7 +333,7 @@ public final class ThreadRebuildChunk implements Runnable {
         int returnZ = 31 - (z % 32);
 
         for (int i = 0; i <= returnX; i++) {
-            if (!this.canBlockFaceGreedyMesh(this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)], this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x + i, y, z)], this.workingChunk.bottomFaceBitMask[Chunk.calculateBitMaskIndex(x + i, z)], this.workingChunk.excludeBottomFace[Chunk.calculateBitMaskIndex(x + i, z)], y, this.parentWorld.getBlockLightValue(x, y - 1, z), this.parentWorld.getBlockLightValue(x + i, y - 1, z), this.parentWorld.getBlockLightColorAsInt(x, y - 1, z), this.parentWorld.getBlockLightColorAsInt(x + i, y - 1, z), this.parentWorld.getBlockSkyLightValue(x, y - 1, z), this.parentWorld.getBlockSkyLightValue(x + i, y - 1, z)) || !this.areCornersClear(x + i, y, z, 1)) {
+            if (!this.canBlockFaceGreedyMesh(this.workingChunk.getBlockID(x,y,z), this.workingChunk.getBlockID(x + i, y, z), this.workingChunk.bottomFaceBitMask[Chunk.calculateBitMaskIndex(x + i, z)], this.workingChunk.excludeBottomFace[Chunk.calculateBitMaskIndex(x + i, z)], y, this.parentWorld.getBlockLightValue(x, y - 1, z), this.parentWorld.getBlockLightValue(x + i, y - 1, z), this.parentWorld.getBlockLightColor(x, y - 1, z), this.parentWorld.getBlockLightColor(x + i, y - 1, z), this.parentWorld.getBlockSkyLightValue(x, y - 1, z), this.parentWorld.getBlockSkyLightValue(x + i, y - 1, z)) || !this.areCornersClear(x + i, y, z, 1)) {
                 returnX = i - 1;
                 break;
             }
@@ -323,7 +346,7 @@ public final class ThreadRebuildChunk implements Runnable {
         loop:
         for (int j = 0; j <= returnZ; j++) {
             for (int i = 0; i <= returnX; i++) {
-                if (!this.canBlockFaceGreedyMesh(this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)], this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x + i, y, z + j)], this.workingChunk.bottomFaceBitMask[Chunk.calculateBitMaskIndex(x + i, z + j)], this.workingChunk.excludeBottomFace[Chunk.calculateBitMaskIndex(x + i, z + j)], y, this.parentWorld.getBlockLightValue(x, y - 1, z + j), this.parentWorld.getBlockLightValue(x + i, y - 1, z + j), this.parentWorld.getBlockLightColorAsInt(x, y - 1, z + j), this.parentWorld.getBlockLightColorAsInt(x + i, y - 1, z + j), this.parentWorld.getBlockSkyLightValue(x, y - 1, z + j), this.parentWorld.getBlockSkyLightValue(x + i, y - 1, z + j)) || !this.areCornersClear(x + i, y, z + j, 1)) {
+                if (!this.canBlockFaceGreedyMesh(this.workingChunk.getBlockID(x,y,z), this.workingChunk.getBlockID(x + i, y, z + j), this.workingChunk.bottomFaceBitMask[Chunk.calculateBitMaskIndex(x + i, z + j)], this.workingChunk.excludeBottomFace[Chunk.calculateBitMaskIndex(x + i, z + j)], y, this.parentWorld.getBlockLightValue(x, y - 1, z + j), this.parentWorld.getBlockLightValue(x + i, y - 1, z + j), this.parentWorld.getBlockLightColor(x, y - 1, z + j), this.parentWorld.getBlockLightColor(x + i, y - 1, z + j), this.parentWorld.getBlockSkyLightValue(x, y - 1, z + j), this.parentWorld.getBlockSkyLightValue(x + i, y - 1, z + j)) || !this.areCornersClear(x + i, y, z + j, 1)) {
                     returnZ = j - 1;
                     break loop;
                 }
@@ -349,7 +372,7 @@ public final class ThreadRebuildChunk implements Runnable {
         int returnY = 31 - (y % 32);
 
         for (int i = 0; i <= returnZ; i++) {
-            if (!this.canBlockFaceGreedyMesh(this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)], this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z + i)], this.workingChunk.northFaceBitMask[Chunk.calculateBitMaskIndex(z + i, y)], this.workingChunk.excludeNorthFace[Chunk.calculateBitMaskIndex(z + i, y)], x, this.parentWorld.getBlockLightValue(x - 1, y, z), this.parentWorld.getBlockLightValue(x - 1, y, z + i), this.parentWorld.getBlockLightColorAsInt(x - 1, y, z), this.parentWorld.getBlockLightColorAsInt(x - 1, y, z + i), this.parentWorld.getBlockSkyLightValue(x - 1, y, z), this.parentWorld.getBlockSkyLightValue(x - 1, y, z + i)) || !this.areCornersClear(x, y, z + i, 2)) {
+            if (!this.canBlockFaceGreedyMesh(this.workingChunk.getBlockID(x,y,z), this.workingChunk.getBlockID(x, y, z + i), this.workingChunk.northFaceBitMask[Chunk.calculateBitMaskIndex(z + i, y)], this.workingChunk.excludeNorthFace[Chunk.calculateBitMaskIndex(z + i, y)], x, this.parentWorld.getBlockLightValue(x - 1, y, z), this.parentWorld.getBlockLightValue(x - 1, y, z + i), this.parentWorld.getBlockLightColor(x - 1, y, z), this.parentWorld.getBlockLightColor(x - 1, y, z + i), this.parentWorld.getBlockSkyLightValue(x - 1, y, z), this.parentWorld.getBlockSkyLightValue(x - 1, y, z + i)) || !this.areCornersClear(x, y, z + i, 2)) {
                 returnZ = i - 1;
                 break;
             }
@@ -362,7 +385,7 @@ public final class ThreadRebuildChunk implements Runnable {
         loop:
         for (int j = 0; j <= returnY; j++) {
             for (int i = 0; i <= returnZ; i++) {
-                if (!this.canBlockFaceGreedyMesh(this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)], this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y + j, z + i)], this.workingChunk.northFaceBitMask[Chunk.calculateBitMaskIndex(z + i, y + j)], this.workingChunk.excludeNorthFace[Chunk.calculateBitMaskIndex(z + i, y + j)], x, this.parentWorld.getBlockLightValue(x - 1, y, z), this.parentWorld.getBlockLightValue(x - 1, y + j, z + i), this.parentWorld.getBlockLightColorAsInt(x - 1, y, z), this.parentWorld.getBlockLightColorAsInt(x - 1, y + j, z + i), this.parentWorld.getBlockSkyLightValue(x - 1, y, z), this.parentWorld.getBlockSkyLightValue(x - 1, y + j, z + i)) || !this.areCornersClear(x, y + j, z + i, 2)) {
+                if (!this.canBlockFaceGreedyMesh(this.workingChunk.getBlockID(x,y,z), this.workingChunk.getBlockID(x, y + j, z + i), this.workingChunk.northFaceBitMask[Chunk.calculateBitMaskIndex(z + i, y + j)], this.workingChunk.excludeNorthFace[Chunk.calculateBitMaskIndex(z + i, y + j)], x, this.parentWorld.getBlockLightValue(x - 1, y, z), this.parentWorld.getBlockLightValue(x - 1, y + j, z + i), this.parentWorld.getBlockLightColor(x - 1, y, z), this.parentWorld.getBlockLightColor(x - 1, y + j, z + i), this.parentWorld.getBlockSkyLightValue(x - 1, y, z), this.parentWorld.getBlockSkyLightValue(x - 1, y + j, z + i)) || !this.areCornersClear(x, y + j, z + i, 2)) {
                     returnY = j - 1;
                     break loop;
                 }
@@ -389,7 +412,7 @@ public final class ThreadRebuildChunk implements Runnable {
         int returnY = 31 - (y % 32);
 
         for (int i = 0; i <= returnZ; i++) {
-            if (!this.canBlockFaceGreedyMesh(this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)], this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z + i)], this.workingChunk.southFaceBitMask[Chunk.calculateBitMaskIndex(z + i, y)], this.workingChunk.excludeSouthFace[Chunk.calculateBitMaskIndex(z + i, y)], x, this.parentWorld.getBlockLightValue(x + 1, y, z), this.parentWorld.getBlockLightValue(x + 1, y, z + i), this.parentWorld.getBlockLightColorAsInt(x + 1, y, z), this.parentWorld.getBlockLightColorAsInt(x + 1, y, z + i), this.parentWorld.getBlockSkyLightValue(x + 1, y, z), this.parentWorld.getBlockSkyLightValue(x + 1, y, z + i)) || !this.areCornersClear(x, y, z + i, 3)) {
+            if (!this.canBlockFaceGreedyMesh(this.workingChunk.getBlockID(x,y,z), this.workingChunk.getBlockID(x, y, z + i), this.workingChunk.southFaceBitMask[Chunk.calculateBitMaskIndex(z + i, y)], this.workingChunk.excludeSouthFace[Chunk.calculateBitMaskIndex(z + i, y)], x, this.parentWorld.getBlockLightValue(x + 1, y, z), this.parentWorld.getBlockLightValue(x + 1, y, z + i), this.parentWorld.getBlockLightColor(x + 1, y, z), this.parentWorld.getBlockLightColor(x + 1, y, z + i), this.parentWorld.getBlockSkyLightValue(x + 1, y, z), this.parentWorld.getBlockSkyLightValue(x + 1, y, z + i)) || !this.areCornersClear(x, y, z + i, 3)) {
                 returnZ = i - 1;
                 break;
             }
@@ -402,7 +425,7 @@ public final class ThreadRebuildChunk implements Runnable {
         loop:
         for (int j = 0; j <= returnY; j++) {
             for (int i = 0; i <= returnZ; i++) {
-                if (!this.canBlockFaceGreedyMesh(this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)], this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y + j, z + i)], this.workingChunk.southFaceBitMask[Chunk.calculateBitMaskIndex(z + i, y + j)], this.workingChunk.excludeSouthFace[Chunk.calculateBitMaskIndex(z + i, y + j)], x, this.parentWorld.getBlockLightValue(x + 1, y, z), this.parentWorld.getBlockLightValue(x + 1, y + j, z + i), this.parentWorld.getBlockLightColorAsInt(x + 1, y, z), this.parentWorld.getBlockLightColorAsInt(x + 1, y + j, z + i), this.parentWorld.getBlockSkyLightValue(x + 1, y, z), this.parentWorld.getBlockSkyLightValue(x + 1, y + j, z + i)) || !this.areCornersClear(x, y + j, z + i, 3)) {
+                if (!this.canBlockFaceGreedyMesh(this.workingChunk.getBlockID(x,y,z), this.workingChunk.getBlockID(x, y + j, z + i), this.workingChunk.southFaceBitMask[Chunk.calculateBitMaskIndex(z + i, y + j)], this.workingChunk.excludeSouthFace[Chunk.calculateBitMaskIndex(z + i, y + j)], x, this.parentWorld.getBlockLightValue(x + 1, y, z), this.parentWorld.getBlockLightValue(x + 1, y + j, z + i), this.parentWorld.getBlockLightColor(x + 1, y, z), this.parentWorld.getBlockLightColor(x + 1, y + j, z + i), this.parentWorld.getBlockSkyLightValue(x + 1, y, z), this.parentWorld.getBlockSkyLightValue(x + 1, y + j, z + i)) || !this.areCornersClear(x, y + j, z + i, 3)) {
                     returnY = j - 1;
                     break loop;
                 }
@@ -428,7 +451,7 @@ public final class ThreadRebuildChunk implements Runnable {
         int returnY = 31 - (y % 32);
 
         for (int i = 0; i <= returnX; i++) {
-            if (!this.canBlockFaceGreedyMesh(this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)], this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x + i, y, z)], this.workingChunk.eastFaceBitMask[Chunk.calculateBitMaskIndex(x + i, y)], this.workingChunk.excludeEastFace[Chunk.calculateBitMaskIndex(x + i, y)], z, this.parentWorld.getBlockLightValue(x, y, z - 1), this.parentWorld.getBlockLightValue(x + i, y, z - 1), this.parentWorld.getBlockLightColorAsInt(x, y, z - 1), this.parentWorld.getBlockLightColorAsInt(x + i, y, z - 1), this.parentWorld.getBlockSkyLightValue(x, y, z - 1), this.parentWorld.getBlockSkyLightValue(x + i, y, z - 1)) || !this.areCornersClear(x + i, y, z, 4)) {
+            if (!this.canBlockFaceGreedyMesh(this.workingChunk.getBlockID(x,y,z), this.workingChunk.getBlockID(x + i, y, z), this.workingChunk.eastFaceBitMask[Chunk.calculateBitMaskIndex(x + i, y)], this.workingChunk.excludeEastFace[Chunk.calculateBitMaskIndex(x + i, y)], z, this.parentWorld.getBlockLightValue(x, y, z - 1), this.parentWorld.getBlockLightValue(x + i, y, z - 1), this.parentWorld.getBlockLightColor(x, y, z - 1), this.parentWorld.getBlockLightColor(x + i, y, z - 1), this.parentWorld.getBlockSkyLightValue(x, y, z - 1), this.parentWorld.getBlockSkyLightValue(x + i, y, z - 1)) || !this.areCornersClear(x + i, y, z, 4)) {
                 returnX = i - 1;
                 break;
             }
@@ -441,7 +464,7 @@ public final class ThreadRebuildChunk implements Runnable {
         loop:
         for (int j = 0; j <= returnY; j++) {
             for (int i = 0; i <= returnX; i++) {
-                if (!this.canBlockFaceGreedyMesh(this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)], this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x + i, y + j, z)], this.workingChunk.eastFaceBitMask[Chunk.calculateBitMaskIndex(x + i, y + j)], this.workingChunk.excludeEastFace[Chunk.calculateBitMaskIndex(x + i, y + j)], z, this.parentWorld.getBlockLightValue(x, y, z - 1), this.parentWorld.getBlockLightValue(x + i, y + j, z - 1), this.parentWorld.getBlockLightColorAsInt(x, y, z - 1), this.parentWorld.getBlockLightColorAsInt(x + i, y + j, z - 1), this.parentWorld.getBlockSkyLightValue(x, y, z - 1), this.parentWorld.getBlockSkyLightValue(x + i, y + j, z - 1)) || !this.areCornersClear(x + i, y + j, z, 4)) {
+                if (!this.canBlockFaceGreedyMesh(this.workingChunk.getBlockID(x,y,z), this.workingChunk.getBlockID(x + i, y + j, z), this.workingChunk.eastFaceBitMask[Chunk.calculateBitMaskIndex(x + i, y + j)], this.workingChunk.excludeEastFace[Chunk.calculateBitMaskIndex(x + i, y + j)], z, this.parentWorld.getBlockLightValue(x, y, z - 1), this.parentWorld.getBlockLightValue(x + i, y + j, z - 1), this.parentWorld.getBlockLightColor(x, y, z - 1), this.parentWorld.getBlockLightColor(x + i, y + j, z - 1), this.parentWorld.getBlockSkyLightValue(x, y, z - 1), this.parentWorld.getBlockSkyLightValue(x + i, y + j, z - 1)) || !this.areCornersClear(x + i, y + j, z, 4)) {
                     returnY = j - 1;
                     break loop;
                 }
@@ -467,7 +490,7 @@ public final class ThreadRebuildChunk implements Runnable {
         int returnY = 31 - (y % 32);
 
         for (int i = 0; i <= returnX; i++) {
-            if (!this.canBlockFaceGreedyMesh(this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)], this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x + i, y, z)], this.workingChunk.westFaceBitMask[Chunk.calculateBitMaskIndex(x + i, y)], this.workingChunk.excludeWestFace[Chunk.calculateBitMaskIndex(x + i, y)], z, this.parentWorld.getBlockLightValue(x, y, z + 1), this.parentWorld.getBlockLightValue(x + i, y, z + 1), this.parentWorld.getBlockLightColorAsInt(x, y, z + 1), this.parentWorld.getBlockLightColorAsInt(x + i, y, z + 1), this.parentWorld.getBlockSkyLightValue(x, y, z + 1), this.parentWorld.getBlockSkyLightValue(x + i, y, z + 1)) || !this.areCornersClear(x + i, y, z, 5)) {
+            if (!this.canBlockFaceGreedyMesh(this.workingChunk.getBlockID(x,y,z), this.workingChunk.getBlockID(x + i, y, z), this.workingChunk.westFaceBitMask[Chunk.calculateBitMaskIndex(x + i, y)], this.workingChunk.excludeWestFace[Chunk.calculateBitMaskIndex(x + i, y)], z, this.parentWorld.getBlockLightValue(x, y, z + 1), this.parentWorld.getBlockLightValue(x + i, y, z + 1), this.parentWorld.getBlockLightColor(x, y, z + 1), this.parentWorld.getBlockLightColor(x + i, y, z + 1), this.parentWorld.getBlockSkyLightValue(x, y, z + 1), this.parentWorld.getBlockSkyLightValue(x + i, y, z + 1)) || !this.areCornersClear(x + i, y, z, 5)) {
                 returnX = i - 1;
                 break;
             }
@@ -480,7 +503,7 @@ public final class ThreadRebuildChunk implements Runnable {
         loop:
         for (int j = 0; j <= returnY; j++) {
             for (int i = 0; i <= returnX; i++) {
-                if (!this.canBlockFaceGreedyMesh(this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)], this.workingChunk.blocks[Chunk.getBlockIndexFromCoordinates(x + i, y + j, z)], this.workingChunk.westFaceBitMask[Chunk.calculateBitMaskIndex(x + i, y + j)], this.workingChunk.excludeWestFace[Chunk.calculateBitMaskIndex(x + i, y + j)], z, this.parentWorld.getBlockLightValue(x, y, z + 1), this.parentWorld.getBlockLightValue(x + i, y + j, z + 1), this.parentWorld.getBlockLightColorAsInt(x, y, z + 1), this.parentWorld.getBlockLightColorAsInt(x + i, y + j, z + 1), this.parentWorld.getBlockSkyLightValue(x, y, z + 1), this.parentWorld.getBlockSkyLightValue(x + i, y + j, z + 1)) || !this.areCornersClear(x + i, y + j, z, 5)) {
+                if (!this.canBlockFaceGreedyMesh(this.workingChunk.getBlockID(x,y,z), this.workingChunk.getBlockID(x + i, y + j, z), this.workingChunk.westFaceBitMask[Chunk.calculateBitMaskIndex(x + i, y + j)], this.workingChunk.excludeWestFace[Chunk.calculateBitMaskIndex(x + i, y + j)], z, this.parentWorld.getBlockLightValue(x, y, z + 1), this.parentWorld.getBlockLightValue(x + i, y + j, z + 1), this.parentWorld.getBlockLightColor(x, y, z + 1), this.parentWorld.getBlockLightColor(x + i, y + j, z + 1), this.parentWorld.getBlockSkyLightValue(x, y, z + 1), this.parentWorld.getBlockSkyLightValue(x + i, y + j, z + 1)) || !this.areCornersClear(x + i, y + j, z, 5)) {
                     returnY = j - 1;
                     break loop;
                 }

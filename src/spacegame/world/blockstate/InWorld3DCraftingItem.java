@@ -99,7 +99,7 @@ public final class InWorld3DCraftingItem extends BlockState{
                     CosmicEvolution.instance.save.activeWorld.addEntity(new EntityItem(this.chunk.getBlockXFromIndex(this.indexInChunk) + 0.5, this.chunk.getBlockYFromIndex(this.indexInChunk) + 0.25, this.chunk.getBlockZFromIndex(this.indexInChunk) + 0.5, this.craftingRecipe.outputItemID, this.calculateOutPutMetadata(), (byte) this.craftingRecipe.outputCount, Item.list[this.craftingRecipe.outputItemID].getDurability(this.calculateOutPutMetadata()), 0, null));
                 }
 
-                this.chunk.blocks[this.indexInChunk] = Block.air.ID;
+                this.chunk.setBlock(this.indexInChunk, Block.air.ID);
             }
 
             this.removeObject = true;

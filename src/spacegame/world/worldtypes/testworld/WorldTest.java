@@ -14,7 +14,7 @@ public final class WorldTest extends World {
         this.skyLightLevel = 15;
         this.skyColor = new float[]{0.52734375F, 0.8046875F, 0.91796875F};
         this.defaultSkyColor = new float[]{0.52734375F, 0.8046875F, 0.91796875F};
-        this.skyLightColor = new float[]{1, 1, 1, 0}; //ANY COLOR CANNOT BE 0
+        this.skyLightColor = 16777215; //ANY COLOR CANNOT BE 0
         this.worldFolder = new File(this.ce.save.saveFolder + "/worlds/worldTest");
         if(!this.worldFolder.exists()){
             this.worldFolder.mkdirs();

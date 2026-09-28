@@ -38,6 +38,7 @@ public final class Shader {
     public static Shader shadowMapShaderTexture2D;
     public static Shader shadowMapShaderTextureArray;
     public static Shader toolTipShader;
+    public static Shader cloudShader;
 
 
     public static void loadShaders(){
@@ -58,6 +59,7 @@ public final class Shader {
        shadowMapShaderTexture2D = new Shader("src/spacegame/assets/shader/shadowMapTexture2D.glsl");
        shadowMapShaderTextureArray = new Shader("src/spacegame/assets/shader/shadowMapTextureArray.glsl");
        toolTipShader = new Shader("src/spacegame/assets/shader/toolTipShader.glsl");
+       cloudShader = new Shader("src/spacegame/assets/shader/cloudShader.glsl");
     }
 
 
@@ -77,6 +79,7 @@ public final class Shader {
         CosmicEvolution.instance.renderEngine.reloadShader(shadowMapShaderTerrain);
         CosmicEvolution.instance.renderEngine.reloadShader(shadowMapShaderTexture2D);
         CosmicEvolution.instance.renderEngine.reloadShader(toolTipShader);
+        CosmicEvolution.instance.renderEngine.reloadShader(cloudShader);
     }
 
     public Shader(String filepath) {
@@ -154,7 +157,7 @@ public final class Shader {
         int success = GL46.glGetShaderi(this.vertexID, GL46.GL_COMPILE_STATUS);
         if (success == GL46.GL_FALSE) {
             int len = GL46.glGetShaderi(this.vertexID, GL46.GL_INFO_LOG_LENGTH);
-            System.out.println("ERROR: 'GLSL Shader.glsl' \n\tVertex shader compilation failed.");
+            System.out.println("ERROR: \n\tVertex shader compilation failed at " + this.filepath);
             System.out.println(GL46.glGetShaderInfoLog(this.vertexID, len));
             throw new RuntimeException();
         }
@@ -170,7 +173,7 @@ public final class Shader {
         success = GL46.glGetShaderi(this.fragmentID, GL46.GL_COMPILE_STATUS);
         if (success == GL46.GL_FALSE) {
             int len = GL46.glGetShaderi(this.fragmentID, GL46.GL_INFO_LOG_LENGTH);
-            System.out.println("ERROR: 'GLSL Shader.glsl' \n\tFragment shader compilation failed.");
+            System.out.println("ERROR: \n\tFragment shader compilation failed at " + this.filepath);
             System.out.println(GL46.glGetShaderInfoLog(this.fragmentID, len));
             throw new RuntimeException();
         }

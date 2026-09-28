@@ -26,7 +26,6 @@ import spacegame.world.weather.RainQuad;
 import spacegame.world.weather.WeatherSystem;
 import spacegame.world.worldtypes.earthlike.WorldEarth;
 
-import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -48,7 +47,7 @@ public abstract class World {
     public byte skyLightLevel;
     public float[] skyColor; //used for glClear on the color buffer
     public float[] defaultSkyColor;
-    public float[] skyLightColor; //Do not make any RGB component 0
+    public int skyLightColor; //Do not make any RGB component 0
     public final int size;
     public static volatile int worldLoadPhase = 0;
     public static int noiseMapsCompleted = 0;
@@ -59,7 +58,7 @@ public abstract class World {
     public boolean paused = false;
     public boolean raining;
     public boolean prevRaining;
-    public long timeStartedRaining;
+    public long timeChangedRainState;
     public float averagePrecipitation;
     public float averageStrength;
     public float refWindDirection;
@@ -85,7 +84,6 @@ public abstract class World {
         //this code should likely be delegated down to WorldEarth, the only thing this should really be doing is ticking is the chunk controller
         WeatherSystem weatherSystem;
         CloudFormation cloudFormation;
-        Cloud cloud;
         float totalPrecipitation = 0;
         float totalStrength = 0;
         int cloudCount = 0;
@@ -94,55 +92,43 @@ public abstract class World {
         for (int i = 0; i < this.activeWeatherSystems.size(); i++) {
             weatherSystem = this.activeWeatherSystems.get(i);
             weatherSystem.update();
-            if(this.ce.save.time >= weatherSystem.killTime){
+            if (this.ce.save.time >= weatherSystem.killTime) {
+                this.generateWeatherSystems(MathUtil.floorDouble(weatherSystem.x) >> 5, MathUtil.floorDouble(weatherSystem.z) >> 5);
                 this.activeWeatherSystems.remove(weatherSystem);
             }
 
-            for(int j = 0; j < weatherSystem.cloudFormations.size(); j++){
+            for (int j = 0; j < weatherSystem.cloudFormations.size(); j++) {
                 cloudFormation = weatherSystem.cloudFormations.get(j);
+                totalPrecipitation += cloudFormation.precipitation;
+                totalStrength += cloudFormation.strength;
 
-                if(cloudFormation.centralCloud != null){
-                    cloud = cloudFormation.centralCloud;
-
-                        if(cloud.strength >= cloud.maxStrength) {
-                            totalPrecipitation += cloud.precipitation;
-                            totalStrength += cloud.strength;
-
-                            cloudCount++;
-                        }
-
-                }
-
-                for(int k = 0; k < cloudFormation.clouds.length; k++){
-                    if(cloudFormation.clouds[k] == null)continue;
-
-                    cloud = cloudFormation.clouds[k];
-
-                        if(cloud.strength >= cloud.maxStrength) {
-                            totalPrecipitation += cloud.precipitation;
-                            totalStrength += cloud.strength;
-
-                            cloudCount++;
-                        }
-
-                }
+                cloudCount++;
             }
         }
+        float averagePrecipitation;
+        float averageStrength;
+        if(cloudCount > 0){
+            averagePrecipitation = totalPrecipitation / (float)cloudCount;
+            averageStrength = totalStrength / (float)cloudCount;
+        } else {
+            averagePrecipitation = 0;
+            averageStrength = 0;
+        }
 
-        float averagePrecipitation = totalPrecipitation / (float)cloudCount;
-        float averageStrength = totalStrength / (float)cloudCount;
 
         this.averagePrecipitation = averagePrecipitation;
         this.averageStrength = averageStrength;
 
         this.chunkController.renderWorldScene.cloudy = averagePrecipitation > 0.5f && averageStrength > 0.25f;
 
-        this.raining = this.chunkController.renderWorldScene.overrideSkyColor && averagePrecipitation > 0.5f && averageStrength > 0.5f;
+        //20 second threshold betweeen changing states
+        if(CosmicEvolution.instance.save.time - this.timeChangedRainState > Timer.REAL_MINUTE) {
+            this.raining = averagePrecipitation > 0.5f && averageStrength > 0.5f;
+        }
 
-        this.raining = false;
 
         if(this.prevRaining != this.raining) {
-            this.timeStartedRaining = this.ce.save.time;
+            this.timeChangedRainState = this.ce.save.time;
         }
 
         if(this.chunkController.renderWorldScene.cloudy != this.chunkController.renderWorldScene.prevCloudy){
@@ -299,15 +285,12 @@ public abstract class World {
     public  void setBlock(int x, int y, int z, short blockID) {
         Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
         if(chunk == null)return;
-        if(chunk.blocks == null){
-            chunk.initChunk();
-        }
         chunk.setBlock(x, y, z, blockID);
 
         ChunkColumnSkylightMap lightMap = this.findChunkSkyLightMap(x >> 5, z >> 5);
 
         if (Block.list[blockID].isSolid) {
-            chunk.light[Chunk.getBlockIndexFromCoordinates(x, y, z)] = 0;
+            chunk.setBlockSkyLightValue(x,y,z, (byte) 0);
         }
 
         if (blockID == Block.air.ID) {
@@ -338,13 +321,13 @@ public abstract class World {
         chunk.updateSkylight = true;
     }
 
-    public  void setBlockAndNotify(int x, int y, int z, short blockID, boolean playerInitiated) {
+    public void setBlockAndNotify(int x, int y, int z, short blockID, boolean playerInitiated) {
         boolean destroyWater = Block.list[this.getBlockID(x,y,z)] instanceof BlockWater && !(Block.list[blockID] instanceof BlockWater);
         boolean destroyLight = Block.list[this.getBlockID(x,y,z)].isLightBlock(x,y,z, this);
         Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
         if(chunk == null)return;
         chunk.setBlockAndNotify(x, y, z, blockID);
-        chunk.dirtyLighting = true;
+        chunk.hasDirtyLighting = true;
         this.chunkController.updateChunkLighting(new ThreadUpdateLighting(this, chunk, x, y, z, blockID, destroyLight));
         this.notifySurroundingBlocks(x, y, z);
         if (blockID == Block.air.ID) {
@@ -436,7 +419,7 @@ public abstract class World {
 
     //Weather systems cover a 512x512 range,
     // this will determine if a weather system exists for a chunk column and load from the inactive list if it finds it otherwise it will generate a new system
-    public  void generateWeatherSystems(int chunkColumnX, int chunkColumnZ){
+    public void generateWeatherSystems(int chunkColumnX, int chunkColumnZ){
         chunkColumnX >>= 5;
         chunkColumnZ >>= 5;
         if(this.doesWeatherSystemAlreadyExist(chunkColumnX, chunkColumnZ))return;
@@ -602,6 +585,7 @@ public abstract class World {
 
 
             this.raining = weatherData.getBoolean("raining");
+            this.prevRaining = this.raining;
 
             inputStream.close();
         } catch (IOException e) {
@@ -635,7 +619,6 @@ public abstract class World {
     }
 
     private void addRainQuad(double x, double y, double z){
-        if(true)return;
         for(int i = 0; i < this.chunkController.renderWorldScene.rainQuads.length; i++){
             if(this.chunkController.renderWorldScene.rainQuads[i] != null)continue;
 
@@ -778,7 +761,7 @@ public abstract class World {
                 chunk = this.findChunkFromChunkCoordinates(x >> 5, (y - i) >> 5, z >> 5);
             }
             if (chunk != null && chunk.blocks != null) {
-                if (Block.list[chunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y - i, z)]].isSolid) {
+                if (Block.list[chunk.getBlockID(x, y - i, z)].isSolid) {
                     chunk.markDirty();
                     return;
                 }
@@ -829,20 +812,14 @@ public abstract class World {
         Block.list[this.getBlockID(x,y,z)].onBlockUpdate(x,y,z,this);
         Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
         if(chunk != null){
-            if(chunk.empty){
-                chunk.initChunk();
-            }
-            chunk.notifyBlock(x, y, z);
+            chunk.markDirty();
         }
     }
 
     public void notifySurroundingBlockWithoutRebuild(int x, int y, int z) {
         Block.list[this.getBlockID(x,y,z)].onBlockUpdate(x,y,z,this);
         Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
-        if(chunk.empty){
-            chunk.initChunk();
-        }
-        chunk.notifyBlockWithoutRebuild(x, y, z);
+        chunk.markDirty();
 
     }
 
@@ -1054,9 +1031,6 @@ public abstract class World {
     private void clearBlockLight(int x, int y, int z) {
         Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
         if(chunk != null){
-            if(chunk.light == null){
-                chunk.initChunk();
-            }
             chunk.setBlockLightValue(x, y, z, (byte) 0);
             chunk.clearBlockLightColor(x, y, z);
         }
@@ -1157,9 +1131,6 @@ public abstract class World {
 
     private void setBlockLight(int[] coordinates, int[] activeBlockLight) {
         Chunk chunk = this.chunkController.findChunkFromChunkCoordinates(coordinates[0] >> 5, coordinates[1] >> 5, coordinates[2] >> 5);
-        if (chunk.light == null) {
-            chunk.initChunk();
-        }
         chunk.setBlockLightValue(coordinates[0], coordinates[1], coordinates[2], this.getPropagatedLightValue(coordinates[0], coordinates[1], coordinates[2]));
         chunk.setBlockLightColor(coordinates[0], coordinates[1], coordinates[2], Block.list[this.getBlockID(activeBlockLight[0], activeBlockLight[1], activeBlockLight[2])].lightColor);
     }
@@ -1186,14 +1157,14 @@ public abstract class World {
 
     public int findNextHighestSolidBlock(int x, int y, int z) {
         for (int i = 1; i < 4096; i++) {
-            if (Block.list[this.findChunkFromChunkCoordinates(x >> 5, (y - i) >> 5, z >> 5).blocks[Chunk.getBlockIndexFromCoordinates(x, y - i, z)]].isSolid) {
+            if (Block.list[this.findChunkFromChunkCoordinates(x >> 5, (y - i) >> 5, z >> 5).getBlockID(x, y - i, z)].isSolid) {
                 return y - i;
             }
         }
         return y;
     }
 
-    public  short getBlockID(int x, int y, int z) {
+    public short getBlockID(int x, int y, int z) {
         Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
         if(chunk != null) {
             if (chunk.blocks != null) {
@@ -1231,6 +1202,11 @@ public abstract class World {
         if(chunk != null){
             chunk.setBlockSkyLightValue(x,y,z, lightValue);
         }
+    }
+
+    public boolean shouldFaceRender(int x, int y, int z, int faceType){
+        Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
+        return chunk == null ? true : chunk.shouldFaceRender(x,y,z, faceType);
     }
 
 
@@ -1327,7 +1303,8 @@ public abstract class World {
         int yDif = y - playerY;
         int zDif = z - playerZ;
 
-        return  xDif <= 8 && yDif <= 8 && zDif <= 8;
+        return Math.abs(xDif) <= 8 && Math.abs(yDif) <= 8 && Math.abs(zDif) <= 8;
+
     }
 
     private boolean hasBlockAlreadyEnteredRoomQueue(int x, int y, int z){
@@ -1573,33 +1550,17 @@ public abstract class World {
     }
 
 
-    public  float[] getBlockLightColor(int x, int y, int z) {
+
+    public int getBlockLightColor(int x, int y, int z) {
         Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
         if(chunk != null) {
-            if (chunk.lightColor != null && this.getBlockSkyLightValue(x,y,z) < 1) {
-                return chunk.getBlockLightColor(x, y, z);
-            } else {
-                return this.skyLightColor;
-            }
+            return chunk.getBlockLightColor(x,y,z);
         } else {
             return this.skyLightColor;
         }
     }
 
-    public  int getBlockLightColorAsInt(int x, int y, int z) {
-        Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
-        if(chunk != null) {
-            if (chunk.lightColor != null) {
-                return chunk.lightColor[Chunk.getBlockIndexFromCoordinates(x, y, z)];
-            } else {
-                return new Color(this.skyLightColor[0], this.skyLightColor[1], this.skyLightColor[2],0).getRGB();
-            }
-        } else {
-            return new Color(this.skyLightColor[0], this.skyLightColor[1], this.skyLightColor[2],0).getRGB();
-        }
-    }
-
-    public  boolean doesBlockHaveSkyAccess(int x, int y, int z) {
+    public boolean doesBlockHaveSkyAccess(int x, int y, int z) {
         ChunkColumnSkylightMap lightMap = this.findChunkSkyLightMap(x >> 5, z >> 5);
         if (x < 0) {
             x %= 32;
@@ -1611,11 +1572,11 @@ public abstract class World {
         }
         x %= 32;
         z %= 32;
-        if(lightMap.lightMap[x + (z << 5)] <= y){
-            return this.isLineOfBlocksClear(x, y, z, lightMap);
-        } else {
-            return true;
+        if (lightMap.lightMap[x + (z << 5)] > y) {
+            return false; // blocked by something above
         }
+        return this.isLineOfBlocksClear(x, y, z, lightMap);
+
     }
 
     public boolean doesBlockAllowRain(int x, int y, int z){
@@ -1714,7 +1675,7 @@ public abstract class World {
                 for (int dz = -1; dz <= 1; dz++) {
                     if (dx == 0 && dy == 0 && dz == 0) continue;
                     chunk = findChunkFromChunkCoordinates(x + dx, y  + dy, z + dz);
-                    if (chunk == null || !chunk.populated) {
+                    if (chunk == null || !chunk.isPopulated) {
                         return false;
                     }
                 }
@@ -1729,27 +1690,27 @@ public abstract class World {
 
         // +X
         c = findChunkFromChunkCoordinates(x + 1, y, z);
-        if (c == null || c.dirtyLighting) return false;
+        if (c == null || c.hasDirtyLighting) return false;
 
         // -X
         c = findChunkFromChunkCoordinates(x - 1, y, z);
-        if (c == null || c.dirtyLighting) return false;
+        if (c == null || c.hasDirtyLighting) return false;
 
         // +Y
         c = findChunkFromChunkCoordinates(x, y + 1, z);
-        if (c == null || c.dirtyLighting) return false;
+        if (c == null || c.hasDirtyLighting) return false;
 
         // -Y
         c = findChunkFromChunkCoordinates(x, y - 1, z);
-        if (c == null || c.dirtyLighting) return false;
+        if (c == null || c.hasDirtyLighting) return false;
 
         // +Z
         c = findChunkFromChunkCoordinates(x, y, z + 1);
-        if (c == null || c.dirtyLighting) return false;
+        if (c == null || c.hasDirtyLighting) return false;
 
         // -Z
         c = findChunkFromChunkCoordinates(x, y, z - 1);
-        if (c == null || c.dirtyLighting) return false;
+        if (c == null || c.hasDirtyLighting) return false;
 
         return true;
     }

@@ -208,7 +208,7 @@ public final class CommandParser {
         CosmicEvolution.instance.save.activeWorld.chunkController.playerChunkY = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.y) >> 5;
         CosmicEvolution.instance.save.activeWorld.chunkController.playerChunkZ = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z) >> 5;
 
-        CosmicEvolution.instance.save.activeWorld.chunkController.loadChunkColumn(MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x) >> 5, MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z) >> 5);
+        CosmicEvolution.instance.save.activeWorld.chunkController.loadPlayerChunkColumn(MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x) >> 5, MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z) >> 5);
 
         GuiInGame.setMessageText("Teleported the player to " + coordinates[0] + " " + coordinates[1] + " " + coordinates[2], 16777215);
 
@@ -255,7 +255,7 @@ public final class CommandParser {
             CosmicEvolution.instance.save.activeWorld.addEntity(new EntityBlock(CosmicEvolution.instance.save.thePlayer.x, CosmicEvolution.instance.save.thePlayer.y, CosmicEvolution.instance.save.thePlayer.z, blockID, quantity));
         }
 
-        GuiInGame.setMessageText("Gave the player "  + quantity + " " + Item.list[Item.block.ID].getDisplayName(blockID, Item.NULL_ITEM_METADATA), 16777215);
+        GuiInGame.setMessageText("Gave the player "  + quantity + " " + Item.list[Item.block.ID].getDisplayName(blockID, blockID), 16777215);
 
     }
 

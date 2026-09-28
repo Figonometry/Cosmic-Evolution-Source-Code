@@ -14,13 +14,17 @@ public final class ThreadPopulateChunk implements Runnable {
     }
     @Override
     public void run() {
-        this.world.chunkTerrainHandler.populateChunk(this.chunk);
+        try {
+            this.world.chunkTerrainHandler.populateChunk(this.chunk);
 
-        synchronized (this.world.chunkController.lightingUpdateChunks){ //Once populated immediatly pass to the lighting thread
-            this.chunk.dirtyLighting = true;
-            this.world.chunkController.lightingUpdateChunks.add(this.chunk);
+            synchronized (this.world.chunkController.lightingUpdateChunks) { //Once isPopulated immediatly pass to the lighting thread
+                this.chunk.hasDirtyLighting = true;
+                this.world.chunkController.lightingUpdateChunks.add(this.chunk);
+            }
+        } catch (Exception e) {
+           e.printStackTrace();
+        } finally {
+            CosmicEvolution.threadJobs.decrementAndGet();
         }
-
-        CosmicEvolution.threadJobs.decrementAndGet();
     }
 }

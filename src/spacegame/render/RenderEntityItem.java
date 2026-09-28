@@ -70,7 +70,7 @@ public final class RenderEntityItem {
         Shader.worldShaderTextureArray.uploadFloat("fogRed", CosmicEvolution.instance.save.activeWorld.skyColor[0]);
         Shader.worldShaderTextureArray.uploadFloat("fogGreen", CosmicEvolution.instance.save.activeWorld.skyColor[1]);
         Shader.worldShaderTextureArray.uploadFloat("fogBlue", CosmicEvolution.instance.save.activeWorld.skyColor[2]);
-        Shader.worldShaderTextureArray.uploadFloat("fogDistance", GameSettings.renderDistance * 20f);
+        Shader.worldShaderTextureArray.uploadFloat("fogDistance", CosmicEvolution.instance.save.activeWorld.chunkController.renderWorldScene.fogDistance);
         int playerChunkX = (MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x) >> 5);
         int playerChunkY = (MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.y) >> 5);
         int playerChunkZ = (MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z) >> 5);
@@ -178,7 +178,7 @@ public final class RenderEntityItem {
         ModelLoader model = Block.list[this.metadata].blockModel.copyModel();
         model.translateModel( -0.5f, 0, -0.5f);
         if(!this.renderFromFallingBlock) {
-            model.scaleModel(0.25f);
+            model.scaleModel(0.4f);
         }
 
 
@@ -191,7 +191,7 @@ public final class RenderEntityItem {
         Shader.worldShaderTextureArray.uploadFloat("fogRed", CosmicEvolution.instance.save.activeWorld.skyColor[0]);
         Shader.worldShaderTextureArray.uploadFloat("fogGreen", CosmicEvolution.instance.save.activeWorld.skyColor[1]);
         Shader.worldShaderTextureArray.uploadFloat("fogBlue", CosmicEvolution.instance.save.activeWorld.skyColor[2]);
-        Shader.worldShaderTextureArray.uploadFloat("fogDistance", GameSettings.renderDistance * 20);
+        Shader.worldShaderTextureArray.uploadFloat("fogDistance", CosmicEvolution.instance.save.activeWorld.chunkController.renderWorldScene.fogDistance);
         int playerChunkX = (MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x) >> 5);
         int playerChunkY = (MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.y) >> 5);
         int playerChunkZ = (MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z) >> 5);
@@ -376,13 +376,13 @@ public final class RenderEntityItem {
         blue = 1F;
     }
 
-    private  void setVertexLight1Arg(byte light, float[] lightColor) {
+    private  void setVertexLight1Arg(byte light, int lightColor) {
         this.resetLight();
         float finalLight = getLightValueFromMap(light);
 
-        red = lightColor[0];
-        green = lightColor[1];
-        blue = lightColor[2];
+        red = MathUtil.intToFloatRGBA((lightColor >> 16) & 255);
+        green =  MathUtil.intToFloatRGBA((lightColor >> 8) & 255);
+        blue =  MathUtil.intToFloatRGBA((lightColor & 255) + 256);
 
         red *= finalLight;
         green *= finalLight;

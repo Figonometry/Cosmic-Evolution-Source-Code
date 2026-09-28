@@ -75,14 +75,12 @@ public final class ThreadChunkSave implements Runnable {
             chunkData.setInteger("x", chunk.x);
             chunkData.setInteger("y", chunk.y);
             chunkData.setInteger("z", chunk.z);
-            chunkData.setBoolean("populated", chunk.populated);
+            chunkData.setBoolean("isPopulated", chunk.isPopulated);
             chunkData.setBoolean("containsWater", chunk.containsWater);
             chunkData.setBoolean("containsAir", chunk.containsAir);
-            chunkData.setBoolean("empty", chunk.empty);
-            if(!chunk.empty) {
-                chunkData.setShortArray("blocks", chunk.blocks);
+            chunkData.setBoolean("chunkContainsOnlyAir", chunk.chunkContainsOnlyAir);
+                chunkData.setShortArray("blocks", chunk.blockPallette.decompressBlocks());
                 chunkData.setShortArray("decayableLeaves", chunk.decayableLeaves);
-            }
 
 
             if(this.chunk.entities.size() > 0){

@@ -89,7 +89,21 @@ public final class NoiseMap3D {
     }
 
 
-    public double getNoise(int x, int y, int z, int sample, double continentalScale, double yScale){
+    public double getNoise(int x, int y, int z, double continentalScale, double yScale) {
+        //Terrain noise
+        // Wrap coordinates (tile repeat)
+        x = Math.floorMod(x, width);
+        y = Math.floorMod(y, height);
+        z = Math.floorMod(z, depth);
+
+        int index = this.getNoiseIndexTiling(x,y,z);
+
+        double bias = y * (this.yScale + yScale) + continentalScale;
+
+        return noise[index] + bias;
+    }
+
+    public double getNoiseForTerrain(int x, int y, int z, int sample, double continentalScale, double yScale){
         final int rawY = y;
 
         int x1 = x + sample;
@@ -160,6 +174,25 @@ public final class NoiseMap3D {
 
         return  (noise + highNoise) / 2;
     }
+
+
+
+    public double getNoiseDirect(int x, int y, int z){
+        // Wrap coordinates (tile repeat)
+        x = Math.floorMod(x, width);
+        y = Math.floorMod(y, height);
+        z = Math.floorMod(z, depth);
+
+        int index = this.getNoiseIndexTiling(x,y,z);
+
+        return noise[index];
+    }
+
+    public int getNoiseIndexTiling(int x, int y, int z){
+        return x + (z * width) + (y * width * depth);
+    }
+
+
 
     public int getNoiseIndex(int x, int y, int z){
         return x + (y * (this.width * this.depth)) + (z * this.depth);

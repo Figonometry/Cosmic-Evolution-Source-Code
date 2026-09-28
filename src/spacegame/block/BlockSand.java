@@ -11,6 +11,10 @@ public final class BlockSand extends Block{
 
     @Override
     public void onBlockUpdate(int x, int y, int z, World world){
+        if (world.getBlockID(x, y, z) != this.ID) {
+            return; // block changed → do nothing
+        }
+
         if(this.canBlockFall(x,y,z, world)) {
             EntityFallingBlock entityFallingBlock = new EntityFallingBlock(x + 0.5, y, z + 0.5, this.ID, this.getBlockModel(x, y, z, world));
             world.addEntity(entityFallingBlock);

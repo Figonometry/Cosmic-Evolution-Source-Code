@@ -25,7 +25,7 @@ public class WorldGenTree extends WorldGen {
     public int trunkTop;
 
     public WorldGenTree(Chunk chunk, WorldEarth worldEarth, int index, boolean fromWorldGen) {
-        if(!(Block.list[chunk.blocks[index]] instanceof BlockGrass))return; //Guard clause to prevent trees from generating when they shouldnt
+        if(!(Block.list[chunk.getBlockID(index)] instanceof BlockGrass))return; //Guard clause to prevent trees from generating when they shouldnt
         this.worldEarth = worldEarth;
         this.index = index;
         this.chunk = chunk;
@@ -45,7 +45,7 @@ public class WorldGenTree extends WorldGen {
     }
 
     public WorldGenTree(Chunk chunk, WorldEarth worldEarth, int index) {
-        if(!(Block.list[chunk.blocks[index]] instanceof BlockGrass))return; //Guard clause to prevent trees from generating when they shouldnt
+        if(!(Block.list[chunk.getBlockID(index)] instanceof BlockGrass))return; //Guard clause to prevent trees from generating when they shouldnt
         this.worldEarth = worldEarth;
         this.index = index;
         this.chunk = chunk;
@@ -162,7 +162,7 @@ public class WorldGenTree extends WorldGen {
             inCallingChunk = this.isBlockInCallingChunkExcludeEdge(x,y,z);
 
             if(inCallingChunk){
-                this.chunk.blocks[Chunk.getBlockIndexFromCoordinates(x,y,z)] = Block.oakLog.ID;
+                this.chunk.setBlock(x,y,z, Block.oakLog.ID);
                 this.chunk.addBlockState(x,y,z, MultiState.LOG_STATE, new LogState(LogState.FACE_DIRECTION_TOP_AND_BOTTOM, this.size, Chunk.getBlockIndexFromCoordinates(x,y,z)));
             } else {
                 this.worldEarth.setBlock(x,y,z, Block.oakLog.ID);
@@ -211,7 +211,7 @@ public class WorldGenTree extends WorldGen {
                     if(this.doesBlockIntersectHemisphere(x,y,z, xStart, yStart, zStart, radiusSq, this.seed)){
                         inCallingChunk = this.isBlockInCallingChunkExcludeEdge(x,y,z);
                         if(inCallingChunk){
-                            this.chunk.blocks[Chunk.getBlockIndexFromCoordinates(x,y,z)] = Block.leaf.ID;
+                            this.chunk.setBlock(x,y,z, Block.leaf.ID);
                         } else {
                             this.worldEarth.setBlock(x,y,z, Block.leaf.ID);
                         }
@@ -273,7 +273,7 @@ public class WorldGenTree extends WorldGen {
 
 
     private boolean canBlockGenerate(int x, int y, int z){
-        short blockID = this.isBlockInCallingChunk(x,y,z) ? this.chunk.blocks[Chunk.getBlockIndexFromCoordinates(x,y,z)] : this.worldEarth.getBlockID(x,y,z);
+        short blockID = this.isBlockInCallingChunk(x,y,z) ? this.chunk.getBlockID(x,y,z) : this.worldEarth.getBlockID(x,y,z);
         return blockID == Block.air.ID || blockID == Block.oakLog.ID || blockID == Block.leaf.ID;
     }
 

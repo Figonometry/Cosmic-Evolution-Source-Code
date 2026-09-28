@@ -142,6 +142,7 @@ public final class NBTTagCompound extends NBTBase {
         return this.getByte(name) != 0;
     }
 
+    @Override
     public String toString() {
         return "" + this.tagMap.size() + " entries";
     }

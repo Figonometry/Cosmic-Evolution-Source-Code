@@ -67,12 +67,18 @@ public final class ThreadChunkColumnLoader implements Runnable {
 
                         chunk.containsWater = chunkData.getBoolean("containsWater");
                         chunk.containsAir = chunkData.getBoolean("containsAir");
-                        chunk.populated = chunkData.getBoolean("populated");
-                        chunk.empty = chunkData.getBoolean("empty");
-                        if (!chunk.empty) {
-                            chunk.blocks = chunkData.getShortArray("blocks");
+                        chunk.isPopulated = chunkData.getBoolean("isPopulated");
+                        chunk.chunkContainsOnlyAir = chunkData.getBoolean("chunkContainsOnlyAir");
+                            short[] full = chunkData.getShortArray("blocks");
+
+                            // FIX: allocate packed storage BEFORE writing
+
+                            for (int i = 0; i < full.length; i++) {
+                                chunk.blockPallette.setBlockID(i, full[i]);
+                            }
+
                             chunk.decayableLeaves = chunkData.getShortArray("decayableLeaves");
-                        }
+
 
                         if(entity != null) {
                             new ChunkEntitiesIO().loadEntities(chunk, entity);

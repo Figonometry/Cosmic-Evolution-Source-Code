@@ -463,6 +463,7 @@ uniform bool raining;
 uniform double playerAbsoluteHeight;
 uniform float rainFogFactor;
 uniform bool isHoldingLight;
+uniform int heldLightColor;
 
 uniform float fogRed;
 uniform float fogGreen;
@@ -716,6 +717,14 @@ void main()
             color.y *= 0.9f;
             color.z *= 0.9f;
 
+            float heldLightRed = ((heldLightColor >> 16) & 255) / 255f;
+            float heldLightGreen = ((heldLightColor >> 8) & 255) / 255f;
+            float heldLightBlue = (heldLightColor & 255) / 255f;
+
+            color.x *= heldLightRed;
+            color.y *= heldLightGreen;
+            color.z *= heldLightBlue;
+
             if (color.x < origR){
                 color.x = origR;
             }
@@ -727,6 +736,7 @@ void main()
             if (color.z < origB){
                 color.z = origB;
             }
+
         }
     }
 

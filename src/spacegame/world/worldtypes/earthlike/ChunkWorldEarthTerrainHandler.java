@@ -1,13 +1,14 @@
 package spacegame.world.worldtypes.earthlike;
 
+import org.joml.SimplexNoise;
 import spacegame.block.*;
 import spacegame.core.CosmicEvolution;
 import spacegame.util.LongHasher;
+import spacegame.util.MathUtil;
 import spacegame.world.*;
 import spacegame.world.worldtypes.ChunkTerrainHandler;
 import spacegame.world.worldtypes.World;
 
-import java.awt.*;
 import java.util.Random;
 
 public final class ChunkWorldEarthTerrainHandler extends ChunkTerrainHandler {
@@ -19,7 +20,7 @@ public final class ChunkWorldEarthTerrainHandler extends ChunkTerrainHandler {
         this.geologicRegistry = new GeologicRegistry();
     }
 
-    public void setTerrain(short[] blocks, Chunk chunk) {
+    public void setTerrain(Chunk chunk) {
         ChunkColumnSkylightMap lightMap = this.controller.findChunkSkyLightMap(chunk.x, chunk.z);
         Chunk lowerChunk = this.controller.findChunkFromChunkCoordinates(chunk.x, chunk.y - 1, chunk.z);
 
@@ -30,70 +31,66 @@ public final class ChunkWorldEarthTerrainHandler extends ChunkTerrainHandler {
         int dirtDepth = 0;
         int tickableIndex = 0;
         chunk.tickableBlockIndex = new short[32768];
+        boolean chunkContainsOnlyAir = true;
         boolean isDesert;
-        for(int i = 0; i < blocks.length; i++) {
-            chunk.lightColor[i] =  new Color(this.controller.parentWorld.skyLightColor[0], this.controller.parentWorld.skyLightColor[1], this.controller.parentWorld.skyLightColor[2]).getRGB(); //This is here for efficiency reasons despite not being related to terrain
+        for (int i = 0; i < Chunk.NUMBER_OF_BLOCKS; i++) {
             x = chunk.getBlockXFromIndex(i);
             y = chunk.getBlockYFromIndex(i);
             z = chunk.getBlockZFromIndex(i);
-            noise = this.getTerrainNoise(x,y,z);
-            isDesert = this.isDesert(x,y,z);
+            noise = this.getTerrainNoise(x, y, z);
+            isDesert = this.isDesert(x, y, z);
             if (noise >= this.solidNoiseThreshold) {
-                blocks[i] = this.getStoneType(x,y,z);
-                chunk.empty = false;
-                if(Block.list[chunk.blocks[i]].isSolid)
-                    if(lightMap.isHeightGreater(x,y,z)){
-                        lightMap.updateLightMap(x,y,z);
-                        chunk.light[Chunk.getBlockIndexFromCoordinates(x, y, z)] = 0;
+                chunk.setBlock(i, this.getStoneType(x, y, z));
+                chunkContainsOnlyAir = false;
+                if (Block.list[chunk.getBlockID(i)].isSolid) {
+                    if (lightMap.isHeightGreater(x, y, z)) {
+                        lightMap.updateLightMap(x, y, z);
+                        chunk.setBlockSkyLightValue(x,y,z, (byte) 0);
                         chunk.updateSkylight = true;
                     }
-            } else if(y <= 0){
+                }
+            } else if (y <= 0) {
                 chunk.updateSkylight = true;
-                blocks[i] = Block.water.ID;
+                chunk.setBlock(i, Block.water.ID);
                 chunk.containsWater = true;
-                chunk.empty = false;
+                chunkContainsOnlyAir = false;
             } else {
                 chunk.containsAir = true;
-                chunk.light[Chunk.getBlockIndexFromCoordinates(x, y, z)] = (byte) (15 << 4);
+                chunk.setBlockSkyLightValue(x,y,z, (byte) 15);
+                chunk.setBlock(i, Block.air.ID);
             }
 
-            if(y > this.getBeachHeight(x,z) && y < 128) {
+            if (y > this.getBeachHeight(x, z) && y < 128) {
                 if (this.getTerrainNoise(x, y, z) >= this.solidNoiseThreshold) {
                     if (this.getTerrainNoise(x, y + 1, z) < this.solidNoiseThreshold) {
-                        blocks[i] = isDesert ? this.getSandType(x,y,z) : this.getGrassType(x,y,z);
+                        chunk.setBlock(i, isDesert ? this.getSandType(x, y, z) : this.getGrassType(x, y, z));
                         dirtDepth = this.getDirtHeight(x, z);
                         for (int j = 1; j <= dirtDepth; j++) {
                             if (i - (1024 * j) > 0) {
-                                blocks[i - (1024 * j)] = isDesert ? this.getGravelType(chunk.getBlockXFromIndex(i - (1024 * j)), chunk.getBlockYFromIndex(i - (1024 * j)), chunk.getBlockZFromIndex(i - (1024 * j))) : this.getReducedSoilFertility(this.getSoilType(chunk.getBlockXFromIndex(i - (1024 * j)), chunk.getBlockYFromIndex(i - (1024 * j)), chunk.getBlockZFromIndex(i - (1024 * j))));
+                                chunk.setBlock(i - (1024 * j), isDesert ? this.getGravelType(chunk.getBlockXFromIndex(i - (1024 * j)), chunk.getBlockYFromIndex(i - (1024 * j)), chunk.getBlockZFromIndex(i - (1024 * j))) : this.getReducedSoilFertility(this.getSoilType(chunk.getBlockXFromIndex(i - (1024 * j)), chunk.getBlockYFromIndex(i - (1024 * j)), chunk.getBlockZFromIndex(i - (1024 * j)))));
                             } else {
                                 if (lowerChunk != null) {
-                                    if (lowerChunk.blocks == null) {
-                                        lowerChunk.initChunk();
-                                    }
-                                    if (lowerChunk.blocks[i - (1024 * j) + 32767] == this.getStoneType(lowerChunk.getBlockXFromIndex(i - (1024 * j) + 32767), lowerChunk.getBlockYFromIndex(i - (1024 * j) + 32767), lowerChunk.getBlockZFromIndex(i - (1024 * j) + 32767))) {
-                                        lowerChunk.blocks[i - (1024 * j) + 32767] = isDesert ? this.getGravelType(lowerChunk.getBlockXFromIndex(i - (1024 * j) + 32767), lowerChunk.getBlockYFromIndex(i - (1024 * j) + 32767), lowerChunk.getBlockZFromIndex(i - (1024 * j) + 32767)) : this.getReducedSoilFertility(this.getSoilType(chunk.getBlockXFromIndex(i - (1024 * j) + 32767), chunk.getBlockYFromIndex(i - (1024 * j) + 32767), chunk.getBlockZFromIndex(i - (1024 * j) + 32767)));
+                                    if (lowerChunk.getBlockID(i - (1024 * j) + 32767) == this.getStoneType(lowerChunk.getBlockXFromIndex(i - (1024 * j) + 32767), lowerChunk.getBlockYFromIndex(i - (1024 * j) + 32767), lowerChunk.getBlockZFromIndex(i - (1024 * j) + 32767))) {
+                                        lowerChunk.setBlock(i - (1024 * j) + 32767, isDesert ? this.getGravelType(lowerChunk.getBlockXFromIndex(i - (1024 * j) + 32767), lowerChunk.getBlockYFromIndex(i - (1024 * j) + 32767), lowerChunk.getBlockZFromIndex(i - (1024 * j) + 32767)) : this.getReducedSoilFertility(this.getSoilType(chunk.getBlockXFromIndex(i - (1024 * j) + 32767), chunk.getBlockYFromIndex(i - (1024 * j) + 32767), chunk.getBlockZFromIndex(i - (1024 * j) + 32767))));
                                     }
                                 }
                             }
                         }
                     }
                 }
-            } else if (y >= 128){
+            } else if (y >= 128) {
                 if (this.getTerrainNoise(x, y, z) >= this.solidNoiseThreshold) {
                     if (this.getTerrainNoise(x, y + 1, z) < this.solidNoiseThreshold) {
-                        blocks[i] = Block.snow.ID;
+                        chunk.setBlock(i, Block.snow.ID);
                         dirtDepth = this.getDirtHeight(x, z);
                         dirtDepth *= 2;
                         for (int j = 1; j <= dirtDepth; j++) {
                             if (i - (1024 * j) > 0) {
-                                blocks[i - (1024 * j)] = Block.snow.ID;
+                                chunk.setBlock(i - (1024 * j), Block.snow.ID);
                             } else {
                                 if (lowerChunk != null) {
-                                    if(lowerChunk.blocks == null){
-                                        lowerChunk.initChunk();
-                                    }
-                                    if (lowerChunk.blocks[i - (1024 * j) + 32767] == this.getStoneType(lowerChunk.getBlockXFromIndex(i - (1024 * j) + 32767), lowerChunk.getBlockYFromIndex(i - (1024 * j) + 32767), lowerChunk.getBlockZFromIndex(i - (1024 * j) + 32767))) {
-                                        lowerChunk.blocks[i - (1024 * j) + 32767] = Block.snow.ID;
+                                    if (lowerChunk.getBlockID(i - (1024 * j) + 32767) == this.getStoneType(lowerChunk.getBlockXFromIndex(i - (1024 * j) + 32767), lowerChunk.getBlockYFromIndex(i - (1024 * j) + 32767), lowerChunk.getBlockZFromIndex(i - (1024 * j) + 32767))) {
+                                        lowerChunk.setBlock(i - (1024 * j) + 32767, Block.snow.ID);
                                     }
                                 }
                             }
@@ -103,19 +100,16 @@ public final class ChunkWorldEarthTerrainHandler extends ChunkTerrainHandler {
             } else {
                 if (this.getTerrainNoise(x, y, z) >= this.solidNoiseThreshold) {
                     if (this.getTerrainNoise(x, y + 1, z) < this.solidNoiseThreshold) {
-                        blocks[i] = this.getSandType(x,y,z);
+                        chunk.setBlock(i, this.getSandType(x, y, z));
                         dirtDepth = this.getDirtHeight(x, z);
                         dirtDepth *= 2;
                         for (int j = 1; j <= dirtDepth; j++) {
                             if (i - (1024 * j) > 0) {
-                                blocks[i - (1024 * j)] = this.getSandType(chunk.getBlockXFromIndex(i - (1024 * j)), chunk.getBlockYFromIndex(i - (1024 * j)), chunk.getBlockZFromIndex(i - (1024 * j)));
+                                chunk.setBlock(i - (1024 * j), this.getSandType(chunk.getBlockXFromIndex(i - (1024 * j)), chunk.getBlockYFromIndex(i - (1024 * j)), chunk.getBlockZFromIndex(i - (1024 * j))));
                             } else {
                                 if (lowerChunk != null) {
-                                    if(lowerChunk.blocks == null){
-                                        lowerChunk.initChunk();
-                                    }
-                                    if (lowerChunk.blocks[i - (1024 * j) + 32767] == this.getStoneType(lowerChunk.getBlockXFromIndex(i - (1024 * j) + 32767), lowerChunk.getBlockYFromIndex(i - (1024 * j) + 32767), lowerChunk.getBlockZFromIndex(i - (1024 * j) + 32767))) {
-                                        lowerChunk.blocks[i - (1024 * j) + 32767] = this.getSandType(lowerChunk.getBlockXFromIndex(i - (1024 * j) + 32767), lowerChunk.getBlockYFromIndex(i - (1024 * j) + 32767), lowerChunk.getBlockZFromIndex(i - (1024 * j) + 32767));
+                                    if (lowerChunk.getBlockID(i - (1024 * j) + 32767) == this.getStoneType(lowerChunk.getBlockXFromIndex(i - (1024 * j) + 32767), lowerChunk.getBlockYFromIndex(i - (1024 * j) + 32767), lowerChunk.getBlockZFromIndex(i - (1024 * j) + 32767))) {
+                                        lowerChunk.setBlock(i - (1024 * j) + 32767, this.getSandType(lowerChunk.getBlockXFromIndex(i - (1024 * j) + 32767), lowerChunk.getBlockYFromIndex(i - (1024 * j) + 32767), lowerChunk.getBlockZFromIndex(i - (1024 * j) + 32767)));
                                     }
                                 }
                             }
@@ -124,7 +118,7 @@ public final class ChunkWorldEarthTerrainHandler extends ChunkTerrainHandler {
                 }
             }
 
-            if(Block.list[chunk.blocks[i]] instanceof ITickable){
+            if (Block.list[chunk.getBlockID(i)] instanceof ITickable) {
                 chunk.tickableBlockIndex[tickableIndex] = (short) i;
                 tickableIndex++;
             }
@@ -132,7 +126,130 @@ public final class ChunkWorldEarthTerrainHandler extends ChunkTerrainHandler {
         boolean empty = tickableIndex == 0;
         chunk.truncateTickableIndexArray(tickableIndex + 1, empty);
 
+        chunk.chunkContainsOnlyAir = chunkContainsOnlyAir;
+
+        if(chunk.chunkContainsOnlyAir){
+            chunk.isPopulated = true;
+            chunk.hasDirtyLighting = false;
+        }
+
+        if(!chunk.chunkContainsOnlyAir) {
+            this.carveCaves(chunk);
+        }
+
     }
+
+
+    private void carveCaves(Chunk chunk) {
+
+        final int CS = 32;
+
+        for (int ly = 0; ly < CS; ly++) {
+            for (int lz = 0; lz < CS; lz++) {
+                for (int lx = 0; lx < CS; lx++) {
+
+                    int id = chunk.getBlockID(lx, ly, lz);
+                    if (id == Block.air.ID || Block.list[id] instanceof BlockWater)
+                        continue;
+
+                    // --- WATER AVOIDANCE: ABOVE + SIDES ---
+                    boolean waterNearby = false;
+
+                    // Check above
+                    for (int ay = ly + 1; ay < CS; ay++) {
+                        int aboveID = chunk.getBlockID(lx, ay, lz);
+                        if (Block.list[aboveID] instanceof BlockWater) {
+                            waterNearby = true;
+                            break;
+                        }
+                    }
+
+                    // Check sides (N/S/E/W)
+                    if (!waterNearby) {
+                        int[][] sides = {
+                                {lx + 1, ly, lz},
+                                {lx - 1, ly, lz},
+                                {lx, ly, lz + 1},
+                                {lx, ly, lz - 1}
+                        };
+
+                        for (int[] s : sides) {
+                            int sx = s[0], sy = s[1], sz = s[2];
+                            if (sx >= 0 && sx < CS &&
+                                    sy >= 0 && sy < CS &&
+                                    sz >= 0 && sz < CS)
+                            {
+                                int sideID = chunk.getBlockID(sx, sy, sz);
+                                if (Block.list[sideID] instanceof BlockWater) {
+                                    waterNearby = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if (waterNearby)
+                        continue;
+                    // ---------------------------------------------------
+
+                    int wx = chunk.chunkMinX + lx;
+                    int wy = chunk.chunkMinY + ly;
+                    int wz = chunk.chunkMinZ + lz;
+
+                    // Vertical warp for connectivity
+                    double warpY = SimplexNoise.noise((float) (wx * 0.02), (float) (wz * 0.02), 0.0F) * 6.0;
+
+                    // Higher frequencies → tighter, maze-like tunnels
+                    double n1 = SimplexNoise.noise((float) (wx * 0.035), (float) ((wy + warpY) * 0.035), (float) (wz * 0.035));
+                    double n2 = SimplexNoise.noise((float) (wx * 0.07), (float) ((wy + warpY) * 0.07), (float) (wz * 0.07));
+
+                    // Vertical continuity field
+                    double v = SimplexNoise.noise((float) (wx * 0.03), (float) (wy * 0.15), (float) (wz * 0.03));
+
+                    // Blend fields
+                    double a = (n1 * 0.55 + n2 * 0.25 + v * 0.55) * 0.75;
+
+                    // Thickness noise
+                    double b = SimplexNoise.noise((float) (wx * 0.20), (float) (wy * 0.20), (float) (wz * 0.20));
+                    b = Math.max(0.0, Math.min(b, 1.0));
+
+                    // Smaller radius → tighter tunnels
+                    double radius = 0.06 + b * 0.10;
+
+                    // Softer depth attenuation
+                    double depthFactor = Math.max(0.25, (32 - ly) / 32.0);
+
+                    double surfaceFade = Math.min(1.0, (ly / 16.0)); // fade out top 8 blocks
+                    double sdf = ((a * depthFactor * surfaceFade) - radius);
+
+
+                    // Inverted carve condition
+                    if (sdf > 0.015f) {
+
+                        for (int dx = 0; dx < 2; dx++)
+                            for (int dy = 0; dy < 2; dy++)
+                                for (int dz = 0; dz < 2; dz++) {
+
+                                    int cx = lx + dx;
+                                    int cy = ly + dy;
+                                    int cz = lz + dz;
+
+                                    if (cx >= 0 && cx < CS &&
+                                            cy >= 0 && cy < CS &&
+                                            cz >= 0 && cz < CS)
+                                    {
+                                        chunk.setBlock(cx, cy, cz, Block.air.ID);
+                                    }
+                                }
+                    }
+                }
+            }
+        }
+    }
+
+
+
+
 
     public boolean isDesert(int x, int y, int z){
         double rainfall = this.world.getAverageRainfall(x,z);
@@ -146,7 +263,7 @@ public final class ChunkWorldEarthTerrainHandler extends ChunkTerrainHandler {
 
 
     public double getTerrainNoise(int x, int y, int z){
-        return  (this.earth.terrainNoise.getNoise(x,y,z,4, this.getContinentalNoise(x,z), this.getYScaleNoise(x,z)) + this.earth.secondaryTerrainNoise.getNoise(x,y,z, this.earth.sampleNoise.getNoiseIntCasted(x >> 5, z >> 5), this.getContinentalNoise(x,z), this.getYScaleNoise(x,z))) / 2;
+        return  (this.earth.terrainNoise.getNoiseForTerrain(x,y,z,4, this.getContinentalNoise(x,z), this.getYScaleNoise(x,z)) + this.earth.secondaryTerrainNoise.getNoiseForTerrain(x,y,z, this.earth.sampleNoise.getNoiseIntCasted(x >> 5, z >> 5), this.getContinentalNoise(x,z), this.getYScaleNoise(x,z))) / 2;
     }
 
 
@@ -194,16 +311,16 @@ public final class ChunkWorldEarthTerrainHandler extends ChunkTerrainHandler {
         int y = 0;
         int z = 0;
 
-        for(int i = 0; i < chunk.blocks.length; i++){
-            if(Block.list[chunk.blocks[i]] instanceof BlockGrass){
+        for(int i = 0; i < Chunk.NUMBER_OF_BLOCKS; i++){
+            if(Block.list[chunk.getBlockID(i)] instanceof BlockGrass){
                 grassIndicesRaw[grassIndex] = (short) i;
                 grassIndex++;
             }
-            if(Block.list[chunk.blocks[i]] instanceof BlockSand && chunk.parentWorld.getBlockID(chunk.getBlockXFromIndex(i), chunk.getBlockYFromIndex(i) + 1, chunk.getBlockZFromIndex(i)) == Block.air.ID && this.isDesert(chunk.getBlockXFromIndex(i), chunk.getBlockYFromIndex(i), chunk.getBlockZFromIndex(i))){
+            if(Block.list[chunk.getBlockID(i)] instanceof BlockSand && chunk.parentWorld.getBlockID(chunk.getBlockXFromIndex(i), chunk.getBlockYFromIndex(i) + 1, chunk.getBlockZFromIndex(i)) == Block.air.ID && this.isDesert(chunk.getBlockXFromIndex(i), chunk.getBlockYFromIndex(i), chunk.getBlockZFromIndex(i))){
                 surfaceSandIndices[sandIndex] = (short) i;
                 sandIndex++;
             }
-            if(chunk.blocks[i] == Block.water.ID && chunk.parentWorld.getBlockID(chunk.getBlockXFromIndex(i), chunk.getBlockYFromIndex(i) + 1, chunk.getBlockZFromIndex(i)) == Block.air.ID && Block.list[chunk.parentWorld.getBlockID(chunk.getBlockXFromIndex(i), chunk.getBlockYFromIndex(i) - 1, chunk.getBlockZFromIndex(i))].isSolid){
+            if(chunk.getBlockID(i) == Block.water.ID && chunk.parentWorld.getBlockID(chunk.getBlockXFromIndex(i), chunk.getBlockYFromIndex(i) + 1, chunk.getBlockZFromIndex(i)) == Block.air.ID && Block.list[chunk.parentWorld.getBlockID(chunk.getBlockXFromIndex(i), chunk.getBlockYFromIndex(i) - 1, chunk.getBlockZFromIndex(i))].isSolid){
                 surfaceWaterIndices[waterIndex] = (short) i;
                 waterIndex++;
             }
@@ -285,16 +402,16 @@ public final class ChunkWorldEarthTerrainHandler extends ChunkTerrainHandler {
         }
 
 
-        for(int i = 0; i < chunk.blocks.length; i++) {
+        for(int i = 0; i < Chunk.NUMBER_OF_BLOCKS; i++) {
             x = chunk.getBlockXFromIndex(i);
             y = chunk.getBlockYFromIndex(i);
             z = chunk.getBlockZFromIndex(i);
-            if (this.earth.doesBlockHaveSkyAccess(x, y + 1, z) && this.isFrozenBiome(x, y, z) && this.earth.getBlockID(x, y + 1 , z) == Block.air.ID && (Block.list[chunk.blocks[i]].isSolid || Block.list[chunk.blocks[i]] instanceof BlockWater)) { //place snow and ice
-                if (Block.list[chunk.blocks[i]] instanceof BlockWater) {
-                    chunk.blocks[i] = Block.ice.ID;
+            if (this.earth.doesBlockHaveSkyAccess(x, y + 1, z) && this.isFrozenBiome(x, y, z) && this.earth.getBlockID(x, y + 1 , z) == Block.air.ID && (Block.list[chunk.getBlockID(i)].isSolid || Block.list[chunk.getBlockID(i)] instanceof BlockWater)) { //place snow and ice
+                if (Block.list[chunk.getBlockID(i)] instanceof BlockWater) {
+                    chunk.setBlock(i, Block.ice.ID);
                 } else {
                     if (chunk.isBlockInCallingChunkExcludeEdge(x, y + 1, z)) {
-                        chunk.blocks[i + 1024] = Block.snowLayer.ID;
+                        chunk.setBlock(i + 1024, Block.snowLayer.ID);
                     } else {
                         this.earth.setBlock(x, y + 1, z, Block.snowLayer.ID);
                         chunk.firstRender = true;
@@ -303,7 +420,7 @@ public final class ChunkWorldEarthTerrainHandler extends ChunkTerrainHandler {
             }
         }
 
-        chunk.populated = true;
+        chunk.isPopulated = true;
     }
 
     protected GeologicProvince getGeologicProvince(int x, int y, int z){

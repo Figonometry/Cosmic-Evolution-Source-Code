@@ -1964,9 +1964,9 @@ public class RenderBlocks {
             byte bl2 = world.getBlockLightValue(samples[1].x, samples[1].y, samples[1].z);
             byte bl3 = world.getBlockLightValue(samples[2].x, samples[2].y, samples[2].z);
 
-            float[] c1 = world.getBlockLightColor(samples[0].x, samples[0].y, samples[0].z);
-            float[] c2 = world.getBlockLightColor(samples[1].x, samples[1].y, samples[1].z);
-            float[] c3 = world.getBlockLightColor(samples[2].x, samples[2].y, samples[2].z);
+            int c1 = world.getBlockLightColor(samples[0].x, samples[0].y, samples[0].z);
+            int c2 = world.getBlockLightColor(samples[1].x, samples[1].y, samples[1].z);
+            int c3 = world.getBlockLightColor(samples[2].x, samples[2].y, samples[2].z);
 
             setVertexLight3Args(bl1, bl2, bl3, c1, c2, c3);
 
@@ -1981,10 +1981,10 @@ public class RenderBlocks {
             byte bl3 = world.getBlockLightValue(samples[2].x, samples[2].y, samples[2].z);
             byte bl4 = world.getBlockLightValue(samples[3].x, samples[3].y, samples[3].z);
 
-            float[] c1 = world.getBlockLightColor(samples[0].x, samples[0].y, samples[0].z);
-            float[] c2 = world.getBlockLightColor(samples[1].x, samples[1].y, samples[1].z);
-            float[] c3 = world.getBlockLightColor(samples[2].x, samples[2].y, samples[2].z);
-            float[] c4 = world.getBlockLightColor(samples[3].x, samples[3].y, samples[3].z);
+            int c1 = world.getBlockLightColor(samples[0].x, samples[0].y, samples[0].z);
+            int c2 = world.getBlockLightColor(samples[1].x, samples[1].y, samples[1].z);
+            int c3 = world.getBlockLightColor(samples[2].x, samples[2].y, samples[2].z);
+            int c4 = world.getBlockLightColor(samples[3].x, samples[3].y, samples[3].z);
 
             setVertexLight4Args(bl1, bl2, bl3, bl4, c1, c2, c3, c4);
 
@@ -2469,13 +2469,14 @@ public class RenderBlocks {
     }
 
     private void setVertexLight1Arg(byte light,
-                                    float[] lightColor) {
+                                    int lightColor) {
 
         final float finalLight = getLightValueFromMap(light);
 
-        float r = lightColor[0];
-        float g = lightColor[1];
-        float b = lightColor[2];
+
+        float r = MathUtil.intToFloatRGBA((lightColor >> 16) & 255);
+        float g = MathUtil.intToFloatRGBA((lightColor >> 8) & 255);
+        float b = MathUtil.intToFloatRGBA((lightColor & 255));
 
         red   *= r * finalLight;
         green *= g * finalLight;
@@ -2483,7 +2484,7 @@ public class RenderBlocks {
     }
 
     private void setVertexLight2Args(byte light1, byte light2,
-                                     float[] lightColor, float[] lightColor2) {
+                                     int lightColor, int lightColor2) {
 
         final float finalLight = (getLightValueFromMap(light1) +
                 getLightValueFromMap(light2)) * 0.5F; // Faster than /2F
@@ -2494,14 +2495,14 @@ public class RenderBlocks {
         float r, g, b;
 
         // lightColor
-        r = lightColor[0]; if (r != 0F) { rSum += r; rCount++; }
-        g = lightColor[1]; if (g != 0F) { gSum += g; gCount++; }
-        b = lightColor[2]; if (b != 0F) { bSum += b; bCount++; }
+        r = MathUtil.intToFloatRGBA((lightColor >> 16) & 255); if (r != 0F) { rSum += r; rCount++; }
+        g = MathUtil.intToFloatRGBA((lightColor >> 8) & 255); if (g != 0F) { gSum += g; gCount++; }
+        b = MathUtil.intToFloatRGBA((lightColor & 255)); if (b != 0F) { bSum += b; bCount++; }
 
         // lightColor2
-        r = lightColor2[0]; if (r != 0F) { rSum += r; rCount++; }
-        g = lightColor2[1]; if (g != 0F) { gSum += g; gCount++; }
-        b = lightColor2[2]; if (b != 0F) { bSum += b; bCount++; }
+        r = MathUtil.intToFloatRGBA((lightColor2 >> 16) & 255); if (r != 0F) { rSum += r; rCount++; }
+        g = MathUtil.intToFloatRGBA((lightColor2 >> 8) & 255); if (g != 0F) { gSum += g; gCount++; }
+        b = MathUtil.intToFloatRGBA((lightColor2 & 255)); if (b != 0F) { bSum += b; bCount++; }
 
         red   *= (rCount > 0 ? rSum / rCount : 0F) * finalLight;
         green *= (gCount > 0 ? gSum / gCount : 0F) * finalLight;
@@ -2509,8 +2510,8 @@ public class RenderBlocks {
     }
 
     private void setVertexLight3Args(byte light1, byte light2, byte light3,
-                                     float[] lightColor, float[] lightColor2,
-                                     float[] lightColor3) {
+                                     int lightColor, int lightColor2,
+                                     int lightColor3) {
 
         final float finalLight = (getLightValueFromMap(light1) +
                 getLightValueFromMap(light2) +
@@ -2522,19 +2523,19 @@ public class RenderBlocks {
         float r, g, b;
 
         // lightColor
-        r = lightColor[0]; if (r != 0F) { rSum += r; rCount++; }
-        g = lightColor[1]; if (g != 0F) { gSum += g; gCount++; }
-        b = lightColor[2]; if (b != 0F) { bSum += b; bCount++; }
+        r = MathUtil.intToFloatRGBA((lightColor >> 16) & 255); if (r != 0F) { rSum += r; rCount++; }
+        g = MathUtil.intToFloatRGBA((lightColor >> 8) & 255); if (g != 0F) { gSum += g; gCount++; }
+        b = MathUtil.intToFloatRGBA((lightColor & 255)); if (b != 0F) { bSum += b; bCount++; }
 
         // lightColor2
-        r = lightColor2[0]; if (r != 0F) { rSum += r; rCount++; }
-        g = lightColor2[1]; if (g != 0F) { gSum += g; gCount++; }
-        b = lightColor2[2]; if (b != 0F) { bSum += b; bCount++; }
+        r = MathUtil.intToFloatRGBA((lightColor2 >> 16) & 255); if (r != 0F) { rSum += r; rCount++; }
+        g = MathUtil.intToFloatRGBA((lightColor2 >> 8) & 255); if (g != 0F) { gSum += g; gCount++; }
+        b = MathUtil.intToFloatRGBA((lightColor2 & 255)); if (b != 0F) { bSum += b; bCount++; }
 
         // lightColor3
-        r = lightColor3[0]; if (r != 0F) { rSum += r; rCount++; }
-        g = lightColor3[1]; if (g != 0F) { gSum += g; gCount++; }
-        b = lightColor3[2]; if (b != 0F) { bSum += b; bCount++; }
+        r = MathUtil.intToFloatRGBA((lightColor3 >> 16) & 255); if (r != 0F) { rSum += r; rCount++; }
+        g = MathUtil.intToFloatRGBA((lightColor3 >> 8) & 255); if (g != 0F) { gSum += g; gCount++; }
+        b = MathUtil.intToFloatRGBA((lightColor & 255)); if (b != 0F) { bSum += b; bCount++; }
 
         red   *= (rCount > 0 ? rSum / rCount : 0F) * finalLight;
         green *= (gCount > 0 ? gSum / gCount : 0F) * finalLight;
@@ -2543,8 +2544,8 @@ public class RenderBlocks {
 
 
     private void setVertexLight4Args(byte light1, byte light2, byte light3, byte light4,
-                                     float[] lightColor, float[] lightColor2,
-                                     float[] lightColor3, float[] lightColor4) {
+                                     int lightColor, int lightColor2,
+                                     int lightColor3, int lightColor4) {
 
         final float finalLight = (getLightValueFromMap(light1) +
                 getLightValueFromMap(light2) +
@@ -2556,21 +2557,21 @@ public class RenderBlocks {
 
         float r, g, b;
 
-        r = lightColor[0]; if (r != 0F) { rSum += r; rCount++; }
-        g = lightColor[1]; if (g != 0F) { gSum += g; gCount++; }
-        b = lightColor[2]; if (b != 0F) { bSum += b; bCount++; }
+        r = MathUtil.intToFloatRGBA((lightColor >> 16) & 255); if (r != 0F) { rSum += r; rCount++; }
+        g = MathUtil.intToFloatRGBA((lightColor >> 8) & 255); if (g != 0F) { gSum += g; gCount++; }
+        b = MathUtil.intToFloatRGBA((lightColor & 255)); if (b != 0F) { bSum += b; bCount++; }
 
-        r = lightColor2[0]; if (r != 0F) { rSum += r; rCount++; }
-        g = lightColor2[1]; if (g != 0F) { gSum += g; gCount++; }
-        b = lightColor2[2]; if (b != 0F) { bSum += b; bCount++; }
+        r = MathUtil.intToFloatRGBA((lightColor2 >> 16) & 255); if (r != 0F) { rSum += r; rCount++; }
+        g = MathUtil.intToFloatRGBA((lightColor2 >> 8) & 255); if (g != 0F) { gSum += g; gCount++; }
+        b = MathUtil.intToFloatRGBA((lightColor2 & 255)); if (b != 0F) { bSum += b; bCount++; }
 
-        r = lightColor3[0]; if (r != 0F) { rSum += r; rCount++; }
-        g = lightColor3[1]; if (g != 0F) { gSum += g; gCount++; }
-        b = lightColor3[2]; if (b != 0F) { bSum += b; bCount++; }
+        r = MathUtil.intToFloatRGBA((lightColor3 >> 16) & 255); if (r != 0F) { rSum += r; rCount++; }
+        g = MathUtil.intToFloatRGBA((lightColor3 >> 8) & 255); if (g != 0F) { gSum += g; gCount++; }
+        b = MathUtil.intToFloatRGBA((lightColor3 & 255)); if (b != 0F) { bSum += b; bCount++; }
 
-        r = lightColor4[0]; if (r != 0F) { rSum += r; rCount++; }
-        g = lightColor4[1]; if (g != 0F) { gSum += g; gCount++; }
-        b = lightColor4[2]; if (b != 0F) { bSum += b; bCount++; }
+        r = MathUtil.intToFloatRGBA((lightColor4 >> 16) & 255); if (r != 0F) { rSum += r; rCount++; }
+        g = MathUtil.intToFloatRGBA((lightColor4 >> 8) & 255); if (g != 0F) { gSum += g; gCount++; }
+        b = MathUtil.intToFloatRGBA((lightColor4 & 255)); if (b != 0F) { bSum += b; bCount++; }
 
         red   *= (rCount > 0 ? rSum / rCount : 0F) * finalLight;
         green *= (gCount > 0 ? gSum / gCount : 0F) * finalLight;
@@ -2722,7 +2723,7 @@ public class RenderBlocks {
         }
 
         if(block == Block.tilledSoil.ID){
-            blockTextureID = ((BlockTilledSoil)Block.tilledSoil).getBlockTexture(chunk.getBlockXFromIndex(index), chunk.getBlockYFromIndex(index), face, chunk.getBlockZFromIndex(index));
+            blockTextureID = Block.tilledSoil.getBlockTexture(chunk.getBlockXFromIndex(index), chunk.getBlockYFromIndex(index), face, chunk.getBlockZFromIndex(index));
         }
 
         if(block == Block.crafting3DItem.ID){
@@ -2866,47 +2867,47 @@ public class RenderBlocks {
     }
 
     public void addVertexFloatOpaque(Chunk chunk, float value){
-        if(chunk.tempVertexBufferOpaque.position() == chunk.tempVertexBufferOpaque.limit()){
-            FloatBuffer oldBuffer = chunk.tempVertexBufferOpaque;
+        if(chunk.vertexBufferOpaque.position() == chunk.vertexBufferOpaque.limit()){
+            FloatBuffer oldBuffer = chunk.vertexBufferOpaque;
             FloatBuffer newBuffer = BufferUtils.createFloatBuffer(oldBuffer.capacity() * 2);
             oldBuffer.flip(); // prepare for reading
             newBuffer.put(oldBuffer);
-            chunk.tempVertexBufferOpaque = newBuffer;
+            chunk.vertexBufferOpaque = newBuffer;
         }
-        chunk.tempVertexBufferOpaque.put(value);
+        chunk.vertexBufferOpaque.put(value);
     }
 
     public void addVertexFloatTransparent(Chunk chunk, float value){
-        if(chunk.tempVertexBufferTransparent.position() == chunk.tempVertexBufferTransparent.limit()){
-            FloatBuffer oldBuffer = chunk.tempVertexBufferTransparent;
+        if(chunk.vertexBufferTransparent.position() == chunk.vertexBufferTransparent.limit()){
+            FloatBuffer oldBuffer = chunk.vertexBufferTransparent;
             FloatBuffer newBuffer = BufferUtils.createFloatBuffer(oldBuffer.capacity() * 2);
             oldBuffer.flip(); // prepare for reading
             newBuffer.put(oldBuffer);
-            chunk.tempVertexBufferTransparent = newBuffer;
+            chunk.vertexBufferTransparent = newBuffer;
         }
-        chunk.tempVertexBufferTransparent.put(value);
+        chunk.vertexBufferTransparent.put(value);
     }
 
     public void addElementOpaque(Chunk chunk, int value){
-        if(chunk.tempElementBufferOpaque.position() == chunk.tempElementBufferOpaque.limit()){
-            IntBuffer oldBuffer = chunk.tempElementBufferOpaque;
+        if(chunk.elementBufferOpaque.position() == chunk.elementBufferOpaque.limit()){
+            IntBuffer oldBuffer = chunk.elementBufferOpaque;
             IntBuffer newBuffer = BufferUtils.createIntBuffer(oldBuffer.capacity() * 2);
             oldBuffer.flip(); // prepare for reading
             newBuffer.put(oldBuffer);
-            chunk.tempElementBufferOpaque = newBuffer;
+            chunk.elementBufferOpaque = newBuffer;
         }
-        chunk.tempElementBufferOpaque.put(value);
+        chunk.elementBufferOpaque.put(value);
     }
 
     public void addElementTransparent(Chunk chunk, int value){
-        if(chunk.tempElementBufferTransparent.position() == chunk.tempElementBufferTransparent.limit()){
-            IntBuffer oldBuffer = chunk.tempElementBufferTransparent;
+        if(chunk.elementBufferTransparent.position() == chunk.elementBufferTransparent.limit()){
+            IntBuffer oldBuffer = chunk.elementBufferTransparent;
             IntBuffer newBuffer = BufferUtils.createIntBuffer(oldBuffer.capacity() * 2);
             oldBuffer.flip(); // prepare for reading
             newBuffer.put(oldBuffer);
-            chunk.tempElementBufferTransparent = newBuffer;
+            chunk.elementBufferTransparent = newBuffer;
         }
-        chunk.tempElementBufferTransparent.put(value);
+        chunk.elementBufferTransparent.put(value);
     }
 
 

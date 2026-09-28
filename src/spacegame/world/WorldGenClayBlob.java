@@ -21,7 +21,7 @@ public final class WorldGenClayBlob extends WorldGen {
     private int radius;
 
     public WorldGenClayBlob(Chunk chunk, WorldEarth earth, int index){
-        if(!(Block.list[chunk.blocks[index]] instanceof BlockGrass))return;
+        if(!(Block.list[chunk.getBlockID(index)] instanceof BlockGrass))return;
         this.worldEarth = earth;
         this.index = index;
         this.chunk = chunk;
@@ -67,7 +67,7 @@ public final class WorldGenClayBlob extends WorldGen {
                     if(this.doesBlockIntersectSphere(x,y,z, xStart, yStart, zStart, this.radius * this.radius)){
                         if(Block.list[this.worldEarth.getBlockID(x,y,z)] instanceof BlockGrass){
                             if(this.isBlockInCallingChunkExcludeEdge(x,y,z)){
-                                this.chunk.blocks[Chunk.getBlockIndexFromCoordinates(x,y,z)] = Block.clayWithGrassLargePatches.ID; //Replace with clay replacement logic
+                                this.chunk.setBlock(x,y,z, Block.clayWithGrassLargePatches.ID); //Replace with clay replacement logic
                             } else {
                                 this.worldEarth.setBlock(x,y,z, Block.clayWithGrassLargePatches.ID);
                             }
@@ -89,7 +89,7 @@ public final class WorldGenClayBlob extends WorldGen {
 
                         } else if(Block.list[this.worldEarth.getBlockID(x,y,z)] instanceof BlockSoil){
                             if(this.isBlockInCallingChunkExcludeEdge(x,y,z)){
-                                this.chunk.blocks[Chunk.getBlockIndexFromCoordinates(x,y,z)] = Block.clay.ID;
+                                this.chunk.setBlock(x,y,z, Block.clay.ID);
                             } else {
                                 this.worldEarth.setBlock(x,y,z, Block.clay.ID);
                             }

@@ -136,7 +136,7 @@ public final class EntityParticle extends EntityNonLiving {
         Shader.worldShaderTextureArray.uploadFloat("fogRed", CosmicEvolution.instance.save.activeWorld.skyColor[0]);
         Shader.worldShaderTextureArray.uploadFloat("fogGreen", CosmicEvolution.instance.save.activeWorld.skyColor[1]);
         Shader.worldShaderTextureArray.uploadFloat("fogBlue", CosmicEvolution.instance.save.activeWorld.skyColor[2]);
-        Shader.worldShaderTextureArray.uploadFloat("fogDistance", GameSettings.renderDistance * 20);
+        Shader.worldShaderTextureArray.uploadFloat("fogDistance", CosmicEvolution.instance.save.activeWorld.chunkController.renderWorldScene.fogDistance);
         int playerChunkX = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x) >> 5;
         int playerChunkY = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.y) >> 5;
         int playerChunkZ = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z) >> 5;
@@ -341,7 +341,7 @@ public final class EntityParticle extends EntityNonLiving {
         blue = 1F;
     }
 
-    private  void setVertexLight1Arg(byte light, float x, float y, float z, float[] lightColor) {
+    private  void setVertexLight1Arg(byte light, float x, float y, float z, int lightColor) {
         float finalLight = getLightValueFromMap(light);
 
         if(Block.list[this.associatedBlock].isColorized(MathUtil.floorFloat(x), MathUtil.floorFloat(y), MathUtil.floorFloat(z), CosmicEvolution.instance.save.activeWorld)){
@@ -360,9 +360,9 @@ public final class EntityParticle extends EntityNonLiving {
 
             highestChannel = highestChannel != 0.0 ? highestChannel : 0.01f;
 
-            red *= lightColor[0];
-            green *= lightColor[1];
-            blue *= lightColor[2];
+            red *= MathUtil.intToFloatRGBA((lightColor >> 16) & 255);
+            green *=  MathUtil.intToFloatRGBA((lightColor >> 8) & 255);
+            blue *=  MathUtil.intToFloatRGBA((lightColor & 255) + 256);
 
             red *= finalLight;
             green *= finalLight;
@@ -376,9 +376,9 @@ public final class EntityParticle extends EntityNonLiving {
 
             Shader.worldShaderTextureArray.uploadFloat("colorMultiplier", highestChannel / highestChannelAfter);
         } else {
-            red = lightColor[0];
-            green = lightColor[1];
-            blue = lightColor[2];
+            red = MathUtil.intToFloatRGBA((lightColor >> 16) & 255);
+            green =  MathUtil.intToFloatRGBA((lightColor >> 8) & 255);
+            blue =  MathUtil.intToFloatRGBA((lightColor & 255) + 256);
 
             red *= finalLight;
             green *= finalLight;

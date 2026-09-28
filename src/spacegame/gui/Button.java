@@ -210,9 +210,9 @@ public class Button {
                 }
                 if(this.ce.save != null) {
                     this.ce.save.activeWorld.chunkController.resetChunkLoading();
+                    Shader.terrainShader.uploadFloat("fogDistance", CosmicEvolution.instance.save.activeWorld.chunkController.renderWorldScene.fogDistance);
+                    Shader.worldShader2DTexture.uploadFloat("fogDistance", CosmicEvolution.instance.save.activeWorld.chunkController.renderWorldScene.fogDistance);
                 }
-                Shader.terrainShader.uploadFloat("fogDistance", GameSettings.renderDistance * 20f);
-                Shader.worldShader2DTexture.uploadFloat("fogDistance", GameSettings.renderDistance * 20f);
             }
             case CHUNK_VIEW_VERTICAL -> {
                 if(this.sideOfButtonBeingClicked() == 0){
@@ -450,13 +450,14 @@ public class Button {
                 this.ce.save.thePlayer.y = this.ce.save.thePlayer.spawnY + 1.5;
                 this.ce.save.thePlayer.z = this.ce.save.thePlayer.spawnZ;
                 this.ce.save.thePlayer.health = this.ce.save.thePlayer.maxHealth;
+                this.ce.save.thePlayer.saturation = this.ce.save.thePlayer.maxSaturation / 2f;
 
 
                 CosmicEvolution.instance.save.activeWorld.chunkController.playerChunkX = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x) >> 5;
                 CosmicEvolution.instance.save.activeWorld.chunkController.playerChunkY = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.y) >> 5;
                 CosmicEvolution.instance.save.activeWorld.chunkController.playerChunkZ = MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z) >> 5;
 
-                CosmicEvolution.instance.save.activeWorld.chunkController.loadChunkColumn(MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x) >> 5, MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z) >> 5);
+                CosmicEvolution.instance.save.activeWorld.chunkController.loadPlayerChunkColumn(MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.x) >> 5, MathUtil.floorDouble(CosmicEvolution.instance.save.thePlayer.z) >> 5);
 
                 GLFW.glfwSetInputMode(this.ce.window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
                 this.ce.save.activeWorld.paused = false;

@@ -574,6 +574,7 @@ public final class RenderEngine {
                 case BlockTextureList.SERPENTINITE_SAND -> "serpentiniteSand";
                 case BlockTextureList.SEED_TEXTURE -> "seed";
                 case BlockTextureList.FLINT_TEXTURE -> "flint";
+                case BlockTextureList.CLAY_BLOCK_TEXTURE -> "clayBlock";
                 default -> "missing";
             };
         } else if(textureFolderpath.contains("item")){

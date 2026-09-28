@@ -41,6 +41,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.Random;
+import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -123,7 +124,7 @@ public final class CosmicEvolution implements Runnable {
         threadPool = new ThreadPoolExecutor(workerCount, workerCount, 0L, TimeUnit.MILLISECONDS, new PriorityBlockingQueue<>());
         this.dirtyChunksSchedulerThread = new Thread(new ThreadChunkJobScheduler());
         this.dirtyChunksSchedulerThread.start();
-        this.title = "Cosmic Evolution Alpha v0.54.1";
+        this.title = "Cosmic Evolution Alpha v0.55";
         GameSettings.loadOptionsFromFile(this.launcherDirectory);
         Block.registerAllBlockTooltips();
         EntityLiving.registerEntityLivingToolTip();
@@ -222,6 +223,8 @@ public final class CosmicEvolution implements Runnable {
 
         GL46.glClearColor(0,0,0,0);
 
+        //Sound setup code needs to change to handle whenever the sound device no longer points to a valid output device or when no device was previously provided and one becomes available
+        //This may be some kind of event listener I can hook into
         long device = ALC11.alcOpenDevice((ByteBuffer) null);
 
         if (device != MemoryUtil.NULL) {
@@ -233,6 +236,7 @@ public final class CosmicEvolution implements Runnable {
         } else {
             Sound.canPlaySound = false;
         }
+
 
         GLFW.glfwSetWindowSizeCallback(this.window, WindowResizeListener::resizeCallback);
         this.setWindowIcon();
@@ -267,24 +271,35 @@ public final class CosmicEvolution implements Runnable {
     }
 
     private void mainLoop() {
-        long lastTime = System.nanoTime();
+        long lastFrameTime = System.nanoTime();
         byte fpsTimer = 30;
+
         while (this.running) {
             this.timer.advanceTime();
+
             for (int i = 0; i < this.timer.ticks; i++) {
                 this.tick();
-                fpsTimer--;
-                if (fpsTimer <= 0) {
-                    this.fps = (int) (1000000000.0 / (lastTime - System.nanoTime()));
-                    fpsTimer = 30;
-                }
             }
-            lastTime = System.nanoTime();
+
             this.framePulse();
             this.render();
+
+            // FPS calculation every 30 frames
+            fpsTimer--;
+            if (fpsTimer <= 0) {
+                long now = System.nanoTime();
+                long frameTime = now - lastFrameTime;
+                lastFrameTime = now;
+
+                this.fps = (int)(60 * 1_000_000_000.0 / frameTime);
+                fpsTimer = 60;
+            }
         }
+
         this.shutdown();
     }
+
+
 
 
     public void startNewSave(int saveSlotNumber, String saveName, long seed, SaveSettings saveSettings) {
@@ -456,7 +471,7 @@ public final class CosmicEvolution implements Runnable {
                   //      this.save.activeWorld.findChunkFromChunkCoordinates(MathUtil.floorDouble(this.modelTest.x) >> 5, MathUtil.floorDouble(this.modelTest.y) >> 5, MathUtil.floorDouble(this.modelTest.z) >> 5).removeEntity(this.modelTest);
                   //      this.modelTest = null;
                   //  }
-                    Shader.terrainShader = this.renderEngine.reloadShader(Shader.terrainShader);
+                    Shader.cloudShader = this.renderEngine.reloadShader(Shader.cloudShader);
 
                     KeyListener.setKeyReleased(GLFW.GLFW_KEY_U);
                 }

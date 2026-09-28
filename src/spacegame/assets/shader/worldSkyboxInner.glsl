@@ -23,6 +23,7 @@ in vec3 fTexCoords;
 
 uniform vec3 normalizedSunVector;
 uniform vec3 sunFlareColor;
+uniform float rainFogFactor;
 
 out vec4 color;
 
@@ -71,9 +72,18 @@ void main()
     vec3 coolColor = vec3(0.2, 0.3, 0.5);
     sky += coolColor * (awayFromSun * warmSpread * 0.5 * nightFactor);
 
+
+    float rainFogColor = 0.4f;
+
+    float colorDifRed = sky.x - rainFogColor;
+    float colorDifGreen = sky.y - rainFogColor;
+    float colorDifBlue = sky.z - rainFogColor;
+
+    sky.x -= (colorDifRed * rainFogFactor);
+    sky.y -= (colorDifGreen * rainFogFactor);
+    sky.z -= (colorDifBlue * rainFogFactor);
+
+
     // --- Output ---
     color = vec4(sky, 1.0);
-
-
-
 }

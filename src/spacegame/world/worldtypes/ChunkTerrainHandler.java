@@ -16,7 +16,7 @@ public abstract class ChunkTerrainHandler {
     }
 
 
-    public abstract void setTerrain(short[] blocks, Chunk chunk);
+    public abstract void setTerrain(Chunk chunk);
 
 
     public abstract double getTerrainNoise(int x, int y, int z);

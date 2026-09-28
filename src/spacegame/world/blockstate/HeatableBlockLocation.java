@@ -45,7 +45,7 @@ public final class HeatableBlockLocation extends BlockState { //Trigger every 15
                 location.inventory.itemStacks[1].item = null;
             }
 
-            if(Block.list[chunk.blocks[index]] instanceof BlockCampFire){
+            if(Block.list[chunk.getBlockID(index)] instanceof BlockCampFire){
                 CampfireState campfireState = (CampfireState) chunk.getBlockState(index, MultiState.CAMPFIRE_STATE);
                 if(campfireState == null)return;
                 campfireState.logCount--;

@@ -162,7 +162,7 @@ public final class GuiInGame extends Gui {
         int leftSide = -970;
         FontRenderer fontRenderer = FontRenderer.instance;
         if(GameSettings.showFPS) {
-            fontRenderer.drawString(CosmicEvolution.instance.title + " (" + CosmicEvolution.instance.fps * -1 + " FPS)", leftSide, 460,-15, 16777215, 50, 255);
+            fontRenderer.drawString(CosmicEvolution.instance.title + " (" + CosmicEvolution.instance.fps + " FPS)", leftSide, 460,-15, 16777215, 50, 255);
         } else {
             fontRenderer.drawString(CosmicEvolution.instance.title, leftSide, 460,-15, 16777215, 50, 255);
         }
@@ -182,7 +182,7 @@ public final class GuiInGame extends Gui {
             fontRenderer.drawString("Draw Calls: " +  CosmicEvolution.instance.save.activeWorld.chunkController.drawCalls, leftSide, 190,-15, 16777215, 50, 255);
             fontRenderer.drawString("Thread Count: " + Thread.activeCount(), leftSide, 160,-15, 16777215, 50, 255);
             fontRenderer.drawString("Thread Queue Size: " + CosmicEvolution.threadJobs.get(), leftSide, 130,-15, 16777215, 50, 255);
-            fontRenderer.drawString("Sky Light Level: " + CosmicEvolution.instance.save.activeWorld.getBlockSkyLightValue(playerX, playerY, playerZ), leftSide, 100,-15, 16777215, 50, 255);
+            fontRenderer.drawString("Block Light Color: " + CosmicEvolution.instance.save.activeWorld.getBlockLightColor(playerX, playerY, playerZ), leftSide, 100,-15, 16777215, 50, 255);
             fontRenderer.drawString("Temperature: " + CosmicEvolution.instance.save.activeWorld.getDisplayTemperature(playerX, playerY, playerZ) + "F", leftSide, 70,-15, 16777215, 50, 255);
             fontRenderer.drawString("Rainfall: " + CosmicEvolution.instance.save.activeWorld.getRainfall(playerX, playerZ), leftSide, 40,-15, 16777215, 50, 255);
             fontRenderer.drawString("Time: " + CosmicEvolution.instance.save.time, leftSide, 10, -15, 16777215, 50, 255);
@@ -1564,11 +1564,12 @@ public final class GuiInGame extends Gui {
                             }
                         }
 
-
-
-                        renderSpecialFace(tessellator, 16777215, Chunk.getBlockIndexFromCoordinates(locationX, locationY, locationZ), 0, modelFace, 0,0,0,0,0,0,0,0, 3,1,2,0, chunk,null, modelFace.normal.x, modelFace.normal.y, modelFace.normal.z, chunk.getSkyLightValue(locationX, locationY, locationZ));
-                        if(Block.list[block].ID != Block.crafting3DItem.ID) {
-                            tessellator.addElementsCCW();
+                        boolean renderFace = CosmicEvolution.instance.save.activeWorld.shouldFaceRender(locationX, locationY, locationZ, modelFace.faceType);
+                        if(renderFace) {
+                            renderSpecialFace(tessellator, 16777215, Chunk.getBlockIndexFromCoordinates(locationX, locationY, locationZ), 0, modelFace, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 2, 0, chunk, null, modelFace.normal.x, modelFace.normal.y, modelFace.normal.z, chunk.getSkyLightValue(locationX, locationY, locationZ));
+                            if (Block.list[block].ID != Block.crafting3DItem.ID) {
+                                tessellator.addElementsCCW();
+                            }
                         }
                     }
 
@@ -2462,49 +2463,7 @@ public final class GuiInGame extends Gui {
         int y = (index >> 10);
         int z = ((index % 1024) >> 5);
 
-        if(chunk.topFaceBitMask == null || chunk.bottomFaceBitMask == null || chunk.northFaceBitMask == null || chunk.southFaceBitMask == null || chunk.eastFaceBitMask == null || chunk.westFaceBitMask == null)return;
-
         textureID /= 16F;
-
-        int bitMap = 0;
-        switch (blockFace.faceType){
-            case 0 -> {
-              bitMap = chunk.topFaceBitMask[Chunk.calculateBitMaskIndex(x,z)];
-                if(chunk.checkBitValue(bitMap, chunk.createMask(y)) == 0){
-                    return;
-                }
-            }
-            case 1 -> {
-                bitMap = chunk.bottomFaceBitMask[Chunk.calculateBitMaskIndex(x,z)];
-                if(chunk.checkBitValue(bitMap, chunk.createMask(y)) == 0){
-                    return;
-                }
-            }
-            case 2 -> {
-                bitMap = chunk.northFaceBitMask[Chunk.calculateBitMaskIndex(z, y)];
-                if(chunk.checkBitValue(bitMap, chunk.createMask(x)) == 0){
-                    return;
-                }
-            }
-            case 3 -> {
-                bitMap = chunk.southFaceBitMask[Chunk.calculateBitMaskIndex(z, y)];
-                if(chunk.checkBitValue(bitMap, chunk.createMask(x)) == 0){
-                    return;
-                }
-            }
-            case 4 -> {
-                bitMap = chunk.eastFaceBitMask[Chunk.calculateBitMaskIndex(x, y)];
-                if(chunk.checkBitValue(bitMap, chunk.createMask(z)) == 0){
-                    return;
-                }
-            }
-            case 5 -> {
-                bitMap = chunk.westFaceBitMask[Chunk.calculateBitMaskIndex(x, y)];
-                if(chunk.checkBitValue(bitMap, chunk.createMask(z)) == 0){
-                    return;
-                }
-            }
-        }
 
 
         float red = ((colorValue >> 16) & 255) / 255f;

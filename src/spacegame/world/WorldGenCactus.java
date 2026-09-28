@@ -14,7 +14,7 @@ public final class WorldGenCactus extends WorldGen{
     public HashSet<Chunk> touchedChunks = new HashSet<>();
     public HashMap<Long, Chunk> chunkCache = new HashMap<>();
     public WorldGenCactus(Chunk chunk, WorldEarth worldEarth, int index){
-        if(!(Block.list[chunk.blocks[index]] instanceof BlockSand))return;
+        if(!(Block.list[chunk.getBlockID(index)] instanceof BlockSand))return;
         this.worldEarth = worldEarth;
         this.index = index;
         this.chunk = chunk;
@@ -46,7 +46,7 @@ public final class WorldGenCactus extends WorldGen{
         for(int i = 0; i < height; i++){
             if(this.isBlockValid(x, y + i, z)){
                 if(this.isBlockInCallingChunkExcludeEdge(x, y + i, z)){
-                    this.chunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y + i, z)] = Block.cactus.ID;
+                    this.chunk.setBlock(x, y + i, z, Block.cactus.ID);
                 } else {
                     this.worldEarth.setBlock(x,y,z, Block.cactus.ID);
                 }
@@ -77,7 +77,7 @@ public final class WorldGenCactus extends WorldGen{
 
     private boolean isBlockValid(int x, int y, int z){
         if(this.isBlockInCallingChunk(x,y,z)){
-            return this.chunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)] == Block.air.ID;
+            return this.chunk.getBlockID(x,y,z) == Block.air.ID;
         } else {
             return this.worldEarth.getBlockID(x, y, z) == Block.air.ID;
         }

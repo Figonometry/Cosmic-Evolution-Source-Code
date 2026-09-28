@@ -38,14 +38,14 @@ public final class WorldGenBerryBush extends WorldGen{
     private boolean isBlockValid(int x, int y, int z){
         short lowerBlockID;
         if(this.isBlockInCallingChunk(x,y,z)){
-            lowerBlockID = this.chunk.blocks[Chunk.getBlockIndexFromCoordinates(x,y,z)];
+            lowerBlockID = this.chunk.getBlockID(x,y,z);
         } else {
             lowerBlockID = this.worldEarth.getBlockID(x,y,z);
         }
 
         short upperBlockID;
         if(this.isBlockInCallingChunk(x,y + 1,z)){
-            upperBlockID = this.chunk.blocks[Chunk.getBlockIndexFromCoordinates(x,y + 1,z)];
+            upperBlockID = this.chunk.getBlockID(x, y + 1, z);
         } else {
             upperBlockID = this.worldEarth.getBlockID(x,y + 1,z);
         }
@@ -83,7 +83,7 @@ public final class WorldGenBerryBush extends WorldGen{
                     canGenerate = ((x * 734287L + y * 912931L + z * 4217L + this.seed) & 7) == 0;
                     if(this.doesBlockIntersectSphere(x,y,z, xStart, yStart, zStart, radius * radius) && this.isBlockValid(x,y,z) && canGenerate){
                         if(this.isBlockInCallingChunkExcludeEdge(x, y + 1, z)){
-                            this.chunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y + 1, z)] = Block.berryBush.ID;
+                            this.chunk.setBlock(x, y + 1, z, Block.berryBush.ID);
                         } else {
                             this.worldEarth.setBlock(x, y + 1, z, Block.berryBush.ID);
                         }

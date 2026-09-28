@@ -68,7 +68,7 @@ public final class BlockCampFire extends BlockHeating implements ITickable, IPar
             if (playerHeldItem == Item.stoneFragments.ID || player.getHeldBlock() == Block.torch.ID) {
                 campfireState.isLit = true;
                 Chunk chunk = world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
-                chunk.dirtyLighting = true;
+                chunk.hasDirtyLighting = true;
                 world.chunkController.updateChunkLighting(new ThreadUpdateLighting(world, chunk,x, y, z, this.ID, false));
                 world.addBlockState(x,y,z, MultiState.HEATABLE_BLOCK_STATE, new HeatableBlockLocation(Chunk.getBlockIndexFromCoordinates(x,y,z)));
                 world.notifyChunk(x,y,z);

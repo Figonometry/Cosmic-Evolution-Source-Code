@@ -98,7 +98,7 @@ public class Block {
     public static final Block campfire = new BlockCampFire(BlockIDList.CAMPFIRE, BlockTextureList.CAMPFIRE_BASE_TEXTURE, blockFolderPath + "campFireLit.txt", 3, 1);
     public static final Block sandstoneGravel = new BlockSand(BlockIDList.SANDSTONE_GRAVEL, BlockTextureList.SANDSTONE_GRAVEL, blockFolderPath + "sandstoneGravel.txt");
     public static final Block sandstoneSand = new BlockSand(BlockIDList.SANDSTONE_SAND, BlockTextureList.SANDSTONE_SAND, blockFolderPath + "sandstoneSand.txt");
-    public static final Block clay = new BlockClay(BlockIDList.CLAY, BlockTextureList.CLAY_TEXTURE, blockFolderPath + "clay.txt");
+    public static final Block clay = new BlockClay(BlockIDList.CLAY, BlockTextureList.CLAY_BLOCK_TEXTURE, blockFolderPath + "clay.txt");
     public static final Block itemClay = new BlockItemClay(BlockIDList.ITEM_CLAY, BlockTextureList.CLAY_TEXTURE, blockFolderPath + "itemClay.txt");
     public static final Block rawRedClayCookingPot = new Block(BlockIDList.RAW_RED_CLAY_COOKING_POT, BlockTextureList.CLAY_TEXTURE, blockFolderPath + "rawClayCookingPot.txt");
     public static final Block marbleStone = new BlockStone(BlockIDList.MARBLE_STONE, BlockTextureList.MARBLE_STONE, blockFolderPath + "marbleStone.txt");
@@ -660,8 +660,7 @@ public class Block {
 
     public void onRightClick(int x, int y, int z, World world, EntityPlayer player) {
         Chunk chunk = world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
-        if (chunk.blocks == null) {chunk.initChunk();}
-        if (chunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)] != air.ID && chunk.blocks[Chunk.getBlockIndexFromCoordinates(x,y,z)] != snowLayer.ID && !(Block.list[chunk.blocks[Chunk.getBlockIndexFromCoordinates(x, y, z)]] instanceof BlockWater)) {return;}
+        if (chunk.getBlockID(x,y,z) != air.ID && chunk.getBlockID(x,y,z) != snowLayer.ID && !(Block.list[chunk.getBlockID(x,y,z)] instanceof BlockWater)) {return;}
         if (!MouseListener.rightClickReleased)return;
 
         short heldItem = player.getHeldItem(); //Block all items that cannot be placed on the ground

@@ -13,13 +13,14 @@ public final class ChunkTestWorldHandler extends ChunkTerrainHandler {
     }
 
     @Override
-    public void setTerrain(short[] blocks, Chunk chunk) {
+    public void setTerrain(Chunk chunk) {
         int y;
-        chunk.empty = false;
-        for(int i = 0; i < blocks.length; i++){
+        for(int i = 0; i < Chunk.NUMBER_OF_BLOCKS; i++){
             y = chunk.getBlockYFromIndex(i);
             if(y <= 10){
-                blocks[i] = Block.sandstoneStone.ID;
+                chunk.setBlock(i, Block.sandstoneStone.ID);
+            } else {
+                chunk.setBlock(i, Block.air.ID);
             }
         }
     }
@@ -31,7 +32,7 @@ public final class ChunkTestWorldHandler extends ChunkTerrainHandler {
 
     @Override
     public void populateChunk(Chunk chunk) {
-        chunk.populated = true;
+        chunk.isPopulated = true;
     }
 
     @Override

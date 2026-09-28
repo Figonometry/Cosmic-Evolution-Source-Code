@@ -52,7 +52,7 @@ public final class GuiCraftingPottery extends GuiCrafting {
         for(int i = 0; i < this.selectableRecipes.length; i++){
             switch (i) {
                 case 0 -> this.selectableRecipes[i] = new RecipeSelector(Item.rawClayAdobeBrick.ID, selectableX, selectableY, selectableWidth, selectableHeight, Item.rawClayAdobeBrick.getDisplayName(Item.NULL_ITEM_REFERENCE, Item.NULL_ITEM_METADATA), new short[]{Item.straw.ID, Item.block.ID}, new int[]{1,1}, new short[]{Item.NULL_ITEM_METADATA, Block.itemClay.ID});
-                case 1 -> this.selectableRecipes[i] = new RecipeSelector(Item.block.ID, Block.rawRedClayCookingPot.ID,selectableX, selectableY, selectableWidth, selectableHeight, Item.block.getDisplayName(Block.rawRedClayCookingPot.ID, Item.NULL_ITEM_METADATA), new short[]{Item.block.ID}, new int[]{16}, new short[]{Block.itemClay.ID}, true);
+                case 1 -> this.selectableRecipes[i] = new RecipeSelector(Item.block.ID, Block.rawRedClayCookingPot.ID,selectableX, selectableY, selectableWidth, selectableHeight, Item.block.getDisplayName(Block.rawRedClayCookingPot.ID, Block.rawRedClayCookingPot.ID), new short[]{Item.block.ID}, new int[]{16}, new short[]{Block.itemClay.ID}, true);
             }
             selectableX += 64;
         }
@@ -445,8 +445,13 @@ public final class GuiCraftingPottery extends GuiCrafting {
 
         if(recipeSelector != null) {
             if (recipeSelector.meetsCriteriaToMakeRecipe(CosmicEvolution.instance.save.thePlayer)) {
+
                 CosmicEvolution.instance.save.activeWorld.setBlockAndNotify(this.x, this.y, this.z, Block.crafting3DItem.ID, true);
-                InWorld3DCraftingItem craftingBlock = new InWorld3DCraftingItem(Chunk.getBlockIndexFromCoordinates(x, y, z), Block.clay.ID, this.getInWorldCraftingRecipeName(recipeSelector.itemID), CosmicEvolution.instance.save.activeWorld.findChunkFromChunkCoordinates(this.x >> 5, this.y >> 5, this.z >> 5));
+
+                InWorld3DCraftingItem craftingBlock = new InWorld3DCraftingItem(Chunk.getBlockIndexFromCoordinates(x, y, z), Block.itemClay.ID,
+                        this.getInWorldCraftingRecipeName(recipeSelector.itemID),
+                        CosmicEvolution.instance.save.activeWorld.findChunkFromChunkCoordinates(this.x >> 5, this.y >> 5, this.z >> 5));
+
                 if (recipeSelector.itemID != Item.block.ID) {
                     craftingBlock.activateCraftingLayer(0);
                 } else if (recipeSelector.metadata == Block.rawRedClayCookingPot.ID) {

@@ -32,18 +32,20 @@ public final class WorldEarth extends World {
     public NoiseMap2D globalTemperatureMap;
     public NoiseMap2D treeDensityNoise1;
     public NoiseMap2D treeDensityNoise2;
+    public NoiseMap3D tunnelNoise;
+    public NoiseMap3D thicknessNoise;
 
     public WorldEarth(CosmicEvolution cosmicEvolution, int size) {
         super(cosmicEvolution,size);
         this.skyLightLevel = 15;
         this.skyColor = new float[]{0.52734375F, 0.8046875F, 0.91796875F};
         this.defaultSkyColor = new float[]{0.52734375F, 0.8046875F, 0.91796875F};
-        this.skyLightColor = new float[]{1, 1, 1, 0}; //ANY COLOR CANNOT BE 0
+        this.skyLightColor = 16777215; //ANY COLOR CANNOT BE 0
         this.worldFolder = new File(this.ce.save.saveFolder + "/worlds/worldEarth");
         if(!this.worldFolder.exists()){
             this.worldFolder.mkdirs();
         }
-        World.totalMaps = 17;
+        World.totalMaps = 19;
     }
 
     @Override
@@ -86,6 +88,10 @@ public final class WorldEarth extends World {
         this.treeDensityNoise1 = new NoiseMap2D(935, 935, 6, 32, 1, 32, longHasher.hash(this.ce.save.seed, "EarthLike16"));
         World.noiseMapsCompleted++;
         this.treeDensityNoise2 = new NoiseMap2D(438, 438, 5, 32, 1, 32, longHasher.hash(this.ce.save.seed, "EarthLike17"));
+        World.noiseMapsCompleted++;
+        this.tunnelNoise = new NoiseMap3D(256,256,256, 5, longHasher.hash(this.ce.save.seed, "EarthLike18"));
+        World.noiseMapsCompleted++;
+        this.thicknessNoise = new NoiseMap3D(128, 128, 128, 6, longHasher.hash(this.ce.save.seed, "EarthLike19"));
         World.noiseMapsCompleted++;
 
         World.worldLoadPhase = 1;
