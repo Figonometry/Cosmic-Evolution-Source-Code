@@ -22,7 +22,6 @@ import spacegame.core.eventlisteners.MouseListener;
 import spacegame.core.eventlisteners.WindowResizeListener;
 import spacegame.entity.*;
 import spacegame.gui.*;
-import spacegame.item.Item;
 import spacegame.item.ItemStack;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
@@ -41,7 +40,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.Random;
-import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -471,7 +469,7 @@ public final class CosmicEvolution implements Runnable {
                   //      this.save.activeWorld.findChunkFromChunkCoordinates(MathUtil.floorDouble(this.modelTest.x) >> 5, MathUtil.floorDouble(this.modelTest.y) >> 5, MathUtil.floorDouble(this.modelTest.z) >> 5).removeEntity(this.modelTest);
                   //      this.modelTest = null;
                   //  }
-                    Shader.cloudShader = this.renderEngine.reloadShader(Shader.cloudShader);
+                   // Shader.cloudShader = this.renderEngine.reloadShader(Shader.cloudShader);
 
                     KeyListener.setKeyReleased(GLFW.GLFW_KEY_U);
                 }

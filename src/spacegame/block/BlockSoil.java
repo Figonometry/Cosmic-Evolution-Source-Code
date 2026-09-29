@@ -24,7 +24,7 @@ public final class BlockSoil extends Block implements ITickable {
         if (CosmicEvolution.globalRand.nextInt(166) == 0) {
             byte blockLight = world.getBlockLightValue(x,y + 1, z);
             byte skyLight = world.getBlockSkyLightValue(x, y + 1,z);
-            if((blockLight >= 9 || skyLight >= 9) && !this.canBlockDecayGrass(x,y + 1,z,world)){
+            if((blockLight >= 9 || skyLight >= 9) && !this.canBlockNotGrowGrass(x,y + 1,z,world)){
                 world.setBlockAndNotify(x,y,z, getBlockIDForGrassSpread(this.ID), false);
             }
         }
@@ -121,7 +121,7 @@ public final class BlockSoil extends Block implements ITickable {
         }
     }
 
-    private boolean canBlockDecayGrass(int x, int y, int z, World world){
+    private boolean canBlockNotGrowGrass(int x, int y, int z, World world){
         short blockID = world.getBlockID(x, y, z);
         if(Block.list[blockID] instanceof BlockLog){
             LogState logState = (LogState) world.getBlockState(x,y,z, MultiState.LOG_STATE);
