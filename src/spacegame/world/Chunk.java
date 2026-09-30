@@ -374,6 +374,7 @@ public final class Chunk implements Comparable<Chunk> {
 
                     // write skylight (upper nibble), preserve blocklight (lower nibble)
                     this.light[index] = (byte)((this.light[index] & 0x0F) | (currentSky << 4));
+                    this.setBlockLightColor(x,y,z, this.parentWorld.skyLightColor);
                 }
             }
         }
@@ -424,6 +425,7 @@ public final class Chunk implements Comparable<Chunk> {
 
                 if (newValue > neighborSky) {
                     this.light[index] = (byte)((this.light[index] & 0x0F) | (newValue << 4));
+                    this.setBlockLightColor(nx, ny, nz, this.parentWorld.skyLightColor);
                     queue.add(new int[]{nx, ny, nz});
                 }
             }
