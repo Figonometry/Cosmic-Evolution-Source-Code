@@ -801,10 +801,29 @@ public class Block {
             }
         }
 
-        if(list[heldBlock].requireSolidBlockBelow){
+        if(list[heldBlock].requireSolidBlockBelow && heldBlock != torch.ID){
             if(!list[world.getBlockID(x,y - 1, z)].isSolid){
                 return;
             }
+        }
+
+        if(heldBlock == torch.ID && facingDirection != FACE_UP){
+            int blockID = 0;
+            switch (facingDirection) {
+                case FACE_NORTH -> {
+                    blockID = world.getBlockID(x + 1, y, z);
+                }
+                case FACE_SOUTH -> {
+                    blockID = world.getBlockID(x - 1, y, z);
+                }
+                case FACE_EAST ->  {
+                    blockID = world.getBlockID(x, y, z + 1);
+                }
+                case FACE_WEST -> {
+                    blockID = world.getBlockID(x, y, z - 1);
+                }
+            }
+            if(!list[blockID].isSolid)return;
         }
 
 

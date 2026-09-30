@@ -122,7 +122,7 @@ public final class CosmicEvolution implements Runnable {
         threadPool = new ThreadPoolExecutor(workerCount, workerCount, 0L, TimeUnit.MILLISECONDS, new PriorityBlockingQueue<>());
         this.dirtyChunksSchedulerThread = new Thread(new ThreadChunkJobScheduler());
         this.dirtyChunksSchedulerThread.start();
-        this.title = "Cosmic Evolution Alpha v0.55";
+        this.title = "Cosmic Evolution Alpha v0.56";
         GameSettings.loadOptionsFromFile(this.launcherDirectory);
         Block.registerAllBlockTooltips();
         EntityLiving.registerEntityLivingToolTip();
