@@ -357,7 +357,12 @@ public final class CosmicEvolution implements Runnable {
         if(this.save != null) {
             this.save.tick();
             this.renderEngine.loadTexturesFromList();
-            this.incrementTextureTimers();
+            if(!this.save.activeWorld.paused){
+                if(this.save.time % 3 == 0) {
+                    this.renderEngine.updateTextureFX();
+                }
+                this.incrementTextureTimers();
+            }
             ToolTipGroup.altToolTipIndex = this.save.time / (Timer.REAL_SECOND * 2);
             GuiInGame.fadeMessageText();
             if(this.save.time % 18000 == 0 && this.currentGui instanceof GuiInGame){
@@ -469,7 +474,7 @@ public final class CosmicEvolution implements Runnable {
                   //      this.save.activeWorld.findChunkFromChunkCoordinates(MathUtil.floorDouble(this.modelTest.x) >> 5, MathUtil.floorDouble(this.modelTest.y) >> 5, MathUtil.floorDouble(this.modelTest.z) >> 5).removeEntity(this.modelTest);
                   //      this.modelTest = null;
                   //  }
-                   // Shader.cloudShader = this.renderEngine.reloadShader(Shader.cloudShader);
+                  //  Shader.terrainShader = this.renderEngine.reloadShader(Shader.terrainShader);
 
                     KeyListener.setKeyReleased(GLFW.GLFW_KEY_U);
                 }

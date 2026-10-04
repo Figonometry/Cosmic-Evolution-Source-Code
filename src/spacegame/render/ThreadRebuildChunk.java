@@ -250,6 +250,9 @@ public final class ThreadRebuildChunk implements Runnable {
             case "CROP_GROWTH" -> {
                 renderBlocks.renderCrop(this.workingChunk, this.parentWorld, block, index, face);
             }
+            case "FIRE" ->{
+                renderBlocks.renderTransparentBlock(this.workingChunk, this.parentWorld, block, index, face, new int[2]);
+            }
 
             case "DOOR_PRIMITIVE" -> {
                 renderBlocks.renderDoorPrimitive(this.workingChunk, this.parentWorld, block, index, face);

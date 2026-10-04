@@ -386,12 +386,6 @@ void main()
                 correctPos.x = sinX(correctPos.x, correctPos.y, correctPos.z);
             }
             break;
-
-            case FIRE_TEXTURE://fire
-            fTexCoords.xy += vec2(sin(correctPos.x * 2.0 + float(time) * 0.1) * 0.05, cos(correctPos.y * 3.0 + float(time) * 0.15)  * 0.20);
-            fTexCoords.y = clamp(fTexCoords.y, 0.0, 1.0);
-            break;
-
         }
 
     vec3 normal = decompressNormal(normalAndSkyLightValue);

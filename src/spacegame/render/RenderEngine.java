@@ -7,6 +7,7 @@ import org.lwjgl.opengl.GL46;
 import org.lwjgl.stb.STBImage;
 import spacegame.core.CosmicEvolution;
 import spacegame.core.GameSettings;
+import spacegame.render.blocktextureFX.BlockTextureFX;
 import spacegame.render.texturelists.BlockTextureList;
 import spacegame.render.texturelists.ItemTextureList;
 import spacegame.util.MathUtil;
@@ -161,8 +162,8 @@ public final class RenderEngine {
                 GL46.glBindTexture(GL46.GL_TEXTURE_2D_ARRAY, textureArray);
                 GL46.glTexStorage3D(GL46.GL_TEXTURE_2D_ARRAY, 1, GL46.GL_RGBA8, 32, 32, arraySize);
 
-                GL46.glTexParameteri(GL46.GL_TEXTURE_2D_ARRAY, GL46.GL_TEXTURE_WRAP_S, filepath.contains("item") ? GL46.GL_CLAMP_TO_EDGE : GL46.GL_REPEAT);
-                GL46.glTexParameteri(GL46.GL_TEXTURE_2D_ARRAY, GL46.GL_TEXTURE_WRAP_T, filepath.contains("item") ? GL46.GL_CLAMP_TO_EDGE : GL46.GL_REPEAT);
+                GL46.glTexParameteri(GL46.GL_TEXTURE_2D_ARRAY, GL46.GL_TEXTURE_WRAP_S, filepath.contains("item") ? GL46.GL_CLAMP_TO_EDGE : GL46.GL_CLAMP_TO_EDGE);
+                GL46.glTexParameteri(GL46.GL_TEXTURE_2D_ARRAY, GL46.GL_TEXTURE_WRAP_T, filepath.contains("item") ? GL46.GL_CLAMP_TO_EDGE : GL46.GL_CLAMP_TO_EDGE);
                 GL46.glTexParameteri(GL46.GL_TEXTURE_2D_ARRAY, GL46.GL_TEXTURE_MIN_FILTER, GL46.GL_NEAREST_MIPMAP_LINEAR);
                 GL46.glTexParameteri(GL46.GL_TEXTURE_2D_ARRAY, GL46.GL_TEXTURE_MAG_FILTER, GL46.GL_NEAREST);
 
@@ -352,6 +353,24 @@ public final class RenderEngine {
             default -> {
                 throw new RuntimeException("UNSUPPORTED TEXTURE TYPE");
             }
+        }
+    }
+
+    public void updateTextureInTextureArray(int textureArray, int textureIndex, int width, int height, IntBuffer pixels){
+        GL46.glBindTexture(GL46.GL_TEXTURE_2D_ARRAY, textureArray);
+
+        GL46.glTexSubImage3D(GL46.GL_TEXTURE_2D_ARRAY, 0, 0, 0,
+                textureIndex, width, height, 1, GL46.GL_RGBA, GL46.GL_UNSIGNED_INT_8_8_8_8, pixels);
+
+
+        GL46.glBindTexture(GL46.GL_TEXTURE_2D_ARRAY, 0);
+    }
+
+    public void updateTextureFX(){
+        for(int i = 0; i < BlockTextureFX.blockTextureFXList.length; i++){
+            if(BlockTextureFX.blockTextureFXList[i] == null)continue;
+
+            BlockTextureFX.blockTextureFXList[i].update();
         }
     }
 
