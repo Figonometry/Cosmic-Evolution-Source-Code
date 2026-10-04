@@ -145,7 +145,7 @@ public class Block {
     public static final Block slateItemStone = new BlockItemStone(BlockIDList.SLATE_ITEM_STONE, BlockTextureList.SLATE_STONE, blockFolderPath + "slateItemStone.txt");
     public static final Block phylliteItemStone = new BlockItemStone(BlockIDList.PHYLLITE_ITEM_STONE, BlockTextureList.PHYLLITE_STONE, blockFolderPath + "phylliteItemStone.txt");
     public static final Block serpentiniteItemStone = new BlockItemStone(BlockIDList.SERPENTINITE_ITEM_STONE, BlockTextureList.SERPENTINITE_STONE, blockFolderPath + "serpentiniteItemStone.txt");
-    public static final Block flintItemStone = new BlockStone(BlockIDList.FLINT_ITEM_STONE, BlockTextureList.FLINT_TEXTURE, blockFolderPath + "flintItemStone.txt");
+    public static final Block flintItemStone = new BlockItemStone(BlockIDList.FLINT_ITEM_STONE, BlockTextureList.FLINT_TEXTURE, blockFolderPath + "flintItemStone.txt");
     public static final Block treeSeed = new BlockSapling(BlockIDList.TREE_SEED, BlockTextureList.SEED_TEXTURE, blockFolderPath + "treeSeed.txt");
     public static final Block sapling = new BlockSapling(BlockIDList.SAPLING, BlockTextureList.NO_TEXTURE, blockFolderPath + "sapling.txt");
     public static final Block torchUnlit = new BlockTorch(BlockIDList.TORCH_UNLIT, BlockTextureList.TORCH_UNLIT_TEXTURE, blockFolderPath + "torchUnlit.txt");
