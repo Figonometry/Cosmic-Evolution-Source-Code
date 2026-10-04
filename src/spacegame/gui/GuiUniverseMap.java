@@ -1,6 +1,7 @@
 package spacegame.gui;
 
 import org.joml.*;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL46;
 import spacegame.celestial.CelestialObject;
@@ -15,6 +16,8 @@ import spacegame.render.Shader;
 import spacegame.util.MathUtil;
 
 import java.lang.Math;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 
 public final class GuiUniverseMap extends Gui {
@@ -28,11 +31,90 @@ public final class GuiUniverseMap extends Gui {
     public static int skybox;
     public static float mapScale = 0.00000000000000000000001F;
     public static ArrayList<Vector3f> starPositions = new ArrayList<>();
-    public static ArrayList<Sun> stars = new ArrayList<Sun>();
+    public static ArrayList<Sun> stars = new ArrayList<>();
+    private static int vao = -1;
+    private static int vbo = -1;
+    private static int ebo = -1;
+    private static int elementCount = -1;
 
     public GuiUniverseMap(CosmicEvolution cosmicEvolution) {
         super(cosmicEvolution);
         this.selectedObject = CosmicEvolution.instance.everything.earth;
+
+
+
+        if(vao == -1 || vbo == -1 || ebo == -1 || elementCount == -1){
+            RenderEngine renderEngine = CosmicEvolution.instance.renderEngine;
+
+            vao = renderEngine.createVAO();
+            vbo = renderEngine.createBuffers();
+            ebo = renderEngine.createBuffers();
+
+            FloatBuffer vertexBuffer = BufferUtils.createFloatBuffer(262144);
+            IntBuffer elementBuffer = BufferUtils.createIntBuffer(262144);
+            int elementOffset = 0;
+
+            int positionSize = 3;
+            int vertexSizeBytes = 3 * Float.BYTES;
+
+            renderEngine.setVertexAttribute(vao, 0, positionSize, vertexSizeBytes, 0, vbo);
+
+
+            Vector3f vertex1;
+            Vector3f vertex2;
+            Vector3f vertex3;
+            Vector3f vertex4;
+            for(int latitude = -90; latitude < 90; latitude += 5){
+                for(int longitude = 0; longitude < 360; longitude += 5){
+                    vertex1 = this.getPositionOnSphere(latitude + 5, longitude, 50000);
+                    vertex2 = this.getPositionOnSphere(latitude + 5, longitude + 5, 50000);
+                    vertex3 = this.getPositionOnSphere(latitude, longitude,50000);
+                    vertex4 = this.getPositionOnSphere(latitude, longitude + 5, 50000);
+
+                    vertexBuffer.put(vertex4.x);
+                    vertexBuffer.put(vertex4.y);
+                    vertexBuffer.put(vertex4.z);
+                    vertexBuffer.put(vertex1.x);
+                    vertexBuffer.put(vertex1.y);
+                    vertexBuffer.put(vertex1.z);
+                    vertexBuffer.put(vertex2.x);
+                    vertexBuffer.put(vertex2.y);
+                    vertexBuffer.put(vertex2.z);
+                    vertexBuffer.put(vertex3.x);
+                    vertexBuffer.put(vertex3.y);
+                    vertexBuffer.put(vertex3.z);
+
+
+                    elementBuffer.put(elementOffset + 2);
+                    elementBuffer.put(elementOffset + 1);
+                    elementBuffer.put(elementOffset + 0);
+                    elementBuffer.put(elementOffset + 0);
+                    elementBuffer.put(elementOffset + 1);
+                    elementBuffer.put(elementOffset + 3);
+                    elementOffset += 4;
+                }
+            }
+
+            vertexBuffer.flip();
+            elementBuffer.flip();
+
+            elementCount = elementBuffer.limit();
+
+
+            GL46.glBindVertexArray(vao);
+            GL46.glBindBuffer(GL46.GL_ARRAY_BUFFER, vbo);
+            GL46.glBufferData(GL46.GL_ARRAY_BUFFER, vertexBuffer, GL46.GL_STATIC_DRAW);
+
+            GL46.glBindBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, ebo);
+            GL46.glBufferData(GL46.GL_ELEMENT_ARRAY_BUFFER, elementBuffer, GL46.GL_STATIC_DRAW);
+
+            GL46.glBindVertexArray(0);
+
+
+            Shader.universeSkybox.uploadVec3f("position", new Vector3f());
+            Shader.universeSkybox.uploadMat4f("uModel", new Matrix4f());
+            Shader.universeSkybox.uploadInt("cubeTexture", 0);
+        }
     }
 
     @Override
@@ -77,7 +159,7 @@ public final class GuiUniverseMap extends Gui {
         GL46.glEnable(GL46.GL_DEPTH_TEST);
         FontRenderer fontRenderer = FontRenderer.instance;
         int leftSide = -970;
-        fontRenderer.drawString(CosmicEvolution.instance.title + " (" + CosmicEvolution.instance.fps * -1 + " FPS)", leftSide, 460,-15, 16777215, 50, 255);
+        fontRenderer.drawString(CosmicEvolution.instance.title + " (" + CosmicEvolution.instance.fps + " FPS)", leftSide, 460,-15, 16777215, 50, 255);
         fontRenderer.drawString("Current Selected Object: " + this.selectedObject, leftSide, 430,-15, 16777215, 50, 255);
 
 
@@ -96,28 +178,15 @@ public final class GuiUniverseMap extends Gui {
 
 
     private void renderSkybox(){
-        RenderEngine.Tessellator tessellator = RenderEngine.Tessellator.instance;
-        Vector3f vertex1;
-        Vector3f vertex2;
-        Vector3f vertex3;
-        Vector3f vertex4;
-        for(int latitude = -90; latitude < 90; latitude += 5){
-            for(int longitude = 0; longitude < 360; longitude += 5){
-                vertex1 = this.getPositionOnSphere(latitude + 5, longitude, 50000);
-                vertex2 = this.getPositionOnSphere(latitude + 5, longitude + 5, 50000);
-                vertex3 = this.getPositionOnSphere(latitude, longitude,50000);
-                vertex4 = this.getPositionOnSphere(latitude, longitude + 5, 50000);
-                tessellator.addVertexCubeMap((vertex4.x), (vertex4.y),(vertex4.z));
-                tessellator.addVertexCubeMap((vertex1.x), (vertex1.y),(vertex1.z));
-                tessellator.addVertexCubeMap((vertex2.x), (vertex2.y),(vertex2.z));
-                tessellator.addVertexCubeMap((vertex3.x), (vertex3.y),(vertex3.z));
-                tessellator.addElementsCW();
-            }
-        }
+        GL46.glBindVertexArray(vao);
+        GL46.glBindTexture(GL46.GL_TEXTURE_CUBE_MAP, skybox);
+        Shader.universeSkybox.uploadMat4d("uProjection", universeCamera.projectionMatrix);
+        Shader.universeSkybox.uploadMat4d("uView", universeCamera.viewMatrix);
 
-        Shader.universeSkybox.uploadVec3f("position", new Vector3f());
-        Shader.universeSkybox.uploadMat4f("uModel", new Matrix4f());
-        tessellator.drawCubeMapTexture(skybox, Shader.universeSkybox, GuiUniverseMap.universeCamera);
+        GL46.glDrawElements(GL46.GL_TRIANGLES, elementCount, GL46.GL_UNSIGNED_INT, 0);
+
+        GL46.glBindTexture(GL46.GL_TEXTURE_CUBE_MAP, 0);
+        GL46.glBindVertexArray(0);
     }
 
     public Vector3f getPositionOnSphere(int latitude, int longitude, float R){
