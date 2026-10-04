@@ -8,6 +8,7 @@ import spacegame.core.CosmicEvolution;
 import spacegame.core.Sound;
 import spacegame.entity.EntityItem;
 import spacegame.entity.EntityParticle;
+import spacegame.gui.GuiInGame;
 import spacegame.item.Item;
 import spacegame.item.StoneToolMetadata;
 import spacegame.item.crafting.InWorldCraftingRecipe;
@@ -111,6 +112,16 @@ public final class InWorld3DCraftingItem extends BlockState{
     }
 
     public void removeSubVoxel(int index, double worldX, double worldY, double worldZ){
+        //Return if the required held item doesnt match, not all will require a held item
+        if(this.craftingRecipe.requiredHeldItem != Item.NULL_ITEM_REFERENCE) {
+            if (this.craftingRecipe.requiredHeldItem != CosmicEvolution.instance.save.thePlayer.getHeldItem() ||
+                    !this.craftingRecipe.heldBlockType.equals(Block.list[CosmicEvolution.instance.save.thePlayer.getHeldBlock()].getClassType())) {
+                GuiInGame.setMessageText("Hold " + Item.list[this.craftingRecipe.requiredHeldItem].getDisplayName(Item.NULL_ITEM_REFERENCE, Item.NULL_ITEM_METADATA), 16777215);
+                return;
+            }
+        }
+
+
         if(Block.list[this.materialBlockID] instanceof BlockItemStone){
             if(this.craftingRecipe.recipeIndices[this.activeCraftingLayer][index] != 1){
                 this.subVoxelIndices[this.activeCraftingLayer][index] = 0;

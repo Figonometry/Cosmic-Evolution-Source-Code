@@ -911,4 +911,8 @@ public class Block {
         return (int) (percentage * this.breakTimer);
     }
 
+    public String getClassType(){
+        return this.getClass().getSimpleName();
+    }
+
 }
