@@ -43,7 +43,7 @@ public final class BlockGrass extends Block implements ITickable {
             }
 
             if(getGrassLevel(this.ID) != GRASS_FULL && BlockSoil.getSoilFertility(this.ID) != BlockTextureList.SOIL_BARREN_FERTILITY_TEXTURE) {
-                if (world.getBlockLightValue(x, y + 1, z) >= 9 && !this.canBlockDecayGrass(x, y + 1, z, world)) {
+                if ((world.getBlockLightValue(x, y + 1, z) >= 9 || world.getBlockSkyLightValue(x, y + 1, z) >= 9) && !this.canBlockDecayGrass(x, y + 1, z, world)) {
                     if (world.chunkFullySurrounded(x >> 5, y >> 5, z >> 5)) {
                         world.setBlockAndNotify(x, y, z, getBlockIDForIncrememnt(this.ID), false);
                     }
