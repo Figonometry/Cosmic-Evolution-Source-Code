@@ -838,8 +838,9 @@ public class Block {
             chunk.addTickableBlockToArray((short) Chunk.getBlockIndexFromCoordinates(x,y,z));
         }
 
-
-        CosmicEvolution.instance.soundPlayer.playSound(x, y, z, new Sound(list[player.getHeldBlock()].stepSound, false, 1f), new Random().nextFloat(0.6F, 1));
+        if(player.getHeldBlock() != Block.NULL_BLOCK_REFERENCE) {
+            CosmicEvolution.instance.soundPlayer.playSound(x, y, z, new Sound(list[player.getHeldBlock()].stepSound, false, 1f), new Random().nextFloat(0.6F, 1));
+        }
         player.removeItemFromInventory();
         world.setBlockAndNotify(x, y, z, heldBlock, true);
         player.isSwinging = true;

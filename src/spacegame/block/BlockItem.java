@@ -94,6 +94,7 @@ public final class BlockItem extends BlockContainer {
             case ItemTextureList.FLINT_TEXTURE -> BlockTextureList.FLINT_TEXTURE;
             case ItemTextureList.GRANITE_TEXTURE -> BlockTextureList.GRANITE_STONE;
             case ItemTextureList.OBSIDIAN_TEXTURE -> BlockTextureList.OBSIDIAN_STONE;
+            case ItemTextureList.WOODEN_PAN -> BlockTextureList.ITEM_WOODEN_PAN;
 
             default -> this.textureID;
         };

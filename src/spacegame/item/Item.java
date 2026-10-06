@@ -52,6 +52,7 @@ public class Item {
     public static final Item seedSpeltWheat = new ItemSeed(ItemIDList.SEED_SPELT_WHEAT, modelFolderPath + "seedSpeltWheat.obj", "src/spacegame/assets/itemFiles/seedSpeltWheat.txt");
     public static final Item stoneSpearHead = new ItemTool(ItemIDList.STONE_SPEAR_HEAD, modelFolderPath + "stoneSpearHead.obj", "src/spacegame/assets/itemFiles/stoneSpearHead.txt");
     public static final Item stoneSpear = new ItemSpear(ItemIDList.STONE_SPEAR, modelFolderPath + "stoneSpear.obj", "src/spacegame/assets/itemFiles/stoneSpear.txt", Material.STONE);
+    public static final Item woodenPan = new Item(ItemIDList.WOODEN_PAN, modelFolderPath + "woodenPan.obj", "src/spacegame/assets/itemFiles/woodenPan.txt");
     public final short ID;
     public float hardness = 0;
     public boolean canPlaceAsItemBlock;

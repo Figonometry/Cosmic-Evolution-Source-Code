@@ -594,6 +594,7 @@ public final class RenderEngine {
                 case BlockTextureList.SEED_TEXTURE -> "seed";
                 case BlockTextureList.FLINT_TEXTURE -> "flint";
                 case BlockTextureList.CLAY_BLOCK_TEXTURE -> "clayBlock";
+                case BlockTextureList.ITEM_WOODEN_PAN -> "item-woodenPan";
                 default -> "missing";
             };
         } else if(textureFolderpath.contains("item")){
@@ -629,6 +630,7 @@ public final class RenderEngine {
                 case ItemTextureList.OBSIDIAN_TEXTURE -> "obsidianStone";
                 case ItemTextureList.FLINT_TEXTURE -> "flint";
                 case ItemTextureList.ANDESITE_TEXTURE -> "andesiteStone";
+                case ItemTextureList.WOODEN_PAN -> "woodenPan";
                 default -> "missing";
             };
         }

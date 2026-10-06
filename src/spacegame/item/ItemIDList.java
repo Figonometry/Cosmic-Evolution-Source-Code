@@ -42,7 +42,7 @@ public abstract class ItemIDList {
     public static final short SEED_SPELT_WHEAT = 38;
     public static final short STONE_SPEAR_HEAD = 39;
     public static final short STONE_SPEAR = 40;
-
+    public static final short WOODEN_PAN = 41;
 
 
 }

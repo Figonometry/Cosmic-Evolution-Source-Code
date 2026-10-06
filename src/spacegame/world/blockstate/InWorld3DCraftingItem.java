@@ -79,7 +79,7 @@ public final class InWorld3DCraftingItem extends BlockState{
 
         return Item.list[this.craftingRecipe.outputItemID].metadata;
     }
-
+    //This needs to be changed to go down along with up
     public void checkCurrentCraftingLayerForCompletion(){
         int[] currentCraftingLayer = this.subVoxelIndices[this.activeCraftingLayer];
         int[] currentCraftingLayerRecipe = this.craftingRecipe.recipeIndices[this.activeCraftingLayer];
