@@ -90,8 +90,7 @@ public final class InWorld3DCraftingItem extends BlockState{
             }
         }
 
-
-        if(this.activeCraftingLayer == this.craftingRecipe.maxLayers){
+        if(this.activeCraftingLayer == this.craftingRecipe.stoppingLayer){
 
             if(this.craftingRecipe.outputBlockID != Block.NULL_BLOCK_REFERENCE){
                 this.chunk.setBlockAndNotify(this.chunk.getBlockXFromIndex(this.indexInChunk), this.chunk.getBlockYFromIndex(this.indexInChunk), this.chunk.getBlockZFromIndex(this.indexInChunk), this.craftingRecipe.outputBlockID);
@@ -107,37 +106,56 @@ public final class InWorld3DCraftingItem extends BlockState{
             return;
         }
 
-
-        this.activeCraftingLayer++;
+        //Decrement if it's crafted from above otherwise increment up
+        this.activeCraftingLayer += !this.craftingRecipe.isCraftedFromTop ? 1 : -1;
     }
 
     public void removeSubVoxel(int index, double worldX, double worldY, double worldZ){
         //Return if the required held item doesnt match, not all will require a held item
+        short playerHeldBlock = CosmicEvolution.instance.save.thePlayer.getHeldBlock();
+        short playerHeldItem = CosmicEvolution.instance.save.thePlayer.getHeldItem();
+        boolean usesHeldBlock = !this.craftingRecipe.heldBlockType.equals("");
+
         if(this.craftingRecipe.requiredHeldItem != Item.NULL_ITEM_REFERENCE) {
-            if (this.craftingRecipe.requiredHeldItem != CosmicEvolution.instance.save.thePlayer.getHeldItem() ||
-                    !this.craftingRecipe.heldBlockType.equals(Block.list[CosmicEvolution.instance.save.thePlayer.getHeldBlock()].getClassType())) {
-                GuiInGame.setMessageText("Hold " + Item.list[this.craftingRecipe.requiredHeldItem].getDisplayName(Item.NULL_ITEM_REFERENCE, Item.NULL_ITEM_METADATA), 16777215);
+
+            if (this.craftingRecipe.requiredHeldItem != playerHeldItem) {
+                GuiInGame.setMessageText("Hold the correct item in your hand", 16777215);
                 return;
+            }
+
+            if(usesHeldBlock) {
+                if (!this.craftingRecipe.heldBlockType.equals(Block.list[playerHeldBlock != Block.NULL_BLOCK_REFERENCE ? playerHeldBlock : BlockIDList.AIR].getClassType())) {
+
+                    GuiInGame.setMessageText("Hold the correct item in your hand", 16777215);
+                    return;
+
+                }
             }
         }
 
 
-        if(Block.list[this.materialBlockID] instanceof BlockItemStone){
+        if(Block.list[this.materialBlockID != Block.NULL_BLOCK_REFERENCE ? this.materialBlockID : 0] instanceof BlockItemStone || this.craftingRecipe.recipeName.equals("woodenPanStage1") || this.craftingRecipe.recipeName.equals("woodenPan")){
             if(this.craftingRecipe.recipeIndices[this.activeCraftingLayer][index] != 1){
                 this.subVoxelIndices[this.activeCraftingLayer][index] = 0;
-                this.generateParticlesOnStoneSubVoxelBreak(worldX, worldY, worldZ);
-                this.removeNonConnectedMaterial();
+                if(Block.list[this.materialBlockID != Block.NULL_BLOCK_REFERENCE ? this.materialBlockID : 0] instanceof BlockItemStone) {
+                    this.removeNonConnectedMaterial();
+                }
+
+                if(this.materialBlockID != Block.clay.ID) {
+                    this.generateParticlesOnStoneSubVoxelBreak(worldX, worldY, worldZ);
+                }
             }
         } else {
             this.subVoxelIndices[this.activeCraftingLayer][index] = 0;
         }
+        //Fix sound to play a sound associated to the crafting recipe if no material id is specified
         CosmicEvolution.instance.soundPlayer.playSound(CosmicEvolution.instance.save.thePlayer.x, CosmicEvolution.instance.save.thePlayer.y, CosmicEvolution.instance.save.thePlayer.z, new Sound(Block.list[this.materialBlockID != RenderEngine.NULL_TEXTURE ? this.materialBlockID : this.itemTextureID].getStepSound(this.chunk.getBlockXFromIndex(this.indexInChunk), this.chunk.getBlockYFromIndex(this.indexInChunk), this.chunk.getBlockZFromIndex(this.indexInChunk)), false, 1f),new Random().nextFloat(0.6F, 1));
         this.checkCurrentCraftingLayerForCompletion();
         this.chunk.markDirty();
     }
 
     public void addSubVoxel(int index){
-        if(this.subVoxelIndices[this.activeCraftingLayer][index] == 1 || Block.list[this.materialBlockID] instanceof BlockItemStone)return;
+        if(this.subVoxelIndices[this.activeCraftingLayer][index] == 1 || Block.list[this.materialBlockID != Block.NULL_BLOCK_REFERENCE ? this.materialBlockID : 0] instanceof BlockItemStone)return;
 
 
         this.subVoxelIndices[this.activeCraftingLayer][index] = 1;
@@ -170,7 +188,6 @@ public final class InWorld3DCraftingItem extends BlockState{
 
         } catch (Exception e){
             e.printStackTrace();
-            return;
         }
     }
 

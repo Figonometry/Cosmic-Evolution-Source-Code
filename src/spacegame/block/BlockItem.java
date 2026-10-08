@@ -9,9 +9,12 @@ import spacegame.gui.ToolTip;
 import spacegame.gui.ToolTipGroup;
 import spacegame.item.Item;
 import spacegame.item.ItemIDList;
+import spacegame.item.crafting.InWorldCraftingRecipe;
 import spacegame.render.texturelists.BlockTextureList;
 import spacegame.render.texturelists.ItemTextureList;
 import spacegame.render.texturelists.MouseAndKeyIconTextureList;
+import spacegame.world.Chunk;
+import spacegame.world.blockstate.InWorld3DCraftingItem;
 import spacegame.world.worldtypes.World;
 import spacegame.world.blockstate.ChestLocation;
 import spacegame.world.blockstate.MultiState;
@@ -48,6 +51,25 @@ public final class BlockItem extends BlockContainer {
         if(playerHeldItem != Item.NULL_ITEM_REFERENCE){
             ChestLocation chestLocation = (ChestLocation) world.getBlockState(x,y,z, MultiState.CHEST_STATE);
             Item.list[chestLocation.inventory.itemStacks[0].item.ID].onItemBlockRightClick(x,y,z, world, player);
+        }
+
+        if(playerHeldItem == Item.stoneHandAxe.ID && chest.inventory.itemStacks[0].item.ID == Item.woodenPanStage1.ID){
+            chest.inventory.itemStacks[0].clearDataFromStack();
+
+            world.clearAllBlockStates(x,y,z);
+
+            InWorld3DCraftingItem woodenPan = new InWorld3DCraftingItem(Chunk.getBlockIndexFromCoordinates(x,y,z), Block.woodenPan.ID, InWorldCraftingRecipe.woodenPanFinal,
+                    world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5));
+
+            woodenPan.activeCraftingLayer = 15;
+            for(int i = 1; i <= 15; i++){
+                woodenPan.activateCraftingLayer(i);
+            }
+
+            woodenPan.activateIndicesFromImage("src/spacegame/assets/craftingRecipes/woodenPan/final/0.png", 0);
+
+            world.addBlockState(x,y,z, MultiState.CRAFTING_3D_ITEM_STATE, woodenPan);
+            world.setBlockAndNotify(x,y,z, Block.crafting3DItem.ID, true);
         }
     }
 
@@ -104,7 +126,7 @@ public final class BlockItem extends BlockContainer {
 
     @Override
     public void registerBlockTooltips(){
-        this.tooltips = new ToolTipGroup[4][1];
+        this.tooltips = new ToolTipGroup[5][1];
 
         for(int i = 0; i < this.tooltips.length; i++){
             for(int k = 0; k < this.tooltips[i].length; k++){
@@ -162,6 +184,16 @@ public final class BlockItem extends BlockContainer {
 
         this.tooltips[3][0].addToolTip(reedRightClick);
         this.tooltips[3][0].addToolTip(reedRightClick2);
+
+
+        ToolTip woodenPanRightClick = new ToolTip();
+        woodenPanRightClick.addMouseIcon(MouseAndKeyIconTextureList.RIGHT_CLICK);
+        woodenPanRightClick.addText("with");
+        woodenPanRightClick.addItemID(ItemIDList.STONE_HAND_AXE);
+        woodenPanRightClick.addText("to craft");
+        woodenPanRightClick.addItemID(ItemIDList.WOODEN_PAN);
+
+        this.tooltips[4][0].addToolTip(woodenPanRightClick);
     }
 
     @Override
@@ -181,6 +213,9 @@ public final class BlockItem extends BlockContainer {
             }
             case ItemIDList.REEDS -> {
                 return this.tooltips[3];
+            }
+            case ItemIDList.WOODEN_PAN_STAGE_1 -> {
+                return this.tooltips[4];
             }
         }
 

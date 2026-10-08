@@ -36,7 +36,7 @@ public class Block {
     public static final Block grassBarrenFertilityLargePatch = new BlockGrass(BlockIDList.GRASS_BARREN_FERTILITY_LARGE_PATCH, BlockTextureList.GRASS_FULL_SIDE_TEXTURE, blockFolderPath + "grassBarrenSoil.txt");
     public static final Block barrenSoil = new BlockSoil(BlockIDList.BARREN_SOIL, BlockTextureList.SOIL_BARREN_FERTILITY_TEXTURE,blockFolderPath + "soil.txt");
     public static final Block water = new BlockWater(BlockIDList.WATER, BlockTextureList.WATER_TOP_TEXTURE, blockFolderPath + "water.txt");
-    public static final Block asdfoasdfadsfa = null;
+    public static final Block woodenPan = new Block(BlockIDList.WOODEN_PAN, BlockTextureList.ITEM_WOODEN_PAN, blockFolderPath + "woodenPan.txt");
     public static final Block snow = new BlockSnow(BlockIDList.SNOW, BlockTextureList.SNOW_TEXTURE, blockFolderPath + "snow.txt");
     public static final Block asdfadfasd = null;
     public static final Block oakLog = new BlockOakLog(BlockIDList.OAK_LOG, BlockTextureList.OAK_LOG_SIDE_TEXTURE, blockFolderPath + "oakLog.txt");
@@ -149,7 +149,7 @@ public class Block {
     public static final Block treeSeed = new BlockSapling(BlockIDList.TREE_SEED, BlockTextureList.SEED_TEXTURE, blockFolderPath + "treeSeed.txt");
     public static final Block sapling = new BlockSapling(BlockIDList.SAPLING, BlockTextureList.NO_TEXTURE, blockFolderPath + "sapling.txt");
     public static final Block torchUnlit = new BlockTorch(BlockIDList.TORCH_UNLIT, BlockTextureList.TORCH_UNLIT_TEXTURE, blockFolderPath + "torchUnlit.txt");
-    public static final Block unused_field_72 = null;
+    public static final Block nullField = null;
     public static final Block unused_field_73 = null;
     public static final Block unused_field_74 = null;
     public static final Block unused_field_75 = null;

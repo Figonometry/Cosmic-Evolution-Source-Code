@@ -33,7 +33,7 @@ public abstract class BlockContainer extends Block {
         if(heldBlock == itemBlock.ID){
             chestLocation.inventory.itemStacks[0].count = 1;
             chestLocation.inventory.itemStacks[0].item = Item.list[heldItem];
-            chestLocation.inventory.itemStacks[0].metadata = player.getHeldBlock();
+            chestLocation.inventory.itemStacks[0].metadata = player.getHeldMetadata();
             chestLocation.inventory.itemStacks[0].durability = player.getHeldItemDurability();
             chestLocation.inventory.itemStacks[0].decayTime = player.getHeldItemDecayTime();
         }

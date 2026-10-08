@@ -34,6 +34,7 @@ public class RenderBlocks {
     public ArrayList<int[]> brickPileBrickCounts = new ArrayList<>();
     public static final int[] craftingTextureOffsetX = new int[144];
     public static final int[] craftingTextureOffsetY = new int[144];
+    public static final int[] craftingTextureOffsetVertical = new int[16];
     public static final int TOP_FACE = 0;
     public static final int BOTTOM_FACE = 1;
     public static final int NORTH_FACE = 2;
@@ -46,6 +47,11 @@ public class RenderBlocks {
             Random rand = new Random();
             craftingTextureOffsetX[i] =  rand.nextInt(0, 31);
             craftingTextureOffsetY[i] =  rand.nextInt(0, 31);
+        }
+
+        for(int i = 0; i < 16; i++){
+            Random rand = new Random();
+            craftingTextureOffsetVertical[i] = rand.nextInt(5, 16);
         }
     }
 
@@ -1039,7 +1045,7 @@ public class RenderBlocks {
         ChestLocation chestLocation = (ChestLocation) chunk.getBlockState(index, MultiState.CHEST_STATE);
         if(chestLocation == null)return;
 
-        ModelLoader model = chestLocation.inventory.itemStacks[0].item.getItemModel(chestLocation.inventory.itemStacks[0].item.metadata).copyModel();
+        ModelLoader model = chestLocation.inventory.itemStacks[0].item.getItemModel(chestLocation.inventory.itemStacks[0].metadata).copyModel();
 
         if(chestLocation.inventory.itemStacks[0].item instanceof ItemTool){
             model.rotateModel(90, 0, 0, 1);
@@ -1089,11 +1095,19 @@ public class RenderBlocks {
 
         InWorld3DCraftingItem craftingBlock = (InWorld3DCraftingItem) chunk.getBlockState(index, MultiState.CRAFTING_3D_ITEM_STATE);
         block = craftingBlock.materialBlockID != RenderEngine.NULL_TEXTURE ? craftingBlock.materialBlockID : Block.crafting3DItem.ID;
+        float textureID;
+
+        if(craftingBlock.materialBlockID != RenderEngine.NULL_TEXTURE){
+            textureID = Block.list[craftingBlock.materialBlockID].getBlockTexture(chunk.getBlockXFromIndex(index), chunk.getBlockYFromIndex(index), chunk.getBlockZFromIndex(index), face);
+        } else {
+            textureID = Block.crafting3DItem.getBlockTexture(chunk.getBlockXFromIndex(index), chunk.getBlockYFromIndex(index), chunk.getBlockZFromIndex(index), craftingBlock.itemTextureID);
+        }
 
         Vector3f translationVector = new Vector3f();
         for(int i = 0; i < 16; i++){
 
             translationVector.y = i / 16f;
+
 
             for(int j = 0; j < 144; j++){
                 if(craftingBlock.subVoxelIndices[i][j] == 0)continue;
@@ -1101,7 +1115,7 @@ public class RenderBlocks {
 
 
                 translationVector.x = ((j % 12) * 0.0625f) + 0.125f;
-                translationVector.z = ((j / 12) * 0.0625f) + 0.125f; //0.046875 is the portion of the used block space divided by 16 for each voxel
+                translationVector.z = ((j / 12) * 0.0625f) + 0.125f;
                 blockModel = BlockModelList.crafting3DItemVoxelModel.copyModel();
                 blockModel.translateModel(translationVector.x, translationVector.y, translationVector.z);
                 modelFace = blockModel.getModelFace(face);
@@ -1111,6 +1125,18 @@ public class RenderBlocks {
                 //alter the copy's UVs and pass to the renderer method
                 int pixelShiftX = craftingTextureOffsetX[j];
                 int pixelShiftY = craftingTextureOffsetY[j];
+
+                int verticalFactor = craftingTextureOffsetVertical[i];
+
+                if(pixelShiftX + verticalFactor < 31){
+                    pixelShiftX += verticalFactor;
+                }
+
+                if(pixelShiftY + verticalFactor < 31){
+                    pixelShiftY += verticalFactor;
+                }
+
+
                 float xUVLow = pixelShiftX / 32f;
                 float yUVLow = pixelShiftY / 32f;
                 float xUVHigh = xUVLow + 2/32f;
@@ -1121,7 +1147,7 @@ public class RenderBlocks {
                 }
 
 
-                this.renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
+                this.renderOpaqueFaceDirect(chunk, world, block, index, face, modelFace, new int[2], textureID);
             }
         }
 

@@ -2464,8 +2464,8 @@ public abstract class World {
 
 
 
-    public void notifyChunk(int x, int y, int z){
-        Chunk chunk = this.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5);
+    public void notifyChunk(int blockX, int blockY, int blockZ){
+        Chunk chunk = this.findChunkFromChunkCoordinates(blockX >> 5, blockY >> 5, blockZ >> 5);
         if(chunk == null)return;
 
         chunk.markDirty();

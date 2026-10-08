@@ -5,6 +5,9 @@ import spacegame.entity.EntityPlayer;
 import spacegame.gui.ToolTip;
 import spacegame.gui.ToolTipGroup;
 import spacegame.item.Item;
+import spacegame.render.RenderEngine;
+import spacegame.render.texturelists.BlockTextureList;
+import spacegame.render.texturelists.ItemTextureList;
 import spacegame.render.texturelists.MouseAndKeyIconTextureList;
 import spacegame.world.worldtypes.World;
 import spacegame.world.blockstate.InWorld3DCraftingItem;
@@ -22,7 +25,7 @@ public final class BlockCrafting3D extends Block {
         if(craftingBlock == null)return this.stepSound; //This shouldnt be null but I'm checking it anyways
 
 
-        return Block.list[craftingBlock.materialBlockID].getStepSound(x,y,z);
+        return Block.list[craftingBlock.materialBlockID != RenderEngine.NULL_TEXTURE ? craftingBlock.materialBlockID : Block.basaltStone.ID].getStepSound(x,y,z);
     }
 
     @Override
@@ -57,6 +60,12 @@ public final class BlockCrafting3D extends Block {
     @Override
     public ToolTipGroup[] getBlockToolTips(int x, int y, int z, World world, EntityPlayer player){
         return this.tooltips[0];
+    }
+
+
+    @Override
+    public int getBlockTexture(int x, int y, int z, int texture) {
+        return Block.itemBlock.getBlockTexture(x,y,z, texture);
     }
 
 

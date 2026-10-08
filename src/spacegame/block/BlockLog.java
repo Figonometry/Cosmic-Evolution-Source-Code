@@ -11,9 +11,12 @@ import spacegame.gui.ToolTipGroup;
 import spacegame.item.Item;
 import spacegame.item.ItemAxe;
 import spacegame.item.ItemIDList;
+import spacegame.item.crafting.InWorldCraftingRecipe;
 import spacegame.render.model.ModelLoader;
+import spacegame.render.texturelists.ItemTextureList;
 import spacegame.render.texturelists.MouseAndKeyIconTextureList;
 import spacegame.world.Chunk;
+import spacegame.world.blockstate.InWorld3DCraftingItem;
 import spacegame.world.worldtypes.World;
 import spacegame.world.blockstate.LogState;
 import spacegame.world.blockstate.MultiState;
@@ -30,6 +33,29 @@ public abstract class BlockLog extends Block {
         world.setBlockAndNotify(x,y,z, Block.air.ID, false);
         this.notifyNearbyLeafBlocks(x,y,z, world);
         player.reduceHeldItemDurability();
+    }
+
+    @Override
+    public void handleSpecialRightClickFunctions(int x, int y, int z, World world, EntityPlayer player){
+        short playerHeldItem = player.getHeldItem();
+        if(playerHeldItem == Item.stoneHandAxe.ID){
+            if(world.getBlockID(x - 1, y, z) == Block.air.ID && world.getBlockID(x + 1, y, z) == Block.air.ID &&
+                    world.getBlockID(x, y + 1, z) == Block.air.ID && world.getBlockID(x, y, z - 1) == Block.air.ID && world.getBlockID(x, y, z + 1) == Block.air.ID){
+
+                InWorld3DCraftingItem woodenPanStage1 = new InWorld3DCraftingItem(Chunk.getBlockIndexFromCoordinates(x,y,z), Block.woodenPan.ID, InWorldCraftingRecipe.woodenPanStage1,
+                        world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5));
+
+                for(int i = 0; i <= 15; i++){
+                    woodenPanStage1.activateCraftingLayer(i);
+                }
+
+                woodenPanStage1.activeCraftingLayer = 15;
+
+                world.clearAllBlockStates(x,y,z);
+                world.setBlockAndNotify(x,y,z, Block.crafting3DItem.ID, true);
+                world.addBlockState(x,y,z, MultiState.CRAFTING_3D_ITEM_STATE, woodenPanStage1);
+            }
+        }
     }
 
     @Override
@@ -268,7 +294,16 @@ public abstract class BlockLog extends Block {
         leftClickWithShift.addItemID(ItemIDList.FIREWOOD);
 
 
+        ToolTip rightClickAroundAir = new ToolTip();
+        rightClickAroundAir.addMouseIcon(MouseAndKeyIconTextureList.RIGHT_CLICK);
+        rightClickAroundAir.addText("with air surrounding the block and while holding");
+        rightClickAroundAir.addItemID(ItemIDList.STONE_HAND_AXE);
+        rightClickAroundAir.addText("to start crafting");
+        rightClickAroundAir.addItemID(ItemIDList.WOODEN_PAN);
+
+
         this.tooltips[0][0].addToolTip(leftClickWithShift);
+        this.tooltips[0][0].addToolTip(rightClickAroundAir);
     }
 
     @Override
