@@ -8,6 +8,7 @@ import spacegame.core.CosmicEvolution;
 import spacegame.core.Sound;
 import spacegame.entity.EntityItem;
 import spacegame.entity.EntityParticle;
+import spacegame.entity.EntityPlayer;
 import spacegame.gui.GuiInGame;
 import spacegame.item.Item;
 import spacegame.item.StoneToolMetadata;
@@ -110,20 +111,51 @@ public final class InWorld3DCraftingItem extends BlockState{
         this.activeCraftingLayer += !this.craftingRecipe.isCraftedFromTop ? 1 : -1;
     }
 
-    public void removeSubVoxel(int index, double worldX, double worldY, double worldZ){
+
+    private int[] createIndicesPlayerIsLookingAt(int index, int voxelSelectionMode){
+        int[] indicesPlayerIsLookingAt = new int[voxelSelectionMode == 1 ? 1 : voxelSelectionMode == 2 ? 4 : 9];
+
+        switch (voxelSelectionMode) {
+            case 1 -> {
+                indicesPlayerIsLookingAt[0] = index;
+            }
+            case 2 -> {
+                indicesPlayerIsLookingAt[0] = index;
+                indicesPlayerIsLookingAt[1] = (index % 12) + 1 <= 11 ? index + 1 : Integer.MAX_VALUE;
+                indicesPlayerIsLookingAt[2] = (index % 12) <= 11 ? index + 12 : Integer.MAX_VALUE;
+                indicesPlayerIsLookingAt[3] = (index % 12) + 1 <= 11 ? index + 12 + 1 : Integer.MAX_VALUE;
+            }
+            case 3 -> {
+                indicesPlayerIsLookingAt[0] = index;
+                indicesPlayerIsLookingAt[1] = (index % 12) + 1 <= 11 ? index + 1 : Integer.MAX_VALUE;
+                indicesPlayerIsLookingAt[2] = (index % 12) + 2 <= 11 ? index + 2 : Integer.MAX_VALUE;
+                indicesPlayerIsLookingAt[3] = (index % 12) <= 11 ? index + 12 : Integer.MAX_VALUE;
+                indicesPlayerIsLookingAt[4] = (index % 12) + 1 <= 11 ? index + 12 + 1 : Integer.MAX_VALUE;
+                indicesPlayerIsLookingAt[5] = (index % 12) + 2 <= 11 ? index + 12 + 2 : Integer.MAX_VALUE;
+                indicesPlayerIsLookingAt[6] = (index % 12) <= 11 ? index + 24 : Integer.MAX_VALUE;
+                indicesPlayerIsLookingAt[7] = (index % 12) + 1 <= 11 ? index + 24 + 1 : Integer.MAX_VALUE;
+                indicesPlayerIsLookingAt[8] = (index % 12) + 2 <= 11 ? index + 24 + 2 : Integer.MAX_VALUE;
+            }
+        }
+
+        return indicesPlayerIsLookingAt;
+    }
+
+    public void removeSubVoxel(int index, double worldX, double worldY, double worldZ) {
+        EntityPlayer player = CosmicEvolution.instance.save.thePlayer;
         //Return if the required held item doesnt match, not all will require a held item
-        short playerHeldBlock = CosmicEvolution.instance.save.thePlayer.getHeldBlock();
-        short playerHeldItem = CosmicEvolution.instance.save.thePlayer.getHeldItem();
+        short playerHeldBlock = player.getHeldBlock();
+        short playerHeldItem = player.getHeldItem();
         boolean usesHeldBlock = !this.craftingRecipe.heldBlockType.equals("");
 
-        if(this.craftingRecipe.requiredHeldItem != Item.NULL_ITEM_REFERENCE) {
+        if (this.craftingRecipe.requiredHeldItem != Item.NULL_ITEM_REFERENCE) {
 
             if (this.craftingRecipe.requiredHeldItem != playerHeldItem) {
                 GuiInGame.setMessageText("Hold the correct item in your hand", 16777215);
                 return;
             }
 
-            if(usesHeldBlock) {
+            if (usesHeldBlock) {
                 if (!this.craftingRecipe.heldBlockType.equals(Block.list[playerHeldBlock != Block.NULL_BLOCK_REFERENCE ? playerHeldBlock : BlockIDList.AIR].getClassType())) {
 
                     GuiInGame.setMessageText("Hold the correct item in your hand", 16777215);
@@ -134,31 +166,58 @@ public final class InWorld3DCraftingItem extends BlockState{
         }
 
 
-        if(Block.list[this.materialBlockID != Block.NULL_BLOCK_REFERENCE ? this.materialBlockID : 0] instanceof BlockItemStone || this.craftingRecipe.recipeName.equals("woodenPanStage1") || this.craftingRecipe.recipeName.equals("woodenPan")){
-            if(this.craftingRecipe.recipeIndices[this.activeCraftingLayer][index] != 1){
-                this.subVoxelIndices[this.activeCraftingLayer][index] = 0;
-                if(Block.list[this.materialBlockID != Block.NULL_BLOCK_REFERENCE ? this.materialBlockID : 0] instanceof BlockItemStone) {
-                    this.removeNonConnectedMaterial();
-                }
+        //Sized based on voxel selection mode of either 1, 4, or 9
+        int[] indices = this.createIndicesPlayerIsLookingAt(index, player.voxelSelectionMode);
+        boolean hasBrokenSubVoxel = false;
 
-                if(this.materialBlockID != Block.clay.ID) {
-                    this.generateParticlesOnStoneSubVoxelBreak(worldX, worldY, worldZ);
+        for (int i = 0; i < indices.length; i++) {
+            if (i >= this.subVoxelIndices[this.activeCraftingLayer].length) continue;
+            index = indices[i];
+            if (index > 143 || this.subVoxelIndices[this.activeCraftingLayer][index] == 0) continue;
+
+
+            if (Block.list[this.materialBlockID != Block.NULL_BLOCK_REFERENCE ? this.materialBlockID : 0] instanceof BlockItemStone || this.craftingRecipe.recipeName.equals("woodenPanStage1") || this.craftingRecipe.recipeName.equals("woodenPan")) {
+                if (this.craftingRecipe.recipeIndices[this.activeCraftingLayer][index] != 1) {
+                    this.subVoxelIndices[this.activeCraftingLayer][index] = 0;
+                    hasBrokenSubVoxel = true;
+                    if (Block.list[this.materialBlockID != Block.NULL_BLOCK_REFERENCE ? this.materialBlockID : 0] instanceof BlockItemStone) {
+                        this.removeNonConnectedMaterial();
+                    }
                 }
+            } else {
+                this.subVoxelIndices[this.activeCraftingLayer][index] = 0;
+                hasBrokenSubVoxel = true;
             }
-        } else {
-            this.subVoxelIndices[this.activeCraftingLayer][index] = 0;
+
         }
-        //Fix sound to play a sound associated to the crafting recipe if no material id is specified
-        CosmicEvolution.instance.soundPlayer.playSound(CosmicEvolution.instance.save.thePlayer.x, CosmicEvolution.instance.save.thePlayer.y, CosmicEvolution.instance.save.thePlayer.z, new Sound(Block.list[this.materialBlockID != RenderEngine.NULL_TEXTURE ? this.materialBlockID : this.itemTextureID].getStepSound(this.chunk.getBlockXFromIndex(this.indexInChunk), this.chunk.getBlockYFromIndex(this.indexInChunk), this.chunk.getBlockZFromIndex(this.indexInChunk)), false, 1f),new Random().nextFloat(0.6F, 1));
-        this.checkCurrentCraftingLayerForCompletion();
-        this.chunk.markDirty();
+
+        if (hasBrokenSubVoxel) {
+            if (this.materialBlockID != Block.clay.ID) {
+                this.generateParticlesOnStoneSubVoxelBreak(worldX, worldY, worldZ);
+            }
+
+            //Fix sound to play a sound associated to the crafting recipe if no material id is specified
+            CosmicEvolution.instance.soundPlayer.playSound(CosmicEvolution.instance.save.thePlayer.x, CosmicEvolution.instance.save.thePlayer.y, CosmicEvolution.instance.save.thePlayer.z, new Sound(Block.list[this.materialBlockID != RenderEngine.NULL_TEXTURE ? this.materialBlockID : this.itemTextureID].getStepSound(this.chunk.getBlockXFromIndex(this.indexInChunk), this.chunk.getBlockYFromIndex(this.indexInChunk), this.chunk.getBlockZFromIndex(this.indexInChunk)), false, 1f), new Random().nextFloat(0.6F, 1));
+            this.checkCurrentCraftingLayerForCompletion();
+            this.chunk.markDirty();
+        }
     }
 
     public void addSubVoxel(int index){
         if(this.subVoxelIndices[this.activeCraftingLayer][index] == 1 || Block.list[this.materialBlockID != Block.NULL_BLOCK_REFERENCE ? this.materialBlockID : 0] instanceof BlockItemStone)return;
 
+        EntityPlayer player = CosmicEvolution.instance.save.thePlayer;
+        //Sized based on voxel selection mode of either 1, 4, or 9
+        int[] indices = this.createIndicesPlayerIsLookingAt(index, player.voxelSelectionMode);
 
-        this.subVoxelIndices[this.activeCraftingLayer][index] = 1;
+        for(int i = 0; i < indices.length; i++) {
+            if (i >= this.subVoxelIndices[this.activeCraftingLayer].length) continue;
+            index = i;
+            if(index > 143)continue;
+
+            this.subVoxelIndices[this.activeCraftingLayer][index] = 1;
+        }
+
         this.checkCurrentCraftingLayerForCompletion();
         CosmicEvolution.instance.soundPlayer.playSound(CosmicEvolution.instance.save.thePlayer.x, CosmicEvolution.instance.save.thePlayer.y, CosmicEvolution.instance.save.thePlayer.z, new Sound(Block.list[this.materialBlockID != RenderEngine.NULL_TEXTURE ? this.materialBlockID : this.itemTextureID].getStepSound(this.chunk.getBlockXFromIndex(this.indexInChunk), this.chunk.getBlockYFromIndex(this.indexInChunk), this.chunk.getBlockZFromIndex(this.indexInChunk)), false, 1f),new Random().nextFloat(0.6F, 1));
         this.chunk.markDirty();

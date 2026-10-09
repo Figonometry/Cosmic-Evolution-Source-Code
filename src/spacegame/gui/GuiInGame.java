@@ -156,6 +156,11 @@ public final class GuiInGame extends Gui {
             KeyListener.setKeyReleased(GameSettings.inventoryKey.keyCode);
         }
 
+        if(KeyListener.isKeyPressed(GLFW.GLFW_KEY_F) && KeyListener.keyReleased[GLFW.GLFW_KEY_F]){
+            this.ce.save.thePlayer.cycleVoxelSelectionMode();
+            KeyListener.setKeyReleased(GLFW.GLFW_KEY_F);
+        }
+
     }
 
     public static void renderDebugText(){
@@ -396,7 +401,7 @@ public final class GuiInGame extends Gui {
             int x = 0;
             int y = 450;
             float width = Block.list[blockID].getDisplayName(blockCoordinates[0], blockCoordinates[1], blockCoordinates[2]).length() * 25;
-            float height = 50;
+            float height = blockID == Block.crafting3DItem.ID ? 100 : 50;
             tessellator.addVertex2DTexture(0, x - width / 2f, y - height / 2f, -90, 3);
             tessellator.addVertex2DTexture(0, x + width / 2f, y + height / 2f, -90, 1);
             tessellator.addVertex2DTexture(0, x - width / 2f, y + height / 2f, -90, 2);
@@ -405,6 +410,9 @@ public final class GuiInGame extends Gui {
             tessellator.drawTexture2D(transparentBackground, Shader.screen2DTexture, CosmicEvolution.camera);
             tessellator.toggleOrtho();
             fontRenderer.drawCenteredString(Block.list[blockID].getDisplayName(blockCoordinates[0], blockCoordinates[1], blockCoordinates[2]), 0, 425, -14, 16777215, 50, 255);
+            if(blockID == Block.crafting3DItem.ID){
+                fontRenderer.drawCenteredString("Press F to cycle through selection modes", 0, 395, -14, 16777215, 25, 255);
+            }
         }
         GL46.glDisable(GL46.GL_BLEND);
     }
@@ -1892,6 +1900,44 @@ public final class GuiInGame extends Gui {
         return 256;
     }
 
+    private static boolean isPlayerLookingAtIndex(int index, int[] indices){
+        for(int i = 0; i < indices.length; i++){
+            if(indices[i] == index)return true;
+        }
+
+        return false;
+    }
+
+
+    private static int[] createIndicesPlayerIsLookingAt(int index, int voxelSelectionMode){
+        int[] indicesPlayerIsLookingAt = new int[voxelSelectionMode == 1 ? 1 : voxelSelectionMode == 2 ? 4 : 9];
+
+        switch (voxelSelectionMode) {
+            case 1 -> {
+                indicesPlayerIsLookingAt[0] = index;
+            }
+            case 2 -> {
+                indicesPlayerIsLookingAt[0] = index;
+                indicesPlayerIsLookingAt[1] = (index % 12) + 1 <= 11 ? index + 1 : Integer.MAX_VALUE;
+                indicesPlayerIsLookingAt[2] = (index % 12) <= 11 ? index + 12 : Integer.MAX_VALUE;
+                indicesPlayerIsLookingAt[3] = (index % 12) + 1 <= 11 ? index + 12 + 1 : Integer.MAX_VALUE;
+            }
+            case 3 -> {
+                indicesPlayerIsLookingAt[0] = index;
+                indicesPlayerIsLookingAt[1] = (index % 12) + 1 <= 11 ? index + 1 : Integer.MAX_VALUE;
+                indicesPlayerIsLookingAt[2] = (index % 12) + 2 <= 11 ? index + 2 : Integer.MAX_VALUE;
+                indicesPlayerIsLookingAt[3] = (index % 12) <= 11 ? index + 12 : Integer.MAX_VALUE;
+                indicesPlayerIsLookingAt[4] = (index % 12) + 1 <= 11 ? index + 12 + 1 : Integer.MAX_VALUE;
+                indicesPlayerIsLookingAt[5] = (index % 12) + 2 <= 11 ? index + 12 + 2 : Integer.MAX_VALUE;
+                indicesPlayerIsLookingAt[6] = (index % 12) <= 11 ? index + 24 : Integer.MAX_VALUE;
+                indicesPlayerIsLookingAt[7] = (index % 12) + 1 <= 11 ? index + 24 + 1 : Integer.MAX_VALUE;
+                indicesPlayerIsLookingAt[8] = (index % 12) + 2 <= 11 ? index + 24 + 2 : Integer.MAX_VALUE;
+            }
+        }
+
+        return indicesPlayerIsLookingAt;
+    }
+
     private static void renderCrafting3DItemGrid(int x, int y, int z, Chunk chunk) {
         int red = 12529455;
         int green = 5947183;
@@ -1908,10 +1954,18 @@ public final class GuiInGame extends Gui {
         ModelFace modelFace;
 
         int indexPlayerIsLookingAt = getCraftingGridIndexPlayerIsLookingAt(x,y,z, craftingBlock.activeCraftingLayer);
+
+        EntityPlayer player = CosmicEvolution.instance.save.thePlayer;
+
+        //Sized based on voxel selection mode of either 1, 4, or 9
+        int[] indicesPlayerIsLookingAt = createIndicesPlayerIsLookingAt(indexPlayerIsLookingAt, player.voxelSelectionMode);
+
+
+
         boolean isPlayerLookingAtIndex = false;
 
         for (int i = 0; i < 144; i++) {
-            isPlayerLookingAtIndex = i == indexPlayerIsLookingAt;
+            isPlayerLookingAtIndex = isPlayerLookingAtIndex(i, indicesPlayerIsLookingAt);
 
             if(craftingBlock.craftingRecipe.recipeIndices[craftingBlock.activeCraftingLayer][i] == craftingBlock.subVoxelIndices[craftingBlock.activeCraftingLayer][i] && !isPlayerLookingAtIndex)continue;
 

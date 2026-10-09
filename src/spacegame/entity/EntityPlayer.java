@@ -37,7 +37,7 @@ import java.util.Random;
 
 public final class EntityPlayer extends EntityLiving {
     private CosmicEvolution ce;
-    public static int selectedInventorySlot = 1;
+    public static int selectedInventorySlot = 1; //This will have to be made nonstatic for mp
     public static final float SHIFT_DISTANCE = 0.125f;
     public boolean freeMove;
     public boolean speedOverride;
@@ -98,6 +98,7 @@ public final class EntityPlayer extends EntityLiving {
     public int drawbackTimer;
     public boolean drawingBack;
     public boolean sprinting;
+    public int voxelSelectionMode = 1; //Determines the length of the box whenever doing 3d crafting
 
     public EntityPlayer(CosmicEvolution cosmicEvolution, double x, double y, double z) {
         super(Integer.MAX_VALUE);
@@ -246,6 +247,14 @@ public final class EntityPlayer extends EntityLiving {
             outputStream.close();
         } catch (Exception e){
             e.printStackTrace();
+        }
+    }
+
+    public void cycleVoxelSelectionMode(){
+        this.voxelSelectionMode++;
+
+        if(this.voxelSelectionMode == 4){
+            this.voxelSelectionMode = 1;
         }
     }
 

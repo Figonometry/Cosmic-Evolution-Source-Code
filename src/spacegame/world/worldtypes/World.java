@@ -2195,11 +2195,7 @@ public abstract class World {
 
             // --- 6. LEFT CLICK: remove highlighted voxel if filled ---
             if (isLeftClick) {
-                if (filled) {
-                    craftingBlock.removeSubVoxel(highlightedIndex, x + bx, y + by, z + bz);
-                } else {
-                    continue;
-                }
+                craftingBlock.removeSubVoxel(highlightedIndex, x + bx, y + by, z + bz);
                 return;
             }
 
