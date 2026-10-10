@@ -584,6 +584,31 @@ public final class EntityPlayer extends EntityLiving {
                 this.walkingAnimationTimer = 0;
             }
 
+            if(this.getHeldBlock() == Block.torch.ID){
+                if(this.ce.save.time % 30 == 0){
+
+                    double[] rayCast = CosmicEvolution.camera.rayCast(1);
+
+                    rayCast[0] -= this.x;
+                    rayCast[1] -= this.y;
+                    rayCast[2] -= this.z;
+
+                    Vector3d rayCastVector = new Vector3d(rayCast[0], rayCast[1], rayCast[2]);
+                    rayCastVector.rotateY(Math.toRadians(-40f));
+
+                    EntityParticle particle = new EntityParticle(this.x + rayCastVector.x, this.y + 0.5, this.z + rayCastVector.z, false, 120,
+                            Block.fire.ID, false, false, false, true, 0, 0);
+
+                    particle.size *= CosmicEvolution.globalRand.nextFloat(5f, 10f);
+
+                    CosmicEvolution.instance.save.activeWorld.addEntity(particle);
+                }
+
+                if(this.ce.save.time % 60 == 0){
+                    CosmicEvolution.instance.soundPlayer.playSound(this.x, this.y, this.z, new Sound(Sound.fireCrackling, false, 1f), 1f);
+                }
+            }
+
 
 
             if(this.playerAnimation != null){
