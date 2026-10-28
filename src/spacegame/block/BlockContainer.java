@@ -25,6 +25,7 @@ public abstract class BlockContainer extends Block {
         ChestLocation chestLocation = new ChestLocation(Chunk.getBlockIndexFromCoordinates(x,y,z), new Inventory(((BlockContainer)(Block.list[heldBlock])).inventoryWidth, ((BlockContainer)(Block.list[heldBlock])).inventoryHeight), chunk);
         if(heldBlock == logPile.ID){
             chestLocation.inventory.itemStacks[0].count = 2;
+            chestLocation.inventory.itemStacks[0].item = Item.fireWood;
         }
         if(heldBlock == brickPile.ID ){
             chestLocation.inventory.itemStacks[0].count = 1;

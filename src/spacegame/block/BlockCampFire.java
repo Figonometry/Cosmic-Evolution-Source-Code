@@ -13,12 +13,10 @@ import spacegame.gui.ToolTipGroup;
 import spacegame.item.*;
 import spacegame.render.texturelists.MouseAndKeyIconTextureList;
 import spacegame.world.Chunk;
+import spacegame.world.blockstate.*;
+import spacegame.world.blockstructure.CharcoalPit;
 import spacegame.world.threads.ThreadUpdateLighting;
 import spacegame.world.worldtypes.World;
-import spacegame.world.blockstate.CampfireState;
-import spacegame.world.blockstate.ChestLocation;
-import spacegame.world.blockstate.HeatableBlockLocation;
-import spacegame.world.blockstate.MultiState;
 
 import java.util.Random;
 
@@ -72,6 +70,17 @@ public final class BlockCampFire extends BlockHeating implements ITickable, IPar
                 world.chunkController.updateChunkLighting(new ThreadUpdateLighting(world, chunk,x, y, z, this.ID, false));
                 world.addBlockState(x,y,z, MultiState.HEATABLE_BLOCK_STATE, new HeatableBlockLocation(Chunk.getBlockIndexFromCoordinates(x,y,z)));
                 world.notifyChunk(x,y,z);
+
+                if(campfireState.isForCharcoalPit){
+                    CharcoalPit charcoalPit = world.getCharcoalPit(x,y,z);
+                    if(charcoalPit == null){
+                        System.out.println("Charcoal pit unable to be located at " + x + " " + y + " " + z + ". Existing campfire indicated for charcoal pit");
+                        return;
+                    }
+
+                    charcoalPit.setIsLit(true);
+                    charcoalPit.setStartTime(CosmicEvolution.instance.save.time);
+                }
             }
         }
 
@@ -232,7 +241,7 @@ public final class BlockCampFire extends BlockHeating implements ITickable, IPar
     @Override
     public void addBlockStates(int x, int y, int z, short heldBlock, World world, EntityPlayer player, Chunk chunk){
         world.addBlockState(x,y,z, MultiState.CHEST_STATE , new ChestLocation(Chunk.getBlockIndexFromCoordinates(x,y,z), new Inventory(1, 2), world.findChunkFromChunkCoordinates(x >> 5, y >> 5, z >> 5)));
-        world.addBlockState(x,y,z, MultiState.CAMPFIRE_STATE, new CampfireState(Chunk.getBlockIndexFromCoordinates(x,y,z), false, 0,0));
+        world.addBlockState(x,y,z, MultiState.CAMPFIRE_STATE, new CampfireState(Chunk.getBlockIndexFromCoordinates(x,y,z), false, 0,0, false));
     }
 
 
@@ -356,4 +365,50 @@ public final class BlockCampFire extends BlockHeating implements ITickable, IPar
 
         return null;
     }
+
+    @Override
+    public void onBlockUpdate(int x, int y, int z, World world){
+        //Trigger charcoal pit creation
+
+        if(world.getCharcoalPit(x,y,z) != null) {
+            CampfireState campfireState = (CampfireState) world.getBlockState(x,y,z, MultiState.CAMPFIRE_STATE);
+            campfireState.isForCharcoalPit = true;
+            return;
+        }
+
+        CharcoalPit charcoalPit = CharcoalPit.createCharcoalPit(x,y,z);
+
+        if(charcoalPit != null){
+            world.addCharcoalPit(charcoalPit, x,y,z);
+            CampfireState campfireState = (CampfireState) world.getBlockState(x,y,z, MultiState.CAMPFIRE_STATE);
+            campfireState.isForCharcoalPit = true;
+        }
+    }
+
+    @Override
+    public String getDisplayName(int x, int y, int z){
+        CampfireState campfireState = (CampfireState) CosmicEvolution.instance.save.activeWorld.getBlockState(x,y,z, MultiState.CAMPFIRE_STATE);
+        if(campfireState == null)return this.displayName;
+
+        //If this is for a charcoal pit the player should have some indication that it's a valid pit, if it doesnt display this then they will know the pit isnt constructed correctly
+        if(campfireState.isForCharcoalPit){
+            String frontPortion = "Charcoal Pit";
+            if(!campfireState.isLit){
+                return frontPortion + " (Light Campfire And Cover To Ignite Charcoal Pit)";
+            } else {
+                CharcoalPit charcoalPit = CosmicEvolution.instance.save.activeWorld.getCharcoalPit(x,y,z);
+                if(charcoalPit == null){
+                    System.out.println("Charcoal pit should be located at " + x + " " + y + " " + z + ". But could not be located");
+                    return "ERROR";
+                }
+
+                long timeUntilGracePeriodEnds = (charcoalPit.getStartTime() + (Timer.REAL_SECOND * 30)) - CosmicEvolution.instance.save.time;
+
+                return frontPortion + " (Cover within the next " + (timeUntilGracePeriodEnds / Timer.REAL_SECOND) + " seconds to avoid the pit burning away)";
+            }
+        }
+
+        return this.displayName;
+    }
+
 }

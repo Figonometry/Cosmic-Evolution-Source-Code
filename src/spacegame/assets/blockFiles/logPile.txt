@@ -1,5 +1,4 @@
 blockName:LOG_PILE
-boundingBox:quarterBlock
 blockModel:standardBlockModel
 stepSound:wood
 requiresTool:true

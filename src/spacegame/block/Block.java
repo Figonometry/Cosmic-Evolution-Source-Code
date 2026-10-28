@@ -38,7 +38,7 @@ public class Block {
     public static final Block water = new BlockWater(BlockIDList.WATER, BlockTextureList.WATER_TOP_TEXTURE, blockFolderPath + "water.txt");
     public static final Block woodenPan = new Block(BlockIDList.WOODEN_PAN, BlockTextureList.ITEM_WOODEN_PAN, blockFolderPath + "woodenPan.txt");
     public static final Block snow = new BlockSnow(BlockIDList.SNOW, BlockTextureList.SNOW_TEXTURE, blockFolderPath + "snow.txt");
-    public static final Block asdfadfasd = null;
+    public static final Block charcoal = new BlockCharcoal(BlockIDList.CHARCOAL, BlockTextureList.CHARCOAL_TEXTURE, blockFolderPath + "charcoal.txt");
     public static final Block oakLog = new BlockOakLog(BlockIDList.OAK_LOG, BlockTextureList.OAK_LOG_SIDE_TEXTURE, blockFolderPath + "oakLog.txt");
     public static final Block grassLowFertilityLargePatch = new BlockGrass(BlockIDList.GRASS_LOW_FERTILITY_LARGE_PATCH, BlockTextureList.GRASS_FULL_SIDE_TEXTURE, blockFolderPath + "grassLowFertilitySoil.txt");
     public static final Block grassMediumFertilityLargePatch = new BlockGrass(BlockIDList.GRASS_MEDIUM_FERTILITY_LARGE_PATCH, BlockTextureList.GRASS_FULL_SIDE_TEXTURE, blockFolderPath + "grassMediumFertilitySoil.txt");

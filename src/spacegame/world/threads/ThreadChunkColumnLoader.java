@@ -8,6 +8,7 @@ import spacegame.util.Logger;
 import spacegame.world.Chunk;
 import spacegame.world.ChunkController;
 import spacegame.world.blockstateio.*;
+import spacegame.world.blockstructureio.CharcoalPitIO;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -62,6 +63,8 @@ public final class ThreadChunkColumnLoader implements Runnable {
                         NBTTagCompound reedGrowthStates = chunkData.getCompoundTag("ReedGrowthStates");
                         NBTTagCompound doorStates = chunkData.getCompoundTag("DoorStates");
                         NBTTagCompound flowingWaterStates = chunkData.getCompoundTag("FlowingWaterStates");
+                        NBTTagCompound charcoalStates = chunkData.getCompoundTag("CharcoalStates");
+                        NBTTagCompound charcoalPits = chunkData.getCompoundTag("CharcoalPits");
 
                         chunk = new Chunk(x, y, z, CosmicEvolution.instance.save.activeWorld);
 
@@ -142,6 +145,14 @@ public final class ThreadChunkColumnLoader implements Runnable {
 
                         if(flowingWaterStates != null){
                             new FlowingWaterStateIO().loadFlowingWaterStates(chunk, flowingWaterStates);
+                        }
+
+                        if(charcoalStates != null){
+                            new CharcoalStateIO().loadCharcoalStates(chunk, charcoalStates);
+                        }
+
+                        if(charcoalPits != null){
+                            new CharcoalPitIO().loadCharcoalPits(chunk, charcoalPits);
                         }
 
                         inputStream.close();

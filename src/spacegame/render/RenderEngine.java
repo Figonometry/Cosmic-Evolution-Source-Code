@@ -417,7 +417,7 @@ public final class RenderEngine {
                 case BlockTextureList.GRASS_FULL_SIDE_TEXTURE -> "grassFullSide";
                 case BlockTextureList.TORCH_TEXTURE -> "torch";
                 case BlockTextureList.WATER_TOP_TEXTURE -> "water"; //Top
-                case BlockTextureList.SAND_TEXTURE -> "sand";
+                case BlockTextureList.CHARCOAL_TEXTURE -> "charcoal";
                 case BlockTextureList.SNOW_TEXTURE -> "snow";
                 case BlockTextureList.STONE_TEXTURE -> "stone";
                 case BlockTextureList.OAK_LOG_SIDE_TEXTURE -> "logSide";
@@ -595,6 +595,7 @@ public final class RenderEngine {
                 case BlockTextureList.FLINT_TEXTURE -> "flint";
                 case BlockTextureList.CLAY_BLOCK_TEXTURE -> "clayBlock";
                 case BlockTextureList.ITEM_WOODEN_PAN -> "item-woodenPan";
+                case BlockTextureList.CHARCOAL_SIDE -> "charcoalSide";
                 default -> "missing";
             };
         } else if(textureFolderpath.contains("item")){
@@ -631,6 +632,7 @@ public final class RenderEngine {
                 case ItemTextureList.FLINT_TEXTURE -> "flint";
                 case ItemTextureList.ANDESITE_TEXTURE -> "andesiteStone";
                 case ItemTextureList.WOODEN_PAN -> "woodenPan";
+                case ItemTextureList.CHARCOAL -> "charcoal";
                 default -> "missing";
             };
         }

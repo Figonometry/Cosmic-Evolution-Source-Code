@@ -13,6 +13,7 @@ import spacegame.render.Shader;
 import spacegame.render.ShouldFaceRenderSorter;
 import spacegame.util.MathUtil;
 import spacegame.world.blockstate.*;
+import spacegame.world.blockstructure.CharcoalPit;
 import spacegame.world.worldtypes.World;
 
 import java.awt.*;
@@ -74,6 +75,7 @@ public final class Chunk implements Comparable<Chunk> {
     public Vector3f chunkOffset = new Vector3f();
     public ShouldFaceRenderSorter sorter = new ShouldFaceRenderSorter();
     public ArrayList<Entity> entities = new ArrayList<>();
+    public ArrayList<CharcoalPit> charcoalPits = new ArrayList<>();
     public FloatBuffer vertexBufferOpaque;
     public IntBuffer elementBufferOpaque;
     public FloatBuffer vertexBufferTransparent;
@@ -1347,6 +1349,19 @@ public final class Chunk implements Comparable<Chunk> {
         }
     }
 
+    private void tickCharcoalPits(){
+        if(!this.parentWorld.chunkFullySurrounded(this.x, this.y, this.z))return;
+
+        for(int i = 0; i < this.charcoalPits.size(); i++){
+            CharcoalPit charcoalPit = this.charcoalPits.get(i);
+            charcoalPit.checkForUpdate(this.parentWorld);
+
+            if(charcoalPit.getDeleteObject()){
+                this.charcoalPits.remove(charcoalPit);
+            }
+        }
+    }
+
     public void tick() {
         if (CosmicEvolution.instance.save.time % 60 == 0) {
             if (this.blocks != null && this.tickableBlockIndex != null) {
@@ -1364,6 +1379,8 @@ public final class Chunk implements Comparable<Chunk> {
                     }
                 }
             }
+
+            this.tickCharcoalPits();
         }
 
         TimeUpdateEventSafe event;
@@ -1589,6 +1606,24 @@ public final class Chunk implements Comparable<Chunk> {
         multiStateWrapper.value.clearAllStates();
 
         this.blockStates.remove(key);
+    }
+
+    public void addCharcoalPit(CharcoalPit charcoalPit){
+        this.charcoalPits.add(charcoalPit);
+    }
+
+    public CharcoalPit getCharcoalPit(int blockX, int blockY, int blockZ){
+        for(int i = 0; i < this.charcoalPits.size(); i++){
+            CharcoalPit charcoalPit = this.charcoalPits.get(i);
+
+            BlockPos firepit = charcoalPit.getFirePit();
+
+            if(firepit.x() == blockX && firepit.y() == blockY && firepit.z() == blockZ){
+                return charcoalPit;
+            }
+        }
+
+        return null;
     }
 
 }

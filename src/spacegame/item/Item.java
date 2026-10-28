@@ -54,6 +54,7 @@ public class Item {
     public static final Item stoneSpear = new ItemSpear(ItemIDList.STONE_SPEAR, modelFolderPath + "stoneSpear.obj", "src/spacegame/assets/itemFiles/stoneSpear.txt", Material.STONE);
     public static final Item woodenPan = new Item(ItemIDList.WOODEN_PAN, modelFolderPath + "woodenPan.obj", "src/spacegame/assets/itemFiles/woodenPan.txt");
     public static final Item woodenPanStage1 = new Item(ItemIDList.WOODEN_PAN_STAGE_1, modelFolderPath + "woodenPanStage1.obj", "src/spacegame/assets/itemFiles/woodenPanStage1.txt");
+    public static final Item charcoal = new ItemCharcoal(ItemIDList.CHARCOAL, modelFolderPath + "charcoal.obj", "src/spacegame/assets/itemFiles/charcoal.txt");
     public final short ID;
     public float hardness = 0;
     public boolean canPlaceAsItemBlock;

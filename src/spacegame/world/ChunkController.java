@@ -16,6 +16,7 @@ import spacegame.render.RenderWorldScene;
 import spacegame.render.ThreadRebuildChunk;
 import spacegame.util.MathUtil;
 import spacegame.world.blockstateio.*;
+import spacegame.world.blockstructureio.CharcoalPitIO;
 import spacegame.world.threads.*;
 import spacegame.world.worldtypes.World;
 import spacegame.world.worldtypes.earthlike.WorldEarth;
@@ -791,6 +792,8 @@ public final class ChunkController {
                         NBTTagCompound reedGrowthStates = chunkData.getCompoundTag("ReedGrowthStates");
                         NBTTagCompound doorStates = chunkData.getCompoundTag("DoorStates");
                         NBTTagCompound flowingWaterStates = chunkData.getCompoundTag("FlowingWaterStates");
+                        NBTTagCompound charcoalStates = chunkData.getCompoundTag("CharcoalStates");
+                        NBTTagCompound charcoalPits = chunkData.getCompoundTag("CharcoalPits");
 
                         chunk = new Chunk(x, y, z, CosmicEvolution.instance.save.activeWorld);
 
@@ -870,6 +873,14 @@ public final class ChunkController {
 
                         if(flowingWaterStates != null){
                             new FlowingWaterStateIO().loadFlowingWaterStates(chunk, flowingWaterStates);
+                        }
+
+                        if(charcoalStates != null){
+                            new CharcoalStateIO().loadCharcoalStates(chunk, charcoalStates);
+                        }
+
+                        if(charcoalPits != null){
+                            new CharcoalPitIO().loadCharcoalPits(chunk, charcoalPits);
                         }
 
 

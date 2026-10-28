@@ -488,12 +488,12 @@ public class RenderBlocks {
         switch (numberOfLogs){
             case 16:
                 baseModel = BlockModelList.largeFireWood.copyModel();
-                baseModel.translateModel(0.5f, 0.875f, 0.875f);
+                baseModel.translateModel(0.525f, 0.875f, 0.875f);
                 modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 15:
                 baseModel = BlockModelList.largeFireWood.copyModel();
-                baseModel.translateModel(0.5f, 0.875f, 0.625f);
+                baseModel.translateModel(0.475f, 0.875f, 0.625f);
                 modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 14:
@@ -503,12 +503,12 @@ public class RenderBlocks {
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 13:
                 baseModel = BlockModelList.largeFireWood.copyModel();
-                baseModel.translateModel(0.5f, 0.875f, 0.125f);
+                baseModel.translateModel(0.475f, 0.875f, 0.125f);
                 modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 12:
                 baseModel = BlockModelList.largeFireWood.copyModel();
-                baseModel.translateModel(0.5f, 0.625f, 0.875f);
+                baseModel.translateModel(0.475f, 0.625f, 0.875f);
                 modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 11:
@@ -518,17 +518,17 @@ public class RenderBlocks {
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 10:
                 baseModel = BlockModelList.largeFireWood.copyModel();
-                baseModel.translateModel(0.5f, 0.625f, 0.375f);
+                baseModel.translateModel(0.475f, 0.625f, 0.375f);
                 modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 9:
                 baseModel = BlockModelList.largeFireWood.copyModel();
-                baseModel.translateModel(0.5f, 0.625f, 0.125f);
+                baseModel.translateModel(0.525f, 0.625f, 0.125f);
                 modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 8:
                 baseModel = BlockModelList.largeFireWood.copyModel();
-                baseModel.translateModel(0.5f, 0.375f, 0.875f);
+                baseModel.translateModel(0.475f, 0.375f, 0.875f);
                 modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 7:
@@ -538,17 +538,17 @@ public class RenderBlocks {
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 6:
                 baseModel = BlockModelList.largeFireWood.copyModel();
-                baseModel.translateModel(0.5f, 0.375f, 0.375f);
+                baseModel.translateModel(0.525f, 0.375f, 0.375f);
                 modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 5:
                 baseModel = BlockModelList.largeFireWood.copyModel();
-                baseModel.translateModel(0.5f, 0.375f, 0.125f);
+                baseModel.translateModel(0.475f, 0.375f, 0.125f);
                 modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 4:
                 baseModel = BlockModelList.largeFireWood.copyModel();
-                baseModel.translateModel(0.5f, 0.125f, 0.875f);
+                baseModel.translateModel(0.525f, 0.125f, 0.875f);
                 modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 3:
@@ -558,12 +558,12 @@ public class RenderBlocks {
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 2:
                 baseModel = BlockModelList.largeFireWood.copyModel();
-                baseModel.translateModel(0.5f, 0.125f, 0.375f);
+                baseModel.translateModel(0.525f, 0.125f, 0.375f);
                 modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
             case 1:
                 baseModel = BlockModelList.largeFireWood.copyModel();
-                baseModel.translateModel(0.5f, 0.125f, 0.125f);
+                baseModel.translateModel(0.475f, 0.125f, 0.125f);
                 modelFace = baseModel.getModelFace(face);
                 renderOpaqueFace(chunk, world, block, index, face, modelFace, new int[2]);
         }

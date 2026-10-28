@@ -12,7 +12,7 @@ public abstract class BlockIDList {
     public static final short WATER = 8;
     public static final short WOODEN_PAN = 9;
     public static final short SNOW = 10;
-    public static final short STONE = 11;
+    public static final short CHARCOAL = 11;
     public static final short OAK_LOG = 12;
     public static final short GRASS_LOW_FERTILITY_LARGE_PATCH = 13;
     public static final short GRASS_MEDIUM_FERTILITY_LARGE_PATCH = 14;

@@ -19,6 +19,7 @@ import spacegame.render.Shader;
 import spacegame.util.MathUtil;
 import spacegame.world.*;
 import spacegame.world.blockstate.*;
+import spacegame.world.blockstructure.CharcoalPit;
 import spacegame.world.threads.ThreadUpdateLighting;
 import spacegame.world.weather.Cloud;
 import spacegame.world.weather.CloudFormation;
@@ -1654,12 +1655,12 @@ public abstract class World {
         return upperChunk != null && lowerChunk != null && northChunk != null && southChunk != null && eastChunk != null && westChunk != null;
     }
 
-    public boolean chunkFullySurrounded(int x, int y, int z) {
+    public boolean chunkFullySurrounded(int chunkX, int chunkY, int chunkZ) {
         for (int dx = -1; dx <= 1; dx++) {
             for (int dy = -1; dy <= 1; dy++) {
                 for (int dz = -1; dz <= 1; dz++) {
                     if (dx == 0 && dy == 0 && dz == 0) continue;
-                    if (findChunkFromChunkCoordinates(x + dx, y + dy, z + dz) == null) {
+                    if (findChunkFromChunkCoordinates(chunkX + dx, chunkY + dy, chunkZ + dz) == null) {
                         return false;
                     }
                 }
@@ -2036,7 +2037,7 @@ public abstract class World {
             }
 
             // --- RIGHT CLICK: PLACE BLOCK  ---
-            else if(this.getBlockID(bx, by, bz) != Block.air.ID && !(Block.list[this.getBlockID(bx,by,bz)] instanceof BlockWater) && !(Block.list[this.getBlockID(bx, by, bz)] instanceof BlockTorch)) {
+            else if(block.ID != Block.air.ID && !(block instanceof BlockWater) && !(block instanceof BlockTorch)) {
                 block.handleSpecialRightClickFunctions(bx, by, bz, this, CosmicEvolution.instance.save.thePlayer);
                 this.handleBlockPlacement(bx, by, bz, cx, cy, cz);
                 break;
@@ -2456,6 +2457,19 @@ public abstract class World {
         }
 
         chunk.clearAllBlockStates(x,y,z);
+    }
+
+    //This will likely need to be changed to a general "block structure" method
+    public void addCharcoalPit(CharcoalPit charcoalPit, int blockX, int blockY, int blockZ){
+        Chunk chunk = this.findChunkFromChunkCoordinates(blockX >> 5, blockY >> 5, blockZ >> 5);
+        if(chunk == null)return;
+        chunk.addCharcoalPit(charcoalPit);
+    }
+
+    public CharcoalPit getCharcoalPit(int blockX, int blockY, int blockZ){
+        Chunk chunk = this.findChunkFromChunkCoordinates(blockX >> 5, blockY >> 5, blockZ >> 5);
+        if(chunk == null)return null;
+        return chunk.getCharcoalPit(blockX,blockY,blockZ);
     }
 
 

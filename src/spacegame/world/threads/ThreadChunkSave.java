@@ -7,6 +7,7 @@ import spacegame.util.Logger;
 import spacegame.world.Chunk;
 import spacegame.world.blockstate.MultiState;
 import spacegame.world.blockstateio.*;
+import spacegame.world.blockstructureio.CharcoalPitIO;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -51,8 +52,8 @@ public final class ThreadChunkSave implements Runnable {
             NBTTagCompound reedGrowthStates = new NBTTagCompound();
             NBTTagCompound doorStates = new NBTTagCompound();
             NBTTagCompound flowingWaterStates = new NBTTagCompound();
-            NBTTagCompound soilStates = new NBTTagCompound();
-            NBTTagCompound clayStates = new NBTTagCompound();
+            NBTTagCompound charcoalStates = new NBTTagCompound();
+            NBTTagCompound charcoalPits = new NBTTagCompound();
 
             chunkTag.setTag("Chunk", chunkData);
             chunkData.setTag("Entity", entity);
@@ -71,6 +72,8 @@ public final class ThreadChunkSave implements Runnable {
             chunkData.setTag("ReedGrowthStates", reedGrowthStates);
             chunkData.setTag("DoorStates", doorStates);
             chunkData.setTag("FlowingWaterStates", flowingWaterStates);
+            chunkData.setTag("CharcoalStates", charcoalStates);
+            chunkData.setTag("CharcoalPits", charcoalPits);
 
             chunkData.setInteger("x", chunk.x);
             chunkData.setInteger("y", chunk.y);
@@ -145,6 +148,14 @@ public final class ThreadChunkSave implements Runnable {
 
             if(this.chunk.doesChunkContainStateOfType(MultiState.FLOWING_WATER_STATE)){
                 new FlowingWaterStateIO().saveFlowingWaterStates(this.chunk, flowingWaterStates);
+            }
+
+            if(this.chunk.doesChunkContainStateOfType(MultiState.CHARCOAL_STATE)){
+                new CharcoalStateIO().saveCharcoalStates(this.chunk, charcoalStates);
+            }
+
+            if(this.chunk.charcoalPits.size() > 0){
+                new CharcoalPitIO().saveCharcoalPit(this.chunk, charcoalPits);
             }
 
             NBTIO.writeCompressed(chunkTag, outputStream);

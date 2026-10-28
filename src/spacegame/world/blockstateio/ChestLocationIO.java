@@ -8,7 +8,6 @@ import spacegame.item.itemstate.ItemState;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.world.Chunk;
 import spacegame.world.blockstate.BlockState;
-import spacegame.world.blockstate.CampfireState;
 import spacegame.world.blockstate.ChestLocation;
 import spacegame.world.blockstate.MultiState;
 

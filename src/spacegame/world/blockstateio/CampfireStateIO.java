@@ -21,6 +21,7 @@ public final class CampfireStateIO {
             campfireStatesTags[i].setBoolean("isLit", campfireState.isLit);
             campfireStatesTags[i].setInteger("logCount", campfireState.logCount);
             campfireStatesTags[i].setInteger("cookingStickCount", campfireState.cookingStickCount);
+            campfireStatesTags[i].setBoolean("isForCharcoalPit", campfireState.isForCharcoalPit);
 
             nbtTagCompound.setTag("campfireState" + campfireStateCount, campfireStatesTags[i]);
             campfireStateCount++;
@@ -38,9 +39,10 @@ public final class CampfireStateIO {
             boolean isLit = campfireStateLoadedTag.getBoolean("isLit");
             int logCount = campfireStateLoadedTag.getInteger("logCount");
             int cookingStickCount = campfireStateLoadedTag.getInteger("cookingStickCount");
+            boolean isForCharcoalPit = campfireStateLoadedTag.getBoolean("isForCharcoalPit");
 
 
-            chunk.addBlockState(index, MultiState.CAMPFIRE_STATE, new CampfireState(index, isLit, logCount, cookingStickCount));
+            chunk.addBlockState(index, MultiState.CAMPFIRE_STATE, new CampfireState(index, isLit, logCount, cookingStickCount, isForCharcoalPit));
         }
     }
 

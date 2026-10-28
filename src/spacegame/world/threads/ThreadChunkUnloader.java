@@ -7,6 +7,7 @@ import spacegame.util.Logger;
 import spacegame.world.Chunk;
 import spacegame.world.blockstate.MultiState;
 import spacegame.world.blockstateio.*;
+import spacegame.world.blockstructureio.CharcoalPitIO;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -54,6 +55,8 @@ public final class ThreadChunkUnloader implements Runnable {
                 NBTTagCompound reedGrowthStates = new NBTTagCompound();
                 NBTTagCompound doorStates = new NBTTagCompound();
                 NBTTagCompound flowingWaterStates = new NBTTagCompound();
+                NBTTagCompound charcoalStates = new NBTTagCompound();
+                NBTTagCompound charcoalPits = new NBTTagCompound();
 
                 chunkTag.setTag("Chunk", chunkData);
                 chunkData.setTag("Entity", entity);
@@ -72,6 +75,8 @@ public final class ThreadChunkUnloader implements Runnable {
                 chunkData.setTag("ReedGrowthStates", reedGrowthStates);
                 chunkData.setTag("DoorStates", doorStates);
                 chunkData.setTag("FlowingWaterStates", flowingWaterStates);
+                chunkData.setTag("CharcoalStates", charcoalStates);
+                chunkData.setTag("CharcoalPits", charcoalPits);
 
                 chunkData.setInteger("x", this.chunks[chunkIndex].x);
                 chunkData.setInteger("y", this.chunks[chunkIndex].y);
@@ -146,6 +151,14 @@ public final class ThreadChunkUnloader implements Runnable {
 
                 if(this.chunks[chunkIndex].doesChunkContainStateOfType(MultiState.FLOWING_WATER_STATE)){
                     new FlowingWaterStateIO().saveFlowingWaterStates(this.chunks[chunkIndex], flowingWaterStates);
+                }
+
+                if(this.chunks[chunkIndex].doesChunkContainStateOfType(MultiState.CHARCOAL_STATE)){
+                    new CharcoalStateIO().saveCharcoalStates(this.chunks[chunkIndex], charcoalStates);
+                }
+
+                if(this.chunks[chunkIndex].charcoalPits.size() > 0){
+                    new CharcoalPitIO().saveCharcoalPit(this.chunks[chunkIndex], charcoalPits);
                 }
 
                 NBTIO.writeCompressed(chunkTag, outputStream);

@@ -2237,6 +2237,7 @@ public final class GuiInGame extends Gui {
             int previousImage = -1; //Start at an invalid value
             currentIndex = i / 2;
             toolTip = toolTips[currentIndex].getCurrentTooltip();
+            if(toolTip == null)continue;
             width = calculateToolTipLength(toolTip);
             x = screenX - (width/2f);
             y = screenY;
@@ -2436,6 +2437,7 @@ public final class GuiInGame extends Gui {
 
     private static void renderItemModelForTooltip(RenderEngine.Tessellator tessellator, float x, float y, float z, int itemID, int imageID){
         Item item = Item.list[itemID];
+        if(item == null)return;
         ModelLoader model = item.getItemModel(Item.NULL_ITEM_METADATA).copyModel();
         model.scaleModel(78f);
         model.rotateModel(45, 0, 1, 0);

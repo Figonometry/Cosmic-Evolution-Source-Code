@@ -15,6 +15,7 @@ public final class ToolTipGroup {
 
     //Grabs the current tooltip from the full list of tooltips based on the index that updates once per second
     public ToolTip getCurrentTooltip(){
+        if(this.toolTips.size() == 0)return null;
         return this.toolTips.get((int) (altToolTipIndex & (this.toolTips.size() - 1)));
     }
 }

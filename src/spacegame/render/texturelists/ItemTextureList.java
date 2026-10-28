@@ -34,4 +34,5 @@ public abstract class ItemTextureList {
     public static final int FLINT_TEXTURE = 29;
     public static final int ANDESITE_TEXTURE = 30;
     public static final int WOODEN_PAN = 31;
+    public static final int CHARCOAL = 32;
 }
