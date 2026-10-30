@@ -257,6 +257,9 @@ public final class ThreadRebuildChunk implements Runnable {
             case "DOOR_PRIMITIVE" -> {
                 renderBlocks.renderDoorPrimitive(this.workingChunk, this.parentWorld, block, index, face);
             }
+            case "PARTIAL_BLOCK" -> {
+                renderBlocks.renderPartialBlock(this.workingChunk, this.parentWorld, block, index, face);
+            }
             default ->
                     renderBlocks.renderStandardBlock(this.workingChunk, this.parentWorld, block, index, face, greedyMeshSize);
         }

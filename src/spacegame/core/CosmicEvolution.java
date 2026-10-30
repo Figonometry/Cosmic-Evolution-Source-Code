@@ -23,6 +23,7 @@ import spacegame.core.eventlisteners.WindowResizeListener;
 import spacegame.entity.*;
 import spacegame.gui.*;
 import spacegame.item.ItemStack;
+import spacegame.item.ItemWoodenPan;
 import spacegame.nbt.NBTIO;
 import spacegame.nbt.NBTTagCompound;
 import spacegame.render.*;
@@ -46,7 +47,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public final class CosmicEvolution implements Runnable {
+public final class CosmicEvolution {
     public static CosmicEvolution instance;
     public final File launcherDirectory;
     public final String launcherFilepath;
@@ -78,16 +79,14 @@ public final class CosmicEvolution implements Runnable {
 
     public static void main(String[] args) {
         if(args.length != 0) {
-            startMainThread(new Thread(new CosmicEvolution(args[0])));
+            initializeMainClassAndStart(args[0]);
         } else {
             new Logger("Failed to provide launcher directory", true);
         }
     }
 
-    private static void startMainThread(Thread mainThread) {
-        mainThread.setName("Cosmic Evolution Main Thread");
-        mainThread.setPriority(10);
-        mainThread.start();
+    private static void initializeMainClassAndStart(String launcherFilepath) {
+        new CosmicEvolution(launcherFilepath).start();
     }
 
     private CosmicEvolution(String launcherFilepath) {
@@ -99,8 +98,7 @@ public final class CosmicEvolution implements Runnable {
         instance = this;
     }
 
-    @Override
-    public void run() {
+    private void start() {
         this.running = true;
         try {
             this.startGame();
@@ -126,6 +124,7 @@ public final class CosmicEvolution implements Runnable {
         GameSettings.loadOptionsFromFile(this.launcherDirectory);
         Block.registerAllBlockTooltips();
         EntityLiving.registerEntityLivingToolTip();
+        ItemWoodenPan.initializeWoodenPanLootTables();
         this.clearLogFiles(new File(this.launcherDirectory + "/crashReports"));
         this.initLWJGL();
         this.initAllBufferObjects();

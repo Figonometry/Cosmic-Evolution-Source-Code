@@ -1058,6 +1058,30 @@ public class RenderBlocks {
         }
     }
 
+    protected void renderPartialBlock(Chunk chunk, World world, short block, int index, int face){
+        this.redReset = 1f;
+        this.greenReset = 1f;
+        this.blueReset = 1f;
+        this.skyLightReset = 1f;
+
+        if(face != TOP_FACE)return;
+
+        int blockX = chunk.getBlockXFromIndex(index);
+        int blockY = chunk.getBlockYFromIndex(index);
+        int blockZ = chunk.getBlockZFromIndex(index);
+
+        PartialBlock partialBlock = (PartialBlock) world.getBlockState(blockX, blockY, blockZ, MultiState.PARTIAL_BLOCK_STATE);
+        if(partialBlock == null)return;
+
+        ModelLoader model = Block.list[block].getBlockModel(blockX, blockY, blockZ, world);
+
+        for(int i = 0; i < model.modelFaces.length; i++){
+            if(model.modelFaces[i] == null)continue;
+            this.renderOpaqueFace(chunk, world, block, index, face, model.modelFaces[i], new int[2]);
+        }
+
+    }
+
 
 
     public void renderReeds(Chunk chunk, World world, short block, int index, int face){

@@ -5,6 +5,10 @@ import spacegame.render.texturelists.ItemTextureList;
 
 public abstract class ItemModelList {
     public static String modelFolderPath = "src/spacegame/assets/models/itemModels/";
+    //Technically this isnt true but the texture replacement is done at runtime and is dynamic
+    public static final ModelLoader woodenPanFilled = new ModelLoader(modelFolderPath + "filledWoodenPan.obj", true);
+
+
     //These are all the base stone tools, the variants are constructed from these
     public static final ModelLoader stoneHoeHead = new ModelLoader(modelFolderPath + "stoneHoeHead.obj", true);
     public static final ModelLoader stoneHoe = new ModelLoader(modelFolderPath + "stoneHoe.obj", true);

@@ -149,7 +149,7 @@ public class Block {
     public static final Block treeSeed = new BlockSapling(BlockIDList.TREE_SEED, BlockTextureList.SEED_TEXTURE, blockFolderPath + "treeSeed.txt");
     public static final Block sapling = new BlockSapling(BlockIDList.SAPLING, BlockTextureList.NO_TEXTURE, blockFolderPath + "sapling.txt");
     public static final Block torchUnlit = new BlockTorch(BlockIDList.TORCH_UNLIT, BlockTextureList.TORCH_UNLIT_TEXTURE, blockFolderPath + "torchUnlit.txt");
-    public static final Block nullField = null;
+    public static final Block partialBlock = new BlockPartial(BlockIDList.PARTIAL_BLOCK, BlockTextureList.NO_TEXTURE, blockFolderPath + "partialBlock.txt");
     public static final Block unused_field_73 = null;
     public static final Block unused_field_74 = null;
     public static final Block unused_field_75 = null;

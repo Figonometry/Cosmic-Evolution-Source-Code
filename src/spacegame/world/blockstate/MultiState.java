@@ -22,6 +22,7 @@ public final class MultiState {
     public static final int REED_GROWTH_STATE = 13;
     public static final int BERRY_BUSH_STATE = 14;
     public static final int CHARCOAL_STATE = 15;
+    public static final int PARTIAL_BLOCK_STATE = 16;
     private final HashMap<Integer, BlockState> blockStates = new HashMap<>();
     public final int index;
 

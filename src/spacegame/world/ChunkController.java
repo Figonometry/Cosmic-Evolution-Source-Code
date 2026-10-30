@@ -793,6 +793,8 @@ public final class ChunkController {
                         NBTTagCompound doorStates = chunkData.getCompoundTag("DoorStates");
                         NBTTagCompound flowingWaterStates = chunkData.getCompoundTag("FlowingWaterStates");
                         NBTTagCompound charcoalStates = chunkData.getCompoundTag("CharcoalStates");
+                        NBTTagCompound partialBlockStates = chunkData.getCompoundTag("PartialBlockStates");
+
                         NBTTagCompound charcoalPits = chunkData.getCompoundTag("CharcoalPits");
 
                         chunk = new Chunk(x, y, z, CosmicEvolution.instance.save.activeWorld);
@@ -877,6 +879,10 @@ public final class ChunkController {
 
                         if(charcoalStates != null){
                             new CharcoalStateIO().loadCharcoalStates(chunk, charcoalStates);
+                        }
+
+                        if(partialBlockStates != null){
+                            new PartialBlockIO().loadPartialBlockStates(chunk, partialBlockStates);
                         }
 
                         if(charcoalPits != null){

@@ -53,6 +53,8 @@ public final class ThreadChunkSave implements Runnable {
             NBTTagCompound doorStates = new NBTTagCompound();
             NBTTagCompound flowingWaterStates = new NBTTagCompound();
             NBTTagCompound charcoalStates = new NBTTagCompound();
+            NBTTagCompound partialBlockStates = new NBTTagCompound();
+
             NBTTagCompound charcoalPits = new NBTTagCompound();
 
             chunkTag.setTag("Chunk", chunkData);
@@ -73,6 +75,8 @@ public final class ThreadChunkSave implements Runnable {
             chunkData.setTag("DoorStates", doorStates);
             chunkData.setTag("FlowingWaterStates", flowingWaterStates);
             chunkData.setTag("CharcoalStates", charcoalStates);
+            chunkData.setTag("PartialBlockStates", partialBlockStates);
+
             chunkData.setTag("CharcoalPits", charcoalPits);
 
             chunkData.setInteger("x", chunk.x);
@@ -153,6 +157,11 @@ public final class ThreadChunkSave implements Runnable {
             if(this.chunk.doesChunkContainStateOfType(MultiState.CHARCOAL_STATE)){
                 new CharcoalStateIO().saveCharcoalStates(this.chunk, charcoalStates);
             }
+
+            if(this.chunk.doesChunkContainStateOfType(MultiState.PARTIAL_BLOCK_STATE)){
+                new PartialBlockIO().savePartialBlockStates(this.chunk, partialBlockStates);
+            }
+
 
             if(this.chunk.charcoalPits.size() > 0){
                 new CharcoalPitIO().saveCharcoalPit(this.chunk, charcoalPits);

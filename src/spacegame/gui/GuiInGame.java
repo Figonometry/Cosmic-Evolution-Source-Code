@@ -11,6 +11,7 @@ import spacegame.core.Timer;
 import spacegame.core.eventlisteners.KeyListener;
 import spacegame.core.eventlisteners.MouseListener;
 import spacegame.entity.*;
+import spacegame.entity.animations.PlayerAnimationPanning;
 import spacegame.entity.animations.PlayerAnimationThrustingSpear;
 import spacegame.entity.animations.PlayerAnimationThrustingSpearHold;
 import spacegame.entity.animations.PlayerAnimationTillingSoil;
@@ -1155,6 +1156,11 @@ public final class GuiInGame extends Gui {
                             rotationMatrix.rotateLocalX((float) (0.25 * Math.PI) * ratio);
                         }
                     }
+                }
+
+
+                if(player.playerAnimation instanceof PlayerAnimationPanning) {
+                    position.x -= 0.5f * ((MathUtil.sin((float) ((((float)player.playerAnimation.timer / (60)) * (Math.PI * 2f))))));
                 }
 
                 Quaternionf rotation = rotationMatrix.getUnnormalizedRotation(new Quaternionf());

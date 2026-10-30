@@ -1,0 +1,8 @@
+blockName:PARTIAL_BLOCK
+blockModel:standardBlockModel
+stepSound:sand
+breakTimer:60
+droppedItemID:-1
+hardness:0.05
+displayName:Partial Block
+alwaysRenderFace:true

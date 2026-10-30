@@ -228,6 +228,7 @@ public final class GuiInventoryPlayer extends GuiInventory {
             if(model.usesMultipleTextures){
                 textureID = model.modelFaces[i].texture;
             } else {
+                if(thePlayer.getHeldBlock() == Block.NULL_BLOCK_REFERENCE)return;
                 textureID = Block.list[thePlayer.getHeldBlock()].getBlockTexture(thePlayer.getHeldBlock(), 0, 0, 0, model.modelFaces[i].faceType);
             }
             switch (model.modelFaces[i].faceType){
