@@ -65,6 +65,7 @@ public final class ThreadChunkColumnLoader implements Runnable {
                         NBTTagCompound flowingWaterStates = chunkData.getCompoundTag("FlowingWaterStates");
                         NBTTagCompound charcoalStates = chunkData.getCompoundTag("CharcoalStates");
                         NBTTagCompound partialBlockStates = chunkData.getCompoundTag("PartialBlockStates");
+                        NBTTagCompound oreStates = chunkData.getCompoundTag("OreStates");
 
                         NBTTagCompound charcoalPits = chunkData.getCompoundTag("CharcoalPits");
 
@@ -155,6 +156,10 @@ public final class ThreadChunkColumnLoader implements Runnable {
 
                         if(partialBlockStates != null){
                             new PartialBlockIO().loadPartialBlockStates(chunk, partialBlockStates);
+                        }
+
+                        if(oreStates != null){
+                            new OreStateIO().loadOreStates(chunk, oreStates);
                         }
 
                         if(charcoalPits != null){

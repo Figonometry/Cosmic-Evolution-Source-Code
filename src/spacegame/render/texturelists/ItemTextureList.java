@@ -69,4 +69,18 @@ public abstract class ItemTextureList {
     public static final int PHYLLITE_GRAVEL = 64;
     public static final int SERPENTINITE_SAND = 65;
     public static final int SERPENTINITE_GRAVEL = 66;
+    public static final int NATIVE_COPPER_ORE_TEXTURE = 67;
+    public static final int PERIODITE_TEXTURE = 68;
+    public static final int GABBRO_TEXTURE = 69;
+    public static final int CHALK_TEXTURE = 70;
+    public static final int CLAYSTONE_TEXTURE = 71;
+    public static final int CONGLOMERATE_TEXTURE = 72;
+    public static final int SHALE_BOTTOM_TEXTURE = 73;
+    public static final int LIMESTONE_TEXTURE = 74;
+    public static final int SANDSTONE_TEXTURE = 75;
+    public static final int MARBLE_TEXTURE = 76;
+    public static final int SLATE_TEXTURE = 77;
+    public static final int PHYLLITE_TEXTURE = 78;
+    public static final int SERPENTINITE_TEXTURE = 79;
+    public static final int METALLIC_COPPER = 80;
 }

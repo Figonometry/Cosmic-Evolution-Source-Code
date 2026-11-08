@@ -55,6 +55,12 @@ public class Item {
     public static final Item woodenPan = new ItemWoodenPan(ItemIDList.WOODEN_PAN, modelFolderPath + "woodenPan.obj", "src/spacegame/assets/itemFiles/woodenPan.txt");
     public static final Item woodenPanStage1 = new Item(ItemIDList.WOODEN_PAN_STAGE_1, modelFolderPath + "woodenPanStage1.obj", "src/spacegame/assets/itemFiles/woodenPanStage1.txt");
     public static final Item charcoal = new ItemCharcoal(ItemIDList.CHARCOAL, modelFolderPath + "charcoal.obj", "src/spacegame/assets/itemFiles/charcoal.txt");
+    public static final Item poorCopperChunks = new ItemOreChunks(ItemIDList.POOR_NATIVE_COPPER_CHUNKS, modelFolderPath + "copperChunksPoor.obj", "src/spacegame/assets/itemFiles/poorCopperChunks.txt");
+    public static final Item mediumCopperChunks = new ItemOreChunks(ItemIDList.MEDIUM_NATIVE_COPPER_CHUNKS, modelFolderPath + "copperChunksMedium.obj", "src/spacegame/assets/itemFiles/mediumCopperChunks.txt");
+    public static final Item richCopperChunks = new ItemOreChunks(ItemIDList.RICH_NATIVE_COPPER_CHUNKS, modelFolderPath + "copperChunksHigh.obj", "src/spacegame/assets/itemFiles/richCopperChunks.txt");
+    public static final Item bountifulCopperChunks = new ItemOreChunks(ItemIDList.BOUNTIFUL_NATIVE_COPPER_CHUNKS, modelFolderPath + "copperChunksBountiful.obj", "src/spacegame/assets/itemFiles/bountifulCopperChunks.txt");
+    public static final Item hammer = new ItemHammer(ItemIDList.HAMMER, modelFolderPath + "copperHammer.obj", "src/spacegame/assets/itemFiles/hammer.txt");
+    public static final Item nativeCopperNugget = new Item(ItemIDList.NATIVE_COPPER_NUGGETS, modelFolderPath + "oreNugget.obj", "src/spacegame/assets/itemFiles/copperNugget.txt");
     public final short ID;
     public float hardness = 0;
     public boolean canPlaceAsItemBlock;

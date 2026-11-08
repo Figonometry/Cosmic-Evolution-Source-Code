@@ -3,8 +3,8 @@ package spacegame.entity.animations;
 import spacegame.entity.EntityPlayer;
 
 public final class PlayerAnimationStandingUp extends PlayerAnimation {
-    public PlayerAnimationStandingUp(boolean leftClick, boolean rightClick, boolean heldRequired, int timer) {
-        super(leftClick, rightClick, heldRequired, timer);
+    public PlayerAnimationStandingUp(boolean leftClick, boolean rightClick, boolean heldRequired, int timer, int minTimer) {
+        super(leftClick, rightClick, heldRequired, timer, minTimer);
     }
 
     @Override

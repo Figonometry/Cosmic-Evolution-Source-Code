@@ -5,8 +5,8 @@ import spacegame.entity.EntityPlayer;
 import spacegame.item.Item;
 
 public final class PlayerAnimationPanning extends PlayerAnimation {
-    public PlayerAnimationPanning(boolean leftClick, boolean rightClick, boolean heldRequired, int timer) {
-        super(leftClick, rightClick, heldRequired, timer);
+    public PlayerAnimationPanning(boolean leftClick, boolean rightClick, boolean heldRequired, int timer, int minTimer) {
+        super(leftClick, rightClick, heldRequired, timer, minTimer);
     }
 
     @Override

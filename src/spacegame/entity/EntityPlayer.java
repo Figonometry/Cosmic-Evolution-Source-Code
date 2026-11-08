@@ -13,10 +13,7 @@ import spacegame.block.IBurnDamage;
 import spacegame.core.*;
 import spacegame.core.eventlisteners.KeyListener;
 import spacegame.core.eventlisteners.MouseListener;
-import spacegame.entity.animations.PlayerAnimation;
-import spacegame.entity.animations.PlayerAnimationSittingDown;
-import spacegame.entity.animations.PlayerAnimationStandingUp;
-import spacegame.entity.animations.PlayerAnimationThrustingSpear;
+import spacegame.entity.animations.*;
 import spacegame.gui.*;
 import spacegame.item.*;
 import spacegame.item.itemstate.ItemState;
@@ -482,9 +479,9 @@ public final class EntityPlayer extends EntityLiving {
                 if(KeyListener.isKeyPressed(GameSettings.sitKey.keyCode) && KeyListener.keyReleased[GameSettings.sitKey.keyCode] && this.playerAnimation == null){
 
                     if(!this.sitting){
-                        this.playerAnimation = new PlayerAnimationSittingDown(false, false, false, 15);
+                        this.playerAnimation = new PlayerAnimationSittingDown(false, false, false, 15,0);
                     } else {
-                        this.playerAnimation = new PlayerAnimationStandingUp(false, false, false, 15);
+                        this.playerAnimation = new PlayerAnimationStandingUp(false, false, false, 15,0);
                     }
 
                     KeyListener.setKeyReleased(GameSettings.sitKey.keyCode);
@@ -624,7 +621,7 @@ public final class EntityPlayer extends EntityLiving {
                 }
 
 
-                if(this.playerAnimation.timer <= 0){
+                if(this.playerAnimation.timer <= this.playerAnimation.minTimer){
                     if(!this.playerAnimation.onAnimationComplete(this)){
                         this.playerAnimation = null;
                     }
@@ -760,7 +757,7 @@ public final class EntityPlayer extends EntityLiving {
 
 
         if((rawDeltaX != 0.0f || rawDeltaZ != 0.0f) && this.sitting && !(this.playerAnimation instanceof  PlayerAnimationStandingUp)){
-            this.playerAnimation = new PlayerAnimationStandingUp(false, false, false, 15);
+            this.playerAnimation = new PlayerAnimationStandingUp(false, false, false, 15, 0);
         }
 
 

@@ -10,6 +10,7 @@ import spacegame.core.Sound;
 import spacegame.entity.EntityPlayer;
 import spacegame.entity.animations.PlayerAnimationTillingSoil;
 import spacegame.render.model.ModelLoader;
+import spacegame.render.texturelists.ItemTextureList;
 import spacegame.world.Chunk;
 import spacegame.world.worldtypes.World;
 import spacegame.world.blockstate.MultiState;
@@ -27,7 +28,7 @@ public final class ItemHoe extends ItemTool {
 
     public void onRightClick(int x, int y, int z, World world, EntityPlayer player) {
         if(!MouseListener.rightClickReleased)return;
-        player.playerAnimation = new PlayerAnimationTillingSoil(false, true, false, 60);
+        player.playerAnimation = new PlayerAnimationTillingSoil(false, true, false, 60, -15);
         MouseListener.rightClickReleased = false;
     }
 
@@ -52,29 +53,25 @@ public final class ItemHoe extends ItemTool {
 
     @Override
     public ModelLoader getItemModel(short itemMetadata){
-        return this.getModelLoaderFromItemMetadata(itemMetadata);
-    }
-    @Override
-    public ModelLoader getModelLoaderFromItemMetadata(short itemMetadata) {
         if(this.ID == Item.stoneHoe.ID) {
             switch (itemMetadata) {
                 case StoneToolMetadata.ANDESITE -> {
-                    return ItemModelList.andesiteStoneHoe;
+                    return ItemModelList.stoneHoe.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.ANDESITE_TEXTURE);
                 }
                 case StoneToolMetadata.GRANITE -> {
-                    return ItemModelList.graniteStoneHoe;
+                    return ItemModelList.stoneHoe.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.GRANITE_TEXTURE);
                 }
                 case StoneToolMetadata.BASALT -> {
-                    return ItemModelList.basaltStoneHoe;
+                    return ItemModelList.stoneHoe.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.BASALT_TEXTURE);
                 }
                 case StoneToolMetadata.CHERT -> {
-                    return ItemModelList.chertStoneHoe;
+                    return ItemModelList.stoneHoe.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.CHERT_TEXTURE);
                 }
                 case StoneToolMetadata.OBSIDIAN -> {
-                    return ItemModelList.obsidianStoneHoe;
+                    return ItemModelList.stoneHoe.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.OBSIDIAN_TEXTURE);
                 }
                 case StoneToolMetadata.FLINT -> {
-                    return ItemModelList.flintStoneHoe;
+                    return ItemModelList.stoneHoe.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.FLINT_TEXTURE);
                 }
             }
         }

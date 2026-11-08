@@ -57,6 +57,7 @@ public final class ThreadChunkUnloader implements Runnable {
                 NBTTagCompound flowingWaterStates = new NBTTagCompound();
                 NBTTagCompound charcoalStates = new NBTTagCompound();
                 NBTTagCompound partialBlockStates = new NBTTagCompound();
+                NBTTagCompound oreStates = new NBTTagCompound();
 
                 NBTTagCompound charcoalPits = new NBTTagCompound();
 
@@ -79,6 +80,7 @@ public final class ThreadChunkUnloader implements Runnable {
                 chunkData.setTag("FlowingWaterStates", flowingWaterStates);
                 chunkData.setTag("CharcoalStates", charcoalStates);
                 chunkData.setTag("PartialBlockStates", partialBlockStates);
+                chunkData.setTag("OreStates", oreStates);
 
                 chunkData.setTag("CharcoalPits", charcoalPits);
 
@@ -163,6 +165,10 @@ public final class ThreadChunkUnloader implements Runnable {
 
                 if(this.chunks[chunkIndex].doesChunkContainStateOfType(MultiState.PARTIAL_BLOCK_STATE)){
                     new PartialBlockIO().savePartialBlockStates(this.chunks[chunkIndex], partialBlockStates);
+                }
+
+                if(this.chunks[chunkIndex].doesChunkContainStateOfType(MultiState.ORE_STATE)){
+                    new OreStateIO().saveOreStates(this.chunks[chunkIndex], oreStates);
                 }
 
                 if(this.chunks[chunkIndex].charcoalPits.size() > 0){

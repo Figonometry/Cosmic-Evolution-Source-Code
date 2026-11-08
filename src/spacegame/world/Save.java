@@ -193,7 +193,7 @@ public final class Save {
 
         if(this.thePlayer.getHeldItem() != Item.NULL_ITEM_REFERENCE && this.ce.currentGui instanceof GuiInGame){
             if(Item.list[this.thePlayer.getHeldItem()] instanceof ItemSpear){
-                this.thePlayer.playerAnimation = new PlayerAnimationThrustingSpearHold(true, false, false, 60);
+                this.thePlayer.playerAnimation = new PlayerAnimationThrustingSpearHold(true, false, false, 60, 0);
             }
         }
 

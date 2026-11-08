@@ -151,6 +151,19 @@ public final class BlockItem extends BlockContainer {
             case ItemTextureList.PHYLLITE_GRAVEL -> BlockTextureList.PHYLLITE_GRAVEL;
             case ItemTextureList.SERPENTINITE_SAND -> BlockTextureList.SERPENTINITE_SAND;
             case ItemTextureList.SERPENTINITE_GRAVEL -> BlockTextureList.SERPENTINITE_GRAVEL;
+            case ItemTextureList.NATIVE_COPPER_ORE_TEXTURE -> BlockTextureList.ITEM_NATIVE_COPPER_ORE;
+            case ItemTextureList.PERIODITE_TEXTURE -> BlockTextureList.PERIODITE_STONE;
+            case ItemTextureList.GABBRO_TEXTURE -> BlockTextureList.GABBRO_STONE;
+            case ItemTextureList.CHALK_TEXTURE -> BlockTextureList.CHALK_STONE;
+            case ItemTextureList.CLAYSTONE_TEXTURE -> BlockTextureList.CLAYSTONE_STONE;
+            case ItemTextureList.CONGLOMERATE_TEXTURE -> BlockTextureList.CONGLOMERATE_STONE;
+            case ItemTextureList.SHALE_BOTTOM_TEXTURE -> BlockTextureList.SHALE_STONE_BOTTOM_TEXTURE;
+            case ItemTextureList.LIMESTONE_TEXTURE -> BlockTextureList.LIMESTONE_STONE;
+            case ItemTextureList.SANDSTONE_TEXTURE -> BlockTextureList.SANDSTONE_STONE;
+            case ItemTextureList.MARBLE_TEXTURE -> BlockTextureList.MARBLE_STONE;
+            case ItemTextureList.SLATE_TEXTURE -> BlockTextureList.SLATE_STONE;
+            case ItemTextureList.PHYLLITE_TEXTURE -> BlockTextureList.PHYLLITE_STONE;
+            case ItemTextureList.SERPENTINITE_TEXTURE -> BlockTextureList.SERPENTINITE_STONE;
 
             default -> this.textureID;
         };

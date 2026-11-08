@@ -596,6 +596,26 @@ public final class RenderEngine {
                 case BlockTextureList.CLAY_BLOCK_TEXTURE -> "clayBlock";
                 case BlockTextureList.ITEM_WOODEN_PAN -> "item-woodenPan";
                 case BlockTextureList.CHARCOAL_SIDE -> "charcoalSide";
+                case BlockTextureList.NATIVE_COPPER_IN_ANDESITE -> "nativeCopperAndesite";
+                case BlockTextureList.NATIVE_COPPER_IN_GRANITE  -> "nativeCopperGranite";
+                case BlockTextureList.NATIVE_COPPER_IN_PERIODITE -> "nativeCopperPeriodite";
+                case BlockTextureList.NATIVE_COPPER_IN_OBSIDIAN -> "nativeCopperObsidian";
+                case BlockTextureList.NATIVE_COPPER_IN_BASALT -> "nativeCopperBasalt";
+                case BlockTextureList.NATIVE_COPPER_IN_GABBRO -> "nativeCopperGabbro";
+                case BlockTextureList.NATIVE_COPPER_IN_CHALK -> "nativeCopperChalk";
+                case BlockTextureList.NATIVE_COPPER_IN_CHERT -> "nativeCopperChert";
+                case BlockTextureList.NATIVE_COPPER_IN_CLAYSTONE -> "nativeCopperClaystone";
+                case BlockTextureList.NATIVE_COPPER_IN_CONGLOMERATE -> "nativeCopperConglomerate";
+                case BlockTextureList.NATIVE_COPPER_IN_SHALE_SIDE -> "nativeCopperShaleSide";
+                case BlockTextureList.NATIVE_COPPER_IN_LIMESTONE -> "nativeCopperLimestone";
+                case BlockTextureList.NATIVE_COPPER_IN_SANDSTONE -> "nativeCopperSandstone";
+                case BlockTextureList.NATIVE_COPPER_IN_MARBLE -> "nativeCopperMarble";
+                case BlockTextureList.NATIVE_COPPER_IN_SLATE -> "nativeCopperSlate";
+                case BlockTextureList.NATIVE_COPPER_IN_PHYLLITE -> "nativeCopperPhyllite";
+                case BlockTextureList.NATIVE_COPPER_IN_SERPENTINITE -> "nativeCopperSerpentinite";
+                case BlockTextureList.NATIVE_COPPER_IN_SHALE_TOP -> "nativeCopperShaleTop";
+                case BlockTextureList.NATIVE_COPPER_IN_SHALE_BOTTOM -> "nativeCopperShaleBottom";
+                case BlockTextureList.ITEM_NATIVE_COPPER_ORE -> "itemNativeCopperOreTexture";
                 default -> "missing";
             };
         } else if(textureFolderpath.contains("item")){
@@ -667,6 +687,20 @@ public final class RenderEngine {
                 case ItemTextureList.PHYLLITE_GRAVEL -> "phylliteGravel";
                 case ItemTextureList.SERPENTINITE_SAND -> "serpentiniteSand";
                 case ItemTextureList.SERPENTINITE_GRAVEL -> "serpentiniteGravel";
+                case ItemTextureList.NATIVE_COPPER_ORE_TEXTURE -> "nativeCopperOreTexture";
+                case ItemTextureList.PERIODITE_TEXTURE -> "perioditeStone";
+                case ItemTextureList.GABBRO_TEXTURE -> "gabbroStone";
+                case ItemTextureList.CHALK_TEXTURE -> "chalkStone";
+                case ItemTextureList.CLAYSTONE_TEXTURE -> "claystoneStone";
+                case ItemTextureList.CONGLOMERATE_TEXTURE -> "conglomerateStone";
+                case ItemTextureList.SHALE_BOTTOM_TEXTURE -> "shaleStoneBottom";
+                case ItemTextureList.LIMESTONE_TEXTURE -> "limestoneStone";
+                case ItemTextureList.SANDSTONE_TEXTURE -> "sandstoneStone";
+                case ItemTextureList.MARBLE_TEXTURE -> "marbleStone";
+                case ItemTextureList.SLATE_TEXTURE -> "slateStone";
+                case ItemTextureList.PHYLLITE_TEXTURE -> "phylliteStone";
+                case ItemTextureList.SERPENTINITE_TEXTURE -> "serpentiniteStone";
+                case ItemTextureList.METALLIC_COPPER -> "copperMetal";
                 default -> "missing";
             };
         }

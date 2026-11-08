@@ -2,10 +2,7 @@ package spacegame.world.blockstateio;
 
 import spacegame.nbt.NBTTagCompound;
 import spacegame.world.Chunk;
-import spacegame.world.blockstate.BlockState;
-import spacegame.world.blockstate.CropState;
-import spacegame.world.blockstate.LogState;
-import spacegame.world.blockstate.MultiState;
+import spacegame.world.blockstate.*;
 
 public final class LogStateIO {
     public void saveLogStates(Chunk chunk, NBTTagCompound nbtTagCompound){

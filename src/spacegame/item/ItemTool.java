@@ -3,8 +3,9 @@ package spacegame.item;
 import spacegame.block.Block;
 import spacegame.render.model.ModelLoader;
 import spacegame.item.StoneToolMetadata;
+import spacegame.render.texturelists.ItemTextureList;
 
-public class ItemTool extends Item implements IMultiModel {
+public class ItemTool extends Item {
     public ItemTool(short ID, String modelFilePath, String filepath) {
         super(ID, modelFilePath, filepath);
     }
@@ -13,71 +14,67 @@ public class ItemTool extends Item implements IMultiModel {
 
     @Override
     public ModelLoader getItemModel(short itemMetadata){
-        return this.getModelLoaderFromItemMetadata(itemMetadata);
-    }
-    @Override
-    public ModelLoader getModelLoaderFromItemMetadata(short itemMetadata) {
         if(this.ID == Item.stoneHoeHead.ID) {
             switch (itemMetadata) {
                 case StoneToolMetadata.ANDESITE -> {
-                    return ItemModelList.andesiteStoneHoeHead;
+                    return ItemModelList.stoneHoeHead.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.ANDESITE_TEXTURE);
                 }
                 case StoneToolMetadata.GRANITE -> {
-                    return ItemModelList.graniteStoneHoeHead;
+                    return ItemModelList.stoneHoeHead.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.GRANITE_TEXTURE);
                 }
                 case StoneToolMetadata.BASALT -> {
-                    return ItemModelList.basaltStoneHoeHead;
+                    return ItemModelList.stoneHoeHead.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.BASALT_TEXTURE);
                 }
                 case StoneToolMetadata.CHERT -> {
-                    return ItemModelList.chertStoneHoeHead;
+                    return ItemModelList.stoneHoeHead.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.CHERT_TEXTURE);
                 }
                 case StoneToolMetadata.OBSIDIAN -> {
-                    return ItemModelList.obsidianStoneHoeHead;
+                    return ItemModelList.stoneHoeHead.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.OBSIDIAN_TEXTURE);
                 }
                 case StoneToolMetadata.FLINT -> {
-                    return ItemModelList.flintStoneHoeHead;
+                    return ItemModelList.stoneHoeHead.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.FLINT_TEXTURE);
                 }
             }
         } else if(this.ID == Item.stoneFragments.ID){
             switch (itemMetadata) {
                 case StoneToolMetadata.ANDESITE -> {
-                    return ItemModelList.andesiteStoneFragments;
+                    return ItemModelList.stoneFragments.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.ANDESITE_TEXTURE);
                 }
                 case StoneToolMetadata.GRANITE -> {
-                    return ItemModelList.graniteStoneFragments;
+                    return ItemModelList.stoneFragments.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.GRANITE_TEXTURE);
                 }
                 case StoneToolMetadata.BASALT -> {
-                    return ItemModelList.basaltStoneFragments;
+                    return ItemModelList.stoneFragments.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.BASALT_TEXTURE);
                 }
                 case StoneToolMetadata.CHERT -> {
-                    return ItemModelList.chertStoneFragments;
+                    return ItemModelList.stoneFragments.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.CHERT_TEXTURE);
                 }
                 case StoneToolMetadata.OBSIDIAN -> {
-                    return ItemModelList.obsidianStoneFragments;
+                    return ItemModelList.stoneFragments.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.OBSIDIAN_TEXTURE);
                 }
                 case StoneToolMetadata.FLINT -> {
-                    return ItemModelList.flintStoneFragments;
+                    return ItemModelList.stoneFragments.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.FLINT_TEXTURE);
                 }
             }
         } else if(this.ID == Item.stoneSpearHead.ID){
             switch (itemMetadata) {
                 case StoneToolMetadata.ANDESITE -> {
-                    return ItemModelList.andesiteStoneSpearHead;
+                    return ItemModelList.stoneSpearHead.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.ANDESITE_TEXTURE);
                 }
                 case StoneToolMetadata.GRANITE -> {
-                    return ItemModelList.graniteStoneSpearHead;
+                    return ItemModelList.stoneSpearHead.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.GRANITE_TEXTURE);
                 }
                 case StoneToolMetadata.BASALT -> {
-                    return ItemModelList.basaltStoneSpearHead;
+                    return ItemModelList.stoneSpearHead.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.BASALT_TEXTURE);
                 }
                 case StoneToolMetadata.CHERT -> {
-                    return ItemModelList.chertStoneSpearHead;
+                    return ItemModelList.stoneSpearHead.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.CHERT_TEXTURE);
                 }
                 case StoneToolMetadata.OBSIDIAN -> {
-                    return ItemModelList.obsidianStoneSpearHead;
+                    return ItemModelList.stoneSpearHead.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.OBSIDIAN_TEXTURE);
                 }
                 case StoneToolMetadata.FLINT -> {
-                    return ItemModelList.flintStoneSpearHead;
+                    return ItemModelList.stoneSpearHead.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.FLINT_TEXTURE);
                 }
             }
         }

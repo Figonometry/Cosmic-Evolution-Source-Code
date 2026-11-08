@@ -1,8 +1,9 @@
 package spacegame.item;
 
 import spacegame.render.model.ModelLoader;
+import spacegame.render.texturelists.ItemTextureList;
 
-public final class ItemShovel extends ItemTool implements IMultiModel {
+public final class ItemShovel extends ItemTool {
 
     public ItemShovel(short ID, String modelFilePath, String filepath, Material material) {
         super(ID, modelFilePath, filepath);
@@ -13,54 +14,51 @@ public final class ItemShovel extends ItemTool implements IMultiModel {
 
     @Override
     public ModelLoader getItemModel(short itemMetadata){
-        return this.getModelLoaderFromItemMetadata(itemMetadata);
-    }
-    @Override
-    public ModelLoader getModelLoaderFromItemMetadata(short itemMetadata) {
         if(this.ID == Item.stoneShovel.ID) {
             switch (itemMetadata) {
                 case StoneToolMetadata.ANDESITE -> {
-                    return ItemModelList.andesiteStoneShovel;
+                    return ItemModelList.stoneShovel.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.ANDESITE_TEXTURE);
                 }
                 case StoneToolMetadata.GRANITE -> {
-                    return ItemModelList.graniteStoneShovel;
+                    return ItemModelList.stoneShovel.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.GRANITE_TEXTURE);
                 }
                 case StoneToolMetadata.BASALT -> {
-                    return ItemModelList.basaltStoneShovel;
+                    return ItemModelList.stoneShovel.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.BASALT_TEXTURE);
                 }
                 case StoneToolMetadata.CHERT -> {
-                    return ItemModelList.chertStoneShovel;
+                    return ItemModelList.stoneShovel.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.CHERT_TEXTURE);
                 }
                 case StoneToolMetadata.OBSIDIAN -> {
-                    return ItemModelList.obsidianStoneShovel;
+                    return ItemModelList.stoneShovel.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.OBSIDIAN_TEXTURE);
                 }
                 case StoneToolMetadata.FLINT -> {
-                    return ItemModelList.flintStoneShovel;
+                    return ItemModelList.stoneShovel.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.FLINT_TEXTURE);
                 }
             }
         } else if(this.ID == Item.stoneHandShovel.ID) {
             switch (itemMetadata) {
                 case StoneToolMetadata.ANDESITE -> {
-                    return ItemModelList.andesiteStoneHandShovel;
+                    return ItemModelList.stoneHandShovel.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.ANDESITE_TEXTURE);
                 }
                 case StoneToolMetadata.GRANITE -> {
-                    return ItemModelList.graniteStoneHandShovel;
+                    return ItemModelList.stoneHandShovel.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.GRANITE_TEXTURE);
                 }
                 case StoneToolMetadata.BASALT -> {
-                    return ItemModelList.basaltStoneHandShovel;
+                    return ItemModelList.stoneHandShovel.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.BASALT_TEXTURE);
                 }
                 case StoneToolMetadata.CHERT -> {
-                    return ItemModelList.chertStoneHandShovel;
+                    return ItemModelList.stoneHandShovel.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.CHERT_TEXTURE);
                 }
                 case StoneToolMetadata.OBSIDIAN -> {
-                    return ItemModelList.obsidianStoneHandShovel;
+                    return ItemModelList.stoneHandShovel.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.OBSIDIAN_TEXTURE);
                 }
                 case StoneToolMetadata.FLINT -> {
-                    return ItemModelList.flintStoneHandShovel;
+                    return ItemModelList.stoneHandShovel.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.FLINT_TEXTURE);
                 }
             }
         }
 
         return this.itemModel;
     }
+
 }

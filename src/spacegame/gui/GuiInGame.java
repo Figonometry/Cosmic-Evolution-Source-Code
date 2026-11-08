@@ -11,14 +11,8 @@ import spacegame.core.Timer;
 import spacegame.core.eventlisteners.KeyListener;
 import spacegame.core.eventlisteners.MouseListener;
 import spacegame.entity.*;
-import spacegame.entity.animations.PlayerAnimationPanning;
-import spacegame.entity.animations.PlayerAnimationThrustingSpear;
-import spacegame.entity.animations.PlayerAnimationThrustingSpearHold;
-import spacegame.entity.animations.PlayerAnimationTillingSoil;
-import spacegame.item.Item;
-import spacegame.item.ItemHoe;
-import spacegame.item.ItemSeed;
-import spacegame.item.ItemSpear;
+import spacegame.entity.animations.*;
+import spacegame.item.*;
 import spacegame.render.*;
 import spacegame.render.model.ModelFace;
 import spacegame.render.model.ModelLoader;
@@ -402,7 +396,7 @@ public final class GuiInGame extends Gui {
             int x = 0;
             int y = 450;
             float width = Block.list[blockID].getDisplayName(blockCoordinates[0], blockCoordinates[1], blockCoordinates[2]).length() * 25;
-            float height = blockID == Block.crafting3DItem.ID ? 100 : 50;
+            float height = blockID == Block.crafting3DItem.ID || blockID == Block.oreBlock.ID ? 100 : 50;
             tessellator.addVertex2DTexture(0, x - width / 2f, y - height / 2f, -90, 3);
             tessellator.addVertex2DTexture(0, x + width / 2f, y + height / 2f, -90, 1);
             tessellator.addVertex2DTexture(0, x - width / 2f, y + height / 2f, -90, 2);
@@ -413,6 +407,9 @@ public final class GuiInGame extends Gui {
             fontRenderer.drawCenteredString(Block.list[blockID].getDisplayName(blockCoordinates[0], blockCoordinates[1], blockCoordinates[2]), 0, 425, -14, 16777215, 50, 255);
             if(blockID == Block.crafting3DItem.ID){
                 fontRenderer.drawCenteredString("Press F to cycle through selection modes", 0, 395, -14, 16777215, 25, 255);
+            }
+            if(blockID == Block.oreBlock.ID){
+                fontRenderer.drawCenteredString(((BlockOre)Block.list[blockID]).getDisplayTextForOre(blockCoordinates[0], blockCoordinates[1], blockCoordinates[2]), 0, 395, -14, 16777215, 25, 255);
             }
         }
         GL46.glDisable(GL46.GL_BLEND);
@@ -1159,8 +1156,31 @@ public final class GuiInGame extends Gui {
                 }
 
 
-                if(player.playerAnimation instanceof PlayerAnimationPanning) {
+                if(player.playerAnimation instanceof PlayerAnimationPanning && player.getHeldItem() == Item.woodenPan.ID) {
                     position.x -= 0.5f * ((MathUtil.sin((float) ((((float)player.playerAnimation.timer / (60)) * (Math.PI * 2f))))));
+                }
+
+                if(player.playerAnimation instanceof PlayerAnimationSwingHammer){
+                    short playerHeldItem = player.getHeldItem();
+                    if(playerHeldItem != Item.NULL_ITEM_REFERENCE) {
+                        float ratio;
+                        if (Item.list[playerHeldItem] instanceof ItemHammer) {
+                            if (player.playerAnimation.timer > 45) {
+                                ratio = ((player.playerAnimation.timer - 60) * -1) / 15f;
+                                rotationMatrix.rotateLocalX((float) (0.25 * Math.PI) * ratio);
+                            } else if (player.playerAnimation.timer > 15) {
+                                rotationMatrix.rotateLocalX((float) (0.25 * Math.PI));
+                            } else if (player.playerAnimation.timer > 0) {
+                                ratio = (15 - player.playerAnimation.timer) / 15f;
+                                rotationMatrix.rotateLocalX((float) (0.25 * Math.PI));
+                                rotationMatrix.rotateLocalX((float) (-0.5 * Math.PI) * ratio);
+                            } else if (player.playerAnimation.timer > -15) {
+                                ratio = (player.playerAnimation.timer * -1) / 15f;
+                                rotationMatrix.rotateLocalX((float) (-0.25 * Math.PI));
+                                rotationMatrix.rotateLocalX((float) (0.25 * Math.PI) * ratio);
+                            }
+                        }
+                    }
                 }
 
                 Quaternionf rotation = rotationMatrix.getUnnormalizedRotation(new Quaternionf());

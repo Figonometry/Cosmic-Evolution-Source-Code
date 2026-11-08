@@ -6,6 +6,7 @@ import spacegame.nbt.NBTTagCompound;
 import spacegame.util.Logger;
 import spacegame.world.Chunk;
 import spacegame.world.blockstate.MultiState;
+import spacegame.world.blockstate.OreState;
 import spacegame.world.blockstateio.*;
 import spacegame.world.blockstructureio.CharcoalPitIO;
 
@@ -54,6 +55,7 @@ public final class ThreadChunkSave implements Runnable {
             NBTTagCompound flowingWaterStates = new NBTTagCompound();
             NBTTagCompound charcoalStates = new NBTTagCompound();
             NBTTagCompound partialBlockStates = new NBTTagCompound();
+            NBTTagCompound oreStates = new NBTTagCompound();
 
             NBTTagCompound charcoalPits = new NBTTagCompound();
 
@@ -76,6 +78,7 @@ public final class ThreadChunkSave implements Runnable {
             chunkData.setTag("FlowingWaterStates", flowingWaterStates);
             chunkData.setTag("CharcoalStates", charcoalStates);
             chunkData.setTag("PartialBlockStates", partialBlockStates);
+            chunkData.setTag("OreStates", oreStates);
 
             chunkData.setTag("CharcoalPits", charcoalPits);
 
@@ -160,6 +163,10 @@ public final class ThreadChunkSave implements Runnable {
 
             if(this.chunk.doesChunkContainStateOfType(MultiState.PARTIAL_BLOCK_STATE)){
                 new PartialBlockIO().savePartialBlockStates(this.chunk, partialBlockStates);
+            }
+
+            if(this.chunk.doesChunkContainStateOfType(MultiState.ORE_STATE)){
+                new OreStateIO().saveOreStates(this.chunk, oreStates);
             }
 
 

@@ -1,6 +1,7 @@
 package spacegame.item;
 
 import spacegame.render.model.ModelLoader;
+import spacegame.render.texturelists.ItemTextureList;
 
 public final class ItemKnife extends ItemTool {
 
@@ -14,50 +15,46 @@ public final class ItemKnife extends ItemTool {
 
     @Override
     public ModelLoader getItemModel(short itemMetadata){
-        return this.getModelLoaderFromItemMetadata(itemMetadata);
-    }
-    @Override
-    public ModelLoader getModelLoaderFromItemMetadata(short itemMetadata) {
         if(this.ID == Item.stoneKnife.ID) {
             switch (itemMetadata) {
                 case StoneToolMetadata.ANDESITE -> {
-                    return ItemModelList.andesiteStoneKnife;
+                    return ItemModelList.stoneKnife.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.ANDESITE_TEXTURE);
                 }
                 case StoneToolMetadata.GRANITE -> {
-                    return ItemModelList.graniteStoneKnife;
+                    return ItemModelList.stoneKnife.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.GRANITE_TEXTURE);
                 }
                 case StoneToolMetadata.BASALT -> {
-                    return ItemModelList.basaltStoneKnife;
+                    return ItemModelList.stoneKnife.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.BASALT_TEXTURE);
                 }
                 case StoneToolMetadata.CHERT -> {
-                    return ItemModelList.chertStoneKnife;
+                    return ItemModelList.stoneKnife.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.CHERT_TEXTURE);
                 }
                 case StoneToolMetadata.OBSIDIAN -> {
-                    return ItemModelList.obsidianStoneKnife;
+                    return ItemModelList.stoneKnife.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.OBSIDIAN_TEXTURE);
                 }
                 case StoneToolMetadata.FLINT -> {
-                    return ItemModelList.flintStoneKnife;
+                    return ItemModelList.stoneKnife.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.FLINT_TEXTURE);
                 }
             }
         } else if(this.ID == Item.stoneHandKnifeBlade.ID) {
             switch (itemMetadata) {
                 case StoneToolMetadata.ANDESITE -> {
-                    return ItemModelList.andesiteStoneKnifeBlade;
+                    return ItemModelList.stoneHandKnifeBlade.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.ANDESITE_TEXTURE);
                 }
                 case StoneToolMetadata.GRANITE -> {
-                    return ItemModelList.graniteStoneKnifeBlade;
+                    return ItemModelList.stoneHandKnifeBlade.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.GRANITE_TEXTURE);
                 }
                 case StoneToolMetadata.BASALT -> {
-                    return ItemModelList.basaltStoneKnifeBlade;
+                    return ItemModelList.stoneHandKnifeBlade.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.BASALT_TEXTURE);
                 }
                 case StoneToolMetadata.CHERT -> {
-                    return ItemModelList.chertStoneKnifeBlade;
+                    return ItemModelList.stoneHandKnifeBlade.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.CHERT_TEXTURE);
                 }
                 case StoneToolMetadata.OBSIDIAN -> {
-                    return ItemModelList.obsidianStoneKnifeBlade;
+                    return ItemModelList.stoneHandKnifeBlade.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.OBSIDIAN_TEXTURE);
                 }
                 case StoneToolMetadata.FLINT -> {
-                    return ItemModelList.flintStoneKnifeBlade;
+                    return ItemModelList.stoneHandKnifeBlade.copyModel().replaceTargetTexture(ItemTextureList.STONE_TEXTURE, ItemTextureList.FLINT_TEXTURE);
                 }
             }
         }

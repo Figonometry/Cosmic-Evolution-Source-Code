@@ -185,4 +185,6 @@ public abstract class BlockIDList {
     public static final short TILLED_SOIL = 181;
     public static final short CROP_GROWTH = 182;
     public static final short DEAD_CROP = 183;
+    public static final short ORE_BLOCK = 184;
+    public static final short TEST = 185;
 }

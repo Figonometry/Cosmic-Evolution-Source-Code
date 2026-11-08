@@ -4,16 +4,18 @@ import spacegame.entity.EntityPlayer;
 
 public abstract class PlayerAnimation {
     public int timer;
+    public int minTimer;
     public boolean leftClick;
     public boolean rightClick;
     public boolean heldRequired;
 
 
-    public PlayerAnimation(boolean leftClick, boolean rightClick, boolean heldRequired, int timer){
+    public PlayerAnimation(boolean leftClick, boolean rightClick, boolean heldRequired, int timer, int minTimer){
         this.leftClick = leftClick;
         this.rightClick = rightClick;
         this.heldRequired = heldRequired;
         this.timer = timer;
+        this.minTimer = minTimer;
     }
 
 

@@ -898,6 +898,7 @@ public class ModelLoader{
         returnModel.usesMultipleTextures = this.usesMultipleTextures;
 
         for(int i = 0; i < this.modelFaces.length; i++){
+            if(this.modelFaces[i] == null)continue;
 
             returnModel.modelFaces[i] = new ModelFace(this.modelFaces[i].faceType);
 

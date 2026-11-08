@@ -54,8 +54,6 @@ public final class ItemWoodenPan extends Item {
     public ModelLoader getItemModel(short itemMetadata){
         if(itemMetadata == EMPTY_PAN)return this.itemModel;
 
-
-
         //Copy the filled pan model and replace the textureID for the material with whatever block texture the metadata corresponds to
         ModelLoader filledPan = ItemModelList.woodenPanFilled.copyModel();
         int replacementTexture = 0;
@@ -208,7 +206,7 @@ public final class ItemWoodenPan extends Item {
         if(!player.inWater)return;
 
         if(player.playerAnimation == null){
-            player.playerAnimation = new PlayerAnimationPanning(false, true, false, 120);
+            player.playerAnimation = new PlayerAnimationPanning(false, true, false, 120, 0);
         }
     }
 

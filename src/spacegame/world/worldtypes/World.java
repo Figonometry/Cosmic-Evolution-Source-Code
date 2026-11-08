@@ -2255,9 +2255,9 @@ public abstract class World {
             if (held == Item.NULL_ITEM_REFERENCE) held = 0;
 
 
-            if(p.breakTimer % 6 == 0 && block.hardness < (p.hardnessThreshold + Item.list[held].hardness) && (!block.requiresTool)){
+            if(p.breakTimer % 6 == 0 && block.getHardness(bx, by, bz, this) < (p.hardnessThreshold + Item.list[held].hardness) && (!block.requiresTool)){
                 this.generateParticlesOnBlockBreakingAnimation(block.ID, bx, by, bz,  this.determineHitFace(bx, by, bz, hitX, hitY, hitZ));
-            } else if((block.hardness > (p.hardnessThreshold + Item.list[held].hardness) || block.requiresTool && !block.toolType.equals(Item.list[held].toolType))){
+            } else if((block.getHardness(bx, by, bz, this) > (p.hardnessThreshold + Item.list[held].hardness) || block.requiresTool && !block.toolType.equals(Item.list[held].toolType))){
                 if((this.ce.save.time - p.timeStartedBreakingBlock) % 6 == 0) {
                     this.generateParticlesOnBlockBreakingAnimation(block.ID, bx, by, bz, this.determineHitFace(bx, by, bz, hitX, hitY, hitZ));
                 }
@@ -2267,7 +2267,7 @@ public abstract class World {
 
 
 
-            if (block.hardness > (p.hardnessThreshold + Item.list[held].hardness)) {
+            if (block.getHardness(bx, by, bz, this) > (p.hardnessThreshold + Item.list[held].hardness)) {
                 p.breakTimer = 0;
             }
 

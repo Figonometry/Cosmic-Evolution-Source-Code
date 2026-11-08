@@ -42,6 +42,7 @@ public final class Sound {
     public static String whoosh = "src/spacegame/assets/sound/whoosh.ogg";
     public static String projectilePing = "src/spacegame/assets/sound/projectilePing.ogg";
     public static String gravel = "src/spacegame/assets/sound/gravel.ogg";
+    public static String oreChunkBreak = "src/spacegame/assets/sound/oreChunkBreak.ogg";
     public static boolean canPlaySound = true;
     public String filepath;
     public int bufferID;

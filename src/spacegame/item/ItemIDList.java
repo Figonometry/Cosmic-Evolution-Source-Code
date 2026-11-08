@@ -45,6 +45,10 @@ public abstract class ItemIDList {
     public static final short WOODEN_PAN = 41;
     public static final short WOODEN_PAN_STAGE_1 = 42;
     public static final short CHARCOAL = 43;
-
-
+    public static final short POOR_NATIVE_COPPER_CHUNKS = 44;
+    public static final short MEDIUM_NATIVE_COPPER_CHUNKS = 45;
+    public static final short RICH_NATIVE_COPPER_CHUNKS = 46;
+    public static final short BOUNTIFUL_NATIVE_COPPER_CHUNKS = 47;
+    public static final short HAMMER = 48;
+    public static final short NATIVE_COPPER_NUGGETS = 49;
 }

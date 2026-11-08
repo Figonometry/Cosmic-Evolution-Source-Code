@@ -112,7 +112,7 @@ public class Block {
     public static final Block redClayCookingPot = new Block(BlockIDList.RED_CLAY_COOKING_POT, BlockTextureList.FIRED_RED_CLAY_TEXTURE, blockFolderPath + "redClayCookingPot.txt");
     public static final Block phylliteSand = new BlockSand(BlockIDList.PHYLLITE_SAND, BlockTextureList.PHYLLITE_SAND, blockFolderPath + "phylliteSand.txt");
     public static final Block cactus = new BlockCactus(BlockIDList.CACTUS, BlockTextureList.CACTUS_SIDE_TEXTURE, blockFolderPath + "cactus.txt");
-    public static final Block asdfadf = null;
+    public static final Block oreBlock = new BlockOre(BlockIDList.ORE_BLOCK, BlockTextureList.NO_TEXTURE, blockFolderPath + "oreBlock.txt");
     public static final Block serpentiniteStone = new BlockStone(BlockIDList.SERPENTINITE_STONE, BlockTextureList.SERPENTINITE_STONE, blockFolderPath + "serpentiniteStone.txt");
     public static final Block itemStick = new BlockItemStick(BlockIDList.ITEM_STICK, BlockTextureList.ITEM_STICK_TEXTURE, blockFolderPath + "itemStick.txt");
     public static final Block tallGrass = new BlockTallGrass(BlockIDList.TALL_GRASS, BlockTextureList.TALL_GRASS_TEXTURE, blockFolderPath + "tallGrass.txt");
@@ -150,7 +150,7 @@ public class Block {
     public static final Block sapling = new BlockSapling(BlockIDList.SAPLING, BlockTextureList.NO_TEXTURE, blockFolderPath + "sapling.txt");
     public static final Block torchUnlit = new BlockTorch(BlockIDList.TORCH_UNLIT, BlockTextureList.TORCH_UNLIT_TEXTURE, blockFolderPath + "torchUnlit.txt");
     public static final Block partialBlock = new BlockPartial(BlockIDList.PARTIAL_BLOCK, BlockTextureList.NO_TEXTURE, blockFolderPath + "partialBlock.txt");
-    public static final Block unused_field_73 = null;
+    public static final Block test = new Block(BlockIDList.TEST, BlockTextureList.NATIVE_COPPER_IN_ANDESITE, blockFolderPath + "andesiteStone.txt");
     public static final Block unused_field_74 = null;
     public static final Block unused_field_75 = null;
     public static final Block torchBurnedOut = new BlockTorch(BlockIDList.TORCH_BURNED_OUT, BlockTextureList.TORCH_BURNED_OUT_TEXTURE, blockFolderPath + "torchBurnedOut.txt");
@@ -854,6 +854,10 @@ public class Block {
         return this.isLightBlock;
     }
 
+    public float getHardness(int x, int y, int z, World world){
+        return this.hardness;
+    }
+
     public ModelLoader getBlockModel(int x, int y ,int z, World world){
         return this.blockModel;
     }
@@ -901,7 +905,7 @@ public class Block {
             list[i].registerBlockTooltips();
         }
     }
-    public int getDynamicBreakTimer(){
+    public final int getDynamicBreakTimer(){
         short playerHeldItem = CosmicEvolution.instance.save.thePlayer.getHeldItem();
         if(playerHeldItem == -1){playerHeldItem = 0;}
         if(!this.requiresTool || !Item.list[playerHeldItem].toolType.equals(this.toolType)){
